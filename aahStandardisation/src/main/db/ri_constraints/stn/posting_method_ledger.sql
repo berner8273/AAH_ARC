@@ -1,0 +1,5 @@
+alter table stn.posting_method_ledger add constraint fk_psm_pml           foreign key ( psm_id )          references stn.posting_method           ( psm_id );
+alter table stn.posting_method_ledger add constraint fk_input_abasis_pml  foreign key ( input_basis_id )  references stn.posting_accounting_basis ( basis_id );
+alter table stn.posting_method_ledger add constraint fk_output_abasis_pml foreign key ( output_basis_id ) references stn.posting_accounting_basis ( basis_id );
+alter table stn.posting_method_ledger add constraint fk_pldgr_pml         foreign key ( ledger_id )       references stn.posting_ledger           ( ledger_id );
+alter table stn.posting_method_ledger add constraint fk_fin_calc_pml      foreign key ( fin_calc_id )     references stn.posting_financial_calc   ( fin_calc_id );

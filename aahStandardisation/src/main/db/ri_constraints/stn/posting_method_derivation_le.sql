@@ -1,0 +1,1 @@
+alter table stn.posting_method_derivation_le add constraint fk_et_psmdl foreign key ( psm_id ) references stn.posting_method ( psm_id );

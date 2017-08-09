@@ -1,0 +1,10 @@
+create or replace package stn.pk_feed_integrity
+as
+
+    procedure pr_verify
+    (
+        p_step_run_sid in stn.step_run.step_run_sid%type
+    );
+
+end pk_feed_integrity;
+/

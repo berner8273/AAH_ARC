@@ -1,0 +1,1 @@
+grant select on fdr.fr_general_lookup to stn;

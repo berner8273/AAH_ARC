@@ -1,0 +1,2 @@
+alter table stn.validation_column add constraint fk_rv_rvc foreign key ( validation_id ) references stn.validation    ( validation_id );
+alter table stn.validation_column add constraint fk_rv_dtc foreign key ( dtc_id )        references stn.db_tab_column ( dtc_id );

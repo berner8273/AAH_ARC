@@ -1,0 +1,1 @@
+create unique index fbi_fsrb_message_id on fdr.fr_stan_raw_book ( to_number ( message_id ) );

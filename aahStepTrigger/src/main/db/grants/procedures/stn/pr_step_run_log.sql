@@ -1,0 +1,1 @@
+grant execute on stn.pr_step_run_log to public;

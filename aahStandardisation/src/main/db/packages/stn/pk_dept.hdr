@@ -1,0 +1,10 @@
+CREATE OR REPLACE PACKAGE stn.PK_DEPT AS
+    PROCEDURE pr_department_prc
+        (
+            p_step_run_sid IN NUMBER,
+            p_lpg_id IN NUMBER,
+            p_no_processed_records OUT NUMBER,
+            p_no_failed_records OUT NUMBER
+        );
+END PK_DEPT;
+/

@@ -1,0 +1,1 @@
+alter table stn.feed_record_count add constraint fk_frc_f foreign key ( feed_uuid ) references stn.feed ( feed_uuid );
