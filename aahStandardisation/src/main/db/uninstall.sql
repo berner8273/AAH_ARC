@@ -38,6 +38,8 @@ drop package body stn.pk_lel;
 drop package      stn.pk_lel;
 drop package body stn.pk_le_hier;
 drop package      stn.pk_le_hier;
+drop package body stn.pk_gce;
+drop package      stn.pk_gce;
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -48,6 +50,8 @@ drop view  stn.le_default;
 drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
 drop view  stn.cession_event_posting;
+drop view  stn.hopper_gl_combo_edit_gc;
+drop view  stn.hopper_gl_combo_edit_gl;
 drop table stn.vie_posting_method_ledger;
 drop table stn.process_code_module;
 drop table stn.validation_column;
@@ -103,6 +107,10 @@ drop table stn.posting_method;
 drop table stn.vie_event_type;
 drop table stn.event_type;
 drop table stn.vie_legal_entity;
+drop table stn.gl_combo_edit_assignment;
+drop table stn.gl_combo_edit_rule;
+drop table stn.gl_combo_edit_process;
+drop table stn.gl_combo_edit_subject;
 
 conn ~fdr_logon
 
@@ -152,7 +160,10 @@ drop index fbi_fsrpl_message_id;
 
 revoke select                   on fdr.fr_general_lookup            from stn;
 revoke select , insert , update on fdr.fr_stan_raw_general_codes    from stn;
+revoke select , insert , update on fdr.fr_stan_raw_general_lookup   from stn;
 revoke select                   on fdr.fr_internal_proc_entity_type from stn;
 revoke select , insert , update on fdr.fr_stan_raw_org_hier_node    from stn;
 revoke select , insert , update on fdr.fr_stan_raw_org_hier_struc   from stn;
+revoke select                   on fdr.fr_posting_schema            from stn;
+revoke select , insert , update on fdr.fr_general_code_types        from stn;
 exit

@@ -37,8 +37,11 @@ conn ~fdr_logon
 @@data/fdr/fr_org_hierarchy_type.sql
 @@data/fdr/fr_org_node_type.sql
 @@data/fdr/fr_global_parameter.sql
+@@grants/tables/fdr/fr_general_code_types.sql
 @@grants/tables/fdr/fr_general_lookup.sql
+@@grants/tables/fdr/fr_posting_schema.sql
 @@grants/tables/fdr/fr_stan_raw_general_codes.sql
+@@grants/tables/fdr/fr_stan_raw_general_lookup.sql
 @@grants/tables/fdr/fr_stan_raw_org_hier_node.sql
 @@grants/tables/fdr/fr_internal_proc_entity_type.sql
 @@grants/tables/fdr/fr_stan_raw_org_hier_struc.sql
@@ -76,6 +79,10 @@ conn ~stn_logon
 @@tables/stn/gl_account_category.sql
 @@tables/stn/gl_chartfield.sql
 @@tables/stn/gl_chartfield_type.sql
+@@tables/stn/gl_combo_edit_assignment.sql
+@@tables/stn/gl_combo_edit_process.sql
+@@tables/stn/gl_combo_edit_rule.sql
+@@tables/stn/gl_combo_edit_subject.sql
 @@tables/stn/identified_feed.sql
 @@tables/stn/identified_record.sql
 @@tables/stn/insurance_policy.sql
@@ -113,6 +120,8 @@ conn ~stn_logon
 @@views/stn/fxr_default.sql
 @@views/stn/gla_default.sql
 @@views/stn/hopper_gl_chartfield.sql
+@@views/stn/hopper_gl_combo_edit_gc.sql
+@@views/stn/hopper_gl_combo_edit_gl.sql
 @@views/stn/le_default.sql
 @@views/stn/row_val_error_log_default.sql
 @@views/stn/set_val_error_log_default.sql
@@ -131,6 +140,9 @@ conn ~stn_logon
 @@ri_constraints/stn/fx_rate.sql
 @@ri_constraints/stn/gl_account.sql
 @@ri_constraints/stn/gl_chartfield.sql
+@@ri_constraints/stn/gl_combo_edit_assignment.sql
+@@ri_constraints/stn/gl_combo_edit_process.sql
+@@ri_constraints/stn/gl_combo_edit_rule.sql
 @@ri_constraints/stn/insurance_policy.sql
 @@ri_constraints/stn/insurance_policy_fx_rate.sql
 @@ri_constraints/stn/insurance_policy_tax_jurisd.sql
@@ -180,9 +192,12 @@ conn ~stn_logon
 @@data/stn/posting_method_derivation_mtm.sql
 @@data/stn/posting_method_ledger.sql
 @@data/stn/vie_posting_method_ledger.sql
+@@data/stn/gl_combo_edit_subject.sql
 @@procedures/stn/pr_publish_log.sql
 @@packages/stn/pk_fxr.hdr
 @@packages/stn/pk_fxr.bdy
+@@packages/stn/pk_gce.hdr
+@@packages/stn/pk_gce.bdy
 @@packages/stn/pk_gl_acct.hdr
 @@packages/stn/pk_gl_acct.bdy
 @@packages/stn/pk_glcf.hdr

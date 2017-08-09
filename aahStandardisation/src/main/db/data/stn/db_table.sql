@@ -10,4 +10,7 @@ insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'insurance_policy
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'insurance_policy_tax_jurisd' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'cession' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'cession_link' );
+insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'gl_combo_edit_assignment' );
+insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'gl_combo_edit_process' );
+insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'gl_combo_edit_rule' );
 commit;

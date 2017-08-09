@@ -166,4 +166,39 @@ insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id fr
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'cession_link' ) , 'no_retries' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'cession_link' ) , 'step_run_sid' );      
 
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) , 'row_sid' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) , 'prc_cd' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) , 'le_id' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) , 'ledger_cd' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) , 'lpg_id' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) , 'event_status' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) , 'feed_uuid' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) , 'no_retries' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) , 'step_run_sid' );
+
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'row_sid' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'prc_cd' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'prc_descr' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'prc_typ' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'prc_subject' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'must_match' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'lpg_id' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'event_status' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'feed_uuid' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'no_retries' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) , 'step_run_sid' );
+
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'row_sid' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'prc_cd' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'acct_cd' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'prc_rule' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'department' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'product' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'affiliate' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'lpg_id' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'event_status' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'feed_uuid' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'no_retries' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'step_run_sid' );
+
 commit;
