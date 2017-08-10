@@ -18,6 +18,6 @@ define gui_logon    = ~gui_user/~gui_password@~tns_alias
 
 conn ~gui_logon
 
-@@data\gui\t_ui_jrnl_line_meta.sql
+@@data/gui/t_ui_jrnl_line_meta.sql
 
 exit

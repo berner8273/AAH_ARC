@@ -47,6 +47,7 @@ drop view  stn.fxr_default;
 drop view  stn.gla_default;
 drop view  stn.dept_default;
 drop view  stn.le_default;
+drop view  stn.gce_default;
 drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
 drop view  stn.cession_event_posting;

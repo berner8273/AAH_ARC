@@ -127,6 +127,7 @@ conn ~stn_logon
 @@views/stn/set_val_error_log_default.sql
 @@views/stn/validation_detail.sql
 @@views/stn/cession_event_posting.sql
+@@views/stn/gce_default.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
 @@ri_constraints/stn/cession_event.sql
