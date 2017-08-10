@@ -7,8 +7,54 @@
   </ProjectIdentifier>
   <Description />
   <ReadOnly>False</ReadOnly>
-  <NewRepository BranchId="1" ProjectId="7" FolderId="-1" CheckinId="50" />
+  <NewRepository BranchId="4" ProjectId="9" FolderId="-1" CheckinId="17" />
   <Elements>
+    <ExternalCall xmlns="A420.ProjectElement.5">
+      <ProjectElement>
+        <ReferableElement>
+          <Element>
+            <Name>pr_stan_raw_general_lookup_ld</Name>
+          </Element>
+        </ReferableElement>
+        <Revision>
+          <Number>1</Number>
+          <SaveDate>2017-08-10T13:21:57.6107098-04:00</SaveDate>
+          <Description />
+        </Revision>
+        <State>0</State>
+        <FolderPath />
+        <NewRepository ElemId="3969" CheckinId="23" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <ElementBodyWrapper>
+          <ElementBodyHeader xmlns="A420.ExtCall.6">
+            <ForceCompilation>False</ForceCompilation>
+            <Uncompilable>False</Uncompilable>
+            <Deprecated>False</Deprecated>
+            <SecurityPolicyName />
+            <Functions />
+          </ElementBodyHeader>
+          <ElementBody xmlns="A420.ExtCall.6">
+            <Description />
+            <ExternalCallClass>DEVICE_CLASS_DB</ExternalCallClass>
+            <ExternalCallType>DEVICE_TYPE_ORACLE_9_2</ExternalCallType>
+            <ExternalCallCaseSensitiveNamesAllowed>False</ExternalCallCaseSensitiveNamesAllowed>
+            <Functions>
+              <ExtCallFunction ExtCallFuncName="pr_stan_raw_general_lookup_ld" ExtCallHasAptitudeLevelAutocommit="true" ExtCallFuncProcedure="pr_stan_raw_general_lookup_ld" SqlSchemaRef="fdr" SqlSchemaProjectRef="Trigger" SqlSchemaTypeRef="SqlSchema" ObjectType="STORED_PROCEDURE" xmlns="A420.ExtCallFunction.7">
+                <ExtCallParameters>
+                  <ExtCallParam Name="a_lpg_id" Type="Numeric" DBType="NUMBER" Direction="IN">
+                    <PrecisionData Length="0" Precision="0" Scale="0" />
+                  </ExtCallParam>
+                  <ExtCallParam Name="a_code_type" Type="String" DBType="VARCHAR2" Direction="IN">
+                    <PrecisionData Length="20" Precision="0" Scale="0" />
+                  </ExtCallParam>
+                </ExtCallParameters>
+                <ExtCallAttributes />
+              </ExtCallFunction>
+            </Functions>
+            <DatabaseInfo Database="Oracle" Version="_12c" Interface="OCI" />
+          </ElementBody>
+        </ElementBodyWrapper>
+      </ProjectElement>
+    </ExternalCall>
     <Rule xmlns="A420.ProjectElement.5">
       <ProjectElement>
         <ReferableElement>
@@ -18,12 +64,12 @@
         </ReferableElement>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-08-07T15:32:53.1266037-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:56.9848225-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="1033" CheckinId="96" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <NewRepository ElemId="2445" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.Rule.3">
             <ForceCompilation>False</ForceCompilation>
@@ -485,12 +531,12 @@
         </ReferableElement>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-21T15:32:21.1688104-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.0160745-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="1028" CheckinId="80" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <NewRepository ElemId="2446" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.Rule.3">
             <ForceCompilation>False</ForceCompilation>
@@ -845,12 +891,12 @@
         </ReferableElement>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-10T14:24:38.9904341-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.0317005-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="950" CheckinId="53" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <NewRepository ElemId="2447" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.ExtCall.6">
             <ForceCompilation>False</ForceCompilation>
@@ -891,12 +937,12 @@
         </ReferableElement>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-10T14:18:11.3352423-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.0473265-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="949" CheckinId="53" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <NewRepository ElemId="2448" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.Device.47">
             <ForceCompilation>False</ForceCompilation>
@@ -964,12 +1010,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ReferableElement>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-08-07T15:30:17.2907443-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.0785785-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="1034" CheckinId="95" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <NewRepository ElemId="2449" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.BP.8">
             <ForceCompilation>True</ForceCompilation>
@@ -1227,44 +1273,49 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ElementBodyWrapper>
       </ProjectElement>
     </BusinessProcess>
-    <Device xmlns="A420.ProjectElement.5">
+    <ExternalCall xmlns="A420.ProjectElement.5">
       <ProjectElement>
         <ReferableElement>
           <Element>
-            <Name>bus</Name>
+            <Name>pk_le_hier.pr_gen_vie</Name>
           </Element>
         </ReferableElement>
-        <ProjectIdentifier>
-          <Element>
-            <Name>Trigger</Name>
-          </Element>
-        </ProjectIdentifier>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-10T14:17:57.6383016-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.1410825-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="948" CheckinId="53" ReferenceId="631" ReferenceCheckinId="3" ReferenceProjectId="2" />
+        <NewRepository ElemId="2453" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
-          <ElementBodyHeader xmlns="A420.Device.47">
+          <ElementBodyHeader xmlns="A420.ExtCall.6">
             <ForceCompilation>False</ForceCompilation>
             <Uncompilable>False</Uncompilable>
             <Deprecated>False</Deprecated>
             <SecurityPolicyName />
-            <Class>DEVICE_CLASS_BUS</Class>
-            <Type>DEVICE_TYPE_BUS</Type>
+            <Functions />
           </ElementBodyHeader>
-          <ElementBody xmlns="A420.Device.47">
+          <ElementBody xmlns="A420.ExtCall.6">
             <Description />
-            <BusinessName>bus</BusinessName>
-            <ConfigurationDefinition />
-            <BusName>APT_BUS</BusName>
+            <ExternalCallClass>DEVICE_CLASS_DB</ExternalCallClass>
+            <ExternalCallType>DEVICE_TYPE_ORACLE_9_2</ExternalCallType>
+            <ExternalCallCaseSensitiveNamesAllowed>False</ExternalCallCaseSensitiveNamesAllowed>
+            <Functions>
+              <ExtCallFunction ExtCallFuncName="pk_le_hier.pr_gen_vie" ExtCallHasAptitudeLevelAutocommit="true" ExtCallFuncProcedure="pk_le_hier.pr_gen_vie" SqlSchemaRef="stn" SqlSchemaProjectRef="Trigger" SqlSchemaTypeRef="SqlSchema" ObjectType="STORED_PROCEDURE" xmlns="A420.ExtCallFunction.7">
+                <ExtCallParameters>
+                  <ExtCallParam Name="p_step_run_sid" Type="Numeric" DBType="NUMBER" Direction="IN">
+                    <PrecisionData Length="0" Precision="0" Scale="0" />
+                  </ExtCallParam>
+                </ExtCallParameters>
+                <ExtCallAttributes />
+              </ExtCallFunction>
+            </Functions>
+            <DatabaseInfo Database="Oracle" Version="_12c" Interface="OCI" />
           </ElementBody>
         </ElementBodyWrapper>
       </ProjectElement>
-    </Device>
+    </ExternalCall>
     <ExternalCall xmlns="A420.ProjectElement.5">
       <ProjectElement>
         <ReferableElement>
@@ -1274,12 +1325,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ReferableElement>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-21T15:31:21.9922638-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.0942045-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="1026" CheckinId="80" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <NewRepository ElemId="2450" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.ExtCall.6">
             <ForceCompilation>False</ForceCompilation>
@@ -1317,12 +1368,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ReferableElement>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-27T07:49:09.7441781-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.1098305-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="1029" CheckinId="88" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <NewRepository ElemId="2451" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.ExtCall.6">
             <ForceCompilation>False</ForceCompilation>
@@ -1351,6 +1402,404 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ElementBodyWrapper>
       </ProjectElement>
     </ExternalCall>
+    <SqlSchema xmlns="A420.ProjectElement.5">
+      <ProjectElement>
+        <ReferableElement>
+          <Element>
+            <Name>fdr</Name>
+          </Element>
+        </ReferableElement>
+        <ProjectIdentifier>
+          <Element>
+            <Name>Trigger</Name>
+          </Element>
+        </ProjectIdentifier>
+        <Revision>
+          <Number>1</Number>
+          <SaveDate>2017-08-09T17:32:57.5942365-04:00</SaveDate>
+          <Description />
+        </Revision>
+        <State>0</State>
+        <FolderPath />
+        <NewRepository ElemId="2704" CheckinId="17" ReferenceId="2688" ReferenceCheckinId="17" ReferenceProjectId="11" />
+        <ElementBodyWrapper>
+          <ElementBodyHeader xmlns="A420.SqlSchema.1">
+            <ForceCompilation>True</ForceCompilation>
+            <Uncompilable>False</Uncompilable>
+            <Deprecated>False</Deprecated>
+            <SecurityPolicyName />
+            <Settings Deployable="true" />
+            <Qualifiers>
+              <SchemaDetails Databasetype="Oracle12c" Database="fdr" />
+            </Qualifiers>
+          </ElementBodyHeader>
+          <ElementBody xmlns="A420.SqlSchema.1">
+            <Description />
+            <SqlSchema />
+          </ElementBody>
+        </ElementBodyWrapper>
+      </ProjectElement>
+    </SqlSchema>
+    <Rule xmlns="A420.ProjectElement.5">
+      <ProjectElement>
+        <ReferableElement>
+          <Element>
+            <Name>gl_combo_edit_general_codes-dsr</Name>
+          </Element>
+        </ReferableElement>
+        <Revision>
+          <Number>1</Number>
+          <SaveDate>2017-08-10T13:24:57.433567-04:00</SaveDate>
+          <Description />
+        </Revision>
+        <State>0</State>
+        <FolderPath />
+        <NewRepository ElemId="3970" CheckinId="23" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <ElementBodyWrapper>
+          <ElementBodyHeader xmlns="A420.Rule.3">
+            <ForceCompilation>False</ForceCompilation>
+            <Uncompilable>False</Uncompilable>
+            <Deprecated>False</Deprecated>
+            <SecurityPolicyName />
+            <CheckedForExecution>False</CheckedForExecution>
+            <EnabledInWebService>False</EnabledInWebService>
+          </ElementBodyHeader>
+          <ElementBody xmlns="A420.Rule.3">
+            <Description />
+            <Diagram Zoom="1" xmlns="A420.Diagram.3">
+              <Grid xmlns="A420.Grid.2" />
+              <LinkCollect>
+                <Link Id="0" LinkRectagle1="22;52;496;74" LinkRectagle2="22;171;124;77" LinkPointStart="270;126" LinkPointEnd="84;171" FromPortID="0" FromPortBlockID="1" ToPortID="0" ToPortBlockID="3" ConnectionPositionTo="0.5" xmlns="A420.Link.9">
+                  <Points Coll="270;118;270;126;270;148;84;148;84;171;84;179" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+                <Link Id="2" LinkRectagle1="22;171;124;77" LinkRectagle2="22;262;496;205" LinkPointStart="84;248" LinkPointEnd="270;262" FromPortID="1" FromPortBlockID="3" ToPortID="0" ToPortBlockID="4" ConnectionPositionTo="0.25" xmlns="A420.Link.9">
+                  <Points Coll="84;240;84;248;84;255;270;255;270;262;270;270" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+              </LinkCollect>
+              <BlockCollect xmlns="A420.BlockCollection.1">
+                <RuleInput xmlns="A420.Block.6">
+                  <Id>1</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>Input</Name>
+                  <SecondName>root</SecondName>
+                  <Description />
+                  <Rectangle>30;60;480;58</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="Input" Rectangle="30;60;480;58" DrawShape="true" DrawShadow="true" DrawText="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeInput</ShapeType>
+                    <Shape FrameColour="90;159;60;255" DarkGradientColour="90;159;60;255" LightGradientColour="241;243;242;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="10" ShadowSizeVertical="11" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <PortCollect>
+                      <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Bottom" Type="Output" xmlns="A420.Port.2">
+                        <Links>
+                          <LinkID>0</LinkID>
+                        </Links>
+                      </Port>
+                    </PortCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1" />
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>4</Ver>
+                    <Description />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <SegName>/root</SegName>
+                    <ReactionOnZero>
+                      <Ver>1</Ver>
+                      <ReactType>0</ReactType>
+                      <DefValueCollect>
+                        <Name>lpg_id</Name>
+                        <Value />
+                        <Name>return_code</Name>
+                        <Value />
+                        <Name>no_processed_records</Name>
+                        <Value />
+                        <Name>no_failed_records</Name>
+                        <Value />
+                        <Name>process_name</Name>
+                        <Value />
+                        <Name>error_message</Name>
+                        <Value />
+                        <Name>step_run_sid</Name>
+                        <Value />
+                      </DefValueCollect>
+                    </ReactionOnZero>
+                    <ReactionOnMany>
+                      <Ver>1</Ver>
+                      <ReactType>2</ReactType>
+                      <DefValueCollect>
+                        <Name>lpg_id</Name>
+                        <Value />
+                        <Name>return_code</Name>
+                        <Value />
+                        <Name>no_processed_records</Name>
+                        <Value />
+                        <Name>no_failed_records</Name>
+                        <Value />
+                        <Name>process_name</Name>
+                        <Value />
+                        <Name>error_message</Name>
+                        <Value />
+                        <Name>step_run_sid</Name>
+                        <Value />
+                      </DefValueCollect>
+                    </ReactionOnMany>
+                    <SortElemCollect />
+                    <DataObjectViewName />
+                  </Data>
+                </RuleInput>
+                <RuleInputAttribute xmlns="A420.Block.6">
+                  <Id>3</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>lpg_id</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>30;179;108;61</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>2</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="lpg_id" Rectangle="30;179;108;61" DrawShape="true" DrawShadow="true" DrawText="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeInputAttribute</ShapeType>
+                    <Shape FrameColour="189;138;129;255" DarkGradientColour="189;138;129;255" LightGradientColour="247;247;242;255" GradientDirection="Top" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <PortCollect>
+                      <Port ID="0" Alignment="Top" xmlns="A420.Port.2">
+                        <Links>
+                          <LinkID>0</LinkID>
+                        </Links>
+                      </Port>
+                      <Port ID="1" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Bottom" Type="Output" xmlns="A420.Port.2">
+                        <Links>
+                          <LinkID>2</LinkID>
+                        </Links>
+                      </Port>
+                    </PortCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1" />
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>3</Ver>
+                    <Description />
+                    <Attr>lpg_id</Attr>
+                    <Rel>lpg_id</Rel>
+                    <Full />
+                    <DataType />
+                    <IsDataObjectAttr>1</IsDataObjectAttr>
+                  </Data>
+                </RuleInputAttribute>
+                <RuleExternalLibrary xmlns="A420.Block.6">
+                  <Id>4</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>External Call</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>30;270;480;189</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="External Call" Rectangle="30;270;480;189" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeRectangle</ShapeType>
+                    <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Size="0.111688311688312" Rectangle="30;270;54;189" Layout="Vertical" DrawShape="true" DrawShadow="true">
+                        <ShapeType>ShapeExtLibLeft</ShapeType>
+                        <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                      <Cell ID="2" Size="0.776623376623377" Rectangle="84;270;372;189" Layout="Vertical" DrawShape="true" DrawShadow="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <CellCollect>
+                          <Cell ID="4" Size="0.154761904761905" Rectangle="84;270;372;29" DrawShape="true">
+                            <ShapeType>ShapeRectangle</ShapeType>
+                            <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                            <PortCollect>
+                              <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Top" xmlns="A420.Port.2">
+                                <Links>
+                                  <LinkID>2</LinkID>
+                                </Links>
+                              </Port>
+                            </PortCollect>
+                          </Cell>
+                          <Cell ID="5" Name="External Call" Size="0.428571428571429" Rectangle="84;299;372;81" DrawShape="true" DrawText="true">
+                            <ShapeType>ShapeExternalLibrary</ShapeType>
+                            <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                          </Cell>
+                          <Cell ID="6" Size="0.416666666666667" Rectangle="84;380;372;79" DrawShape="true">
+                            <ShapeType>ShapeRectangle</ShapeType>
+                            <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                          </Cell>
+                        </CellCollect>
+                      </Cell>
+                      <Cell ID="3" Size="0.111688311688312" Rectangle="456;270;54;189" Layout="Vertical" DrawShape="true" DrawShadow="true">
+                        <ShapeType>ShapeExtLibRight</ShapeType>
+                        <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                    </CellCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1" />
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>5</Ver>
+                    <Description />
+                    <ProjectElementReference Name="fdr" Type="Device" SrcPrj="DSRReferenceData" />
+                    <ExtCallRef>
+                      <ProjectElementReference Name="pr_stan_raw_general_codes_ld" Type="ExternalCall" SrcPrj="DSRReferenceData" />
+                    </ExtCallRef>
+                    <SqlProcedure>
+                      <ProjectElementReference Name="" Type="SqlProcedure" SrcPrj="DSRReferenceData" />
+                    </SqlProcedure>
+                    <Function>
+                      <Name />
+                      <Description />
+                      <Parameters />
+                    </Function>
+                    <ExtCallFunctionName Value="pr_stan_raw_general_codes_ld" />
+                    <OutAttrs />
+                    <AutoDirectMappingStart>
+                      <AutoDirectMapping>False</AutoDirectMapping>
+                    </AutoDirectMappingStart>
+                    <TakeChildrenExt>None</TakeChildrenExt>
+                    <DirectMapping>
+                      <Mapping>
+                        <Version>2</Version>
+                        <Expression />
+                        <Attribute>a_lpg_id</Attribute>
+                        <DisableAuto>False</DisableAuto>
+                        <InputAttributes>
+                          <InAttr>lpg_id</InAttr>
+                        </InputAttributes>
+                      </Mapping>
+                    </DirectMapping>
+                    <ShowExc>False</ShowExc>
+                    <TypeOfCall>DbProcedure</TypeOfCall>
+                  </Data>
+                </RuleExternalLibrary>
+                <RuleOutput xmlns="A420.Block.6">
+                  <Id>5</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>Output</Name>
+                  <SecondName>root</SecondName>
+                  <Description />
+                  <Rectangle>30;482;480;58</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <RuleOutputProperties xmlns="A420.RuleOutputProperties.1">
+                    <SumSign>false</SumSign>
+                  </RuleOutputProperties>
+                  <Cell ID="0" Name="Output" Rectangle="30;482;480;58" DrawShape="true" DrawShadow="true" DrawText="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeOutput</ShapeType>
+                    <Shape FrameColour="186;106;41;255" DarkGradientColour="186;106;41;255" LightGradientColour="246;242;243;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="10" ShadowSizeVertical="11" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <PortCollect>
+                      <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Top" xmlns="A420.Port.2" />
+                    </PortCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1" />
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>4</Ver>
+                    <Description />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <SegName>/root</SegName>
+                    <OutFormat>Output</OutFormat>
+                    <Additive>False</Additive>
+                    <InsertionPolicy>INSERT_AT_END</InsertionPolicy>
+                    <SelectedChildSegments />
+                    <AutoDirectMappingStart>
+                      <AutoDirectMapping>True</AutoDirectMapping>
+                    </AutoDirectMappingStart>
+                    <TakeChildrenExt>None</TakeChildrenExt>
+                    <DirectMapping />
+                  </Data>
+                </RuleOutput>
+              </BlockCollect>
+            </Diagram>
+            <RuleInputCollect>
+              <Ver>2</Ver>
+              <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+              <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+              <Seg>/root</Seg>
+              <FormatName>Input</FormatName>
+              <CustomName />
+              <DataObjectView />
+            </RuleInputCollect>
+            <RuleOutputCollect>
+              <Ver>2</Ver>
+              <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+              <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+              <Seg>/root</Seg>
+              <FormatName>Output</FormatName>
+              <CustomName />
+              <DataObjectView />
+              <InsertionPolicy>INSERT_AT_END</InsertionPolicy>
+            </RuleOutputCollect>
+            <Attributes />
+            <Attributes />
+          </ElementBody>
+        </ElementBodyWrapper>
+      </ProjectElement>
+    </Rule>
     <BusinessProcess xmlns="A420.ProjectElement.5">
       <ProjectElement>
         <ReferableElement>
@@ -1360,12 +1809,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ReferableElement>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-20T16:33:20.7138706-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.1254565-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="1027" CheckinId="75" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <NewRepository ElemId="2452" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.BP.8">
             <ForceCompilation>True</ForceCompilation>
@@ -1623,321 +2072,6 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ElementBodyWrapper>
       </ProjectElement>
     </BusinessProcess>
-    <ExternalCall xmlns="A420.ProjectElement.5">
-      <ProjectElement>
-        <ReferableElement>
-          <Element>
-            <Name>pk_le_hier.pr_gen_vie</Name>
-          </Element>
-        </ReferableElement>
-        <Revision>
-          <Number>1</Number>
-          <SaveDate>2017-08-07T15:30:58.4989977-04:00</SaveDate>
-          <Description />
-        </Revision>
-        <State>0</State>
-        <FolderPath />
-        <NewRepository ElemId="1035" CheckinId="96" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
-        <ElementBodyWrapper>
-          <ElementBodyHeader xmlns="A420.ExtCall.6">
-            <ForceCompilation>False</ForceCompilation>
-            <Uncompilable>False</Uncompilable>
-            <Deprecated>False</Deprecated>
-            <SecurityPolicyName />
-            <Functions />
-          </ElementBodyHeader>
-          <ElementBody xmlns="A420.ExtCall.6">
-            <Description />
-            <ExternalCallClass>DEVICE_CLASS_DB</ExternalCallClass>
-            <ExternalCallType>DEVICE_TYPE_ORACLE_9_2</ExternalCallType>
-            <ExternalCallCaseSensitiveNamesAllowed>False</ExternalCallCaseSensitiveNamesAllowed>
-            <Functions>
-              <ExtCallFunction ExtCallFuncName="pk_le_hier.pr_gen_vie" ExtCallHasAptitudeLevelAutocommit="true" ExtCallFuncProcedure="pk_le_hier.pr_gen_vie" SqlSchemaRef="stn" SqlSchemaProjectRef="Trigger" SqlSchemaTypeRef="SqlSchema" ObjectType="STORED_PROCEDURE" xmlns="A420.ExtCallFunction.7">
-                <ExtCallParameters>
-                  <ExtCallParam Name="p_step_run_sid" Type="Numeric" DBType="NUMBER" Direction="IN">
-                    <PrecisionData Length="0" Precision="0" Scale="0" />
-                  </ExtCallParam>
-                </ExtCallParameters>
-                <ExtCallAttributes />
-              </ExtCallFunction>
-            </Functions>
-            <DatabaseInfo Database="Oracle" Version="_12c" Interface="OCI" />
-          </ElementBody>
-        </ElementBodyWrapper>
-      </ProjectElement>
-    </ExternalCall>
-    <BusinessProcess xmlns="A420.ProjectElement.5">
-      <ProjectElement>
-        <ReferableElement>
-          <Element>
-            <Name>gl_chartfield-dsr</Name>
-          </Element>
-        </ReferableElement>
-        <Revision>
-          <Number>1</Number>
-          <SaveDate>2017-07-10T14:26:52.5549957-04:00</SaveDate>
-          <Description />
-        </Revision>
-        <State>0</State>
-        <FolderPath />
-        <NewRepository ElemId="953" CheckinId="53" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
-        <ElementBodyWrapper>
-          <ElementBodyHeader xmlns="A420.BP.8">
-            <ForceCompilation>True</ForceCompilation>
-            <Uncompilable>False</Uncompilable>
-            <Deprecated>False</Deprecated>
-            <SecurityPolicyName />
-            <CheckedForExecution>True</CheckedForExecution>
-            <EnabledInWebService>False</EnabledInWebService>
-          </ElementBodyHeader>
-          <ElementBody xmlns="A420.BP.8">
-            <Description />
-            <Diagram Zoom="1" xmlns="A420.Diagram.3">
-              <Grid xmlns="A420.Grid.2" />
-              <LinkCollect>
-                <Link Id="0" LinkRectagle1="22;52;162;136" LinkRectagle2="202;52;217;136" LinkPointStart="184;120" LinkPointEnd="202;120" FromPortID="0" FromPortBlockID="1" ToPortID="0" ToPortBlockID="2" ConnectionPositionTo="0.5" xmlns="A420.Link.9">
-                  <Points Coll="176;120;184;120;193;120;193;120;202;120;210;120" />
-                  <LinkLabelPoints />
-                  <LinkLabel />
-                </Link>
-                <Link Id="1" LinkRectagle1="202;52;217;136" LinkRectagle2="442;52;162;136" LinkPointStart="419;120" LinkPointEnd="442;120" FromPortID="1" FromPortBlockID="2" ToPortID="0" ToPortBlockID="3" ConnectionPositionTo="0.5" xmlns="A420.Link.9">
-                  <Points Coll="411;120;419;120;430;120;430;120;442;120;450;120" />
-                  <LinkLabelPoints />
-                  <LinkLabel />
-                </Link>
-              </LinkCollect>
-              <BlockCollect xmlns="A420.BlockCollection.1">
-                <AptitudeServiceSource xmlns="A420.Block.6">
-                  <Id>1</Id>
-                  <IdRef>-1</IdRef>
-                  <Visible>true</Visible>
-                  <Active>true</Active>
-                  <ReadOnly>false</ReadOnly>
-                  <Name>Source</Name>
-                  <SecondName />
-                  <Description />
-                  <Rectangle>30;60;146;120</Rectangle>
-                  <TextOrientation>Auto</TextOrientation>
-                  <TextLayout>MidCenter</TextLayout>
-                  <MaxPortId>1</MaxPortId>
-                  <FontName>Verdana</FontName>
-                  <FontSize>8</FontSize>
-                  <FontStyle>Regular</FontStyle>
-                  <FontUnit>Point</FontUnit>
-                  <Cell ID="0" Name="Source" Rectangle="30;60;146;120" DrawShadow="true" xmlns="A420.Cell.4">
-                    <ShapeType>ShapeRectangle</ShapeType>
-                    <Shape FrameColour="10;198;71;255" DarkGradientColour="182;238;201;255" LightGradientColour="231;249;237;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                    <CellCollect>
-                      <Cell ID="1" Name="Source" Size="0.836065573770492" Rectangle="30;60;122;120" DrawShape="true" DrawText="true">
-                        <ShapeType>ShapeSource</ShapeType>
-                        <Shape FrameColour="10;198;71;255" DarkGradientColour="10;198;71;255" LightGradientColour="231;249;237;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                      </Cell>
-                      <Cell ID="2" Size="0.163934426229508" Rectangle="152;60;24;120" Layout="Vertical">
-                        <ShapeType>ShapeRectangle</ShapeType>
-                        <Shape FrameColour="255;255;255;255" DarkGradientColour="255;255;255;255" LightGradientColour="255;255;255;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                        <CellCollect>
-                          <Cell ID="3" Name="process" Rectangle="152;60;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
-                            <ShapeType>ShapeRectangle</ShapeType>
-                            <Shape FrameColour="255;255;255;255" DarkGradientColour="182;238;201;255" LightGradientColour="182;238;201;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                            <PortCollect>
-                              <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Right" Type="Output" xmlns="A420.Port.2">
-                                <Links>
-                                  <LinkID>0</LinkID>
-                                </Links>
-                              </Port>
-                            </PortCollect>
-                          </Cell>
-                        </CellCollect>
-                      </Cell>
-                    </CellCollect>
-                  </Cell>
-                  <TransactionRegions xmlns="A420.TransactionRegion.1">
-                    <Id>1</Id>
-                  </TransactionRegions>
-                  <DependentObjects xmlns="A420.BlockDependObjects.2">
-                    <Active>0</Active>
-                    <BlockSet xmlns="A420.BlockSet.2">
-                      <Name>Generic</Name>
-                      <Key>Generic</Key>
-                      <Blocks />
-                    </BlockSet>
-                  </DependentObjects>
-                  <Data xmlns="A420.BlockData.1">
-                    <Ver>6</Ver>
-                    <Name>Source</Name>
-                    <Desc />
-                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
-                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
-                    <OutputName>process</OutputName>
-                    <OutputDesc />
-                    <PropertiesType>None</PropertiesType>
-                    <ErrorAttributeName />
-                    <BlockCellData IsActive="True" CellId="3" xmlns="A420.BlockCellData.1" />
-                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
-                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
-                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
-                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
-                    <DisableNoDataOnTransactionBatchBegin>False</DisableNoDataOnTransactionBatchBegin>
-                    <DisableNoDataOnTransactionBatchEnd>False</DisableNoDataOnTransactionBatchEnd>
-                  </Data>
-                </AptitudeServiceSource>
-                <AptitudeServiceRuleCall xmlns="A420.Block.6">
-                  <Id>2</Id>
-                  <IdRef>-1</IdRef>
-                  <Visible>true</Visible>
-                  <Active>true</Active>
-                  <ReadOnly>false</ReadOnly>
-                  <Name>gl_chartfield-dsr</Name>
-                  <SecondName />
-                  <Description />
-                  <Rectangle>210;60;201;120</Rectangle>
-                  <TextOrientation>Auto</TextOrientation>
-                  <TextLayout>MidCenter</TextLayout>
-                  <MaxPortId>2</MaxPortId>
-                  <FontName>Verdana</FontName>
-                  <FontSize>8</FontSize>
-                  <FontStyle>Regular</FontStyle>
-                  <FontUnit>Point</FontUnit>
-                  <Cell ID="0" Name="gl_chartfield-dsr" Rectangle="210;60;201;120" DrawShadow="true" xmlns="A420.Cell.4">
-                    <ShapeType>ShapeRectangle</ShapeType>
-                    <Shape FrameColour="76;134;241;255" DarkGradientColour="199;219;252;255" LightGradientColour="236;242;254;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="5" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                    <CellCollect>
-                      <Cell ID="1" Name="Input" Size="0.119047619047619" Rectangle="210;60;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
-                        <ShapeType>ShapeRectangle</ShapeType>
-                        <Shape FrameColour="255;255;255;255" DarkGradientColour="199;219;252;255" LightGradientColour="199;219;252;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                        <PortCollect>
-                          <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" xmlns="A420.Port.2">
-                            <Links>
-                              <LinkID>0</LinkID>
-                            </Links>
-                          </Port>
-                        </PortCollect>
-                      </Cell>
-                      <Cell ID="2" Name="gl_chartfield-dsr" Size="0.613095238095238" Rectangle="234;60;123;120" DrawShape="true" DrawText="true">
-                        <ShapeType>ShapeBPRule</ShapeType>
-                        <Shape FrameColour="76;134;241;255" DarkGradientColour="76;134;241;255" LightGradientColour="236;242;254;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="4" ShadowSizeVertical="4" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                      </Cell>
-                      <Cell ID="3" Name="outputs" Size="0.267857142857143" Rectangle="357;60;54;120" Layout="Vertical" DrawShape="true">
-                        <ShapeType>ShapeRectangle</ShapeType>
-                        <Shape FrameColour="236;242;254;255" DarkGradientColour="255;255;255;255" LightGradientColour="255;255;255;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                        <CellCollect>
-                          <Cell ID="4" Name="Output" Rectangle="357;60;54;120" DrawShape="true" DrawText="true">
-                            <ShapeType>ShapeRectangle</ShapeType>
-                            <Shape FrameColour="255;255;255;255" DarkGradientColour="199;219;252;255" LightGradientColour="199;219;252;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                            <PortCollect>
-                              <Port ID="1" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Right" Type="Output" xmlns="A420.Port.2">
-                                <Links>
-                                  <LinkID>1</LinkID>
-                                </Links>
-                              </Port>
-                            </PortCollect>
-                          </Cell>
-                        </CellCollect>
-                      </Cell>
-                    </CellCollect>
-                  </Cell>
-                  <TransactionRegions xmlns="A420.TransactionRegion.1">
-                    <Id>1</Id>
-                  </TransactionRegions>
-                  <DependentObjects xmlns="A420.BlockDependObjects.2">
-                    <Active>0</Active>
-                    <BlockSet xmlns="A420.BlockSet.2">
-                      <Name>Generic</Name>
-                      <Key>Generic</Key>
-                      <Blocks />
-                    </BlockSet>
-                  </DependentObjects>
-                  <Data xmlns="A420.BlockData.1">
-                    <Ver>2</Ver>
-                    <Name>gl_chartfield-dsr</Name>
-                    <Desc />
-                    <ProjectElementReference Name="gl_chartfield-dsr" Type="Rule" SrcPrj="DSRReferenceData" />
-                    <Inputs>
-                      <Input>
-                        <Name>Input</Name>
-                        <Descr />
-                        <CellID>0</CellID>
-                        <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
-                      </Input>
-                    </Inputs>
-                    <Outputs>
-                      <Output>
-                        <Name>Output</Name>
-                        <Descr />
-                        <CellID>4</CellID>
-                        <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
-                      </Output>
-                    </Outputs>
-                    <TakeKids>False</TakeKids>
-                  </Data>
-                </AptitudeServiceRuleCall>
-                <AptitudeServiceTarget xmlns="A420.Block.6">
-                  <Id>3</Id>
-                  <IdRef>-1</IdRef>
-                  <Visible>true</Visible>
-                  <Active>true</Active>
-                  <ReadOnly>false</ReadOnly>
-                  <Name>Target</Name>
-                  <SecondName />
-                  <Description />
-                  <Rectangle>450;60;146;120</Rectangle>
-                  <TextOrientation>Auto</TextOrientation>
-                  <TextLayout>MidCenter</TextLayout>
-                  <MaxPortId>1</MaxPortId>
-                  <FontName>Verdana</FontName>
-                  <FontSize>8</FontSize>
-                  <FontStyle>Regular</FontStyle>
-                  <FontUnit>Point</FontUnit>
-                  <Cell ID="0" Name="Target" Rectangle="450;60;146;120" DrawShadow="true" xmlns="A420.Cell.4">
-                    <ShapeType>ShapeRectangle</ShapeType>
-                    <Shape FrameColour="226;2;0;255" DarkGradientColour="247;179;178;255" LightGradientColour="253;229;229;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                    <CellCollect>
-                      <Cell ID="1" Name="process" Size="0.163934426229508" Rectangle="450;60;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
-                        <ShapeType>ShapeRectangle</ShapeType>
-                        <Shape FrameColour="255;255;255;255" DarkGradientColour="247;179;178;255" LightGradientColour="247;179;178;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                        <PortCollect>
-                          <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" xmlns="A420.Port.2">
-                            <Links>
-                              <LinkID>1</LinkID>
-                            </Links>
-                          </Port>
-                        </PortCollect>
-                      </Cell>
-                      <Cell ID="2" Name="Target" Size="0.836065573770492" Rectangle="474;60;122;120" DrawShape="true" DrawText="true">
-                        <ShapeType>ShapeTarget</ShapeType>
-                        <Shape FrameColour="226;2;0;255" DarkGradientColour="226;2;0;255" LightGradientColour="253;229;229;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
-                      </Cell>
-                    </CellCollect>
-                  </Cell>
-                  <TransactionRegions xmlns="A420.TransactionRegion.1">
-                    <Id>1</Id>
-                  </TransactionRegions>
-                  <DependentObjects xmlns="A420.BlockDependObjects.2">
-                    <Active>0</Active>
-                    <BlockSet xmlns="A420.BlockSet.2">
-                      <Name>Generic</Name>
-                      <Key>Generic</Key>
-                      <Blocks />
-                    </BlockSet>
-                  </DependentObjects>
-                  <Data xmlns="A420.BlockData.1">
-                    <Ver>3</Ver>
-                    <Name>Target</Name>
-                    <Desc />
-                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
-                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
-                    <InputName>process</InputName>
-                    <InputDesc />
-                    <PropertiesType>None</PropertiesType>
-                  </Data>
-                </AptitudeServiceTarget>
-              </BlockCollect>
-            </Diagram>
-            <TargetsWriteOrder />
-          </ElementBody>
-        </ElementBodyWrapper>
-      </ProjectElement>
-    </BusinessProcess>
     <DataObject xmlns="A420.ProjectElement.5">
       <ProjectElement>
         <ReferableElement>
@@ -1952,12 +2086,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ProjectIdentifier>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-10T14:17:19.9405936-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.2817165-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="947" CheckinId="53" ReferenceId="590" ReferenceCheckinId="14" ReferenceProjectId="2" />
+        <NewRepository ElemId="2702" CheckinId="17" ReferenceId="2654" ReferenceCheckinId="17" ReferenceProjectId="11" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.DataObject.6">
             <ForceCompilation>False</ForceCompilation>
@@ -2029,7 +2163,7 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
       <ProjectElement>
         <ReferableElement>
           <Element>
-            <Name>stn</Name>
+            <Name>bus</Name>
           </Element>
         </ReferableElement>
         <ProjectIdentifier>
@@ -2039,70 +2173,404 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ProjectIdentifier>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-27T07:50:34.4097129-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.2348385-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="1032" CheckinId="89" ReferenceId="601" ReferenceCheckinId="3" ReferenceProjectId="2" />
+        <NewRepository ElemId="2701" CheckinId="17" ReferenceId="2699" ReferenceCheckinId="17" ReferenceProjectId="11" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.Device.47">
             <ForceCompilation>False</ForceCompilation>
             <Uncompilable>False</Uncompilable>
             <Deprecated>False</Deprecated>
             <SecurityPolicyName />
-            <Class>DEVICE_CLASS_DB</Class>
-            <Type>DEVICE_TYPE_ORACLE_9_2</Type>
+            <Class>DEVICE_CLASS_BUS</Class>
+            <Type>DEVICE_TYPE_BUS</Type>
           </ElementBodyHeader>
           <ElementBody xmlns="A420.Device.47">
             <Description />
-            <BusinessName>STN</BusinessName>
-            <ConfigurationDefinition>STN</ConfigurationDefinition>
-            <DatabaseInfo Database="Oracle" Version="_12c" Interface="OCI" />
-            <DBServer ConnectionTimeout="0" />
-            <DatabaseInstance />
-            <DatabaseName />
-            <UserName />
-            <UserPassword>-----BEGIN PKCS7-----
-MIAGCSqGSIb3DQEHA6CAMIACAQAxggGGMIIBggIBADBqMGUxCzAJBgNVBAYTAlBM
-MRUwEwYDVQQIEwxEb2xub3NsYXNraWUxEDAOBgNVBAcTB1dyb2NsYXcxETAPBgNV
-BAoTCE1pY3JvZ2VuMRowGAYDVQQLExFNaWNyb2dlbiAoUG9sYW5kKQIBLTANBgkq
-hkiG9w0BAQEFAASCAQAZzeyzvaJcqNBr+EwSqVm6OE9ChoZPnTOt3pwiIWz73n2v
-unrP6GwT5DSF2sOzskTb8P1iPNJVVOzDwx13JbVOBN9bQPl5w0WYaVKz+8qVsDiF
-dqhjiMYwgNAlaKMz0QbHNucjK0sXH0wCPF8KR4AUue9PNeYP7AbovDWjbM6eXZbr
-DU6lzpEN6O8wpJriMSHfDgsIhN2tMs7VAsccYCSgmGSpOl27pFt8bgny9NI0tF9y
-Kqofvnh6sE9xzS3L+Zm981R1LFmH64hGsfxem2+Mg+aL84uFCzbqBGZT0c7SRBKf
-llnEEKW5RMloIG4QdKU7X2BiXt+evT+iQggFuEgXMIAGCSqGSIb3DQEHATAUBggq
-hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
------END PKCS7-----
-</UserPassword>
-            <UseWindowsAutentification>False</UseWindowsAutentification>
-            <MinConn>1</MinConn>
-            <MaxConn>8</MaxConn>
-            <IncrConn>1</IncrConn>
-            <DatabaseCharset>ASCII</DatabaseCharset>
-            <NationalCharset>ASCII</NationalCharset>
-            <DatabaseCharacterSet2>ASCII</DatabaseCharacterSet2>
-            <ODBC_SP_Call>{call</ODBC_SP_Call>
-            <ODBC_SP_InputOutputParametersPlaceholder />
-            <ODBC_SP_InputParametersPlaceholder />
-            <ODBC_SP_OutputParametersPlaceholder />
-            <ODBC_SP_Parameters>)}</ODBC_SP_Parameters>
-            <ODBC_SP_ParameterSeparator>,</ODBC_SP_ParameterSeparator>
-            <ODBC_SP_ProcedureName>(</ODBC_SP_ProcedureName>
-            <ODBC_SP_UseNativeStoredProcedureCalls>False</ODBC_SP_UseNativeStoredProcedureCalls>
-            <IdentifierSeparatorLeft>`</IdentifierSeparatorLeft>
-            <IdentifierSeparatorRight>`</IdentifierSeparatorRight>
-            <TeradataCLITransactionMode>ANSI</TeradataCLITransactionMode>
-            <TeradataTPTBufferMaxSize>0</TeradataTPTBufferMaxSize>
-            <TeradataTPTTargetMode>Stream</TeradataTPTTargetMode>
-            <TeradataTPTTargetBuffers>2</TeradataTPTTargetBuffers>
-            <TeradataTPTTargetNumberOfPackedStatements>-1</TeradataTPTTargetNumberOfPackedStatements>
-            <UseOracleWallet>False</UseOracleWallet>
+            <BusinessName>bus</BusinessName>
+            <ConfigurationDefinition />
+            <BusName>APT_BUS</BusName>
           </ElementBody>
         </ElementBodyWrapper>
       </ProjectElement>
     </Device>
+    <BusinessProcess xmlns="A420.ProjectElement.5">
+      <ProjectElement>
+        <ReferableElement>
+          <Element>
+            <Name>gl_combo_edit-dsr</Name>
+          </Element>
+        </ReferableElement>
+        <Revision>
+          <Number>1</Number>
+          <SaveDate>2017-08-10T13:25:28.7947483-04:00</SaveDate>
+          <Description />
+        </Revision>
+        <State>0</State>
+        <FolderPath />
+        <NewRepository ElemId="3971" CheckinId="23" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <ElementBodyWrapper>
+          <ElementBodyHeader xmlns="A420.BP.8">
+            <ForceCompilation>True</ForceCompilation>
+            <Uncompilable>False</Uncompilable>
+            <Deprecated>False</Deprecated>
+            <SecurityPolicyName />
+            <CheckedForExecution>True</CheckedForExecution>
+            <EnabledInWebService>False</EnabledInWebService>
+          </ElementBodyHeader>
+          <ElementBody xmlns="A420.BP.8">
+            <Description />
+            <Diagram Zoom="1" xmlns="A420.Diagram.3">
+              <Grid xmlns="A420.Grid.2" />
+              <LinkCollect>
+                <Link Id="3" LinkRectagle1="22;52;162;136" LinkRectagle2="202;52;217;136" LinkPointStart="184;90" LinkPointEnd="202;120" FromPortID="0" FromPortBlockID="1" ToPortID="0" ToPortBlockID="4" ConnectionPositionTo="0.5" xmlns="A420.Link.9">
+                  <Points Coll="176;90;184;90;193;90;193;120;202;120;210;120" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+                <Link Id="4" LinkRectagle1="22;52;162;136" LinkRectagle2="202;202;217;136" LinkPointStart="184;150" LinkPointEnd="202;270" FromPortID="0" FromPortBlockID="1" ToPortID="0" ToPortBlockID="5" ConnectionPositionTo="0.5" xmlns="A420.Link.9">
+                  <Points Coll="176;150;184;150;193;150;193;270;202;270;210;270" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+                <Link Id="5" LinkRectagle1="202;52;217;136" LinkRectagle2="682;52;162;136" LinkPointStart="419;120" LinkPointEnd="682;90" FromPortID="1" FromPortBlockID="4" ToPortID="0" ToPortBlockID="3" ConnectionPositionTo="0.5" xmlns="A420.Link.9">
+                  <Points Coll="411;120;419;120;550;120;550;90;682;90;690;90" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+                <Link Id="6" LinkRectagle1="202;202;217;136" LinkRectagle2="682;52;162;136" LinkPointStart="419;270" LinkPointEnd="682;150" FromPortID="1" FromPortBlockID="5" ToPortID="0" ToPortBlockID="3" ConnectionPositionTo="0.75" xmlns="A420.Link.9">
+                  <Points Coll="411;270;419;270;550;270;550;150;682;150;690;150" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+              </LinkCollect>
+              <BlockCollect xmlns="A420.BlockCollection.1">
+                <AptitudeServiceSource xmlns="A420.Block.6">
+                  <Id>1</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>Source</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>30;60;146;120</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="Source" Rectangle="30;60;146;120" DrawShadow="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeRectangle</ShapeType>
+                    <Shape FrameColour="10;198;71;255" DarkGradientColour="182;238;201;255" LightGradientColour="231;249;237;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Name="Source" Size="0.836065573770492" Rectangle="30;60;122;120" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeSource</ShapeType>
+                        <Shape FrameColour="10;198;71;255" DarkGradientColour="10;198;71;255" LightGradientColour="231;249;237;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                      <Cell ID="2" Size="0.163934426229508" Rectangle="152;60;24;120" Layout="Vertical">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="255;255;255;255" DarkGradientColour="255;255;255;255" LightGradientColour="255;255;255;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <CellCollect>
+                          <Cell ID="3" Name="process" Rectangle="152;60;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
+                            <ShapeType>ShapeRectangle</ShapeType>
+                            <Shape FrameColour="255;255;255;255" DarkGradientColour="182;238;201;255" LightGradientColour="182;238;201;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                            <PortCollect>
+                              <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Right" Type="Output" xmlns="A420.Port.2">
+                                <Links>
+                                  <LinkID>3</LinkID>
+                                  <LinkID>4</LinkID>
+                                </Links>
+                              </Port>
+                            </PortCollect>
+                          </Cell>
+                        </CellCollect>
+                      </Cell>
+                    </CellCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1">
+                    <Id>1</Id>
+                  </TransactionRegions>
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>6</Ver>
+                    <Name>Source</Name>
+                    <Desc />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <OutputName>process</OutputName>
+                    <OutputDesc />
+                    <PropertiesType>None</PropertiesType>
+                    <ErrorAttributeName />
+                    <BlockCellData IsActive="True" CellId="3" xmlns="A420.BlockCellData.1" />
+                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
+                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
+                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
+                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
+                    <DisableNoDataOnTransactionBatchBegin>False</DisableNoDataOnTransactionBatchBegin>
+                    <DisableNoDataOnTransactionBatchEnd>False</DisableNoDataOnTransactionBatchEnd>
+                  </Data>
+                </AptitudeServiceSource>
+                <AptitudeServiceTarget xmlns="A420.Block.6">
+                  <Id>3</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>Target</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>690;60;146;120</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="Target" Rectangle="690;60;146;120" DrawShadow="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeRectangle</ShapeType>
+                    <Shape FrameColour="226;2;0;255" DarkGradientColour="247;179;178;255" LightGradientColour="253;229;229;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Name="process" Size="0.163934426229508" Rectangle="690;60;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="255;255;255;255" DarkGradientColour="247;179;178;255" LightGradientColour="247;179;178;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <PortCollect>
+                          <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" xmlns="A420.Port.2">
+                            <Links>
+                              <LinkID>5</LinkID>
+                              <LinkID>6</LinkID>
+                            </Links>
+                          </Port>
+                        </PortCollect>
+                      </Cell>
+                      <Cell ID="2" Name="Target" Size="0.836065573770492" Rectangle="714;60;122;120" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeTarget</ShapeType>
+                        <Shape FrameColour="226;2;0;255" DarkGradientColour="226;2;0;255" LightGradientColour="253;229;229;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                    </CellCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1">
+                    <Id>1</Id>
+                  </TransactionRegions>
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>3</Ver>
+                    <Name>Target</Name>
+                    <Desc />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <InputName>process</InputName>
+                    <InputDesc />
+                    <PropertiesType>None</PropertiesType>
+                  </Data>
+                </AptitudeServiceTarget>
+                <AptitudeServiceRuleCall xmlns="A420.Block.6">
+                  <Id>4</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>gl_combo_edit_general_lookup-dsr</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>210;60;201;120</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>2</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="gl_combo_edit_general_lookup-dsr" Rectangle="210;60;201;120" DrawShadow="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeRectangle</ShapeType>
+                    <Shape FrameColour="76;134;241;255" DarkGradientColour="199;219;252;255" LightGradientColour="236;242;254;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="5" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Name="Input" Size="0.119047619047619" Rectangle="210;60;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="255;255;255;255" DarkGradientColour="199;219;252;255" LightGradientColour="199;219;252;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <PortCollect>
+                          <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" xmlns="A420.Port.2">
+                            <Links>
+                              <LinkID>3</LinkID>
+                            </Links>
+                          </Port>
+                        </PortCollect>
+                      </Cell>
+                      <Cell ID="2" Name="gl_combo_edit_general_lookup-dsr" Size="0.613095238095238" Rectangle="234;60;123;120" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeBPRule</ShapeType>
+                        <Shape FrameColour="76;134;241;255" DarkGradientColour="76;134;241;255" LightGradientColour="236;242;254;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="4" ShadowSizeVertical="4" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                      <Cell ID="3" Name="outputs" Size="0.267857142857143" Rectangle="357;60;54;120" Layout="Vertical" DrawShape="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="236;242;254;255" DarkGradientColour="255;255;255;255" LightGradientColour="255;255;255;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <CellCollect>
+                          <Cell ID="4" Name="Output" Rectangle="357;60;54;120" DrawShape="true" DrawText="true">
+                            <ShapeType>ShapeRectangle</ShapeType>
+                            <Shape FrameColour="255;255;255;255" DarkGradientColour="199;219;252;255" LightGradientColour="199;219;252;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                            <PortCollect>
+                              <Port ID="1" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Right" Type="Output" xmlns="A420.Port.2">
+                                <Links>
+                                  <LinkID>5</LinkID>
+                                </Links>
+                              </Port>
+                            </PortCollect>
+                          </Cell>
+                        </CellCollect>
+                      </Cell>
+                    </CellCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1">
+                    <Id>1</Id>
+                  </TransactionRegions>
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>2</Ver>
+                    <Name>gl_combo_edit_general_lookup-dsr</Name>
+                    <Desc />
+                    <ProjectElementReference Name="gl_combo_edit_general_lookup-dsr" Type="Rule" SrcPrj="DSRReferenceData" />
+                    <Inputs>
+                      <Input>
+                        <Name>Input</Name>
+                        <Descr />
+                        <CellID>0</CellID>
+                        <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                      </Input>
+                    </Inputs>
+                    <Outputs>
+                      <Output>
+                        <Name>Output</Name>
+                        <Descr />
+                        <CellID>4</CellID>
+                        <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                      </Output>
+                    </Outputs>
+                    <TakeKids>False</TakeKids>
+                  </Data>
+                </AptitudeServiceRuleCall>
+                <AptitudeServiceRuleCall xmlns="A420.Block.6">
+                  <Id>5</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>gl_combo_edit_general_codes-dsr</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>210;210;201;120</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>2</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="gl_combo_edit_general_codes-dsr" Rectangle="210;210;201;120" DrawShadow="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeRectangle</ShapeType>
+                    <Shape FrameColour="76;134;241;255" DarkGradientColour="199;219;252;255" LightGradientColour="236;242;254;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="5" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Name="Input" Size="0.119047619047619" Rectangle="210;210;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="255;255;255;255" DarkGradientColour="199;219;252;255" LightGradientColour="199;219;252;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <PortCollect>
+                          <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" xmlns="A420.Port.2">
+                            <Links>
+                              <LinkID>4</LinkID>
+                            </Links>
+                          </Port>
+                        </PortCollect>
+                      </Cell>
+                      <Cell ID="2" Name="gl_combo_edit_general_codes-dsr" Size="0.613095238095238" Rectangle="234;210;123;120" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeBPRule</ShapeType>
+                        <Shape FrameColour="76;134;241;255" DarkGradientColour="76;134;241;255" LightGradientColour="236;242;254;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="4" ShadowSizeVertical="4" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                      <Cell ID="3" Name="outputs" Size="0.267857142857143" Rectangle="357;210;54;120" Layout="Vertical" DrawShape="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="236;242;254;255" DarkGradientColour="255;255;255;255" LightGradientColour="255;255;255;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <CellCollect>
+                          <Cell ID="4" Name="Output" Rectangle="357;210;54;120" DrawShape="true" DrawText="true">
+                            <ShapeType>ShapeRectangle</ShapeType>
+                            <Shape FrameColour="255;255;255;255" DarkGradientColour="199;219;252;255" LightGradientColour="199;219;252;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                            <PortCollect>
+                              <Port ID="1" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Right" Type="Output" xmlns="A420.Port.2">
+                                <Links>
+                                  <LinkID>6</LinkID>
+                                </Links>
+                              </Port>
+                            </PortCollect>
+                          </Cell>
+                        </CellCollect>
+                      </Cell>
+                    </CellCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1">
+                    <Id>1</Id>
+                  </TransactionRegions>
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>2</Ver>
+                    <Name>gl_combo_edit_general_codes-dsr</Name>
+                    <Desc />
+                    <ProjectElementReference Name="gl_combo_edit_general_codes-dsr" Type="Rule" SrcPrj="DSRReferenceData" />
+                    <Inputs>
+                      <Input>
+                        <Name>Input</Name>
+                        <Descr />
+                        <CellID>0</CellID>
+                        <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                      </Input>
+                    </Inputs>
+                    <Outputs>
+                      <Output>
+                        <Name>Output</Name>
+                        <Descr />
+                        <CellID>4</CellID>
+                        <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                      </Output>
+                    </Outputs>
+                    <TakeKids>False</TakeKids>
+                  </Data>
+                </AptitudeServiceRuleCall>
+              </BlockCollect>
+            </Diagram>
+            <TargetsWriteOrder />
+          </ElementBody>
+        </ElementBodyWrapper>
+      </ProjectElement>
+    </BusinessProcess>
     <Rule xmlns="A420.ProjectElement.5">
       <ProjectElement>
         <ReferableElement>
@@ -2112,12 +2580,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ReferableElement>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-10T14:26:44.4353696-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.1567085-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="946" CheckinId="53" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <NewRepository ElemId="2454" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.Rule.3">
             <ForceCompilation>False</ForceCompilation>
@@ -2547,12 +3015,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ProjectIdentifier>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-10T14:16:43.6024934-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.6411145-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="951" CheckinId="53" ReferenceId="597" ReferenceCheckinId="3" ReferenceProjectId="2" />
+        <NewRepository ElemId="2705" CheckinId="17" ReferenceId="2697" ReferenceCheckinId="17" ReferenceProjectId="11" />
         <ElementBodyWrapper>
           <ElementBodyHeader xmlns="A420.SqlSchema.1">
             <ForceCompilation>True</ForceCompilation>
@@ -2571,11 +3039,11 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ElementBodyWrapper>
       </ProjectElement>
     </SqlSchema>
-    <SqlSchema xmlns="A420.ProjectElement.5">
+    <Device xmlns="A420.ProjectElement.5">
       <ProjectElement>
         <ReferableElement>
           <Element>
-            <Name>fdr</Name>
+            <Name>stn</Name>
           </Element>
         </ReferableElement>
         <ProjectIdentifier>
@@ -2585,30 +3053,772 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
         </ProjectIdentifier>
         <Revision>
           <Number>1</Number>
-          <SaveDate>2017-07-10T14:16:38.4834516-04:00</SaveDate>
+          <SaveDate>2017-08-09T17:32:57.5473585-04:00</SaveDate>
           <Description />
         </Revision>
         <State>0</State>
         <FolderPath />
-        <NewRepository ElemId="952" CheckinId="53" ReferenceId="610" ReferenceCheckinId="3" ReferenceProjectId="2" />
+        <NewRepository ElemId="2703" CheckinId="17" ReferenceId="2669" ReferenceCheckinId="17" ReferenceProjectId="11" />
         <ElementBodyWrapper>
-          <ElementBodyHeader xmlns="A420.SqlSchema.1">
+          <ElementBodyHeader xmlns="A420.Device.47">
+            <ForceCompilation>False</ForceCompilation>
+            <Uncompilable>False</Uncompilable>
+            <Deprecated>False</Deprecated>
+            <SecurityPolicyName />
+            <Class>DEVICE_CLASS_DB</Class>
+            <Type>DEVICE_TYPE_ORACLE_9_2</Type>
+          </ElementBodyHeader>
+          <ElementBody xmlns="A420.Device.47">
+            <Description />
+            <BusinessName>STN</BusinessName>
+            <ConfigurationDefinition>STN</ConfigurationDefinition>
+            <DatabaseInfo Database="Oracle" Version="_12c" Interface="OCI" />
+            <DBServer ConnectionTimeout="0" />
+            <DatabaseInstance />
+            <DatabaseName />
+            <UserName />
+            <UserPassword>-----BEGIN PKCS7-----
+MIAGCSqGSIb3DQEHA6CAMIACAQAxggGGMIIBggIBADBqMGUxCzAJBgNVBAYTAlBM
+MRUwEwYDVQQIEwxEb2xub3NsYXNraWUxEDAOBgNVBAcTB1dyb2NsYXcxETAPBgNV
+BAoTCE1pY3JvZ2VuMRowGAYDVQQLExFNaWNyb2dlbiAoUG9sYW5kKQIBLTANBgkq
+hkiG9w0BAQEFAASCAQAZzeyzvaJcqNBr+EwSqVm6OE9ChoZPnTOt3pwiIWz73n2v
+unrP6GwT5DSF2sOzskTb8P1iPNJVVOzDwx13JbVOBN9bQPl5w0WYaVKz+8qVsDiF
+dqhjiMYwgNAlaKMz0QbHNucjK0sXH0wCPF8KR4AUue9PNeYP7AbovDWjbM6eXZbr
+DU6lzpEN6O8wpJriMSHfDgsIhN2tMs7VAsccYCSgmGSpOl27pFt8bgny9NI0tF9y
+Kqofvnh6sE9xzS3L+Zm981R1LFmH64hGsfxem2+Mg+aL84uFCzbqBGZT0c7SRBKf
+llnEEKW5RMloIG4QdKU7X2BiXt+evT+iQggFuEgXMIAGCSqGSIb3DQEHATAUBggq
+hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
+-----END PKCS7-----
+</UserPassword>
+            <UseWindowsAutentification>False</UseWindowsAutentification>
+            <MinConn>1</MinConn>
+            <MaxConn>8</MaxConn>
+            <IncrConn>1</IncrConn>
+            <DatabaseCharset>ASCII</DatabaseCharset>
+            <NationalCharset>ASCII</NationalCharset>
+            <DatabaseCharacterSet2>ASCII</DatabaseCharacterSet2>
+            <ODBC_SP_Call>{call</ODBC_SP_Call>
+            <ODBC_SP_InputOutputParametersPlaceholder />
+            <ODBC_SP_InputParametersPlaceholder />
+            <ODBC_SP_OutputParametersPlaceholder />
+            <ODBC_SP_Parameters>)}</ODBC_SP_Parameters>
+            <ODBC_SP_ParameterSeparator>,</ODBC_SP_ParameterSeparator>
+            <ODBC_SP_ProcedureName>(</ODBC_SP_ProcedureName>
+            <ODBC_SP_UseNativeStoredProcedureCalls>False</ODBC_SP_UseNativeStoredProcedureCalls>
+            <IdentifierSeparatorLeft>`</IdentifierSeparatorLeft>
+            <IdentifierSeparatorRight>`</IdentifierSeparatorRight>
+            <TeradataCLITransactionMode>ANSI</TeradataCLITransactionMode>
+            <TeradataTPTBufferMaxSize>0</TeradataTPTBufferMaxSize>
+            <TeradataTPTTargetMode>Stream</TeradataTPTTargetMode>
+            <TeradataTPTTargetBuffers>2</TeradataTPTTargetBuffers>
+            <TeradataTPTTargetNumberOfPackedStatements>-1</TeradataTPTTargetNumberOfPackedStatements>
+            <UseOracleWallet>False</UseOracleWallet>
+          </ElementBody>
+        </ElementBodyWrapper>
+      </ProjectElement>
+    </Device>
+    <BusinessProcess xmlns="A420.ProjectElement.5">
+      <ProjectElement>
+        <ReferableElement>
+          <Element>
+            <Name>gl_chartfield-dsr</Name>
+          </Element>
+        </ReferableElement>
+        <Revision>
+          <Number>1</Number>
+          <SaveDate>2017-08-09T17:32:57.1879605-04:00</SaveDate>
+          <Description />
+        </Revision>
+        <State>0</State>
+        <FolderPath />
+        <NewRepository ElemId="2455" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <ElementBodyWrapper>
+          <ElementBodyHeader xmlns="A420.BP.8">
             <ForceCompilation>True</ForceCompilation>
             <Uncompilable>False</Uncompilable>
             <Deprecated>False</Deprecated>
             <SecurityPolicyName />
-            <Settings Deployable="true" />
-            <Qualifiers>
-              <SchemaDetails Databasetype="Oracle12c" Database="fdr" />
-            </Qualifiers>
+            <CheckedForExecution>True</CheckedForExecution>
+            <EnabledInWebService>False</EnabledInWebService>
           </ElementBodyHeader>
-          <ElementBody xmlns="A420.SqlSchema.1">
+          <ElementBody xmlns="A420.BP.8">
             <Description />
-            <SqlSchema />
+            <Diagram Zoom="1" xmlns="A420.Diagram.3">
+              <Grid xmlns="A420.Grid.2" />
+              <LinkCollect>
+                <Link Id="0" LinkRectagle1="22;52;162;136" LinkRectagle2="202;52;217;136" LinkPointStart="184;120" LinkPointEnd="202;120" FromPortID="0" FromPortBlockID="1" ToPortID="0" ToPortBlockID="2" ConnectionPositionTo="0.5" xmlns="A420.Link.9">
+                  <Points Coll="176;120;184;120;193;120;193;120;202;120;210;120" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+                <Link Id="1" LinkRectagle1="202;52;217;136" LinkRectagle2="442;52;162;136" LinkPointStart="419;120" LinkPointEnd="442;120" FromPortID="1" FromPortBlockID="2" ToPortID="0" ToPortBlockID="3" ConnectionPositionTo="0.5" xmlns="A420.Link.9">
+                  <Points Coll="411;120;419;120;430;120;430;120;442;120;450;120" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+              </LinkCollect>
+              <BlockCollect xmlns="A420.BlockCollection.1">
+                <AptitudeServiceSource xmlns="A420.Block.6">
+                  <Id>1</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>Source</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>30;60;146;120</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="Source" Rectangle="30;60;146;120" DrawShadow="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeRectangle</ShapeType>
+                    <Shape FrameColour="10;198;71;255" DarkGradientColour="182;238;201;255" LightGradientColour="231;249;237;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Name="Source" Size="0.836065573770492" Rectangle="30;60;122;120" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeSource</ShapeType>
+                        <Shape FrameColour="10;198;71;255" DarkGradientColour="10;198;71;255" LightGradientColour="231;249;237;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                      <Cell ID="2" Size="0.163934426229508" Rectangle="152;60;24;120" Layout="Vertical">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="255;255;255;255" DarkGradientColour="255;255;255;255" LightGradientColour="255;255;255;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <CellCollect>
+                          <Cell ID="3" Name="process" Rectangle="152;60;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
+                            <ShapeType>ShapeRectangle</ShapeType>
+                            <Shape FrameColour="255;255;255;255" DarkGradientColour="182;238;201;255" LightGradientColour="182;238;201;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                            <PortCollect>
+                              <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Right" Type="Output" xmlns="A420.Port.2">
+                                <Links>
+                                  <LinkID>0</LinkID>
+                                </Links>
+                              </Port>
+                            </PortCollect>
+                          </Cell>
+                        </CellCollect>
+                      </Cell>
+                    </CellCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1">
+                    <Id>1</Id>
+                  </TransactionRegions>
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>6</Ver>
+                    <Name>Source</Name>
+                    <Desc />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <OutputName>process</OutputName>
+                    <OutputDesc />
+                    <PropertiesType>None</PropertiesType>
+                    <ErrorAttributeName />
+                    <BlockCellData IsActive="True" CellId="3" xmlns="A420.BlockCellData.1" />
+                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
+                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
+                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
+                    <BlockCellData IsActive="False" CellId="-1" xmlns="A420.BlockCellData.1" />
+                    <DisableNoDataOnTransactionBatchBegin>False</DisableNoDataOnTransactionBatchBegin>
+                    <DisableNoDataOnTransactionBatchEnd>False</DisableNoDataOnTransactionBatchEnd>
+                  </Data>
+                </AptitudeServiceSource>
+                <AptitudeServiceRuleCall xmlns="A420.Block.6">
+                  <Id>2</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>gl_chartfield-dsr</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>210;60;201;120</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>2</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="gl_chartfield-dsr" Rectangle="210;60;201;120" DrawShadow="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeRectangle</ShapeType>
+                    <Shape FrameColour="76;134;241;255" DarkGradientColour="199;219;252;255" LightGradientColour="236;242;254;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="5" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Name="Input" Size="0.119047619047619" Rectangle="210;60;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="255;255;255;255" DarkGradientColour="199;219;252;255" LightGradientColour="199;219;252;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <PortCollect>
+                          <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" xmlns="A420.Port.2">
+                            <Links>
+                              <LinkID>0</LinkID>
+                            </Links>
+                          </Port>
+                        </PortCollect>
+                      </Cell>
+                      <Cell ID="2" Name="gl_chartfield-dsr" Size="0.613095238095238" Rectangle="234;60;123;120" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeBPRule</ShapeType>
+                        <Shape FrameColour="76;134;241;255" DarkGradientColour="76;134;241;255" LightGradientColour="236;242;254;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="4" ShadowSizeVertical="4" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                      <Cell ID="3" Name="outputs" Size="0.267857142857143" Rectangle="357;60;54;120" Layout="Vertical" DrawShape="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="236;242;254;255" DarkGradientColour="255;255;255;255" LightGradientColour="255;255;255;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <CellCollect>
+                          <Cell ID="4" Name="Output" Rectangle="357;60;54;120" DrawShape="true" DrawText="true">
+                            <ShapeType>ShapeRectangle</ShapeType>
+                            <Shape FrameColour="255;255;255;255" DarkGradientColour="199;219;252;255" LightGradientColour="199;219;252;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                            <PortCollect>
+                              <Port ID="1" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Right" Type="Output" xmlns="A420.Port.2">
+                                <Links>
+                                  <LinkID>1</LinkID>
+                                </Links>
+                              </Port>
+                            </PortCollect>
+                          </Cell>
+                        </CellCollect>
+                      </Cell>
+                    </CellCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1">
+                    <Id>1</Id>
+                  </TransactionRegions>
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>2</Ver>
+                    <Name>gl_chartfield-dsr</Name>
+                    <Desc />
+                    <ProjectElementReference Name="gl_chartfield-dsr" Type="Rule" SrcPrj="DSRReferenceData" />
+                    <Inputs>
+                      <Input>
+                        <Name>Input</Name>
+                        <Descr />
+                        <CellID>0</CellID>
+                        <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                      </Input>
+                    </Inputs>
+                    <Outputs>
+                      <Output>
+                        <Name>Output</Name>
+                        <Descr />
+                        <CellID>4</CellID>
+                        <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                      </Output>
+                    </Outputs>
+                    <TakeKids>False</TakeKids>
+                  </Data>
+                </AptitudeServiceRuleCall>
+                <AptitudeServiceTarget xmlns="A420.Block.6">
+                  <Id>3</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>Target</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>450;60;146;120</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="Target" Rectangle="450;60;146;120" DrawShadow="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeRectangle</ShapeType>
+                    <Shape FrameColour="226;2;0;255" DarkGradientColour="247;179;178;255" LightGradientColour="253;229;229;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Name="process" Size="0.163934426229508" Rectangle="450;60;24;120" Layout="Vertical" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="255;255;255;255" DarkGradientColour="247;179;178;255" LightGradientColour="247;179;178;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <PortCollect>
+                          <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" xmlns="A420.Port.2">
+                            <Links>
+                              <LinkID>1</LinkID>
+                            </Links>
+                          </Port>
+                        </PortCollect>
+                      </Cell>
+                      <Cell ID="2" Name="Target" Size="0.836065573770492" Rectangle="474;60;122;120" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeTarget</ShapeType>
+                        <Shape FrameColour="226;2;0;255" DarkGradientColour="226;2;0;255" LightGradientColour="253;229;229;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="2" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                    </CellCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1">
+                    <Id>1</Id>
+                  </TransactionRegions>
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>3</Ver>
+                    <Name>Target</Name>
+                    <Desc />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <InputName>process</InputName>
+                    <InputDesc />
+                    <PropertiesType>None</PropertiesType>
+                  </Data>
+                </AptitudeServiceTarget>
+              </BlockCollect>
+            </Diagram>
+            <TargetsWriteOrder />
           </ElementBody>
         </ElementBodyWrapper>
       </ProjectElement>
-    </SqlSchema>
+    </BusinessProcess>
+    <Rule xmlns="A420.ProjectElement.5">
+      <ProjectElement>
+        <ReferableElement>
+          <Element>
+            <Name>gl_combo_edit_general_lookup-dsr</Name>
+          </Element>
+        </ReferableElement>
+        <Revision>
+          <Number>1</Number>
+          <SaveDate>2017-08-10T13:23:40.7572757-04:00</SaveDate>
+          <Description />
+        </Revision>
+        <State>0</State>
+        <FolderPath />
+        <NewRepository ElemId="3972" CheckinId="23" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+        <ElementBodyWrapper>
+          <ElementBodyHeader xmlns="A420.Rule.3">
+            <ForceCompilation>False</ForceCompilation>
+            <Uncompilable>False</Uncompilable>
+            <Deprecated>False</Deprecated>
+            <SecurityPolicyName />
+            <CheckedForExecution>False</CheckedForExecution>
+            <EnabledInWebService>False</EnabledInWebService>
+          </ElementBodyHeader>
+          <ElementBody xmlns="A420.Rule.3">
+            <Description />
+            <Diagram Zoom="1" xmlns="A420.Diagram.3">
+              <Grid xmlns="A420.Grid.2" />
+              <LinkCollect>
+                <Link Id="0" LinkRectagle1="22;52;496;74" LinkRectagle2="22;171;124;77" LinkPointStart="270;126" LinkPointEnd="84;171" FromPortID="0" FromPortBlockID="1" ToPortID="0" ToPortBlockID="3" ConnectionPositionTo="0.5" xmlns="A420.Link.9">
+                  <Points Coll="270;118;270;126;270;148;84;148;84;171;84;179" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+                <Link Id="2" LinkRectagle1="22;171;124;77" LinkRectagle2="22;262;496;205" LinkPointStart="84;248" LinkPointEnd="177;262" FromPortID="1" FromPortBlockID="3" ToPortID="0" ToPortBlockID="4" ConnectionPositionTo="0.25" xmlns="A420.Link.9">
+                  <Points Coll="84;240;84;248;84;255;177;255;177;262;177;270" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+                <Link Id="3" LinkRectagle1="303;152;215;96" LinkRectagle2="22;262;496;205" LinkPointStart="410;248" LinkPointEnd="363;262" FromPortID="1" FromPortBlockID="6" ToPortID="0" ToPortBlockID="4" ConnectionPositionTo="0.75" xmlns="A420.Link.9">
+                  <Points Coll="410;240;410;248;410;255;363;255;363;262;363;270" />
+                  <LinkLabelPoints />
+                  <LinkLabel />
+                </Link>
+              </LinkCollect>
+              <BlockCollect xmlns="A420.BlockCollection.1">
+                <RuleInput xmlns="A420.Block.6">
+                  <Id>1</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>Input</Name>
+                  <SecondName>root</SecondName>
+                  <Description />
+                  <Rectangle>30;60;480;58</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="Input" Rectangle="30;60;480;58" DrawShape="true" DrawShadow="true" DrawText="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeInput</ShapeType>
+                    <Shape FrameColour="90;159;60;255" DarkGradientColour="90;159;60;255" LightGradientColour="241;243;242;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="10" ShadowSizeVertical="11" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <PortCollect>
+                      <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Bottom" Type="Output" xmlns="A420.Port.2">
+                        <Links>
+                          <LinkID>0</LinkID>
+                        </Links>
+                      </Port>
+                    </PortCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1" />
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>4</Ver>
+                    <Description />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <SegName>/root</SegName>
+                    <ReactionOnZero>
+                      <Ver>1</Ver>
+                      <ReactType>0</ReactType>
+                      <DefValueCollect>
+                        <Name>lpg_id</Name>
+                        <Value />
+                        <Name>return_code</Name>
+                        <Value />
+                        <Name>no_processed_records</Name>
+                        <Value />
+                        <Name>no_failed_records</Name>
+                        <Value />
+                        <Name>process_name</Name>
+                        <Value />
+                        <Name>error_message</Name>
+                        <Value />
+                        <Name>step_run_sid</Name>
+                        <Value />
+                      </DefValueCollect>
+                    </ReactionOnZero>
+                    <ReactionOnMany>
+                      <Ver>1</Ver>
+                      <ReactType>2</ReactType>
+                      <DefValueCollect>
+                        <Name>lpg_id</Name>
+                        <Value />
+                        <Name>return_code</Name>
+                        <Value />
+                        <Name>no_processed_records</Name>
+                        <Value />
+                        <Name>no_failed_records</Name>
+                        <Value />
+                        <Name>process_name</Name>
+                        <Value />
+                        <Name>error_message</Name>
+                        <Value />
+                        <Name>step_run_sid</Name>
+                        <Value />
+                      </DefValueCollect>
+                    </ReactionOnMany>
+                    <SortElemCollect />
+                    <DataObjectViewName />
+                  </Data>
+                </RuleInput>
+                <RuleInputAttribute xmlns="A420.Block.6">
+                  <Id>3</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>lpg_id</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>30;179;108;61</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>2</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="lpg_id" Rectangle="30;179;108;61" DrawShape="true" DrawShadow="true" DrawText="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeInputAttribute</ShapeType>
+                    <Shape FrameColour="189;138;129;255" DarkGradientColour="189;138;129;255" LightGradientColour="247;247;242;255" GradientDirection="Top" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <PortCollect>
+                      <Port ID="0" Alignment="Top" xmlns="A420.Port.2">
+                        <Links>
+                          <LinkID>0</LinkID>
+                        </Links>
+                      </Port>
+                      <Port ID="1" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Bottom" Type="Output" xmlns="A420.Port.2">
+                        <Links>
+                          <LinkID>2</LinkID>
+                        </Links>
+                      </Port>
+                    </PortCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1" />
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>3</Ver>
+                    <Description />
+                    <Attr>lpg_id</Attr>
+                    <Rel>lpg_id</Rel>
+                    <Full />
+                    <DataType />
+                    <IsDataObjectAttr>1</IsDataObjectAttr>
+                  </Data>
+                </RuleInputAttribute>
+                <RuleExternalLibrary xmlns="A420.Block.6">
+                  <Id>4</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>External Call</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>30;270;480;189</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="External Call" Rectangle="30;270;480;189" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeRectangle</ShapeType>
+                    <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Size="0.111688311688312" Rectangle="30;270;54;189" Layout="Vertical" DrawShape="true" DrawShadow="true">
+                        <ShapeType>ShapeExtLibLeft</ShapeType>
+                        <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                      <Cell ID="2" Size="0.776623376623377" Rectangle="84;270;372;189" Layout="Vertical" DrawShape="true" DrawShadow="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                        <CellCollect>
+                          <Cell ID="4" Size="0.154761904761905" Rectangle="84;270;372;29" DrawShape="true">
+                            <ShapeType>ShapeRectangle</ShapeType>
+                            <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                            <PortCollect>
+                              <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Top" xmlns="A420.Port.2">
+                                <Links>
+                                  <LinkID>2</LinkID>
+                                  <LinkID>3</LinkID>
+                                </Links>
+                              </Port>
+                            </PortCollect>
+                          </Cell>
+                          <Cell ID="5" Name="External Call" Size="0.428571428571429" Rectangle="84;299;372;81" DrawShape="true" DrawText="true">
+                            <ShapeType>ShapeExternalLibrary</ShapeType>
+                            <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                          </Cell>
+                          <Cell ID="6" Size="0.416666666666667" Rectangle="84;380;372;79" DrawShape="true">
+                            <ShapeType>ShapeRectangle</ShapeType>
+                            <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                          </Cell>
+                        </CellCollect>
+                      </Cell>
+                      <Cell ID="3" Size="0.111688311688312" Rectangle="456;270;54;189" Layout="Vertical" DrawShape="true" DrawShadow="true">
+                        <ShapeType>ShapeExtLibRight</ShapeType>
+                        <Shape FrameColour="184;142;95;255" DarkGradientColour="184;142;95;255" LightGradientColour="255;225;191;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                    </CellCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1" />
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>5</Ver>
+                    <Description />
+                    <ProjectElementReference Name="fdr" Type="Device" SrcPrj="DSRReferenceData" />
+                    <ExtCallRef>
+                      <ProjectElementReference Name="pr_stan_raw_general_lookup_ld" Type="ExternalCall" SrcPrj="DSRReferenceData" />
+                    </ExtCallRef>
+                    <SqlProcedure>
+                      <ProjectElementReference Name="" Type="SqlProcedure" SrcPrj="DSRReferenceData" />
+                    </SqlProcedure>
+                    <Function>
+                      <Name />
+                      <Description />
+                      <Parameters />
+                    </Function>
+                    <ExtCallFunctionName Value="pr_stan_raw_general_lookup_ld" />
+                    <OutAttrs />
+                    <AutoDirectMappingStart>
+                      <AutoDirectMapping>False</AutoDirectMapping>
+                    </AutoDirectMappingStart>
+                    <TakeChildrenExt>None</TakeChildrenExt>
+                    <DirectMapping>
+                      <Mapping>
+                        <Version>2</Version>
+                        <Expression />
+                        <Attribute>a_lpg_id</Attribute>
+                        <DisableAuto>False</DisableAuto>
+                        <InputAttributes>
+                          <InAttr>lpg_id</InAttr>
+                        </InputAttributes>
+                      </Mapping>
+                      <Mapping>
+                        <Version>2</Version>
+                        <Expression />
+                        <Attribute>a_code_type</Attribute>
+                        <DisableAuto>False</DisableAuto>
+                        <InputAttributes>
+                          <InAttr>CODE_TYPE</InAttr>
+                        </InputAttributes>
+                      </Mapping>
+                    </DirectMapping>
+                    <ShowExc>False</ShowExc>
+                    <TypeOfCall>DbProcedure</TypeOfCall>
+                  </Data>
+                </RuleExternalLibrary>
+                <RuleOutput xmlns="A420.Block.6">
+                  <Id>5</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>Output</Name>
+                  <SecondName>root</SecondName>
+                  <Description />
+                  <Rectangle>30;482;480;58</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>1</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <RuleOutputProperties xmlns="A420.RuleOutputProperties.1">
+                    <SumSign>false</SumSign>
+                  </RuleOutputProperties>
+                  <Cell ID="0" Name="Output" Rectangle="30;482;480;58" DrawShape="true" DrawShadow="true" DrawText="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeOutput</ShapeType>
+                    <Shape FrameColour="186;106;41;255" DarkGradientColour="186;106;41;255" LightGradientColour="246;242;243;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="10" ShadowSizeVertical="11" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <PortCollect>
+                      <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Top" xmlns="A420.Port.2" />
+                    </PortCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1" />
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Ver>4</Ver>
+                    <Description />
+                    <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+                    <SegName>/root</SegName>
+                    <OutFormat>Output</OutFormat>
+                    <Additive>False</Additive>
+                    <InsertionPolicy>INSERT_AT_END</InsertionPolicy>
+                    <SelectedChildSegments />
+                    <AutoDirectMappingStart>
+                      <AutoDirectMapping>True</AutoDirectMapping>
+                    </AutoDirectMappingStart>
+                    <TakeChildrenExt>None</TakeChildrenExt>
+                    <DirectMapping />
+                  </Data>
+                </RuleOutput>
+                <RuleExpression xmlns="A420.Block.6">
+                  <Id>6</Id>
+                  <IdRef>-1</IdRef>
+                  <Visible>true</Visible>
+                  <Active>true</Active>
+                  <ReadOnly>false</ReadOnly>
+                  <Name>CODE_TYPE</Name>
+                  <SecondName />
+                  <Description />
+                  <Rectangle>311;160;199;80</Rectangle>
+                  <TextOrientation>Auto</TextOrientation>
+                  <TextLayout>MidCenter</TextLayout>
+                  <MaxPortId>2</MaxPortId>
+                  <FontName>Verdana</FontName>
+                  <FontSize>8</FontSize>
+                  <FontStyle>Regular</FontStyle>
+                  <FontUnit>Point</FontUnit>
+                  <Cell ID="0" Name="CODE_TYPE" Rectangle="311;160;199;80" DrawShadow="true" xmlns="A420.Cell.4">
+                    <ShapeType>ShapeExpression</ShapeType>
+                    <Shape FrameColour="215;161;59;255" DarkGradientColour="215;161;59;255" LightGradientColour="250;245;239;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                    <CellCollect>
+                      <Cell ID="1" Size="0.25" Rectangle="311;160;50;80" DrawShape="true">
+                        <ShapeType>ShapeExpression2</ShapeType>
+                        <Shape FrameColour="215;161;59;255" DarkGradientColour="215;161;59;255" LightGradientColour="250;245;239;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="true" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                      <Cell ID="2" Name="0" Size="0.75" Rectangle="361;160;149;80" Layout="Vertical" DrawShape="true" DrawText="true">
+                        <ShapeType>ShapeRectangle</ShapeType>
+                        <Shape FrameColour="215;161;59;255" DarkGradientColour="215;161;59;255" LightGradientColour="250;245;239;255" GradientDirection="LeftTop" LineAlignment="Center" ShadowSizeHorizontal="6" ShadowSizeVertical="6" ShapeDirection="Top" TextAlignment="Center" ShapePieces="1" HasPictogram="false" AdditionalInfo1="0" AdditionalInfo2="0" AdditionalInfo3="0" BorderLineStyle.Thickness="0" BorderLineStyle.Pattern="Solid" BorderLineStyle.StartHood="None" BorderLineStyle.EndHood="None" xmlns="A420.Shape.4" />
+                      </Cell>
+                    </CellCollect>
+                    <PortCollect>
+                      <Port ID="0" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Top" xmlns="A420.Port.2" />
+                      <Port ID="1" Position="0" Length="1" VisibleLength="1" VisiblePosition="0" Alignment="Bottom" Type="Output" xmlns="A420.Port.2">
+                        <Links>
+                          <LinkID>3</LinkID>
+                        </Links>
+                      </Port>
+                    </PortCollect>
+                  </Cell>
+                  <TransactionRegions xmlns="A420.TransactionRegion.1" />
+                  <DependentObjects xmlns="A420.BlockDependObjects.2">
+                    <Active>0</Active>
+                    <BlockSet xmlns="A420.BlockSet.2">
+                      <Name>Generic</Name>
+                      <Key>Generic</Key>
+                      <Blocks />
+                    </BlockSet>
+                  </DependentObjects>
+                  <Data xmlns="A420.BlockData.1">
+                    <Version>1</Version>
+                    <Description />
+                    <Expression>0</Expression>
+                    <ShowName>False</ShowName>
+                  </Data>
+                </RuleExpression>
+              </BlockCollect>
+            </Diagram>
+            <RuleInputCollect>
+              <Ver>2</Ver>
+              <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+              <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+              <Seg>/root</Seg>
+              <FormatName>Input</FormatName>
+              <CustomName />
+              <DataObjectView />
+            </RuleInputCollect>
+            <RuleOutputCollect>
+              <Ver>2</Ver>
+              <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+              <ProjectElementReference Name="process" Type="DataObject" SrcPrj="Trigger" />
+              <Seg>/root</Seg>
+              <FormatName>Output</FormatName>
+              <CustomName />
+              <DataObjectView />
+              <InsertionPolicy>INSERT_AT_END</InsertionPolicy>
+            </RuleOutputCollect>
+            <Attributes />
+            <Attributes />
+          </ElementBody>
+        </ElementBodyWrapper>
+      </ProjectElement>
+    </Rule>
     <!--Comment-->
   </Elements>
   <ProjectProperty xmlns="A420.ProjectElement.5">
@@ -2620,12 +3830,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:15:59.7176464-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.6879285-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="931" CheckinId="50" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2435" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <ElementBodyWrapper>
         <ElementBodyHeader xmlns="A420.BusinessCalendarsList.2">
           <ForceCompilation>False</ForceCompilation>
@@ -2654,12 +3864,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:15:59.7205609-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.7035545-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="932" CheckinId="50" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2436" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <ElementBodyWrapper>
         <ElementBodyHeader xmlns="A420.ApplicationDefinitions.31">
           <ForceCompilation>False</ForceCompilation>
@@ -2742,12 +3952,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:15:59.7215378-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.7191805-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="933" CheckinId="50" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2437" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <ElementBodyWrapper>
         <ElementBodyHeader xmlns="A420.ApplicationRoles.1">
           <ForceCompilation>False</ForceCompilation>
@@ -2774,12 +3984,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:18:48.9492998-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.7348065-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="934" CheckinId="53" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2438" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <ElementBodyWrapper>
         <ElementBodyHeader xmlns="A420.ExecutionProperties.5">
           <ForceCompilation>False</ForceCompilation>
@@ -2866,12 +4076,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:15:59.7254464-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.7504325-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="935" CheckinId="50" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2439" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <ElementBodyWrapper>
         <ElementBodyHeader xmlns="A420.Variables.1">
           <ForceCompilation>False</ForceCompilation>
@@ -2895,12 +4105,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:15:59.7264453-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.7504325-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="936" CheckinId="50" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2440" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <ElementBodyWrapper>
         <ElementBodyHeader xmlns="A420.LibrarySubstitutions.1">
           <ForceCompilation>False</ForceCompilation>
@@ -2924,12 +4134,12 @@ hkiG9w0DBwQIdU6PVM/fvyaggAQIiXVQa0BmS0IAAAAAAAAAAAAA
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:15:59.7283815-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.7660585-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="937" CheckinId="50" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2441" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <ElementBodyWrapper>
         <ElementBodyHeader>
           <ForceCompilation>False</ForceCompilation>
@@ -3036,37 +4246,37 @@ Date should match the pattern: %PATTERN%.</Text>
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:15:59.7293613-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.7816845-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="938" CheckinId="50" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2442" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <EncryptedContent>-----BEGIN PKCS7-----
 MIAGCSqGSIb3DQEHA6CAMIACAQAxggGGMIIBggIBADBqMGUxCzAJBgNVBAYTAlBM
 MRUwEwYDVQQIEwxEb2xub3NsYXNraWUxEDAOBgNVBAcTB1dyb2NsYXcxETAPBgNV
 BAoTCE1pY3JvZ2VuMRowGAYDVQQLExFNaWNyb2dlbiAoUG9sYW5kKQIBLTANBgkq
-hkiG9w0BAQEFAASCAQANqL5AecWU6vebC0Hy8jPNPvQOMugWzeBdRX+SBNHxRs5M
-gCjZzWopHzSpMqQ2H5EkqLTBgMAVkk4y497vTRXIuKKaQkJdVm6Qc72rEayPkhGJ
-sJVN+w2myRmKE1yzIchearXveomQ8loL8bpIhXr6velA5o2RFWNHF2hu+/Qfjm7T
-NKFzz17wbsVQSLteXnYWQdsk047YzKNlE9DqWZVUBwfGrkY2qkx34VGC4AMQxTZt
-JHOsgYQC1FRvCBMIjVTCrVi04NUAYDiMdCEfPOdB6oqQ2WMtKzs9o7h+mLeqweYd
-Lqc+0Yfz6hR8Ex6Vl9RlF1CmEUhQXCqatJoMOkhHMIAGCSqGSIb3DQEHATAUBggq
-hkiG9w0DBwQIrGH8gSpAozaggASCAqA0D9Dhu5UvggEAF9Jmb9R7uMWNM1hq5CXx
-rDMsMH0ScQTAR/KV597CAdqPz/8In/eSwqhu/0+mjUNgb7ynb1+0O9gyzylkBq7j
-jUwB14nqZNzoov3iVrp+8lw8nts2ZeEg1ybVlSS9XAMtCv1FPN3z0xgxq3xobPwl
-c/F7/htIgkzuwEho7Ng2VR+zGWxhbtxMmP1v0LI6HCWg5x07UyIwLEzW8ZFyGq0D
-S36iinPMJquYfnbndoNNRXzKGp17Nz/Rxehwm1QlpXATxTYFLRgo96sZopkFprAb
-JvROFz+vKGUYm/VhPpaldcvik67jmB8Q13b6j4TfAf0bB2iiuCFTUCJ6yKplTk/W
-XyHODCHE1r7ObeWHxiKPSh49FN9+FOWggjh3bD45aEzJYA1ukFMoosSq44eZ0MKy
-XO6hYsP5WL89kT0L9t8p6I5/wiTfZJsXQcBTDQ8axglY/Mr187BKklE179f/J0rT
-gr1x4J2j/rFLiRfAb2e+uI0wu1jbAdCK8AFz5k2cyUEWCwoNJNoem93Dc9sSvd+W
-O/v1K3T4osP+BEAkC5+q5LEj5E0ZJMbfFmwsIKd/InLk8uGEFrop4/4rIW58TuFE
-/A19zxrbMiE+6J571naqnxDH5MXotOY4e+t/9eo7NIAHDVXc/DwR/wd3WjDPS1vg
-nZ+nB5XqXaXX4suBD9aXU9kdnhU9HR5LvyampBcadF/j0NulgAE3kjN1AaAI25R9
-PLAr5AsVKafEMtbxiBzJfeV3QpCM0Eu/CC2sfXsmN67jRvt9kvfTs5rNUw1F6xWn
-/b/uNPXTqZWI6Nvx+wv+VwgkyExyQYLktv62MHz5wJEqEdQo0hBfMtwk2/tF+Jo9
-ryUCHmGZvHT+keA8cCk7iT2Mzm6lHq8AAAAAAAAAAAAA
+hkiG9w0BAQEFAASCAQCa1OM53MSuA8gU9giVdPLJ+obV2EJMiITPQkRJFTdO8s9Q
+TAfCUniJFALCm5S4lRwhGkTZjcEQR8GTcuV8kD5cBo/LE/W7q4xsVvpm7/sKTFvh
+QjS2ELZ1ZJye8eUy02P2pS1jo7rQagGz4p/jnq0pKE+zcRdVG53VLNloUHCpcD6X
+PP8Qah9sVANmZpwddv3hBaEK1cIFL18NntBx4K2oz08cCznteLg6oSuoa2yLJxPw
+AT0A9YXQfSDM6oCsZ4JY6XzzQXjv2JdIbrRotvzcJgJx/AxLYQ26wKDl/6jyhHOl
+2pX6Ui+AbtMzJRwazCkvxEE6/hKBpxRAv7TVRxXFMIAGCSqGSIb3DQEHATAUBggq
+hkiG9w0DBwQImpGpaasDQ9aggASCAqCS3wxtLUCI/dU8360FWuKv1mWNIUhbrvta
+3hwyhjIsvIc83hMs9W06wMOr8AH1t6nM5ff2ZoLpsdbyPUEDlWNY0XZd68h7umfP
+9zeesonjnH0JUZDqV0rymoYXx1jIUIXY1VUnY6ctXjyr4OAMVPf+geYszaRR4Cjm
+cIykk/nfYR+TA11t+w48JlgStRFJ2lLoSysDUbdNzqK/7ybsTq/7duJ6gCXJxqF6
+axJRlVtX2E1m48bfFttGgW5cDBv6UBhWbfe9T01IFSkJyePvzqPdQPzgnVG0abGY
+8AjWoZQTCFdmcMxkm6/lx8CvFoYEaqrDuWcab4Lr9AAWddKFYZt2DXqCaDN/HbQb
+i231jKccy9F1L6Go89yYQoW6ZNag7ynlh74Fe+/YdvStQmLtEyCtI/HR1Xii2pkl
+XfcdkEeehLSdbhCUlT/SVRYJGXh9GTA+f0ngmoeJNLgjB5eu50VzbulGKeLEmcga
+FscssUo6X4xTv1ZGTzhkfDtMSW9Gj1Jm4IFx5J0jHsN4kWHY71F2sTHjC5Dk32KW
+heWWgI1Cy8FlboAnETZZIanajuv/z44TEwbbxWgHEYoX+v7uhFx7jc86Nz9SaOaq
+7N4Hvz/zj9iIYYR/z3O68S/wa2LW/iWT1FO8kFa64+2uUiCxxpNnNuTNzRcTEz6U
+JqmSUQFFQC6iuT+lrh7PoDNXq431S8iuEjst6EPPoQLLVcsH6fu4+R3vax0rhhVs
+hnMwYn3sKPVWo++M1fxN1jbZjcbx/Io0fXiAOg0YHqEfL25Cee+fasjXPMf/BR3A
+OwhW8UXN7KdKq9hl15QmxbdKdn4aAFFfIbNdAQaslriZnDKo/XNILF4EtxNerAPr
+TvvC6KZZvkKsL7dJ4AILyf7gL0q6XVsAAAAAAAAAAAAA
 -----END PKCS7-----
 </EncryptedContent>
     </ProjectElement>
@@ -3080,12 +4290,12 @@ ryUCHmGZvHT+keA8cCk7iT2Mzm6lHq8AAAAAAAAAAAAA
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:16:12.2733076-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.9535705-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="939" CheckinId="50" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2443" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <ElementBodyWrapper>
         <ElementBodyHeader xmlns="A420.DataTypeMappings.2">
           <ForceCompilation>False</ForceCompilation>
@@ -3206,12 +4416,12 @@ ryUCHmGZvHT+keA8cCk7iT2Mzm6lHq8AAAAAAAAAAAAA
       </ReferableElement>
       <Revision>
         <Number>1</Number>
-        <SaveDate>2017-07-10T14:16:12.2762232-04:00</SaveDate>
+        <SaveDate>2017-08-09T17:32:56.9691965-04:00</SaveDate>
         <Description />
       </Revision>
       <State>0</State>
       <FolderPath>Project Properties</FolderPath>
-      <NewRepository ElemId="940" CheckinId="50" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
+      <NewRepository ElemId="2444" CheckinId="17" ReferenceId="-1" ReferenceCheckinId="-1" ReferenceProjectId="-1" />
       <ElementBodyWrapper>
         <ElementBodyHeader xmlns="A420.Sequences.2">
           <ForceCompilation>False</ForceCompilation>
