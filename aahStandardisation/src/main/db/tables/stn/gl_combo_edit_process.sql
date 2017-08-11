@@ -4,7 +4,6 @@ create table stn.gl_combo_edit_process
 ,   prc_cd           varchar2 ( 20 char )                                  not null
 ,   prc_descr        varchar2 ( 100 char )                                 not null
 ,   prc_typ          varchar2 ( 10 char )                                  not null
-,   prc_subject      varchar2 ( 20 char )                                  not null
 ,   must_match       varchar2 ( 1 char )                                   not null
 ,   lpg_id           number   ( 38 , 0 )   default 1                       not null
 ,   event_status     varchar2 ( 1 char )   default 'U'                     not null

@@ -111,7 +111,6 @@ drop table stn.vie_legal_entity;
 drop table stn.gl_combo_edit_assignment;
 drop table stn.gl_combo_edit_rule;
 drop table stn.gl_combo_edit_process;
-drop table stn.gl_combo_edit_subject;
 
 conn ~fdr_logon
 

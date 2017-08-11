@@ -82,7 +82,6 @@ conn ~stn_logon
 @@tables/stn/gl_combo_edit_assignment.sql
 @@tables/stn/gl_combo_edit_process.sql
 @@tables/stn/gl_combo_edit_rule.sql
-@@tables/stn/gl_combo_edit_subject.sql
 @@tables/stn/identified_feed.sql
 @@tables/stn/identified_record.sql
 @@tables/stn/insurance_policy.sql
@@ -142,7 +141,6 @@ conn ~stn_logon
 @@ri_constraints/stn/gl_account.sql
 @@ri_constraints/stn/gl_chartfield.sql
 @@ri_constraints/stn/gl_combo_edit_assignment.sql
-@@ri_constraints/stn/gl_combo_edit_process.sql
 @@ri_constraints/stn/gl_combo_edit_rule.sql
 @@ri_constraints/stn/insurance_policy.sql
 @@ri_constraints/stn/insurance_policy_fx_rate.sql
@@ -193,7 +191,6 @@ conn ~stn_logon
 @@data/stn/posting_method_derivation_mtm.sql
 @@data/stn/posting_method_ledger.sql
 @@data/stn/vie_posting_method_ledger.sql
-@@data/stn/gl_combo_edit_subject.sql
 @@procedures/stn/pr_publish_log.sql
 @@packages/stn/pk_fxr.hdr
 @@packages/stn/pk_fxr.bdy
