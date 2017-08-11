@@ -1,0 +1,3 @@
+alter table stn.legal_entity_link add constraint fk_pbt_lel foreign key ( basis_typ )                references stn.posting_accounting_basis_type ( basis_typ );
+alter table stn.legal_entity_link add constraint fk_ple_lel foreign key ( parent_le_id , feed_uuid ) references stn.legal_entity                  ( le_id, feed_uuid );
+alter table stn.legal_entity_link add constraint fk_cle_lel foreign key ( child_le_id  , feed_uuid ) references stn.legal_entity                  ( le_id, feed_uuid );

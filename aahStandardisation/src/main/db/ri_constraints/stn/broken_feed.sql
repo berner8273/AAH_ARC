@@ -1,0 +1,2 @@
+alter table stn.broken_feed add constraint fk_bf_f  foreign key ( feed_sid )     references stn.feed     ( feed_sid );
+alter table stn.broken_feed add constraint fk_bf_sr foreign key ( step_run_sid ) references stn.step_run ( step_run_sid );

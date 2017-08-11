@@ -1,0 +1,1 @@
+alter table stn.gl_account add constraint fk_gac_gla foreign key ( acct_cat ) references stn.gl_account_category ( acct_cat );

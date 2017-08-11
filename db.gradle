@@ -1,0 +1,160 @@
+import com.aptitudesoftware.util.LogUtil;
+import com.aptitudesoftware.util.TwoWayEncryptionUtil;
+import com.aptitudesoftware.tasks.ExecSQLScript;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+import org.apache.tools.ant.filters.ReplaceTokens;
+
+subprojects {
+    final Path PATH_TO_DB_SRC_DIR   = Paths.get ( projectDir.toURI() ).resolve ( 'src' ).resolve ( 'main' ).resolve ( 'db' );
+    final Path PATH_TO_DB_BUILD_DIR = Paths.get ( buildDir.toURI() ).resolve ( 'db' );
+    final Path PATH_TO_LOG_FOLDER   = LogUtil.getPathToLogFolder ( Paths.get ( rootDir.toURI() ) , Paths.get ( projectDir.toURI() ) );
+
+    dependencies {
+        testCompile project ( ':testing:codeChecks' )
+    }
+
+    task prepareDbScripts ( type: Copy , dependsOn : clean ) {
+        onlyIf {
+            Files.exists ( PATH_TO_DB_SRC_DIR )
+        }
+
+        from    PATH_TO_DB_SRC_DIR.toFile ()
+        into    PATH_TO_DB_BUILD_DIR.toFile ()
+        filter  ( ReplaceTokens , tokens : [ env : env ] )
+        filter  ( ReplaceTokens , tokens : passwordProperties )
+        filter  ( ReplaceTokens , tokens : environmentProperties )
+        include '**/*'
+    }
+
+    task testDbScriptQuality ( type : Test , dependsOn : [ cleanTest , prepareDbScripts ] ) {
+        onlyIf {
+            Files.exists ( Paths.get ( prepareDbScripts.destinationDir.toURI () ) )
+        }
+
+        systemProperty 'test.pathToRoot' , prepareDbScripts.destinationDir.path
+        systemProperty 'test.env'        , "${env}";
+        environmentProperties.each {
+            final String KEY = 'test.' + it.key;
+            systemProperty "$KEY" , ( it.value.startsWith ( 'encrypted:' ) ? TwoWayEncryptionUtil.decryptString ( it.value.replaceAll ( 'encrypted:' , '' ) ) : it.value );
+        }
+
+        useTestNG ();
+        options {
+            listeners << 'org.testng.reporters.XMLReporter'
+        }
+
+        include 'com/aptitudesoftware/test/quality/sql/custom/TestQualityOfSQL**'
+        exclude 'com/aptitudesoftware/test/quality/sql/custom/TestDeploymentOfSQL**'
+    }
+
+    task installDbScripts ( type : ExecSQLScript , dependsOn: [ prepareDbScripts , testDbScriptQuality ] ) {
+        onlyIf {
+            Files.exists ( Paths.get ( prepareDbScripts.destinationDir.toURI() ) )
+        }
+
+        final Path PATH_TO_TASK_LOG_FOLDER = PATH_TO_LOG_FOLDER.resolve ( "${name}" );
+        Files.createDirectories ( PATH_TO_TASK_LOG_FOLDER );
+
+        databasePlatform = environmentProperties.databasePlatform;
+        workingDir       = prepareDbScripts.destinationDir;
+        selfLogon        = true;
+        pathToSQLFile    = Paths.get ( workingDir.toURI () ).resolve ( 'install.sql' )
+        standardOutput   = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'install.log' ) , StandardOpenOption.CREATE )
+        errorOutput      = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'install.err' ) , StandardOpenOption.CREATE )
+    }
+
+    task testDbScriptDeployment ( type : Test , dependsOn : [ cleanTest , installDbScripts ] ) {
+        onlyIf {
+            Files.exists ( Paths.get ( prepareDbScripts.destinationDir.toURI () ) )
+        }
+        mustRunAfter {
+            installDbScripts
+        }
+
+        systemProperty 'test.pathToRoot'         , prepareDbScripts.destinationDir.path
+        systemProperty 'test.env'                , "${env}";
+        systemProperty 'test.pathToOracleWallet' , "${rootDir}/resources/db/wallets/oracle";
+        environmentProperties.each {
+            final String KEY = 'test.' + it.key;
+            systemProperty "$KEY" , ( it.value.startsWith ( 'encrypted:' ) ? TwoWayEncryptionUtil.decryptString ( it.value.replaceAll ( 'encrypted:' , '' ) ) : it.value );
+        }
+
+        useTestNG ();
+        options {
+            listeners << 'org.testng.reporters.XMLReporter'
+        }
+
+        include 'com/aptitudesoftware/test/quality/sql/custom/TestDeploymentOfSQL**'
+        exclude 'com/aptitudesoftware/test/quality/sql/custom/TestQualityOfSQL**'
+    }
+
+    task uninstallDbScripts ( type : ExecSQLScript , dependsOn: [ prepareDbScripts , testDbScriptQuality ] ) {
+        onlyIf {
+            Files.exists ( Paths.get ( prepareDbScripts.destinationDir.toURI() ) )
+        }
+
+        final Path PATH_TO_TASK_LOG_FOLDER = PATH_TO_LOG_FOLDER.resolve ( "$name" );
+        Files.createDirectories ( PATH_TO_TASK_LOG_FOLDER );
+
+        databasePlatform = environmentProperties.databasePlatform;
+        workingDir       = prepareDbScripts.destinationDir;
+        selfLogon        = true;
+        pathToSQLFile    = Paths.get ( workingDir.toURI () ).resolve ( 'uninstall.sql' )
+        standardOutput   = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'uninstall.log' ) , StandardOpenOption.CREATE )
+        errorOutput      = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'uninstall.err' ) , StandardOpenOption.CREATE )
+    }
+
+    task cleardownDb ( type : ExecSQLScript , dependsOn: [ prepareDbScripts , testDbScriptQuality ] ) {
+        onlyIf {
+            Files.exists ( Paths.get ( prepareDbScripts.destinationDir.toURI() ) )
+        }
+
+        final Path PATH_TO_TASK_LOG_FOLDER = PATH_TO_LOG_FOLDER.resolve ( "$name" );
+        Files.createDirectories ( PATH_TO_TASK_LOG_FOLDER );
+
+        databasePlatform = environmentProperties.databasePlatform;
+        workingDir       = prepareDbScripts.destinationDir;
+        selfLogon        = true;
+        pathToSQLFile    = Paths.get ( workingDir.toURI () ).resolve ( 'cleardown.sql' )
+        standardOutput   = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'cleardown.log' ) , StandardOpenOption.CREATE )
+        errorOutput      = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'cleardown.err' ) , StandardOpenOption.CREATE )
+    }
+
+    task prepareSingleDbScript ( dependsOn: clean ) {
+        doLast {
+            if ( project.hasProperty ( 'sqlpath' ) ) {
+                final Path PATH_TO_DB_SCRIPT = PATH_TO_DB_SRC_DIR.resolve ( "${sqlpath}" );
+                assert ( Files.exists ( PATH_TO_DB_SCRIPT ) );
+                copy {
+                    from    PATH_TO_DB_SCRIPT.toFile ()
+                    into    PATH_TO_DB_BUILD_DIR.toFile ()
+                    filter  ( ReplaceTokens , tokens : [ env : env ] )
+                    filter  ( ReplaceTokens , tokens : environmentProperties )
+                }
+            }
+        }
+    }
+
+    task deploySingleDbScript ( type : ExecSQLScript , dependsOn: prepareSingleDbScript ) {
+        if ( project.hasProperty ( 'sqlpath' ) && project.hasProperty ( 'logon' ) ) {
+            final Path REL_PATH_TO_DB_SCRIPT   = Paths.get ( "${sqlpath}" );
+            final Path PATH_TO_DB_SCRIPT       = PATH_TO_DB_BUILD_DIR.resolve ( REL_PATH_TO_DB_SCRIPT.fileName );
+            final Path PATH_TO_TASK_LOG_FOLDER = PATH_TO_LOG_FOLDER.resolve ( "$name" );
+            Files.createDirectories ( PATH_TO_TASK_LOG_FOLDER );
+
+            databasePlatform = environmentProperties.databasePlatform;
+            workingDir       = PATH_TO_DB_SCRIPT.parent.toFile ();
+            selfLogon        = false;
+            oracleTnsAlias   = environmentProperties.oracleTnsAlias;
+            logonUsername    = environmentProperties."${logon}Username";
+            logonPassword    = passwordProperties."${logon}Password";
+            pathToSQLFile    = PATH_TO_DB_SCRIPT;
+            standardOutput   = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( "${REL_PATH_TO_DB_SCRIPT.fileName}.log" ) , StandardOpenOption.CREATE );
+            errorOutput      = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( "${REL_PATH_TO_DB_SCRIPT.fileName}.err" ) , StandardOpenOption.CREATE );
+        }
+    }
+}

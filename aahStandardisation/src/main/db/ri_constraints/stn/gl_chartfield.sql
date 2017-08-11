@@ -1,0 +1,1 @@
+alter table stn.gl_chartfield add constraint fk_cft_gcf foreign key ( chartfield_typ ) references stn.gl_chartfield_type ( chartfield_typ );
