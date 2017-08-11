@@ -1,0 +1,1 @@
+alter table stn.user_group add constraint fk_u_ug foreign key ( user_nm , feed_uuid ) references stn.user ( user_nm , feed_uuid );
