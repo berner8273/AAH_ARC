@@ -437,38 +437,38 @@ and     exists (
                 GCE_DEFAULT.LKT_CODE3 AS COMBO_RULE_TYP,
                 gcep.PRC_CD AS COMBO_RULE_OR_SET,
                 (CASE
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP4 THEN 'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE4
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP5 THEN 'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE5
+                    WHEN gcer.DEPT_CD IS NOT NULL THEN 'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE4
+                    WHEN gcer.PRODUCT_CD IS NOT NULL THEN 'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE5
                     ELSE 'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE6
                 END) AS COMBO_ATTR_OR_RULE,
                 (CASE
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP4 AND gcer.DEPARTMENT = '%' THEN 'IN'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP4 AND gcer.DEPARTMENT <> '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT IN'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP5 AND gcer.PRODUCT = '%' THEN 'IN'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP5 AND gcer.PRODUCT <> '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT IN'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP6 AND gcer.AFFILIATE = '%' THEN 'IN'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP6 AND gcer.AFFILIATE <> '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT IN'
+                    WHEN gcer.DEPT_CD = '%' THEN 'IN'
+                    WHEN gcer.DEPT_CD <> '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT IN'
+                    WHEN gcer.PRODUCT_CD = '%' THEN 'IN'
+                    WHEN gcer.PRODUCT_CD <> '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT IN'
+                    WHEN gcer.AFFILIATE_LE_CD = '%' THEN 'IN'
+                    WHEN gcer.AFFILIATE_LE_CD <> '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT IN'
                     ELSE NULL
                 END) AS COMBO_CONDITION,
                 (CASE
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP4 AND gcer.DEPARTMENT = '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT NULL'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP4 AND gcer.DEPARTMENT = '%' AND gcep.PRC_TYP = 'INVALID' THEN 'NULL'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP4 AND gcer.DEPARTMENT <> '%' THEN 'SET'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP5 AND gcer.PRODUCT = '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT NULL'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP5 AND gcer.PRODUCT = '%' AND gcep.PRC_TYP = 'INVALID' THEN 'NULL'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP5 AND gcer.PRODUCT <> '%' THEN 'SET'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP6 AND gcer.AFFILIATE = '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT NULL'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP6 AND gcer.AFFILIATE = '%' AND gcep.PRC_TYP = 'INVALID' THEN 'NULL'
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP6 AND gcer.AFFILIATE <> '%' THEN 'SET'
+                    WHEN gcer.DEPT_CD = '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT NULL'
+                    WHEN gcer.DEPT_CD = '%' AND gcep.PRC_TYP = 'INVALID' THEN 'NULL'
+                    WHEN gcer.DEPT_CD <> '%' THEN 'SET'
+                    WHEN gcer.PRODUCT_CD = '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT NULL'
+                    WHEN gcer.PRODUCT_CD = '%' AND gcep.PRC_TYP = 'INVALID' THEN 'NULL'
+                    WHEN gcer.PRODUCT_CD <> '%' THEN 'SET'
+                    WHEN gcer.AFFILIATE_LE_CD = '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT NULL'
+                    WHEN gcer.AFFILIATE_LE_CD = '%' AND gcep.PRC_TYP = 'INVALID' THEN 'NULL'
+                    WHEN gcer.AFFILIATE_LE_CD <> '%' THEN 'SET'
                     ELSE NULL
                 END) AS COMBO_CONDITION_TYP,
                 (CASE
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP4 AND gcer.DEPARTMENT = '%' THEN NULL
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP4 AND gcer.DEPARTMENT <> '%' THEN 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE4
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP5 AND gcer.PRODUCT = '%' THEN NULL
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP5 AND gcer.PRODUCT <> '%' THEN 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE5
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP6 AND gcer.AFFILIATE = '%' THEN NULL
-                    WHEN gcep.PRC_SUBJECT = GCE_DEFAULT.ATTRIBUTE_TYP6 AND gcer.AFFILIATE <> '%' THEN 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE6
+                    WHEN gcer.DEPT_CD = '%' THEN NULL
+                    WHEN gcer.DEPT_CD <> '%' THEN 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE4
+                    WHEN gcer.PRODUCT_CD = '%' THEN NULL
+                    WHEN gcer.PRODUCT_CD <> '%' THEN 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE5
+                    WHEN gcer.AFFILIATE_LE_CD = '%' THEN NULL
+                    WHEN gcer.AFFILIATE_LE_CD <> '%' THEN 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE6
                 END) AS COMBO_SET_CD,
                 GCE_DEFAULT.ACTION AS COMBO_ACTION,
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
@@ -482,9 +482,9 @@ and     exists (
                 INNER JOIN (SELECT DISTINCT
                     gcer.EVENT_STATUS AS EVENT_STATUS,
                     gcer.FEED_UUID AS FEED_UUID,
-                    gcer.DEPARTMENT AS DEPARTMENT,
-                    gcer.PRODUCT AS PRODUCT,
-                    gcer.AFFILIATE AS AFFILIATE,
+                    gcer.DEPT_CD AS DEPT_CD,
+                    gcer.PRODUCT_CD AS PRODUCT_CD,
+                    gcer.AFFILIATE_LE_CD AS AFFILIATE_LE_CD,
                     gcer.LPG_ID AS LPG_ID,
                     gcer.NO_RETRIES AS NO_RETRIES,
                     gcer.PRC_CD AS PRC_CD,
@@ -597,7 +597,7 @@ and     exists (
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.6' AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE6 AS COMBO_SET_CD,
-                gcer.AFFILIATE AS COMBO_SET_VALUE,
+                gcer.AFFILIATE_LE_CD AS COMBO_SET_VALUE,
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
@@ -609,7 +609,7 @@ and     exists (
                 INNER JOIN (SELECT DISTINCT
                     gcer.EVENT_STATUS AS EVENT_STATUS,
                     gcer.FEED_UUID AS FEED_UUID,
-                    gcer.AFFILIATE AS AFFILIATE,
+                    gcer.AFFILIATE_LE_CD AS AFFILIATE_LE_CD,
                     gcer.LPG_ID AS LPG_ID,
                     gcer.NO_RETRIES AS NO_RETRIES,
                     gcer.PRC_CD AS PRC_CD,
@@ -619,14 +619,14 @@ and     exists (
                     GL_COMBO_EDIT_RULE gcer
                 GROUP BY
                     gcer.PRC_CD,
-                    gcer.AFFILIATE,
+                    gcer.AFFILIATE_LE_CD,
                     gcer.LPG_ID,
                     gcer.EVENT_STATUS,
                     gcer.FEED_UUID,
                     gcer.NO_RETRIES,
                     gcer.STEP_RUN_SID) gcer ON gcep.PRC_CD = gcer.PRC_CD AND gcep.FEED_UUID = gcer.FEED_UUID
             WHERE
-                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.AFFILIATE <> '%';
+                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.AFFILIATE_LE_CD <> '%';
         p_no_fsrgc_affiliate_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
             (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO)
@@ -635,7 +635,7 @@ and     exists (
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.4' AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE4 AS COMBO_SET_CD,
-                gcer.DEPARTMENT AS COMBO_SET_VALUE,
+                gcer.DEPT_CD AS COMBO_SET_VALUE,
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
@@ -647,7 +647,7 @@ and     exists (
                 INNER JOIN (SELECT DISTINCT
                     gcer.EVENT_STATUS AS EVENT_STATUS,
                     gcer.FEED_UUID AS FEED_UUID,
-                    gcer.DEPARTMENT AS DEPARTMENT,
+                    gcer.DEPT_CD AS DEPT_CD,
                     gcer.LPG_ID AS LPG_ID,
                     gcer.NO_RETRIES AS NO_RETRIES,
                     gcer.PRC_CD AS PRC_CD,
@@ -657,14 +657,14 @@ and     exists (
                     GL_COMBO_EDIT_RULE gcer
                 GROUP BY
                     gcer.PRC_CD,
-                    gcer.DEPARTMENT,
+                    gcer.DEPT_CD,
                     gcer.LPG_ID,
                     gcer.EVENT_STATUS,
                     gcer.FEED_UUID,
                     gcer.NO_RETRIES,
                     gcer.STEP_RUN_SID) gcer ON gcep.PRC_CD = gcer.PRC_CD AND gcep.FEED_UUID = gcer.FEED_UUID
             WHERE
-                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.DEPARTMENT <> '%';
+                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.DEPT_CD <> '%';
         p_no_fsrgc_department_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
             (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO)
@@ -673,7 +673,7 @@ and     exists (
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.5' AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE5 AS COMBO_SET_CD,
-                gcer.PRODUCT AS COMBO_SET_VALUE,
+                gcer.PRODUCT_CD AS COMBO_SET_VALUE,
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
@@ -685,7 +685,7 @@ and     exists (
                 INNER JOIN (SELECT DISTINCT
                     gcer.EVENT_STATUS AS EVENT_STATUS,
                     gcer.FEED_UUID AS FEED_UUID,
-                    gcer.PRODUCT AS PRODUCT,
+                    gcer.PRODUCT_CD AS PRODUCT_CD,
                     gcer.LPG_ID AS LPG_ID,
                     gcer.NO_RETRIES AS NO_RETRIES,
                     gcer.PRC_CD AS PRC_CD,
@@ -695,14 +695,14 @@ and     exists (
                     GL_COMBO_EDIT_RULE gcer
                 GROUP BY
                     gcer.PRC_CD,
-                    gcer.PRODUCT,
+                    gcer.PRODUCT_CD,
                     gcer.LPG_ID,
                     gcer.EVENT_STATUS,
                     gcer.FEED_UUID,
                     gcer.NO_RETRIES,
                     gcer.STEP_RUN_SID) gcer ON gcep.PRC_CD = gcer.PRC_CD AND gcep.FEED_UUID = gcer.FEED_UUID
             WHERE
-                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.PRODUCT <> '%';
+                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.PRODUCT_CD <> '%';
         p_no_fsrgc_product_pub := SQL%ROWCOUNT;
         INSERT INTO fdr.FR_GENERAL_CODE_TYPES
             (GCT_CODE_TYPE_ID, GCT_CODE_TYPE_NAME, GCT_CLIENT_CODE_TYPE, GCT_ACTIVE, GCT_INPUT_BY, GCT_INPUT_TIME, GCT_VALID_FROM, GCT_VALID_TO)
