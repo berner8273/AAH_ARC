@@ -13,4 +13,5 @@ insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'INSURANCE_POLI
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'GL_COMBO_EDIT'    , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_assignment' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'GL_COMBO_EDIT'    , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_process' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'GL_COMBO_EDIT'    , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) );
+insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'TAX_JURISDICTION' , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) );
 commit;

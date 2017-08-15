@@ -1,0 +1,15 @@
+--- Generator tool: Aptitude Studio
+--- Generator gender: Oracle
+--- Generation time: 8/14/2017 1:50:15 PM
+---
+
+CREATE OR REPLACE PACKAGE stn.PK_TJ AS
+    PROCEDURE pr_tax_jurisdiction_prc
+        (
+            p_step_run_sid IN NUMBER,
+            p_lpg_id IN NUMBER,
+            p_no_processed_records OUT NUMBER,
+            p_no_failed_records OUT NUMBER
+        );
+END PK_TJ;
+/

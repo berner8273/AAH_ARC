@@ -40,6 +40,9 @@ drop package body stn.pk_le_hier;
 drop package      stn.pk_le_hier;
 drop package body stn.pk_gce;
 drop package      stn.pk_gce;
+drop package body stn.pk_tj;
+drop package      stn.pk_tj;
+
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -53,6 +56,8 @@ drop view  stn.hopper_gl_chartfield;
 drop view  stn.cession_event_posting;
 drop view  stn.hopper_gl_combo_edit_gc;
 drop view  stn.hopper_gl_combo_edit_gl;
+drop view  stn.hopper_tax_jurisdiction;
+drop view  stn.tax_jurisdiction_default;
 drop table stn.vie_posting_method_ledger;
 drop table stn.process_code_module;
 drop table stn.validation_column;
@@ -112,7 +117,7 @@ drop table stn.gl_combo_edit_assignment;
 drop table stn.gl_combo_edit_rule;
 drop table stn.gl_combo_edit_process;
 drop table stn.gl_combo_edit_subject;
-
+drop table stn.tax_jurisdiction;
 conn ~fdr_logon
 
 drop package body fdr.pk_legal_entity;

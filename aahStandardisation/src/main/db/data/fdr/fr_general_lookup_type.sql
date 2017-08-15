@@ -8,5 +8,5 @@ insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'COMBO_CHECK'              , 'Rules determining valid combo edit combinations' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'COMBO_APPLICABLE'         , 'Rules determining data checked by combo edit process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'COMBO_RULESET'            , 'Rules used by combo edit process' );
-
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'TAX_JURISDICTION_DEFAULT' , 'Default values used in the tax jurisdiction standardisation process' );
 commit;
