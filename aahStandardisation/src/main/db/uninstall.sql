@@ -124,7 +124,6 @@ drop table stn.gl_combo_edit_rule;
 drop table stn.gl_combo_edit_process;
 drop table stn.user_group;
 drop table stn.user_detail;
-drop table stn.gl_combo_edit_subject;
 drop table stn.tax_jurisdiction;
 
 conn ~fdr_logon
