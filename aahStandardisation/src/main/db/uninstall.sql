@@ -118,6 +118,7 @@ drop table stn.gl_combo_edit_rule;
 drop table stn.gl_combo_edit_process;
 drop table stn.gl_combo_edit_subject;
 drop table stn.tax_jurisdiction;
+
 conn ~fdr_logon
 
 drop package body fdr.pk_legal_entity;
