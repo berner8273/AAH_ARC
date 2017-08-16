@@ -15,4 +15,5 @@ insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'GL_COMBO_EDIT'
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'GL_COMBO_EDIT'    , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'USER'             , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_detail' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'USER'             , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) );
+insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'TAX_JURISDICTION' , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) );
 commit;

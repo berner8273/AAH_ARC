@@ -131,6 +131,7 @@ conn ~stn_logon
 @@tables/stn/vie_legal_entity.sql
 @@tables/stn/vie_event_type.sql
 @@tables/stn/vie_posting_method_ledger.sql
+@@tables/stn/tax_jurisdiction.sql
 @@views/stn/dept_default.sql
 @@views/stn/feed_missing_record_count.sql
 @@views/stn/fxr_default.sql
@@ -138,6 +139,8 @@ conn ~stn_logon
 @@views/stn/hopper_gl_chartfield.sql
 @@views/stn/hopper_gl_combo_edit_gc.sql
 @@views/stn/hopper_gl_combo_edit_gl.sql
+@@views/stn/hopper_tax_jurisdiction.sql
+@@views/stn/tax_jurisdiction_default.sql
 @@views/stn/le_default.sql
 @@views/stn/row_val_error_log_default.sql
 @@views/stn/set_val_error_log_default.sql
@@ -231,5 +234,8 @@ conn ~stn_logon
 @@packages/stn/pk_user.bdy
 @@packages/stn/pk_feed_integrity.hdr
 @@packages/stn/pk_feed_integrity.bdy
+@@packages/stn/pk_tj.hdr
+@@packages/stn/pk_tj.bdy
+
 
 exit

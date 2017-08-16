@@ -66,7 +66,7 @@ task deployBatchScripts ( dependsOn : prepareBatchScripts ) {
     doLast {
         copy {
             from PATH_TO_BATCH_SCRIPTS_BUILD_DIR.toFile ()
-            into Paths.get ( environmentProperties.pathToStepScript.parent ).toFile ()
+            into Paths.get ( environmentProperties.pathToStepScript ).parent.toFile ()
         }
     }
 }

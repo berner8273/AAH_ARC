@@ -219,4 +219,14 @@ insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id fr
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) , 'feed_uuid' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) , 'no_retries' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) , 'step_run_sid' );
+
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) , 'row_sid' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) , 'tax_jurisdiction_cd' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) , 'tax_jurisdiction_descr' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) , 'lpg_id' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) , 'event_status' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) , 'feed_uuid' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) , 'no_retries' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'tax_jurisdiction' ) , 'step_run_sid' );
+
 commit;
