@@ -43,4 +43,6 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'HOPPER_STATUS'        , 'U' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'EFFECTIVE_FROM'       , 'CURRENT_DATE' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'EFFECTIVE_TO'         , '2099-12-31' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'USER_DEFAULT'             , 'GROUP_NAME'           , 'AG' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'USER_DEFAULT'             , 'ENTITY_ID'            , 'AG' );
 commit;

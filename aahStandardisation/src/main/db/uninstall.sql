@@ -19,6 +19,10 @@ define fdr_user     = @fdrUsername@
 define fdr_password = @fdrPassword@
 define fdr_logon    = ~fdr_user/~fdr_password@~tns_alias
 
+define gui_user     = @guiUsername@
+define gui_password = @guiPassword@
+define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
 conn ~stn_logon
 
 drop procedure stn.pr_publish_log;
@@ -40,6 +44,8 @@ drop package body stn.pk_le_hier;
 drop package      stn.pk_le_hier;
 drop package body stn.pk_gce;
 drop package      stn.pk_gce;
+drop package body stn.pk_user;
+drop package      stn.pk_user;
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -48,6 +54,7 @@ drop view  stn.gla_default;
 drop view  stn.dept_default;
 drop view  stn.le_default;
 drop view  stn.gce_default;
+drop view  stn.user_default;
 drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
 drop view  stn.cession_event_posting;
@@ -111,6 +118,8 @@ drop table stn.vie_legal_entity;
 drop table stn.gl_combo_edit_assignment;
 drop table stn.gl_combo_edit_rule;
 drop table stn.gl_combo_edit_process;
+drop table stn.user_group;
+drop table stn.user_detail;
 
 conn ~fdr_logon
 
@@ -120,8 +129,8 @@ drop package      fdr.pk_legal_entity;
 delete from fdr.fr_global_parameter          where lpg_id = 2;
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
-delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' );
-delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' );
+delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' );
+delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' );
 delete from fdr.fr_fx_rate;
 delete from fdr.fr_party_business_lookup     where pbl_lookup_key                 != 'DEFAULT';
 delete from fdr.fr_party_business            where pbu_party_bus_client_code      != 'DEFAULT';
@@ -149,6 +158,7 @@ delete from fdr.fr_general_codes             where gc_gct_code_type_id          
 delete from fdr.fr_general_code_types        where gct_code_type_id               = 'GL_CHARTFIELD' or gct_code_type_id    like 'COMBO%';
 delete from fdr.fr_org_hierarchy_type        where oht_org_hier_client_code       not in ( 'DEFAULT' );
 delete from fdr.fr_org_node_type             where ont_org_node_type_name         not in ( 'DEFAULT' );
+delete from fdr.is_group                     where isgrp_name                     = 'AG' );
 commit;
 
 drop index fbi_fsrfr_message_id;
@@ -166,4 +176,15 @@ revoke select , insert , update on fdr.fr_stan_raw_org_hier_node    from stn;
 revoke select , insert , update on fdr.fr_stan_raw_org_hier_struc   from stn;
 revoke select                   on fdr.fr_posting_schema            from stn;
 revoke select , insert , update on fdr.fr_general_code_types        from stn;
+revoke select , insert , update on fdr.is_user                      from stn;
+revoke select , insert , update on fdr.is_groupuser                 from stn;
+revoke select                   on fdr.is_group                     from stn;
+
+conn ~gui_logon
+
+revoke select , insert , update          on gui.t_ui_user_details            from stn;
+revoke select , insert , update          on gui.t_ui_user_departments        from stn;
+revoke select , insert , update , delete on gui.t_ui_user_roles              from stn;
+revoke select , insert , update          on gui.t_ui_user_entities           from stn;
+
 exit

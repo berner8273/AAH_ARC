@@ -1,0 +1,10 @@
+CREATE OR REPLACE PACKAGE stn.PK_USER AS
+    PROCEDURE pr_user_prc
+        (
+            p_step_run_sid IN NUMBER,
+            p_lpg_id IN NUMBER,
+            p_no_processed_records OUT NUMBER,
+            p_no_failed_records OUT NUMBER
+        );
+END PK_USER;
+/

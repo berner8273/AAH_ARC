@@ -19,6 +19,17 @@ define fdr_user     = @fdrUsername@
 define fdr_password = @fdrPassword@
 define fdr_logon    = ~fdr_user/~fdr_password@~tns_alias
 
+define gui_user     = @guiUsername@
+define gui_password = @guiPassword@
+define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
+conn ~gui_logon
+
+@@grants/tables/gui/t_ui_user_details.sql
+@@grants/tables/gui/t_ui_user_departments.sql
+@@grants/tables/gui/t_ui_user_roles.sql
+@@grants/tables/gui/t_ui_user_entities.sql
+
 conn ~fdr_logon
 
 @@data/fdr/fr_calendar.sql
@@ -37,6 +48,7 @@ conn ~fdr_logon
 @@data/fdr/fr_org_hierarchy_type.sql
 @@data/fdr/fr_org_node_type.sql
 @@data/fdr/fr_global_parameter.sql
+@@data/fdr/is_group.sql
 @@grants/tables/fdr/fr_general_code_types.sql
 @@grants/tables/fdr/fr_general_lookup.sql
 @@grants/tables/fdr/fr_posting_schema.sql
@@ -45,6 +57,9 @@ conn ~fdr_logon
 @@grants/tables/fdr/fr_stan_raw_org_hier_node.sql
 @@grants/tables/fdr/fr_internal_proc_entity_type.sql
 @@grants/tables/fdr/fr_stan_raw_org_hier_struc.sql
+@@grants/tables/fdr/is_user.sql
+@@grants/tables/fdr/is_groupuser.sql
+@@grants/tables/fdr/is_group.sql
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy
 @@indices/fdr/fr_stan_raw_book.sql
@@ -106,6 +121,8 @@ conn ~stn_logon
 @@tables/stn/standardisation_log.sql
 @@tables/stn/superseded_feed.sql
 @@tables/stn/supersession_method.sql
+@@tables/stn/user_detail.sql
+@@tables/stn/user_group.sql
 @@tables/stn/validation.sql
 @@tables/stn/validation_column.sql
 @@tables/stn/validation_level.sql
@@ -127,6 +144,7 @@ conn ~stn_logon
 @@views/stn/validation_detail.sql
 @@views/stn/cession_event_posting.sql
 @@views/stn/gce_default.sql
+@@views/stn/user_default.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
 @@ri_constraints/stn/cession_event.sql
@@ -154,6 +172,7 @@ conn ~stn_logon
 @@ri_constraints/stn/posting_method_ledger.sql
 @@ri_constraints/stn/process_code_module.sql
 @@ri_constraints/stn/superseded_feed.sql
+@@ri_constraints/stn/user_group.sql
 @@ri_constraints/stn/validation.sql
 @@ri_constraints/stn/validation_column.sql
 @@ri_constraints/stn/vie_posting_method_ledger.sql
@@ -208,6 +227,8 @@ conn ~stn_logon
 @@packages/stn/pk_lel.bdy
 @@packages/stn/pk_le_hier.hdr
 @@packages/stn/pk_le_hier.bdy
+@@packages/stn/pk_user.hdr
+@@packages/stn/pk_user.bdy
 @@packages/stn/pk_feed_integrity.hdr
 @@packages/stn/pk_feed_integrity.bdy
 
