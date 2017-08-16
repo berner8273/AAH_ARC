@@ -46,9 +46,6 @@ drop package body stn.pk_gce;
 drop package      stn.pk_gce;
 drop package body stn.pk_user;
 drop package      stn.pk_user;
-drop package body stn.pk_tj;
-drop package      stn.pk_tj;
-
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -63,8 +60,6 @@ drop view  stn.hopper_gl_chartfield;
 drop view  stn.cession_event_posting;
 drop view  stn.hopper_gl_combo_edit_gc;
 drop view  stn.hopper_gl_combo_edit_gl;
-drop view  stn.hopper_tax_jurisdiction;
-drop view  stn.tax_jurisdiction_default;
 drop table stn.vie_posting_method_ledger;
 drop table stn.process_code_module;
 drop table stn.validation_column;
@@ -125,8 +120,6 @@ drop table stn.gl_combo_edit_rule;
 drop table stn.gl_combo_edit_process;
 drop table stn.user_group;
 drop table stn.user_detail;
-drop table stn.gl_combo_edit_subject;
-drop table stn.tax_jurisdiction;
 
 conn ~fdr_logon
 
@@ -165,7 +158,9 @@ delete from fdr.fr_general_codes             where gc_gct_code_type_id          
 delete from fdr.fr_general_code_types        where gct_code_type_id               = 'GL_CHARTFIELD' or gct_code_type_id    like 'COMBO%';
 delete from fdr.fr_org_hierarchy_type        where oht_org_hier_client_code       not in ( 'DEFAULT' );
 delete from fdr.fr_org_node_type             where ont_org_node_type_name         not in ( 'DEFAULT' );
-delete from fdr.is_group                     where isgrp_name                     = 'AG' );
+delete from fdr.is_groupuser                 where isgu_usr_ref                   != 3;
+delete from fdr.is_user                      where isusr_name                     != 'fdr_user';
+delete from fdr.is_group                     where isgrp_name                     = 'AG' ;
 commit;
 
 drop index fbi_fsrfr_message_id;
@@ -189,9 +184,17 @@ revoke select                   on fdr.is_group                     from stn;
 
 conn ~gui_logon
 
+delete from gui.t_ui_user_departments;
+delete from gui.t_ui_user_roles              where user_id                        != 3;
+delete from gui.t_ui_user_entities;
+delete from gui.t_ui_user_details            where user_name                      != 'fdr_user';
+delete from gui.t_ui_departments             where department_id                  != 'DEFAULT';
+
 revoke select , insert , update          on gui.t_ui_user_details            from stn;
 revoke select , insert , update          on gui.t_ui_user_departments        from stn;
 revoke select , insert , update , delete on gui.t_ui_user_roles              from stn;
 revoke select , insert , update          on gui.t_ui_user_entities           from stn;
+revoke select                            on gui.t_ui_departments             from stn;
+revoke select                            on gui.t_ui_roles                   from stn;
 
 exit
