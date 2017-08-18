@@ -172,7 +172,7 @@ and exists (
                   stn.standardisation_log sl
             where
                   sl.row_in_error_key_id = ud.ROW_SID
-        --      and sl.table_in_error_name = 'stn.user_detail'
+              and sl.table_in_error_name = 'user_detail'
        );
         UPDATE USER_DETAIL ud
             SET
@@ -185,6 +185,7 @@ and exists (
                           stn.standardisation_log sl
                     where
                           sl.row_in_error_key_id = ud.ROW_SID
+                      and sl.table_in_error_name = 'user_detail'
                )
 and     exists (
                    select
@@ -314,6 +315,7 @@ and exists (
                   stn.standardisation_log sl
             where
                   sl.row_in_error_key_id = ug.ROW_SID
+              and sl.table_in_error_name = 'user_group'
        );
         UPDATE USER_GROUP ug
             SET
@@ -326,6 +328,7 @@ and exists (
                           stn.standardisation_log sl
                     where
                           sl.row_in_error_key_id = ug.ROW_SID
+                      and sl.table_in_error_name = 'user_group'
                )
 and     exists (
                    select
@@ -358,7 +361,8 @@ and     exists (
             USING
                 (SELECT
                     ud.EMPLOYEE_ID AS EMPLOYEE_ID,
-                    ud.USER_NM AS USER_NM
+                    ud.USER_NM AS USER_NM,
+                    USER_DEFAULT.DEFAULT_PW AS DEFAULT_PW
                 FROM
                     USER_DETAIL ud
                     INNER JOIN IDENTIFIED_RECORD idr ON ud.ROW_SID = idr.ROW_SID
@@ -371,9 +375,9 @@ and     exists (
                     ISUSR_NAME = stn_user.USER_NM
             WHEN NOT MATCHED THEN
                 INSERT
-                    (ISUSR_ID, ISUSR_NAME, ISUSR_LOCK)
+                    (ISUSR_ID, ISUSR_NAME, ISUSR_LOCK, ISUSR_PASSWD)
                     VALUES
-                    (stn_user.EMPLOYEE_ID, stn_user.USER_NM, 0);
+                    (stn_user.EMPLOYEE_ID, stn_user.USER_NM, 0, stn_user.DEFAULT_PW);
         p_no_is_user_pub := SQL%ROWCOUNT;
         MERGE INTO fdr.IS_GROUPUSER IS_GROUPUSER
             USING
@@ -562,19 +566,14 @@ and     exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set user group process status = "P"' );
             pr_user_group_sps(v_no_ug_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for user group records', 'v_no_ug_processed_records', NULL, v_no_ug_processed_records, NULL);
-            IF 1 <> 1 THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcea_validated_records <> v_no_gcea_processed_records', NULL, NULL, NULL, NULL);
+            IF v_no_ud_validated_records <> v_no_ud_processed_records THEN
+                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_ud_validated_records <> v_no_ud_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
             END IF;
-            IF 1 <> 1 THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcer_validated_records <> v_no_gcer_processed_records', NULL, NULL, NULL, NULL);
+            IF v_no_ug_validated_records <> v_no_ug_processed_records THEN
+                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_ug_validated_records <> v_no_ug_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
-                raise pub_val_mismatch;
-            END IF;
-            IF 1 <> 1 THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcep_identified_records <> v_no_gcep_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_ud_processed_records
