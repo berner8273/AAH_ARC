@@ -45,5 +45,6 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'EFFECTIVE_TO'         , '2099-12-31' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'USER_DEFAULT'             , 'GROUP_NAME'           , 'AG' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'USER_DEFAULT'             , 'ENTITY_ID'            , 'AG' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'USER_DEFAULT'             , 'DEPARTMENT_ID'        , 'DEFAULT' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'TAX_JURISDICTION_DEFAULT' , 'SRGC_GCT_CODE_TYPE_ID', 'TAX_JURISDICTION' );
 commit;

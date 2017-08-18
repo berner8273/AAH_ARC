@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE PACKAGE BODY stn.PK_USER AS
     PROCEDURE pr_user_detail_idf
         (
@@ -203,50 +202,31 @@ and     exists (
         INSERT INTO STANDARDISATION_LOG
             (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
             SELECT
-                SubQuery.CATEGORY_ID AS CATEGORY_ID,
-                SubQuery.ERROR_STATUS AS ERROR_STATUS,
-                SubQuery.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                SubQuery.error_value AS ERROR_VALUE,
-                SubQuery.event_text AS EVENT_TEXT,
-                SubQuery.EVENT_TYPE AS EVENT_TYPE,
-                SubQuery.field_in_error_name AS FIELD_IN_ERROR_NAME,
-                SubQuery.LPG_ID AS LPG_ID,
-                SubQuery.PROCESSING_STAGE AS PROCESSING_STAGE,
-                SubQuery.row_in_error_key_id AS ROW_IN_ERROR_KEY_ID,
-                SubQuery.table_in_error_name AS TABLE_IN_ERROR_NAME,
-                SubQuery.rule_identity AS RULE_IDENTITY,
-                SubQuery.CODE_MODULE_NM AS CODE_MODULE_NM,
-                SubQuery.STEP_RUN_SID AS STEP_RUN_SID,
-                SubQuery.FEED_SID AS FEED_SID
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                ug.GROUP_NM AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                ug.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                ug.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                ug.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
             FROM
-                (SELECT
-                    vdl.TABLE_NM AS table_in_error_name,
-                    ug.ROW_SID AS row_in_error_key_id,
-                    ug.GROUP_NM AS error_value,
-                    ug.LPG_ID AS LPG_ID,
-                    vdl.COLUMN_NM AS field_in_error_name,
-                    rveld.EVENT_TYPE AS EVENT_TYPE,
-                    rveld.ERROR_STATUS AS ERROR_STATUS,
-                    rveld.CATEGORY_ID AS CATEGORY_ID,
-                    rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                    rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                    vdl.VALIDATION_CD AS rule_identity,
-                    FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE AS todays_business_dt,
-                    fd.SYSTEM_CD AS SYSTEM_CD,
-                    vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
-                    ug.STEP_RUN_SID AS STEP_RUN_SID,
-                    vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                    fd.FEED_SID AS FEED_SID
-                FROM
-                    USER_GROUP ug
-                    INNER JOIN USER_DETAIL ud ON ug.EMPLOYEE_ID = ud.EMPLOYEE_ID AND ug.FEED_UUID = ud.FEED_UUID
-                    INNER JOIN IDENTIFIED_RECORD idr ON ud.ROW_SID = idr.ROW_SID
-                    INNER JOIN FEED fd ON ug.FEED_UUID = fd.FEED_UUID
-                    INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON ug.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
-                    INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
-                    INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
-                WHERE
-                        vdl.VALIDATION_CD = 'ug-group_nm'
+                USER_GROUP ug
+                INNER JOIN USER_DETAIL ud ON ug.EMPLOYEE_ID = ud.EMPLOYEE_ID AND ug.FEED_UUID = ud.FEED_UUID
+                INNER JOIN IDENTIFIED_RECORD idr ON ud.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON ug.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON ug.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'ug-group_nm'
 and not exists (
                    select
                           null
@@ -254,7 +234,43 @@ and not exists (
                           gui.t_ui_roles tur
                     where
                           tur.role_id = ug.GROUP_NM
-               )) SubQuery;
+               )
+            UNION
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                TO_CHAR(ug.EMPLOYEE_ID) AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                ug.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                ug.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                ug.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                USER_GROUP ug
+                INNER JOIN FEED fd ON ug.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON ug.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'ug-employee_id'
+and exists (
+                   select
+                          null
+                     from
+                          stn.user_detail ud
+                     join stn.standardisation_log sl
+                              on sl.row_in_error_key_id = ud.row_sid
+                    where
+                          ug.EMPLOYEE_ID  = ud.employee_id
+                      and ug.FEED_UUID    = ud.feed_uuid
+               );
     END;
     
     PROCEDURE pr_user_group_sps
@@ -416,17 +432,14 @@ and     exists (
             USING
                 (SELECT
                     ud.EMPLOYEE_ID AS EMPLOYEE_ID,
-                    ud.DEPT_CD AS DEPT_CD
+                    USER_DEFAULT.DEPARTMENT_ID AS DEPT_CD
                 FROM
                     USER_DETAIL ud
                     INNER JOIN IDENTIFIED_RECORD idr ON ud.ROW_SID = idr.ROW_SID
                     INNER JOIN USER_DEFAULT ON 1 = 1
                 WHERE
                     ud.EVENT_STATUS = 'V') stn_user
-            ON (T_UI_USER_DEPARTMENTS.USER_ID = stn_user.EMPLOYEE_ID)
-            WHEN MATCHED THEN
-                UPDATE SET
-                    DEPARTMENT_ID = stn_user.DEPT_CD
+            ON (T_UI_USER_DEPARTMENTS.USER_ID = stn_user.EMPLOYEE_ID AND T_UI_USER_DEPARTMENTS.DEPARTMENT_ID = stn_user.DEPT_CD)
             WHEN NOT MATCHED THEN
                 INSERT
                     (USER_ID, DEPARTMENT_ID)
@@ -444,11 +457,8 @@ and     exists (
                     INNER JOIN USER_GROUP ug ON ud.EMPLOYEE_ID = ug.EMPLOYEE_ID AND ud.FEED_UUID = ug.FEED_UUID
                     INNER JOIN USER_DEFAULT ON 1 = 1
                 WHERE
-                    ud.EVENT_STATUS = 'V') stn_user
-            ON (T_UI_USER_ROLES.USER_ID = stn_user.EMPLOYEE_ID)
-            WHEN MATCHED THEN
-                UPDATE SET
-                    ROLE_ID = stn_user.GROUP_NM
+                    ug.EVENT_STATUS = 'V') stn_user
+            ON (T_UI_USER_ROLES.USER_ID = stn_user.EMPLOYEE_ID AND T_UI_USER_ROLES.ROLE_ID = stn_user.GROUP_NM)
             WHEN NOT MATCHED THEN
                 INSERT
                     (USER_ID, ROLE_ID)
@@ -466,10 +476,7 @@ and     exists (
                     INNER JOIN USER_DEFAULT ON 1 = 1
                 WHERE
                     ud.EVENT_STATUS = 'V') stn_user
-            ON (T_UI_USER_ENTITIES.USER_ID = stn_user.EMPLOYEE_ID)
-            WHEN MATCHED THEN
-                UPDATE SET
-                    ENTITY_ID = stn_user.ENTITY_ID
+            ON (T_UI_USER_ENTITIES.USER_ID = stn_user.EMPLOYEE_ID AND T_UI_USER_ENTITIES.ENTITY_ID = stn_user.ENTITY_ID)
             WHEN NOT MATCHED THEN
                 INSERT
                     (USER_ID, ENTITY_ID)
@@ -493,7 +500,7 @@ and     exists (
                     INNER JOIN USER_GROUP ug ON ud.EMPLOYEE_ID = ug.EMPLOYEE_ID AND ud.FEED_UUID = ug.FEED_UUID
                     INNER JOIN USER_DEFAULT ON 1 = 1
                 WHERE
-                    ud.EVENT_STATUS = 'V') stn_user ON tuur.USER_ID = stn_user.EMPLOYEE_ID AND tuur.ROLE_ID = stn_user.GROUP_NM
+                    ug.EVENT_STATUS = 'V') stn_user ON tuur.USER_ID = stn_user.EMPLOYEE_ID AND tuur.ROLE_ID = stn_user.GROUP_NM
             WHERE
                 stn_user.EMPLOYEE_ID IS NULL AND stn_user.GROUP_NM IS NULL AND tuur.USER_ID <> 3);
         p_no_t_ui_user_roles_del := SQL%ROWCOUNT;

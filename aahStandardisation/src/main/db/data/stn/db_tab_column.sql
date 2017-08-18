@@ -200,6 +200,7 @@ insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id fr
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_combo_edit_rule' ) , 'step_run_sid' );
 
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_detail' ) , 'row_sid' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_detail' ) , 'employee_id' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_detail' ) , 'user_nm' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_detail' ) , 'first_nm' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_detail' ) , 'last_nm' );
@@ -212,7 +213,7 @@ insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id fr
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_detail' ) , 'step_run_sid' );
 
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) , 'row_sid' );
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) , 'user_nm' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) , 'employee_id' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) , 'group_nm' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) , 'lpg_id' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'user_group' ) , 'event_status' );

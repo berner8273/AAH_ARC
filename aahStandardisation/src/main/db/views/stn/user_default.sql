@@ -7,6 +7,9 @@ select
      , max ( case when fgl.lk_match_key1 = 'ENTITY_ID'            
                   then fgl.lk_lookup_value1
              end )                                                   entity_id
+     , max ( case when fgl.lk_match_key1 = 'DEPARTMENT_ID'            
+                  then fgl.lk_lookup_value1
+             end )                                                   department_id
   from
        fdr.fr_general_lookup fgl
  where
