@@ -10,6 +10,9 @@ select
      , max ( case when fgl.lk_match_key1 = 'DEPARTMENT_ID'            
                   then fgl.lk_lookup_value1
              end )                                                   department_id
+     , max ( case when fgl.lk_match_key1 = 'DEFAULT_PW'            
+                  then fgl.lk_lookup_value1
+             end )                                                   default_pw
   from
        fdr.fr_general_lookup fgl
  where
