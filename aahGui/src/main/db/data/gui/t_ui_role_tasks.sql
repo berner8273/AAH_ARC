@@ -222,4 +222,3 @@ insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.c
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.subledgerperiods.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.ticket.audit.detail.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.ticket.audit.view' );
-commit;
