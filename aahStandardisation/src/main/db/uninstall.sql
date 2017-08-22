@@ -199,7 +199,7 @@ revoke select , insert , update          on gui.t_ui_user_details            fro
 revoke select , insert , update          on gui.t_ui_user_departments        from stn;
 revoke select , insert , update , delete on gui.t_ui_user_roles              from stn;
 revoke select , insert , update          on gui.t_ui_user_entities           from stn;
-revoke select                            on gui.t_ui_departments             from stn;
+revoke select , insert , update          on gui.t_ui_departments             from stn;
 revoke select                            on gui.t_ui_roles                   from stn;
 
 exit

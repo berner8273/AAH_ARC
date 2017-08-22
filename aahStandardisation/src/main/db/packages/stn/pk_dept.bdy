@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE PACKAGE BODY stn.PK_DEPT AS
     PROCEDURE pr_department_idf
         (
@@ -95,7 +96,8 @@ and not exists (
     PROCEDURE pr_department_pub
         (
             p_step_run_sid IN NUMBER,
-            p_total_no_published OUT NUMBER
+            p_total_no_published OUT NUMBER,
+            p_total_no_gui_published OUT NUMBER
         )
     AS
     BEGIN
@@ -118,6 +120,26 @@ and not exists (
                 INNER JOIN IDENTIFIED_RECORD idr ON dept.ROW_SID = idr.ROW_SID
                 INNER JOIN DEPT_DEFAULT ON 1 = 1;
         p_total_no_published := SQL%ROWCOUNT;
+        MERGE INTO gui.T_UI_DEPARTMENTS T_UI_DEPARTMENTS
+            USING
+                (SELECT
+                    d.DEPT_CD AS DEPT_CD,
+                    d.DEPT_DESCR AS DEPT_DESCR
+                FROM
+                    DEPARTMENT d
+                    INNER JOIN IDENTIFIED_RECORD idr ON d.ROW_SID = idr.ROW_SID
+                WHERE
+                    d.EVENT_STATUS = 'V') stn_department
+            ON (T_UI_DEPARTMENTS.DEPARTMENT_ID = stn_department.DEPT_CD)
+            WHEN MATCHED THEN
+                UPDATE SET
+                    DEPARTMENT_NAME = stn_department.DEPT_DESCR
+            WHEN NOT MATCHED THEN
+                INSERT
+                    (DEPARTMENT_ID, DEPARTMENT_NAME)
+                    VALUES
+                    (stn_department.DEPT_CD, stn_department.DEPT_DESCR);
+        p_total_no_gui_published := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_department_sps
@@ -170,6 +192,7 @@ and not exists (
         v_no_identified_records NUMBER(38, 9) DEFAULT 0;
         v_no_processed_records NUMBER(38, 9) DEFAULT 0;
         v_total_no_published NUMBER(38, 9) DEFAULT 0;
+        v_total_no_gui_published NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hopper_records NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
     BEGIN
@@ -181,8 +204,9 @@ and not exists (
             pr_department_chr(p_step_run_sid, p_lpg_id, v_no_updated_hopper_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed hopper records', 'v_no_updated_hopper_records', NULL, v_no_updated_hopper_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish department records' );
-            pr_department_pub(p_step_run_sid, v_total_no_published);
+            pr_department_pub(p_step_run_sid, v_total_no_published, v_total_no_gui_published);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing records', 'v_total_no_published', NULL, v_total_no_published, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing gui records', 'v_total_no_gui_published', NULL, v_total_no_gui_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set department status = "P"' );
             pr_department_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
