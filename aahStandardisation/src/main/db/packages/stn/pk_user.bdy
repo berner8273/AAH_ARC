@@ -437,14 +437,17 @@ and     exists (
             USING
                 (SELECT
                     ud.EMPLOYEE_ID AS EMPLOYEE_ID,
-                    USER_DEFAULT.DEPARTMENT_ID AS DEPT_CD
+                    ud.DEPT_CD AS DEPT_CD
                 FROM
                     USER_DETAIL ud
                     INNER JOIN IDENTIFIED_RECORD idr ON ud.ROW_SID = idr.ROW_SID
                     INNER JOIN USER_DEFAULT ON 1 = 1
                 WHERE
                     ud.EVENT_STATUS = 'V') stn_user
-            ON (T_UI_USER_DEPARTMENTS.USER_ID = stn_user.EMPLOYEE_ID AND T_UI_USER_DEPARTMENTS.DEPARTMENT_ID = stn_user.DEPT_CD)
+            ON (T_UI_USER_DEPARTMENTS.USER_ID = stn_user.EMPLOYEE_ID)
+            WHEN MATCHED THEN
+                UPDATE SET
+                    DEPARTMENT_ID = stn_user.DEPT_CD
             WHEN NOT MATCHED THEN
                 INSERT
                     (USER_ID, DEPARTMENT_ID)
