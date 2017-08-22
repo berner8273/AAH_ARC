@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE PACKAGE BODY stn.PK_DEPT AS
     PROCEDURE pr_department_idf
         (
@@ -127,9 +126,7 @@ and not exists (
                     d.DEPT_DESCR AS DEPT_DESCR
                 FROM
                     DEPARTMENT d
-                    INNER JOIN IDENTIFIED_RECORD idr ON d.ROW_SID = idr.ROW_SID
-                WHERE
-                    d.EVENT_STATUS = 'V') stn_department
+                    INNER JOIN IDENTIFIED_RECORD idr ON d.ROW_SID = idr.ROW_SID) stn_department
             ON (T_UI_DEPARTMENTS.DEPARTMENT_ID = stn_department.DEPT_CD)
             WHEN MATCHED THEN
                 UPDATE SET
