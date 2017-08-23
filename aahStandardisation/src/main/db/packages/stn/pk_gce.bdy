@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE PACKAGE BODY stn.PK_GCE AS
     PROCEDURE pr_gl_combo_edit_asgn_rval
     AS
@@ -92,6 +91,7 @@ and not exists (
              from
                  fdr.fr_stan_raw_general_codes  fsrgc
             join stn.gl_combo_edit_process      gcep   on to_char(trunc(to_number(fsrgc.message_id))) = to_char(gcep.row_sid)||to_char(gcea.ROW_SID)
+                                                      and gcep.feed_uuid = gcea.FEED_UUID
             join stn.identified_record          idr    on gcep.row_sid = idr.row_sid
        );
         p_no_processed_records := SQL%ROWCOUNT;
@@ -811,6 +811,7 @@ and not exists (
              from
                  fdr.fr_stan_raw_general_codes  fsrgc
             join stn.gl_combo_edit_process      gcep   on to_char(trunc(to_number(fsrgc.message_id))) = to_char(gcep.row_sid)||to_char(gcer.ROW_SID)
+                                                      and gcep.feed_uuid = gcer.FEED_UUID
             join stn.identified_record          idr    on gcep.row_sid = idr.row_sid
        );
         p_no_processed_records := SQL%ROWCOUNT;
@@ -935,17 +936,17 @@ and     exists (
             pr_gl_combo_edit_rule_sps(v_no_gcer_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status gl combo edit rule records', 'v_no_gcer_processed_records', NULL, v_no_gcer_processed_records, NULL);
             IF v_no_gcep_validated_records <> v_no_gcep_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcea_validated_records <> v_no_gcea_processed_records', NULL, NULL, NULL, NULL);
+                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcep_validated_records <> v_no_gcep_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
             END IF;
             IF v_no_gcea_validated_records <> v_no_gcea_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcer_validated_records <> v_no_gcer_processed_records', NULL, NULL, NULL, NULL);
+                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcea_validated_records <> v_no_gcea_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
                 raise pub_val_mismatch;
             END IF;
             IF v_no_gcer_validated_records <> v_no_gcer_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcep_identified_records <> v_no_gcep_processed_records', NULL, NULL, NULL, NULL);
+                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcer_identified_records <> v_no_gcer_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
                 raise pub_val_mismatch;
             END IF;
