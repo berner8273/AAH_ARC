@@ -6,7 +6,8 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_LE AS
             p_total_no_fsrpl_updated OUT NUMBER,
             p_total_no_fsrpb_updated OUT NUMBER,
             p_total_no_fsrie_updated OUT NUMBER,
-            p_total_no_fsrohn_updated OUT NUMBER
+            p_total_no_fsrohn_updated OUT NUMBER,
+            p_total_no_fsrb_updated OUT NUMBER
         )
     AS
     BEGIN
@@ -38,6 +39,25 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_LE AS
             WHERE
                 fsrohn.EVENT_STATUS <> 'P' AND fsrohn.LPG_ID = p_lpg_id;
         p_total_no_fsrohn_updated := SQL%ROWCOUNT;
+        UPDATE fdr.FR_STAN_RAW_BOOK fsrb
+            SET
+                EVENT_STATUS = 'X',
+                PROCESS_ID = TO_CHAR(p_step_run_sid)
+            WHERE
+                    fsrb.EVENT_STATUS != 'P'
+and fsrb.LPG_ID        = p_lpg_id
+and exists (
+               select
+                      null
+                 from
+                           stn.step_run sr
+                      join stn.step     s  on sr.step_id   = s.step_id
+                      join stn.process  p  on s.process_id = p.process_id
+                where
+                      sr.step_run_sid = to_number ( fsrb.PROCESS_ID )
+                  and p.process_name  = 'legal_entity-standardise'
+           );
+        p_total_no_fsrb_updated := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_legal_entity_idf
@@ -96,7 +116,8 @@ and not exists (
             p_total_no_fsrpl_published OUT NUMBER,
             p_total_no_fsrpb_published OUT NUMBER,
             p_total_no_fsrie_published OUT NUMBER,
-            p_total_no_fsrohn_published OUT NUMBER
+            p_total_no_fsrohn_published OUT NUMBER,
+            p_total_no_fsrb_published OUT NUMBER
         )
     AS
     BEGIN
@@ -205,6 +226,28 @@ and not exists (
             WHERE
                 le.EVENT_STATUS = 'V';
         p_total_no_fsrohn_published := SQL%ROWCOUNT;
+        INSERT INTO fdr.FR_STAN_RAW_BOOK
+            (LPG_ID, MESSAGE_ID, PROCESS_ID, SRB_BO_BOOK_CLICODE, SRB_BO_BOOK_NAME, SRB_BO_BANKING_OR_TRADING, SRB_SI_SOURCE_SYSTEM, SRB_BO_IPE_INTERNAL_ENTITY_CDE, SRB_BO_BS_BOOK_STATUS_CODE, SRB_BO_VALID_FROM, SRB_BO_ACTIVE)
+            SELECT
+                le.LPG_ID AS LPG_ID,
+                TO_CHAR(le.ROW_SID) AS MESSAGE_ID,
+                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
+                le.LE_CD AS SRB_BO_BOOK_CLICODE,
+                le.LE_DESCR AS SRB_BO_BOOK_NAME,
+                LE_DEFAULT.BANKING_TRADING_IND AS SRB_BO_BANKING_OR_TRADING,
+                LE_DEFAULT.SYSTEM_INSTANCE AS SRB_SI_SOURCE_SYSTEM,
+                le.LE_CD AS SRB_BO_IPE_INTERNAL_ENTITY_CDE,
+                LE_DEFAULT.BOOK_STATUS AS SRB_BO_BS_BOOK_STATUS_CODE,
+                fd.EFFECTIVE_DT AS SRB_BO_VALID_FROM,
+                LE_DEFAULT.ACTIVE_FLAG AS SRB_BO_ACTIVE
+            FROM
+                LEGAL_ENTITY le
+                INNER JOIN IDENTIFIED_RECORD idr ON le.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
+                INNER JOIN LE_DEFAULT ON 1 = 1
+            WHERE
+                le.IS_LEDGER_ENTITY = 'Y' AND le.EVENT_STATUS = 'V';
+        p_total_no_fsrb_published := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_legal_entity_rval
@@ -346,10 +389,12 @@ and     exists (
         v_total_no_fsrpb_published NUMBER(38, 9) DEFAULT 0;
         v_total_no_fsrie_published NUMBER(38, 9) DEFAULT 0;
         v_total_no_fsrohn_published NUMBER(38, 9) DEFAULT 0;
+        v_total_no_fsrb_published NUMBER(38, 9);
         v_total_no_fsrpl_updated NUMBER(38, 9) DEFAULT 0;
         v_total_no_fsrpb_updated NUMBER(38, 9) DEFAULT 0;
         v_total_no_fsrie_updated NUMBER(38, 9) DEFAULT 0;
         v_total_no_fsrohn_updated NUMBER(38, 9) DEFAULT 0;
+        v_total_no_fsrb_updated NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify legal entity records' );
@@ -357,7 +402,7 @@ and     exists (
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
         IF v_no_identified_records > 0 THEN
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
-            pr_legal_entity_chr(p_step_run_sid, p_lpg_id, v_total_no_fsrpl_published, v_total_no_fsrpb_published, v_total_no_fsrie_updated, v_total_no_fsrohn_updated);
+            pr_legal_entity_chr(p_step_run_sid, p_lpg_id, v_total_no_fsrpl_published, v_total_no_fsrpb_published, v_total_no_fsrie_updated, v_total_no_fsrohn_updated, v_total_no_fsrb_updated);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed party legal hopper records', 'v_total_no_fsrpl_updated', NULL, v_total_no_fsrpl_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed party business hopper records', 'v_total_no_fsrpb_updated', NULL, v_total_no_fsrpb_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed internal entity hopper records', 'v_total_no_fsrie_updated', NULL, v_total_no_fsrie_updated, NULL);
@@ -369,7 +414,7 @@ and     exists (
             pr_legal_entity_svs(v_no_validated_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting validated status', 'v_no_validated_records', NULL, v_no_validated_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish legal entity records' );
-            pr_legal_entity_pub(p_step_run_sid, v_total_no_fsrpl_published, v_total_no_fsrpb_published, v_total_no_fsrie_published, v_total_no_fsrohn_published);
+            pr_legal_entity_pub(p_step_run_sid, v_total_no_fsrpl_published, v_total_no_fsrpb_published, v_total_no_fsrie_published, v_total_no_fsrohn_published, v_total_no_fsrb_published);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing party_legal hopper records', 'v_total_no_fsrpl_published', NULL, v_total_no_fsrpl_published, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing party_business hopper records', 'v_total_no_fsrpb_published', NULL, v_total_no_fsrpb_published, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing internal entity hopper records', 'v_total_no_fsrie_published', NULL, v_total_no_fsrie_published, NULL);

@@ -25,6 +25,12 @@ select
      , max ( case when fgl.lk_match_key1 = 'EPG_ID'
                   then fgl.lk_lookup_value1
              end )                                               epg_id
+     , max ( case when fgl.lk_match_key1 = 'BANKING_TRADING'
+                  then fgl.lk_lookup_value1
+             end )                                               banking_trading_ind
+     , max ( case when fgl.lk_match_key1 = 'BOOK_STATUS'
+                  then fgl.lk_lookup_value1
+             end )                                               book_status
   from
        fdr.fr_general_lookup fgl
  where

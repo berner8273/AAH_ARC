@@ -25,6 +25,8 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'NO_GRACE_DAYS'        , '5' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'SLR_LPG_ID'           , '2' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'EPG_ID'               , 'AG' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'BANKING_TRADING'      , 'B' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'BOOK_STATUS'          , 'Production' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'RULE_SET'             , 'AG' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'LKT_CODE1'            , 'COMBO_RULESET' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'LKT_CODE2'            , 'COMBO_APPLICABLE' );
