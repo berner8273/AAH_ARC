@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE PACKAGE BODY stn.PK_USER AS
     PROCEDURE pr_user_detail_idf
         (
@@ -361,7 +362,15 @@ and     exists (
                 (SELECT
                     ud.EMPLOYEE_ID AS EMPLOYEE_ID,
                     ud.USER_NM AS USER_NM,
-                    USER_DEFAULT.DEFAULT_PW AS DEFAULT_PW
+                    USER_DEFAULT.LOCK_FLAG AS LOCK_FLAG,
+                    USER_DEFAULT.PASSWD AS PASSWD,
+                    USER_DEFAULT.PMS_PID AS PMS_PID,
+                    USER_DEFAULT.PRIVILEGES_FLAG AS PRIVILEGES_FLAG,
+                    USER_DEFAULT.SESSION_COUNT AS SESSION_COUNT,
+                    USER_DEFAULT.PASSWD_CHANGE_REQ AS PASSWD_CHANGE_REQ,
+                    USER_DEFAULT.PASSWD_EXP_PERIOD AS PASSWD_EXP_PERIOD,
+                    USER_DEFAULT.WRONG_PASSWD_COUNT AS WRONG_PASSWD_COUNT,
+                    USER_DEFAULT.ACCOUNT_LOCKOUT AS ACCOUNT_LOCKOUT
                 FROM
                     USER_DETAIL ud
                     INNER JOIN IDENTIFIED_RECORD idr ON ud.ROW_SID = idr.ROW_SID
@@ -374,9 +383,9 @@ and     exists (
                     ISUSR_NAME = stn_user.USER_NM
             WHEN NOT MATCHED THEN
                 INSERT
-                    (ISUSR_ID, ISUSR_NAME, ISUSR_LOCK, ISUSR_PASSWD)
+                    (ISUSR_ID, ISUSR_NAME, ISUSR_LOCK, ISUSR_PASSWD, ISUSR_PMS_PID, ISUSR_PRIVILEGES, ISUSR_SESSION_COUNT, ISUSR_PASSWD_CHANGE_REQ, ISUSR_PASSWD_EXP_PERIOD, ISUSR_WRONG_PASSWD_COUNT, ISUSR_ACCOUNT_LOCKOUT)
                     VALUES
-                    (stn_user.EMPLOYEE_ID, stn_user.USER_NM, 0, stn_user.DEFAULT_PW);
+                    (stn_user.EMPLOYEE_ID, stn_user.USER_NM, stn_user.LOCK_FLAG, stn_user.PASSWD, stn_user.PMS_PID, stn_user.PRIVILEGES_FLAG, stn_user.SESSION_COUNT, stn_user.PASSWD_CHANGE_REQ, stn_user.PASSWD_EXP_PERIOD, stn_user.WRONG_PASSWD_COUNT, stn_user.ACCOUNT_LOCKOUT);
         p_no_is_user_pub := SQL%ROWCOUNT;
         MERGE INTO fdr.IS_GROUPUSER IS_GROUPUSER
             USING
@@ -476,19 +485,21 @@ and     exists (
             USING
                 (SELECT
                     ud.EMPLOYEE_ID AS EMPLOYEE_ID,
-                    USER_DEFAULT.ENTITY_ID AS ENTITY_ID
+                    FR_PARTY_LEGAL.PL_PARTY_LEGAL_ID AS PL_PARTY_LEGAL_ID
                 FROM
                     USER_DETAIL ud
                     INNER JOIN IDENTIFIED_RECORD idr ON ud.ROW_SID = idr.ROW_SID
                     INNER JOIN USER_DEFAULT ON 1 = 1
+                    INNER JOIN fdr.FR_PARTY_TYPE FR_PARTY_TYPE ON USER_DEFAULT.PARTY_TYPE = FR_PARTY_TYPE.PT_PARTY_TYPE_NAME
+                    INNER JOIN fdr.FR_PARTY_LEGAL FR_PARTY_LEGAL ON FR_PARTY_TYPE.PT_PARTY_TYPE_ID = FR_PARTY_LEGAL.PL_PT_PARTY_TYPE_ID
                 WHERE
                     ud.EVENT_STATUS = 'V') stn_user
-            ON (T_UI_USER_ENTITIES.USER_ID = stn_user.EMPLOYEE_ID AND T_UI_USER_ENTITIES.ENTITY_ID = stn_user.ENTITY_ID)
+            ON (T_UI_USER_ENTITIES.USER_ID = stn_user.EMPLOYEE_ID AND T_UI_USER_ENTITIES.ENTITY_ID = stn_user.PL_PARTY_LEGAL_ID)
             WHEN NOT MATCHED THEN
                 INSERT
                     (USER_ID, ENTITY_ID)
                     VALUES
-                    (stn_user.EMPLOYEE_ID, stn_user.ENTITY_ID);
+                    (stn_user.EMPLOYEE_ID, stn_user.PL_PARTY_LEGAL_ID);
         p_no_t_ui_user_entities_pub := SQL%ROWCOUNT;
         DELETE FROM
             gui.T_UI_USER_ROLES T_UI_USER_ROLES
