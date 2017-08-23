@@ -174,7 +174,19 @@ and not exists (
                 EVENT_STATUS = 'X',
                 PROCESS_ID = TO_CHAR(p_step_run_sid)
             WHERE
-                fsrb.EVENT_STATUS <> 'P' AND fsrb.LPG_ID = p_lpg_id;
+                    fsrb.EVENT_STATUS != 'P'
+and fsrb.LPG_ID        = p_lpg_id
+and exists (
+               select
+                      null
+                 from
+                           stn.step_run sr
+                      join stn.step     s  on sr.step_id   = s.step_id
+                      join stn.process  p  on s.process_id = p.process_id
+                where
+                      sr.step_run_sid = to_number ( fsrb.PROCESS_ID )
+                  and p.process_name  = 'department-standardise'
+           );
         p_no_updated_hopper_records := SQL%ROWCOUNT;
     END;
     
