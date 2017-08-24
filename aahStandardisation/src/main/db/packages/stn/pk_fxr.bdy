@@ -476,6 +476,17 @@ and exists (
                 where
                       fxr.rate_typ = fsrfr.srf_fr_rty_rate_type_id
                   and fxr.rate_dt  = fsrfr.srf_fr_fxrate_date
+           )
+and exists (
+               select
+                      null
+                 from
+                           stn.step_run sr
+                      join stn.step     s  on sr.step_id   = s.step_id
+                      join stn.process  p  on s.process_id = p.process_id
+                where
+                      sr.step_run_sid = to_number ( fsrfr.PROCESS_ID )
+                  and p.process_name  = 'fx_rate-standardise'
            );
         p_no_updated_hopper_records := SQL%ROWCOUNT;
     END;
