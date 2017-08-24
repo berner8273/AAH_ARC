@@ -4,6 +4,7 @@ create table stn.insurance_policy_fx_rate
 ,   policy_id                varchar2 ( 30 char )                                   not null
 ,   from_ccy                 varchar2 ( 3 char )                                    not null
 ,   to_ccy                   varchar2 ( 3 char )                                    not null
+,   rate                     number   ( 38 , 9 )                                    not null
 ,   lpg_id                   number   ( 38 , 0 ) default 1                          not null
 ,   event_status             varchar2 ( 1 char ) default 'U'                        not null
 ,   feed_uuid                raw ( 16 )                                             not null

@@ -1,0 +1,3 @@
+insert into fdr.fr_instrument (i_instrument_id,i_it_instr_type_id,i_iat_instr_alias_type_clicode,i_si_sys_inst_id,i_shared_flag,i_instr_clicode,i_active,i_input_by,i_auth_by,i_auth_status,i_input_time,i_valid_from,i_valid_to,i_aud_flag)
+  values ('INSURANCE_POLICY','INSURANCE_POLICY','1','1','1','INSURANCE_POLICY','A','FDR Create','1','A',to_date('01-JAN-1901','DD-MON-YYYY'),to_date('01-JAN-1901','DD-MON-YYYY'),to_date('31-DEC-2099','DD-MON-YYYY'),'N');
+commit;

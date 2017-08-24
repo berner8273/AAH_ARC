@@ -39,36 +39,23 @@ as
     /*
      * VIE consoliation legal entity related
      */
-    type le_vie_entity_rec is record
-    (
-        basis_typ          fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
-    ,   path_to_vie_le_cd  varchar2 ( 500 char )
-    ,   vie_parent_le_cd   fdr.fr_party_legal.pl_party_legal_clicode%type
-    ,   vie_le_cd          fdr.fr_party_legal.pl_party_legal_clicode%type
-    );
-
-    type le_vie_entity_tab is table of le_vie_entity_rec index by binary_integer;
-
     type le_vie_path_segment_rec is record
     (
         basis_typ          fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
-    ,   lvl                number   ( 38 , 0 )
-    ,   path_segment_le_cd fdr.fr_party_legal.pl_party_legal_clicode%type
     ,   vie_le_cd          fdr.fr_party_legal.pl_party_legal_clicode%type
+    ,   vie_le_level       number   ( 38 , 0 )
+    ,   segment_lvl        number   ( 38 , 0 )
+    ,   path_segment_le_cd fdr.fr_party_legal.pl_party_legal_clicode%type
     );
 
     type le_vie_path_segment_tab is table of le_vie_path_segment_rec index by binary_integer;
 
     type le_vie_rec is record
     (
-        le_1_cd             fdr.fr_party_legal.pl_party_legal_clicode%type
-    ,   le_2_cd             fdr.fr_party_legal.pl_party_legal_clicode%type
-    ,   vie_le_cd           fdr.fr_party_legal.pl_party_legal_clicode%type
-    ,   basis_typ           fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
-    ,   path_to_le_1        varchar2 ( 500 char )
-    ,   path_to_le_2        varchar2 ( 500 char )
-    ,   common_parent_le_cd fdr.fr_party_legal.pl_party_legal_clicode%type
-    ,   derivation_method   varchar2 ( 20 char )
+        le_cd      fdr.fr_party_legal.pl_party_legal_clicode%type
+    ,   basis_typ  fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
+    ,   path_to_le varchar2 ( 500 char )
+    ,   vie_le_cd  fdr.fr_party_legal.pl_party_legal_clicode%type
     );
 
     type le_vie_tab is table of le_vie_rec;

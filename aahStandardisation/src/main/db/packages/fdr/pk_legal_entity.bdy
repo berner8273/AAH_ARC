@@ -45,21 +45,41 @@ as
               into
                    fdr.fr_entity_schema
                  (
-                     es_fga_gaap
+                     es_pl_gl_entity
+                 ,   es_fga_gaap
                  ,   es_ps_posting_schema
-                 ,   es_pl_gl_entity
                  ,   es_ledger
+                 ,   es_active
                  )
             select
-                   fgp.fga_gaap_id
+                   fpl.pl_party_legal_id
+                 , fgp.fga_gaap_id
                  , fps.ps_posting_schema
-                 , fpl.pl_party_legal_id
                  , sld.sl_ledger_name
+                 , 'A'                   es_active
               from
-                              fdr.fr_gaap           fgp
-                   cross join fdr.fr_posting_schema fps
-                   cross join fdr.fr_party_legal    fpl
-                   cross join slr.slr_ledgers       sld
+                              fdr.fr_party_legal fpl
+                   cross join (
+                                  select
+                                         min ( fga_gaap_id ) fga_gaap_id
+                                    from
+                                         fdr.fr_gaap
+                              )
+                              fgp
+                   cross join (
+                                  select
+                                         min ( ps_posting_schema ) ps_posting_schema
+                                    from
+                                         fdr.fr_posting_schema
+                              )
+                              fps
+                   cross join (
+                                  select
+                                         min ( sl_ledger_name ) sl_ledger_name
+                                    from
+                                         slr.slr_ledgers
+                              )
+                              sld
              where
                    fpl.pl_party_legal_id not in ( '1' , 'NVS' )
                and not exists (
@@ -68,10 +88,7 @@ as
                                     from
                                          fdr.fr_entity_schema fes
                                    where
-                                         fes.es_fga_gaap          = fgp.fga_gaap_id
-                                     and fes.es_ps_posting_schema = fps.ps_posting_schema
-                                     and fes.es_pl_gl_entity      = fpl.pl_party_legal_id
-                                     and fes.es_ledger            = sld.sl_ledger_name
+                                         fes.es_pl_gl_entity = fpl.pl_party_legal_id
                               );
 
             stn.pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Created fdr.fr_entity_schema records' , 'sql%rowcount' , null , sql%rowcount , null );

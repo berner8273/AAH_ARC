@@ -1,42 +1,29 @@
 create or replace view stn.cession_event_posting
 as
 with
-     ce_data
+     ce_base
   as (
             select
-                   cce.policy_id        policy_id
-                 , cce.stream_id        stream_id
-                 , vie.vie_id           vie_id
-                 , cce.vie_cd           vie_cd
-                 , cle.le_cd            le_cd
-                 , ip.is_mark_to_market is_mark_to_market
-                 , ip.premium_typ       premium_typ
-                 , pce.stream_id        parent_stream_id
-                 , ple.le_cd            parent_le_cd
+                   ip.policy_id
+                 , cs.stream_id
+                 , null                   parent_stream_id
+                 , vie.vie_id
+                 , vie.vie_cd
+                 , le.le_cd
+                 , ip.is_mark_to_market
+                 , ip.premium_typ
+                 , ip.accident_yr
+                 , ip.underwriting_yr
+                 , ip.policy_typ
+                 , null                   parent_cession_le_cd
               from
-                        stn.cession           cce
-                   join stn.legal_entity      cle on cce.le_id           = cle.le_id
-                   join stn.insurance_policy  ip  on cce.policy_id       = ip.policy_id
-                   join stn.cession_link      cl  on cce.stream_id       = cl.child_stream_id
-                   join stn.cession           pce on cl.parent_stream_id = pce.stream_id
-                   join stn.legal_entity      ple on pce.le_id           = ple.le_id
-                   join stn.vie_code          vie on cce.vie_cd          = vie.vie_cd
-         union all
-            select
-                   cce.policy_id        policy_id
-                 , cce.stream_id        stream_id
-                 , vie.vie_id           vie_id
-                 , cce.vie_cd           vie_cd
-                 , cle.le_cd            le_cd
-                 , ip.is_mark_to_market is_mark_to_market
-                 , ip.premium_typ       premium_typ
-                 , null                 parent_stream_id
-                 , null                 parent_le_id
-              from
-                        stn.cession           cce
-                   join stn.legal_entity      cle on cce.le_id     = cle.le_id
-                   join stn.insurance_policy  ip  on cce.policy_id = ip.policy_id
-                   join stn.vie_code          vie on cce.vie_cd    = vie.vie_cd
+                        stn.insurance_policy  ip
+                   join stn.cession           cs  on (
+                                                             ip.policy_id = cs.policy_id
+                                                         and ip.feed_uuid = cs.feed_uuid
+                                                     )
+                   join stn.vie_code          vie on cs.vie_cd = vie.vie_cd
+                   join stn.legal_entity      le  on cs.le_id  = le.le_id
              where
                    not exists (
                                   select
@@ -44,8 +31,63 @@ with
                                     from
                                          stn.cession_link cl
                                    where
-                                         cce.stream_id = cl.child_stream_id
+                                         cl.child_stream_id = cs.stream_id
+                                     and cl.feed_uuid       = cs.feed_uuid
                               )
+         union all
+            select
+                   ip.policy_id
+                 , ccs.stream_id
+                 , cl.parent_stream_id
+                 , vie.vie_id
+                 , vie.vie_cd
+                 , cle.le_cd
+                 , ip.is_mark_to_market
+                 , ip.premium_typ
+                 , ip.accident_yr
+                 , ip.underwriting_yr
+                 , ip.policy_typ
+                 , ple.le_cd              parent_cession_le_cd
+              from
+                        stn.insurance_policy  ip
+                   join stn.cession           ccs on (
+                                                             ip.policy_id = ccs.policy_id
+                                                         and ip.feed_uuid = ccs.feed_uuid
+                                                     )
+                   join stn.cession_link      cl  on (
+                                                             ccs.stream_id = cl.child_stream_id
+                                                         and ccs.feed_uuid = cl.feed_uuid
+                                                     )
+                   join stn.cession           pcs on (
+                                                             cl.parent_stream_id = pcs.stream_id
+                                                         and cl.feed_uuid        = pcs.feed_uuid
+                                                     )
+                   join stn.vie_code          vie on ccs.vie_cd = vie.vie_cd
+                   join stn.legal_entity      cle on ccs.le_id  = cle.le_id
+                   join stn.legal_entity      ple on pcs.le_id  = ple.le_id
+     )
+   , ce_data
+  as (
+             select
+                    cb.policy_id
+                  , cb.stream_id
+                  , cb.vie_id
+                  , cb.vie_cd
+                  , cb.le_cd
+                  , cb.is_mark_to_market
+                  , cb.premium_typ
+                  , cb.accident_yr
+                  , cb.underwriting_yr
+                  , cb.policy_typ
+                  , cb.parent_stream_id
+                  , cb.parent_cession_le_cd
+                  , connect_by_root ( cb.stream_id ) ultimate_parent_stream_id
+               from
+                    ce_base cb
+         start with
+                    cb.parent_stream_id is null
+         connect by
+                    prior cb.stream_id = cb.parent_stream_id
      )
    , cev_data
   as (
@@ -68,6 +110,10 @@ with
               , vie_cd
               , is_mark_to_market
               , premium_typ
+              , accident_yr
+              , underwriting_yr
+              , ultimate_parent_stream_id
+              , policy_typ
               , business_typ
               , generate_interco_accounting
               , business_unit
@@ -84,6 +130,7 @@ with
               , coalesce ( lag  ( reporting_amt ) over ( partition by business_type_association_id order by basis_cd )
                          , lead ( reporting_amt ) over ( partition by business_type_association_id order by basis_cd ) )   partner_reporting_amt
               , reporting_ccy
+              , lpg_id
            from (
                     select
                            rank () over ( order by
@@ -115,18 +162,22 @@ with
                          , ce_data.vie_cd
                          , ce_data.is_mark_to_market
                          , ce_data.premium_typ
+                         , ce_data.accident_yr
+                         , ce_data.underwriting_yr
+                         , ce_data.ultimate_parent_stream_id
+                         , ce_data.policy_typ
                          , cev.business_typ
                          , bt.generate_interco_accounting
                          , case
                                when bt.bu_derivation_method = 'CESSION'
                                then ce_data.le_cd
                                when bt.bu_derivation_method = 'PARENT_CESSION'
-                               then ce_data.parent_le_cd
+                               then ce_data.parent_cession_le_cd
                                else null
                            end                                                       business_unit
                          , case
                                when bt.bu_derivation_method = 'CESSION'
-                               then ce_data.parent_le_cd
+                               then ce_data.parent_cession_le_cd
                                when bt.bu_derivation_method = 'PARENT_CESSION'
                                then ce_data.le_cd
                                else null
@@ -137,6 +188,7 @@ with
                          , cev.functional_ccy
                          , cev.reporting_amt
                          , cev.reporting_ccy
+                         , cev.lpg_id
                       from
                                 stn.cession_event            cev
                            join stn.identified_record        idr     on cev.row_sid      = idr.row_sid
@@ -153,21 +205,28 @@ with
               , cev_data.correlation_uuid
               , vc.sub_event
               , cev_data.accounting_dt
+              , cev_data.policy_id
               , cev_data.stream_id
               , abasis.basis_cd
               , cev_data.business_typ
               , cev_data.premium_typ
+              , cev_data.accident_yr
+              , cev_data.underwriting_yr
+              , cev_data.ultimate_parent_stream_id
+              , cev_data.policy_typ
               , et.event_typ
               , vle.vie_le_cd                     business_unit
               , null                              affiliate
               , pldgr.ledger_cd
               , cev_data.vie_cd
+              , cev_data.is_mark_to_market
               , cev_data.transaction_ccy
               , cev_data.input_transaction_amt    transaction_amt
               , cev_data.functional_ccy
               , cev_data.input_functional_amt     functional_amt
               , cev_data.reporting_ccy
               , cev_data.input_reporting_amt      reporting_amt
+              , cev_data.lpg_id
            from
                      cev_data
                 join stn.vie_code                  vc     on cev_data.vie_id = vc.vie_id
@@ -180,8 +239,7 @@ with
                 join stn.event_type                et     on vpml.vie_event_typ_id = et.event_typ_id
                 join stn.posting_ledger            pldgr  on vpml.ledger_id        = pldgr.ledger_id
                 join stn.vie_legal_entity          vle    on (
-                                                                     cev_data.business_unit = vle.le_1_cd
-                                                                 and cev_data.affiliate     = vle.le_2_cd
+                                                                     cev_data.business_unit = vle.le_cd
                                                                  and abasis.basis_typ       = vle.basis_typ
                                                              )
                 join (
@@ -230,6 +288,10 @@ with
               , cev_data.is_mark_to_market
               , cev_data.vie_cd
               , cev_data.premium_typ
+              , cev_data.accident_yr
+              , cev_data.underwriting_yr
+              , cev_data.ultimate_parent_stream_id
+              , cev_data.policy_typ
               , cev_data.business_typ
               , cev_data.generate_interco_accounting
               , cev_data.business_unit
@@ -244,6 +306,7 @@ with
               , cev_data.reporting_ccy
               , cev_data.input_reporting_amt
               , cev_data.partner_reporting_amt
+              , cev_data.lpg_id
            from
                                                        cev_data
                 join stn.posting_method_derivation_mtm psmtm    on (
@@ -287,6 +350,10 @@ with
               , cev_data.is_mark_to_market
               , cev_data.vie_cd
               , cev_data.premium_typ
+              , cev_data.accident_yr
+              , cev_data.underwriting_yr
+              , cev_data.ultimate_parent_stream_id
+              , cev_data.policy_typ
               , cev_data.business_typ
               , cev_data.generate_interco_accounting
               , cev_data.business_unit
@@ -301,6 +368,7 @@ with
               , cev_data.reporting_ccy
               , cev_data.input_reporting_amt
               , cev_data.partner_reporting_amt
+              , cev_data.lpg_id
            from
                                                       cev_data
                 join stn.posting_method_derivation_le psml      on cev_data.business_unit = psml.le_cd
@@ -332,6 +400,10 @@ with
               , is_mark_to_market
               , vie_cd
               , premium_typ
+              , accident_yr
+              , underwriting_yr
+              , ultimate_parent_stream_id
+              , policy_typ
               , business_typ
               , generate_interco_accounting
               , business_unit
@@ -366,6 +438,7 @@ with
                     then input_reporting_amt - partner_reporting_amt
                     else null
                 end                                                         reporting_amt
+              , lpg_id
            from (
                        select
                               psm_cd
@@ -384,6 +457,10 @@ with
                             , is_mark_to_market
                             , vie_cd
                             , premium_typ
+                            , accident_yr
+                            , underwriting_yr
+                            , ultimate_parent_stream_id
+                            , policy_typ
                             , business_typ
                             , generate_interco_accounting
                             , business_unit
@@ -398,6 +475,7 @@ with
                             , reporting_ccy
                             , input_reporting_amt
                             , partner_reporting_amt
+                            , lpg_id
                          from
                               mtm_data
                     union all
@@ -418,6 +496,10 @@ with
                             , is_mark_to_market
                             , vie_cd
                             , premium_typ
+                            , accident_yr
+                            , underwriting_yr
+                            , ultimate_parent_stream_id
+                            , policy_typ
                             , business_typ
                             , generate_interco_accounting
                             , business_unit
@@ -432,6 +514,7 @@ with
                             , reporting_ccy
                             , input_reporting_amt
                             , partner_reporting_amt
+                            , lpg_id
                          from
                               le_data
                 )
@@ -455,6 +538,10 @@ with
               , non_intercompany_data.is_mark_to_market
               , non_intercompany_data.vie_cd
               , non_intercompany_data.premium_typ
+              , non_intercompany_data.accident_yr
+              , non_intercompany_data.underwriting_yr
+              , non_intercompany_data.ultimate_parent_stream_id
+              , non_intercompany_data.policy_typ
               , non_intercompany_data.business_typ
               , ele.elimination_le_cd                                business_unit
               , non_intercompany_data.business_unit                  affiliate
@@ -464,6 +551,7 @@ with
               , non_intercompany_data.functional_amt * -1            functional_amt
               , non_intercompany_data.reporting_ccy
               , non_intercompany_data.reporting_amt * -1             reporting_amt
+              , non_intercompany_data.lpg_id
            from
                      non_intercompany_data
                 join stn.elimination_legal_entity ele on (
@@ -529,6 +617,10 @@ with
               , is_mark_to_market
               , vie_cd
               , premium_typ
+              , accident_yr
+              , underwriting_yr
+              , ultimate_parent_stream_id
+              , policy_typ
               , null                                          business_typ
               , business_unit
               , null                                          affiliate
@@ -553,6 +645,7 @@ with
                            , abs ( reporting_amt_2 ) ) )
                 *
                 reporting_amt_sign                            reporting_amt
+              , lpg_id
            from (
                     select
                            intercompany_data.business_type_association_id
@@ -570,6 +663,10 @@ with
                          , intercompany_data.is_mark_to_market
                          , intercompany_data.vie_cd
                          , intercompany_data.premium_typ
+                         , intercompany_data.accident_yr
+                         , intercompany_data.underwriting_yr
+                         , intercompany_data.ultimate_parent_stream_id
+                         , intercompany_data.policy_typ
                          , intercompany_data.business_unit
                          , intercompany_data.transaction_ccy
                          , intercompany_data.transaction_amt                                              transaction_amt_1
@@ -625,6 +722,7 @@ with
                                                 , intercompany_data.reporting_ccy
                                          order by intercompany_data.intercompany_association_id
                                                 , intercompany_data.business_typ )                        reporting_amt_sign
+                         , intercompany_data.lpg_id
                       from
                            intercompany_data
                 )
@@ -647,21 +745,28 @@ with
                   , correlation_uuid
                   , sub_event
                   , accounting_dt
+                  , policy_id
                   , stream_id
                   , basis_cd
                   , business_typ
                   , premium_typ
+                  , accident_yr
+                  , underwriting_yr
+                  , ultimate_parent_stream_id
+                  , policy_typ
                   , event_typ
                   , business_unit
                   , affiliate
                   , ledger_cd
                   , vie_cd
+                  , is_mark_to_market
                   , transaction_ccy
                   , transaction_amt
                   , functional_ccy
                   , functional_amt
                   , reporting_ccy
                   , reporting_amt
+                  , lpg_id
                from
                     non_intercompany_data
           union all
@@ -670,21 +775,28 @@ with
                   , correlation_uuid
                   , sub_event
                   , accounting_dt
+                  , policy_id
                   , stream_id
                   , basis_cd
                   , business_typ
                   , premium_typ
+                  , accident_yr
+                  , underwriting_yr
+                  , ultimate_parent_stream_id
+                  , policy_typ
                   , event_typ
                   , business_unit
                   , affiliate
                   , ledger_cd
                   , vie_cd
+                  , is_mark_to_market
                   , transaction_ccy
                   , transaction_amt
                   , functional_ccy
                   , functional_amt
                   , reporting_ccy
                   , reporting_amt
+                  , lpg_id
                from
                     intercompany_data
           union all
@@ -693,21 +805,28 @@ with
                   , correlation_uuid
                   , sub_event
                   , accounting_dt
+                  , policy_id
                   , stream_id
                   , basis_cd
                   , business_typ
                   , premium_typ
+                  , accident_yr
+                  , underwriting_yr
+                  , ultimate_parent_stream_id
+                  , policy_typ
                   , event_typ
                   , business_unit
                   , affiliate
                   , ledger_cd
                   , vie_cd
+                  , is_mark_to_market
                   , transaction_ccy
                   , transaction_amt
                   , functional_ccy
                   , functional_amt
                   , reporting_ccy
                   , reporting_amt
+                  , lpg_id
                from
                     balancing_intercompany_data
           union all
@@ -716,21 +835,28 @@ with
                   , correlation_uuid
                   , sub_event
                   , accounting_dt
+                  , policy_id
                   , stream_id
                   , basis_cd
                   , business_typ
                   , premium_typ
+                  , accident_yr
+                  , underwriting_yr
+                  , ultimate_parent_stream_id
+                  , policy_typ
                   , event_typ
                   , business_unit
                   , affiliate
                   , ledger_cd
                   , vie_cd
+                  , is_mark_to_market
                   , transaction_ccy
                   , transaction_amt
                   , functional_ccy
                   , functional_amt
                   , reporting_ccy
                   , reporting_amt
+                  , lpg_id
                from
                     vie_data
                   ;
