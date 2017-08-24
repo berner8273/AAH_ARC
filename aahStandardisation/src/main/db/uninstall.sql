@@ -163,8 +163,8 @@ delete from fdr.fr_rate_type                 where rty_rate_type_id             
 delete from fdr.fr_party_type                where pt_party_type_name             in ( 'Internal' , 'External' , 'Customer' );
 delete from fdr.fr_city_lookup               where cil_ci_city_id                 = 'NVS';
 delete from fdr.fr_city                      where ci_city_id                     = 'NVS';
-delete from fdr.fr_general_codes             where gc_gct_code_type_id            = 'GL_CHARTFIELD' or gc_gct_code_type_id like 'COMBO%';
-delete from fdr.fr_general_code_types        where gct_code_type_id               = 'GL_CHARTFIELD' or gct_code_type_id    like 'COMBO%';
+delete from fdr.fr_general_codes             where gc_gct_code_type_id            in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' ) or gc_gct_code_type_id like 'COMBO%';
+delete from fdr.fr_general_code_types        where gct_code_type_id               in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' ) or gct_code_type_id    like 'COMBO%';
 delete from fdr.fr_org_hierarchy_type        where oht_org_hier_client_code       not in ( 'DEFAULT' );
 delete from fdr.fr_org_node_type             where ont_org_node_type_name         not in ( 'DEFAULT' );
 delete from fdr.is_groupuser                 where isgu_usr_ref                   != 3;
