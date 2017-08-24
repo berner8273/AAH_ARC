@@ -64,6 +64,10 @@ drop view  stn.hopper_gl_combo_edit_gc;
 drop view  stn.hopper_gl_combo_edit_gl;
 drop view  stn.hopper_tax_jurisdiction;
 drop view  stn.tax_jurisdiction_default;
+drop view  stn.hopper_cession_event;
+drop view  stn.hopper_insurance_policy;
+drop view  stn.insurance_policy_hierarchy;
+drop view  stn.pol_default;
 drop table stn.vie_posting_method_ledger;
 drop table stn.process_code_module;
 drop table stn.validation_column;
@@ -134,8 +138,8 @@ drop package      fdr.pk_legal_entity;
 delete from fdr.fr_global_parameter          where lpg_id = 2;
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
-delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' );
-delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' );
+delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' );
+delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' );
 delete from fdr.fr_fx_rate;
 delete from fdr.fr_party_business_lookup     where pbl_lookup_key                 != 'DEFAULT';
 delete from fdr.fr_party_business            where pbu_party_bus_client_code      != 'DEFAULT';
@@ -166,6 +170,14 @@ delete from fdr.fr_org_node_type             where ont_org_node_type_name       
 delete from fdr.is_groupuser                 where isgu_usr_ref                   != 3;
 delete from fdr.is_user                      where isusr_name                     != 'fdr_user';
 delete from fdr.is_group                     where isgrp_name                     = 'AG' ;
+delete from fdr.fr_instrument                where i_instrument_id                != '1';
+delete from fdr.fr_instr_type_lookup         where itl_lookup_key                 != 'DEFAULT';
+delete from fdr.fr_instrument_type           where it_instr_type_client_code      != 'DEFAULT';
+delete from fdr.fr_instr_type_class_lookup   where itcl_lookup_key                != 'DEFAULT';
+delete from fdr.fr_instr_type_class          where itc_instr_type_class_name      != 'DEFAULT';
+delete from fdr.fr_instr_type_sclass_lookup  where itscl_lookup_key               != 'DEFAULT';
+delete from fdr.fr_instr_type_superclass     where itsc_instr_type_super_clicode  != 'DEFAULT';
+
 commit;
 
 drop index fbi_fsrfr_message_id;
@@ -176,6 +188,7 @@ drop index fbi_fsrohs_message_id;
 drop index fbi_fsrpl_message_id;
 
 revoke select                   on fdr.fr_general_lookup            from stn;
+revoke select , insert , update on fdr.fr_stan_raw_acc_event        from stn;
 revoke select , insert , update on fdr.fr_stan_raw_general_codes    from stn;
 revoke select , insert , update on fdr.fr_stan_raw_general_lookup   from stn;
 revoke select                   on fdr.fr_internal_proc_entity_type from stn;
@@ -186,6 +199,7 @@ revoke select , insert , update on fdr.fr_general_code_types        from stn;
 revoke select , insert , update on fdr.is_user                      from stn;
 revoke select , insert , update on fdr.is_groupuser                 from stn;
 revoke select                   on fdr.is_group                     from stn;
+revoke          insert          on fdr.fr_rate_type                 from stn;
 
 conn ~gui_logon
 
