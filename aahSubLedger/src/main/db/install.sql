@@ -21,8 +21,11 @@ define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
 conn ~fdr_logon
 
+delete from fdr.fr_account_lookup_param;
 @@data/fdr/fr_gaap.sql
 @@data/fdr/fr_posting_schema.sql
+@@data/fdr/fr_account_lookup_param.sql
+@@data/fdr/fr_financial_amount.sql
 
 conn ~slr_logon
 

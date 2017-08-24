@@ -51,9 +51,14 @@ conn ~fdr_logon
 @@data/fdr/fr_org_node_type.sql
 @@data/fdr/fr_global_parameter.sql
 @@data/fdr/is_group.sql
+@@data/fdr/fr_instr_type_superclass.sql
+@@data/fdr/fr_instr_type_class.sql
+@@data/fdr/fr_instrument_type.sql
+@@data/fdr/fr_instrument.sql
 @@grants/tables/fdr/fr_general_code_types.sql
 @@grants/tables/fdr/fr_general_lookup.sql
 @@grants/tables/fdr/fr_posting_schema.sql
+@@grants/tables/fdr/fr_stan_raw_acc_event.sql
 @@grants/tables/fdr/fr_stan_raw_general_codes.sql
 @@grants/tables/fdr/fr_stan_raw_general_lookup.sql
 @@grants/tables/fdr/fr_stan_raw_org_hier_node.sql
@@ -62,6 +67,7 @@ conn ~fdr_logon
 @@grants/tables/fdr/is_user.sql
 @@grants/tables/fdr/is_groupuser.sql
 @@grants/tables/fdr/is_group.sql
+@@grants/tables/fdr/fr_rate_type.sql
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy
 @@indices/fdr/fr_stan_raw_book.sql
@@ -150,6 +156,10 @@ conn ~stn_logon
 @@views/stn/cession_event_posting.sql
 @@views/stn/gce_default.sql
 @@views/stn/user_default.sql
+@@views/stn/hopper_cession_event.sql
+@@views/stn/hopper_insurance_policy.sql
+@@views/stn/insurance_policy_hierarchy.sql
+@@views/stn/pol_default.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
 @@ri_constraints/stn/cession_event.sql

@@ -1,0 +1,1 @@
+grant insert on fdr.fr_rate_type to stn;

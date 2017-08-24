@@ -42,6 +42,7 @@ as
                      foht.oht_org_hier_client_code
                    , pfpl.pl_party_legal_clicode
                    ;
+
         end pr_set_elimination_entity_tab;
 
     begin
@@ -419,110 +420,97 @@ as
 
         type segment_tab is table of varchar2 ( 100 char ) index by varchar2 ( 100 char );
 
-        v_vie_entity_tab           stn.pk_le_hier.le_vie_entity_tab;
-        v_vie_path_segment_tab     stn.pk_le_hier.le_vie_path_segment_tab;
-        v_vie_rec                  stn.pk_le_hier.le_vie_rec;
-        v_segment_tab              segment_tab;
-        v_counter                  number ( 38 , 0 ) := 0;
+        v_vie_rec              stn.pk_le_hier.le_vie_rec;
+        v_vie_path_segment_tab stn.pk_le_hier.le_vie_path_segment_tab;
+        v_segment_tab          segment_tab;
+        v_counter              number ( 38 , 0 ) := 0;
 
         procedure pr_set_vie_entity_tabs
         as
+
+            vie_segment_key varchar2 ( 500 char );
+
         begin
-            with
-                 le_base
-              as
-               (
-                      select
-                             null                           parent_le_cd
-                           , fon.on_org_node_client_code    child_le_cd
-                           , foht.oht_org_hier_client_code  basis_typ
-                           , fpl.is_vie_entity
-                        from
-                                        fdr.fr_org_network        fon
-                             cross join fdr.fr_org_hierarchy_type foht
-                                   join (
-                                            select
-                                                   pl_party_legal_id
-                                                 , pl_client_text6           is_vie_entity
-                                              from
-                                                   fdr.fr_party_legal
-                                        ) fpl
-                                     on fon.on_pl_party_legal_id = fpl.pl_party_legal_id
-                       where
-                                 exists (
-                                            select
-                                                   null
-                                              from
-                                                        fdr.fr_org_node_structure pfons
-                                                   join fdr.fr_org_network        pfon  on pfons.ons_on_parent_org_node_id = pfon.on_org_node_id
-                                             where
-                                                   pfon.on_org_node_client_code   = fon.on_org_node_client_code
-                                               and pfons.ons_oht_org_hier_type_id = foht.oht_org_hier_type_id
-                                        )
-                         and not exists (
-                                            select
-                                                   null
-                                              from
-                                                        fdr.fr_org_node_structure cfons
-                                                   join fdr.fr_org_network        cfon  on cfons.ons_on_child_org_node_id = cfon.on_org_node_id
-                                             where
-                                                   cfon.on_org_node_client_code   = fon.on_org_node_client_code
-                                               and cfons.ons_oht_org_hier_type_id = foht.oht_org_hier_type_id
-                                        )
-
-                   union all
-
-                      select
-                             pfon.on_org_node_client_code  parent_le_cd
-                           , cfon.on_org_node_client_code  child_le_cd
-                           , foht.oht_org_hier_client_code basis_typ
-                           , fpl.is_vie_entity
-                        from
-                                  fdr.fr_org_node_structure fons
-                             join fdr.fr_org_hierarchy_type foht on fons.ons_oht_org_hier_type_id  = foht.oht_org_hier_type_id
-                             join fdr.fr_org_network        pfon on fons.ons_on_parent_org_node_id = pfon.on_org_node_id
-                             join fdr.fr_org_network        cfon on fons.ons_on_child_org_node_id  = cfon.on_org_node_id
-                             join (
-                                      select
-                                             pl_party_legal_id
-                                           , pl_client_text6           is_vie_entity
-                                        from
-                                             fdr.fr_party_legal
-                                  ) fpl
-                               on cfon.on_pl_party_legal_id = fpl.pl_party_legal_id
-               )
-                              select
-                                     d.basis_typ                                 basis_typ
-                                   , sys_connect_by_path ( d.child_le_cd , '/' ) path_to_vie_le_cd
-                                   , d.parent_le_cd                              vie_parent_le_cd
-                                   , d.child_le_cd                               vie_le_cd
-                                     bulk
-                                          collect
-                                                  into
-                                                       v_vie_entity_tab
-                                from
-                                     le_base d
-                               where
-                                     d.is_vie_entity = 'Y'
-                          start with
-                                     d.parent_le_cd is null
-                          connect by
-                                     prior d.child_le_cd = d.parent_le_cd
-                                 and prior d.basis_typ   = d.basis_typ
-                   order siblings by
-                                     d.child_le_cd asc
-                                   ;
-
-            stn.pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'v_vie_entity_tab.count', 'v_vie_entity_tab.count' , null , v_vie_entity_tab.count , null );
-
             for vie_entity in (
-                                  select
-                                         basis_typ
-                                       , path_to_vie_le_cd
-                                       , vie_parent_le_cd
-                                       , vie_le_cd
-                                    from
-                                         table ( v_vie_entity_tab )
+                                  with
+                                       le_base
+                                    as
+                                     (
+                                            select
+                                                   null                           parent_le_cd
+                                                 , fon.on_org_node_client_code    child_le_cd
+                                                 , foht.oht_org_hier_client_code  basis_typ
+                                                 , fpl.is_vie_entity
+                                              from
+                                                              fdr.fr_org_network        fon
+                                                   cross join fdr.fr_org_hierarchy_type foht
+                                                         join (
+                                                                  select
+                                                                         pl_party_legal_id
+                                                                       , pl_client_text6           is_vie_entity
+                                                                    from
+                                                                         fdr.fr_party_legal
+                                                              ) fpl
+                                                           on fon.on_pl_party_legal_id = fpl.pl_party_legal_id
+                                             where
+                                                       exists (
+                                                                  select
+                                                                         null
+                                                                    from
+                                                                              fdr.fr_org_node_structure pfons
+                                                                         join fdr.fr_org_network        pfon  on pfons.ons_on_parent_org_node_id = pfon.on_org_node_id
+                                                                   where
+                                                                         pfon.on_org_node_client_code   = fon.on_org_node_client_code
+                                                                     and pfons.ons_oht_org_hier_type_id = foht.oht_org_hier_type_id
+                                                              )
+                                               and not exists (
+                                                                  select
+                                                                         null
+                                                                    from
+                                                                              fdr.fr_org_node_structure cfons
+                                                                         join fdr.fr_org_network        cfon  on cfons.ons_on_child_org_node_id = cfon.on_org_node_id
+                                                                   where
+                                                                         cfon.on_org_node_client_code   = fon.on_org_node_client_code
+                                                                     and cfons.ons_oht_org_hier_type_id = foht.oht_org_hier_type_id
+                                                              )
+
+                                         union all
+
+                                            select
+                                                   pfon.on_org_node_client_code  parent_le_cd
+                                                 , cfon.on_org_node_client_code  child_le_cd
+                                                 , foht.oht_org_hier_client_code basis_typ
+                                                 , fpl.is_vie_entity
+                                              from
+                                                        fdr.fr_org_node_structure fons
+                                                   join fdr.fr_org_hierarchy_type foht on fons.ons_oht_org_hier_type_id  = foht.oht_org_hier_type_id
+                                                   join fdr.fr_org_network        pfon on fons.ons_on_parent_org_node_id = pfon.on_org_node_id
+                                                   join fdr.fr_org_network        cfon on fons.ons_on_child_org_node_id  = cfon.on_org_node_id
+                                                   join (
+                                                            select
+                                                                   pl_party_legal_id
+                                                                 , pl_client_text6           is_vie_entity
+                                                              from
+                                                                   fdr.fr_party_legal
+                                                        ) fpl
+                                                     on cfon.on_pl_party_legal_id = fpl.pl_party_legal_id
+                                     )
+                                                    select
+                                                           d.basis_typ                                 basis_typ
+                                                         , d.child_le_cd                               vie_le_cd
+                                                         , level                                       vie_le_level
+                                                         , sys_connect_by_path ( d.child_le_cd , '/' ) path_to_vie_le_cd
+                                                      from
+                                                           le_base d
+                                                     where
+                                                           d.is_vie_entity = 'Y'
+                                                start with
+                                                           d.parent_le_cd is null
+                                                connect by
+                                                           prior d.child_le_cd = d.parent_le_cd
+                                                       and prior d.basis_typ   = d.basis_typ
+                                         order siblings by
+                                                           d.child_le_cd asc
                               )
             loop
                 for le_path_segment in (
@@ -535,16 +523,18 @@ as
                                                       regexp_substr ( vie_entity.path_to_vie_le_cd , '[^/]+' , 1 , level ) is not null
                                        )
                 loop
-                    if not v_segment_tab.exists ( vie_entity.basis_typ || '-' || le_path_segment.path_segment_le_cd )
+                    vie_segment_key := vie_entity.basis_typ || '-' || le_path_segment.path_segment_le_cd || '-' || vie_entity.vie_le_cd;
+
+                    if not v_segment_tab.exists ( vie_segment_key )
                     then
                         v_counter := v_counter + 1;
 
-                        v_segment_tab ( vie_entity.basis_typ || '-' || le_path_segment.path_segment_le_cd ) := vie_entity.basis_typ || '-' || le_path_segment.path_segment_le_cd;
-                        v_vie_path_segment_tab ( v_counter ).basis_typ                                      := vie_entity.basis_typ;
-                        v_vie_path_segment_tab ( v_counter ).lvl                                            := le_path_segment.lvl;
-                        v_vie_path_segment_tab ( v_counter ).path_segment_le_cd                             := le_path_segment.path_segment_le_cd;
-                        v_vie_path_segment_tab ( v_counter ).vie_le_cd                                      := vie_entity.vie_le_cd;
-
+                        v_segment_tab ( vie_segment_key )                       := vie_segment_key;
+                        v_vie_path_segment_tab ( v_counter ).basis_typ          := vie_entity.basis_typ;
+                        v_vie_path_segment_tab ( v_counter ).vie_le_cd          := vie_entity.vie_le_cd;
+                        v_vie_path_segment_tab ( v_counter ).vie_le_level       := vie_entity.vie_le_level;
+                        v_vie_path_segment_tab ( v_counter ).segment_lvl        := le_path_segment.lvl;
+                        v_vie_path_segment_tab ( v_counter ).path_segment_le_cd := le_path_segment.path_segment_le_cd;
                     end if;
                 end loop;
             end loop;
@@ -555,79 +545,9 @@ as
 
         procedure pr_set_vie_le_cd
         (
-            p_basis_typ           in  fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
-        ,   p_path_to_le_1        in  varchar2
-        ,   p_path_to_le_2        in  varchar2
-        ,   p_common_parent_le_cd out fdr.fr_party_legal.pl_party_legal_clicode%type
-        ,   p_vie_le_cd           out fdr.fr_party_legal.pl_party_legal_clicode%type
-        )
-        is
-        begin
-            with
-                 common_parent
-              as (
-                         select
-                                level                                                                lvl
-                              , regexp_substr ( p_path_to_le_1 , '[^/]+' , 1 , level )               path_segment_le_cd
-                           from
-                                dual
-                     connect by
-                                regexp_substr ( p_path_to_le_1 , '[^/]+' , 1 , level ) is not null
-                      intersect
-                         select
-                                level                                                                lvl
-                              , regexp_substr ( p_path_to_le_2 , '[^/]+' , 1 , level )               path_segment_le_cd
-                           from
-                                dual
-                     connect by
-                                regexp_substr ( p_path_to_le_2 , '[^/]+' , 1 , level ) is not null
-                 )
-            select
-                   vie_parent_le_cd
-                 , vie_le_cd
-                   into
-                   p_common_parent_le_cd
-                 , p_vie_le_cd
-              from (
-                       select
-                              vie_parent_le_cd
-                            , vie_le_cd
-                            , min ( vie_le_cd ) over ( order by null ) minvie
-                         from (
-                                  select
-                                         cp.lvl                              lvl
-                                       , max ( lvl ) over ( order by null )  mxlvl
-                                       , eet.vie_parent_le_cd                vie_parent_le_cd
-                                       , eet.vie_le_cd                       vie_le_cd
-                                    from
-                                              common_parent                     cp
-                                         join table ( v_vie_entity_tab ) eet on (
-                                                                                        cp.path_segment_le_cd = eet.vie_parent_le_cd
-                                                                                    and eet.basis_typ         = p_basis_typ
-                                                                                )
-                              )
-                        where
-                              lvl = mxlvl
-                   )
-             where
-                   vie_le_cd = minvie
-                 ;
-        exception
-            when no_data_found then
-                /* No VIE consolidation entity can be found for this pair of legal entities. */
-                p_common_parent_le_cd := null;
-                p_vie_le_cd           := null;
-            when too_many_rows then
-                stn.pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'exception : too_many_rows', 'path_to_le_1' , null , null , p_path_to_le_1 );
-                stn.pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'exception : too_many_rows', 'path_to_le_2' , null , null , p_path_to_le_2 );
-                raise;
-        end pr_set_vie_le_cd;
-
-        procedure pr_set_vie_le_cd
-        (
-            p_basis_typ    in  fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
-        ,   p_path_to_le   in  varchar2
-        ,   p_vie_le_cd    out fdr.fr_party_legal.pl_party_legal_clicode%type
+            p_basis_typ  in  fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
+        ,   p_path_to_le in  varchar2
+        ,   p_vie_le_cd  out fdr.fr_party_legal.pl_party_legal_clicode%type
         )
         is
         begin
@@ -636,7 +556,7 @@ as
               as (
                          select
                                 /*+ cardinality ( 10 ) */
-                                level                                                          lvl
+                                level                                                          segment_lvl
                               , regexp_substr ( p_path_to_le , '[^/]+' , 1 , level )           path_segment_le_cd
                            from
                                 dual
@@ -645,7 +565,7 @@ as
                       intersect
                          select
                                 /*+ cardinality ( 10 ) */
-                                vpst.lvl
+                                vpst.segment_lvl
                               , vpst.path_segment_le_cd
                            from
                                 table ( v_vie_path_segment_tab ) vpst
@@ -659,28 +579,38 @@ as
               from (
                        select
                               vie_le_cd
-                            , min ( vie_le_cd ) over ( order by null ) minvie
+                            , min ( vie_le_cd ) over ( order by null ) min_vie_le_cd
                          from (
                                   select
-                                         /*+ cardinality ( 10 ) */
-                                         v.lvl                                      lvl
-                                       , v.vie_le_cd                                vie_le_cd
-                                       , max ( v.lvl ) over ( order by null )       mxlvl
-                                    from      isect                             i
-                                         join table ( v_vie_path_segment_tab )  v
-                                           on (
-                                                      i.lvl                = v.lvl
-                                                  and i.path_segment_le_cd = v.path_segment_le_cd
-                                              )
+                                         vie_le_cd
+                                       , vie_le_level
+                                       , min ( vie_le_level ) over ( order by null ) min_vie_le_level
+                                    from (
+                                             select
+                                                    /*+ cardinality ( 10 ) */
+                                                    v.vie_le_cd                                   vie_le_cd
+                                                  , v.vie_le_level                                vie_le_level
+                                                  , v.segment_lvl                                 segment_lvl
+                                                  , max ( v.segment_lvl ) over ( order by null )  max_segment_lvl
+                                               from      isect                             i
+                                                    join table ( v_vie_path_segment_tab )  v
+                                                      on (
+                                                                 i.segment_lvl        = v.segment_lvl
+                                                             and i.path_segment_le_cd = v.path_segment_le_cd
+                                                         )
+                                              where
+                                                    v.basis_typ = p_basis_typ
+                                         )
                                    where
-                                         v.basis_typ = p_basis_typ
+                                         segment_lvl = max_segment_lvl
                               )
                         where
-                              lvl = mxlvl
+                              vie_le_level = min_vie_le_level
                    )
              where
-                   vie_le_cd = minvie
+                   vie_le_cd = min_vie_le_cd
                  ;
+
         exception
             when no_data_found then
                 /* No VIE consolidation entity can be found for this legal entity. */
@@ -760,15 +690,10 @@ as
                                             where
                                                   fpl.is_vie_entity = 'N'
                                     )
-                                    ,
-                                         le_hier
-                                   as
-                                    (
                                                    select
                                                           d.child_le_cd                               le_cd
                                                         , d.basis_typ                                 basis_typ
                                                         , sys_connect_by_path ( d.child_le_cd , '/' ) path_to_le
-                                                        , d.is_vie_entity
                                                      from
                                                           le_base d
                                                start with
@@ -778,66 +703,18 @@ as
                                                       and prior d.basis_typ   = d.basis_typ
                                         order siblings by
                                                           d.child_le_cd asc
-                                    )
-                                        select
-                                               le1.le_cd       le_1_cd
-                                             , le2.le_cd       le_2_cd
-                                             , le1.basis_typ   basis_typ
-                                             , le1.path_to_le  path_to_le_1
-                                             , le2.path_to_le  path_to_le_2
-                                          from
-                                                    le_hier le1
-                                               join le_hier le2 on le1.basis_typ = le2.basis_typ
-                                         where
-                                               le1.le_cd > le2.le_cd
                              ) loop
 
-            v_vie_rec.le_1_cd             := hierarchy_rec.le_1_cd;
-            v_vie_rec.le_2_cd             := hierarchy_rec.le_2_cd;
-            v_vie_rec.basis_typ           := hierarchy_rec.basis_typ;
-            v_vie_rec.path_to_le_1        := hierarchy_rec.path_to_le_1;
-            v_vie_rec.path_to_le_2        := hierarchy_rec.path_to_le_2;
-            v_vie_rec.vie_le_cd           := null;
-            v_vie_rec.common_parent_le_cd := null;
-            v_vie_rec.derivation_method   := null;
+            v_vie_rec.le_cd      := hierarchy_rec.le_cd;
+            v_vie_rec.basis_typ  := hierarchy_rec.basis_typ;
+            v_vie_rec.path_to_le := hierarchy_rec.path_to_le;
+            v_vie_rec.vie_le_cd  := null;
 
-            pr_set_vie_le_cd ( hierarchy_rec.basis_typ , hierarchy_rec.path_to_le_1 , hierarchy_rec.path_to_le_2 , v_vie_rec.common_parent_le_cd , v_vie_rec.vie_le_cd );
+            pr_set_vie_le_cd ( hierarchy_rec.basis_typ , hierarchy_rec.path_to_le , v_vie_rec.vie_le_cd );
 
             if ( v_vie_rec.vie_le_cd is not null )
             then
-                v_vie_rec.derivation_method := 'common_parent';
-
                 pipe row ( v_vie_rec );
-
-                v_vie_rec.le_1_cd           := hierarchy_rec.le_2_cd;
-                v_vie_rec.le_2_cd           := hierarchy_rec.le_1_cd;
-                v_vie_rec.path_to_le_1      := hierarchy_rec.path_to_le_2;
-                v_vie_rec.path_to_le_2      := hierarchy_rec.path_to_le_1;
-
-                pipe row ( v_vie_rec );
-
-            else
-                v_vie_rec.derivation_method := 'nearest_vie';
-
-                pr_set_vie_le_cd ( hierarchy_rec.basis_typ , hierarchy_rec.path_to_le_1 , v_vie_rec.vie_le_cd );
-
-                if ( v_vie_rec.vie_le_cd is not null )
-                then
-                    pipe row ( v_vie_rec );
-                end if;
-
-                pr_set_vie_le_cd ( hierarchy_rec.basis_typ , hierarchy_rec.path_to_le_2 , v_vie_rec.vie_le_cd );
-
-                if ( v_vie_rec.vie_le_cd is not null )
-                then
-                    v_vie_rec.le_1_cd      := hierarchy_rec.le_2_cd;
-                    v_vie_rec.le_2_cd      := hierarchy_rec.le_1_cd;
-                    v_vie_rec.path_to_le_1 := hierarchy_rec.path_to_le_2;
-                    v_vie_rec.path_to_le_2 := hierarchy_rec.path_to_le_1;
-
-                    pipe row ( v_vie_rec );
-                end if;
-
             end if;
 
         end loop;
@@ -909,26 +786,18 @@ as
               into
                    stn.vie_legal_entity
                  (
-                     step_run_sid
-                 ,   basis_typ
-                 ,   le_1_cd
-                 ,   le_2_cd
-                 ,   vie_le_cd
-                 ,   path_to_le_1
-                 ,   path_to_le_2
-                 ,   derivation_method
-                 ,   common_parent_le_cd
+                   step_run_sid
+                 , basis_typ
+                 , le_cd
+                 , vie_le_cd
+                 , path_to_le
                  )
             select
-                     p_step_run_sid
-                 ,   basis_typ
-                 ,   le_1_cd
-                 ,   le_2_cd
-                 ,   vie_le_cd
-                 ,   path_to_le_1
-                 ,   path_to_le_2
-                 ,   derivation_method
-                 ,   common_parent_le_cd
+                   p_step_run_sid
+                 , basis_typ
+                 , le_cd
+                 , vie_le_cd
+                 , path_to_le
               from
                    table ( stn.pk_le_hier.fn_get_vie_entities ( p_step_run_sid ) )
                  ;
@@ -953,13 +822,9 @@ as
                             from (
                                      select
                                             basis_typ
-                                          , le_1_cd
-                                          , le_2_cd
+                                          , le_cd
                                           , vie_le_cd
-                                          , path_to_le_1
-                                          , path_to_le_2
-                                          , derivation_method
-                                          , common_parent_le_cd
+                                          , path_to_le
                                        from
                                             stn.vie_legal_entity
                                       where
@@ -967,13 +832,9 @@ as
                                       minus
                                      select
                                             basis_typ
-                                          , le_1_cd
-                                          , le_2_cd
+                                          , le_cd
                                           , vie_le_cd
-                                          , path_to_le_1
-                                          , path_to_le_2
-                                          , derivation_method
-                                          , common_parent_le_cd
+                                          , path_to_le
                                        from
                                             stn.vie_legal_entity
                                       where
@@ -985,13 +846,9 @@ as
                             from (
                                      select
                                             basis_typ
-                                          , le_1_cd
-                                          , le_2_cd
+                                          , le_cd
                                           , vie_le_cd
-                                          , path_to_le_1
-                                          , path_to_le_2
-                                          , derivation_method
-                                          , common_parent_le_cd
+                                          , path_to_le
                                        from
                                             stn.vie_legal_entity
                                       where
@@ -999,13 +856,9 @@ as
                                       minus
                                      select
                                             basis_typ
-                                          , le_1_cd
-                                          , le_2_cd
+                                          , le_cd
                                           , vie_le_cd
-                                          , path_to_le_1
-                                          , path_to_le_2
-                                          , derivation_method
-                                          , common_parent_le_cd
+                                          , path_to_le
                                        from
                                             stn.vie_legal_entity
                                       where
