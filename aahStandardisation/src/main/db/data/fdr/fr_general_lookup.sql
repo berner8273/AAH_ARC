@@ -60,4 +60,6 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'USER_DEFAULT'             , 'PARTY_TYPE'           , 'Ledger Entity' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'TAX_JURISDICTION_DEFAULT' , 'SRGC_GCT_CODE_TYPE_ID', 'TAX_JURISDICTION' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'SYSTEM_INSTANCE'      , 'Client Static' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'RATE_TYPE_PREFIX'     , '/POL/' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'PARTY_LEGAL'          , 'NVS' );
 commit;
