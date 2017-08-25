@@ -23,5 +23,6 @@ insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_orde
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'tax_jurisdiction-standardise'  , 1 , 'STN' , 1 , 'STN' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'tax_jurisdiction-dsr'          , 1 , 'FDR' , 1 , 'FDR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'maha01_acc_event'              , 2 , 'FDR' , 1 , 'FDR' , 'R' , 'aah' );
+insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'mahinp01_insurance_policy'     , 1 , 'FDR' , 1 , 'FDR' , 'R' , 'aah' );
 
 commit;
