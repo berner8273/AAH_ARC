@@ -12,7 +12,8 @@ create table stn.user_detail
 ,   feed_uuid        raw      ( 16 )                                       not null
 ,   no_retries       number   ( 38 , 0 )   default 0                       not null
 ,   step_run_sid     number   ( 38 , 0 )   default 0                       not null
-,   constraint pk_au                primary key ( row_sid )
-,   constraint uk_aunm              unique      ( user_nm , feed_uuid )
-,   constraint uk_aeid              unique      ( employee_id , feed_uuid )
+,   constraint pk_au       primary key ( row_sid )
+,   constraint uk_aunm     unique      ( user_nm , feed_uuid )
+,   constraint uk_aeid     unique      ( employee_id , feed_uuid )
+,   constraint ck_email    check       ( regexp_like ( email_address , '^(\S+)\@(\S+)\.(\S+)$' ) )
 );
