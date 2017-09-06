@@ -34,6 +34,9 @@ delete from fdr.fr_financial_amount;
 
 conn ~slr_logon
 
+drop package body slr.slr_pkg;
+drop package      slr.slr_pkg;
+
 delete from slr.slr_entities;
 delete from slr.slr_eba_definitions;
 delete from slr.slr_fak_definitions;
