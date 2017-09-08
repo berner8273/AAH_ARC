@@ -139,6 +139,7 @@ drop package body fdr.pk_legal_entity;
 drop package      fdr.pk_legal_entity;
 
 delete from fdr.fr_global_parameter          where lpg_id = 2;
+delete from fdr.fr_trade                     where t_fdr_tran_no             not in ( 'DEFAULT' );
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
 delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' );
@@ -180,6 +181,9 @@ delete from fdr.fr_instr_type_class_lookup   where itcl_lookup_key              
 delete from fdr.fr_instr_type_class          where itc_instr_type_class_name      != 'DEFAULT';
 delete from fdr.fr_instr_type_sclass_lookup  where itscl_lookup_key               != 'DEFAULT';
 delete from fdr.fr_instr_type_superclass     where itsc_instr_type_super_clicode  != 'DEFAULT';
+delete from fdr.fr_instr_insure_extend;
+delete from fdr.fr_address                   where ad_address_clicode             != 'DEFAULT';
+
 
 commit;
 

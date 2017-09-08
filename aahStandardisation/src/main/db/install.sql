@@ -34,6 +34,7 @@ conn ~gui_logon
 
 conn ~fdr_logon
 
+@@data/fdr/fr_address.sql
 @@data/fdr/fr_calendar.sql
 @@data/fdr/fr_calendar_week.sql
 @@data/fdr/fr_country.sql
