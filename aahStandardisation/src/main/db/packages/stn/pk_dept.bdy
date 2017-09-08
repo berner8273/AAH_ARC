@@ -155,8 +155,12 @@ and not exists (
              from
                        fdr.fr_stan_raw_book  fsrb
                   join stn.identified_record idr  on to_number ( fsrb.message_id ) = idr.row_sid
+                  join stn.step_run          sr   on to_number ( fsrb.process_id ) = sr.step_run_sid
+                  join stn.step              s    on sr.step_id                    = s.step_id
+                  join stn.process           p    on s.process_id                  = p.process_Id
             where
-                  idr.row_sid = dept.ROW_SID
+                  idr.row_sid    = dept.ROW_SID
+              and p.process_name = 'department-standardise'
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;

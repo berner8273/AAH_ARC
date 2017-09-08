@@ -1,0 +1,10 @@
+CREATE OR REPLACE PACKAGE stn.PK_POL AS
+    PROCEDURE pr_policy_prc
+        (
+            p_step_run_sid IN NUMBER,
+            p_lpg_id IN NUMBER,
+            p_no_processed_records OUT NUMBER,
+            p_no_failed_records OUT NUMBER
+        );
+END PK_POL;
+/
