@@ -48,6 +48,8 @@ drop package body stn.pk_user;
 drop package      stn.pk_user;
 drop package body stn.pk_tj;
 drop package      stn.pk_tj;
+drop package body stn.pk_pol;
+drop package      stn.pk_pol;
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -66,6 +68,7 @@ drop view  stn.hopper_tax_jurisdiction;
 drop view  stn.tax_jurisdiction_default;
 drop view  stn.hopper_cession_event;
 drop view  stn.hopper_insurance_policy;
+drop view  stn.hopper_insurance_policy_tj;
 drop view  stn.insurance_policy_hierarchy;
 drop view  stn.pol_default;
 drop table stn.vie_posting_method_ledger;
@@ -136,6 +139,7 @@ drop package body fdr.pk_legal_entity;
 drop package      fdr.pk_legal_entity;
 
 delete from fdr.fr_global_parameter          where lpg_id = 2;
+delete from fdr.fr_trade                     where t_fdr_tran_no             not in ( 'DEFAULT' );
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
 delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' );
@@ -163,8 +167,8 @@ delete from fdr.fr_rate_type                 where rty_rate_type_id             
 delete from fdr.fr_party_type                where pt_party_type_name             in ( 'Internal' , 'External' , 'Customer' );
 delete from fdr.fr_city_lookup               where cil_ci_city_id                 = 'NVS';
 delete from fdr.fr_city                      where ci_city_id                     = 'NVS';
-delete from fdr.fr_general_codes             where gc_gct_code_type_id            in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' ) or gc_gct_code_type_id like 'COMBO%';
-delete from fdr.fr_general_code_types        where gct_code_type_id               in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' ) or gct_code_type_id    like 'COMBO%';
+delete from fdr.fr_general_codes             where gc_gct_code_type_id            in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' , 'POLICY_TAX' ) or gc_gct_code_type_id like 'COMBO%';
+delete from fdr.fr_general_code_types        where gct_code_type_id               in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' , 'POLICY_TAX' ) or gct_code_type_id    like 'COMBO%';
 delete from fdr.fr_org_hierarchy_type        where oht_org_hier_client_code       not in ( 'DEFAULT' );
 delete from fdr.fr_org_node_type             where ont_org_node_type_name         not in ( 'DEFAULT' );
 delete from fdr.is_groupuser                 where isgu_usr_ref                   != 3;
@@ -177,6 +181,9 @@ delete from fdr.fr_instr_type_class_lookup   where itcl_lookup_key              
 delete from fdr.fr_instr_type_class          where itc_instr_type_class_name      != 'DEFAULT';
 delete from fdr.fr_instr_type_sclass_lookup  where itscl_lookup_key               != 'DEFAULT';
 delete from fdr.fr_instr_type_superclass     where itsc_instr_type_super_clicode  != 'DEFAULT';
+delete from fdr.fr_instr_insure_extend;
+delete from fdr.fr_address                   where ad_address_clicode             != 'DEFAULT';
+
 
 commit;
 

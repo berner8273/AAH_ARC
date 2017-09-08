@@ -182,12 +182,16 @@ and not exists (
                               select
                                      null
                                 from
-                                     fdr.fr_stan_raw_fx_rate fsrfr
+                                          fdr.fr_stan_raw_fx_rate fsrfr
+                                     join stn.step_run            sr    on to_number ( fsrfr.process_id ) = sr.step_run_sid
+                                     join stn.step                s     on sr.step_id                     = s.step_id
+                                     join stn.process             p     on s.process_id                   = p.process_id
                                where
                                      fsrfr.event_status                  = 'P'
                                  and fsrfr.srf_fr_fxrate_date            = fx_dt_set.rate_dt
                                  and fsrfr.srf_fr_cu_currency_numer_code = fcl.cul_currency_lookup_code
                                  and fsrfr.srf_fr_cu_currency_numer_code = fsrfr.srf_fr_cu_currency_denom_code
+                                 and p.process_name                      = 'fx_rate-standardise'
                           );
         p_total_no_1_1_published := sql%rowcount;
         p_total_no_published     := p_total_no_published + p_total_no_1_1_published + p_total_no_inverse_published;
@@ -288,8 +292,12 @@ and not exists (
              from
                        fdr.fr_stan_raw_fx_rate fsrfr
                   join stn.identified_record   idr   on to_number ( fsrfr.message_id ) = idr.row_sid
+                  join stn.step_run            sr    on to_number ( fsrfr.process_id ) = sr.step_run_sid
+                  join stn.step                s     on sr.step_id                     = s.step_id
+                  join stn.process             p     on s.process_id                   = p.process_id
             where
-                  idr.row_sid = fxr.ROW_SID
+                  idr.row_sid    = fxr.ROW_SID
+              and p.process_name = 'fx_rate-standardise'
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;

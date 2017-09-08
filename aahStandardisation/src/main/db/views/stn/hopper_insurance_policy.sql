@@ -5,12 +5,12 @@ select
      , fsrip.srin_contract_number                   original_policy_id
      , fsrip.srin_reference1                        underwriting_le_cd
      , fsrip.srin_reference2                        external_reinsurer_le_cd
-     , to_number ( fsrip.srin_reference3 )          accident_yr
+     , fsrip.srin_reference3                        accident_yr
      , fsrip.srin_trade_date                        close_dt
      , fsrip.srin_date1                             expected_maturity_dt
      , fsrip.srinx_accounting_year                  underwriting_yr
-     , fsrip.srin_portfolio                         policy_typ
-     , fsrip.srin_policy_holder_code                premium_typ
+     , fsrip.srin_portfolio                         portfolio_cd
+     , fsrip.srin_t_client_text3                    premium_typ
      , fsrip.srin_amount_type1                      is_mark_to_market
      , fsrip.srin_amount_type2                      is_credit_default_swap
      , fsrip.srinx_dimension1                       line_of_business_cd
@@ -35,8 +35,15 @@ select
      , fsrip.srin_accounting_date                   termination_dt
      , fsrip.srin_premium_amount                    loss_layer_pct
      , fsrip.srin_description                       cession_descr
-     , fsrip.srin_policy_holder_addrss_cde          vie_cd
+     , fsrip.srin_policy_holder_addrss_cde          policy_holder_address
+     , fsrip.srin_t_client_text4                    vie_cd
      , fsrip.srin_file_date                         vie_effective_dt
+     , fsrip.srin_buy_or_sell                       buy_or_sell
+     , fsrip.srin_source_system_code                system_cd
+     , fsrip.srin_policy_holder_code                policy_holder_le_cd
+     , fsrip.srinx_product_code                     instrument_type
+     , fsrip.srin_event_code                        event_code
+     , fsrip.srin_t_client_text5                    financial_instrument_id
      , fsrip.event_status                           event_status
      , fsrip.message_id                             message_id
      , fsrip.process_id                             process_id

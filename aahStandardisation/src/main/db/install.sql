@@ -34,6 +34,7 @@ conn ~gui_logon
 
 conn ~fdr_logon
 
+@@data/fdr/fr_address.sql
 @@data/fdr/fr_calendar.sql
 @@data/fdr/fr_calendar_week.sql
 @@data/fdr/fr_country.sql
@@ -158,6 +159,7 @@ conn ~stn_logon
 @@views/stn/user_default.sql
 @@views/stn/hopper_cession_event.sql
 @@views/stn/hopper_insurance_policy.sql
+@@views/stn/hopper_insurance_policy_tj.sql
 @@views/stn/insurance_policy_hierarchy.sql
 @@views/stn/pol_default.sql
 @@ri_constraints/stn/broken_feed.sql
@@ -248,5 +250,7 @@ conn ~stn_logon
 @@packages/stn/pk_feed_integrity.bdy
 @@packages/stn/pk_tj.hdr
 @@packages/stn/pk_tj.bdy
+@@packages/stn/pk_pol.hdr
+@@packages/stn/pk_pol.bdy
 
 exit
