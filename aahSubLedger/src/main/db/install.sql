@@ -34,5 +34,7 @@ commit;
 
 @@data/slr/slr_ledgers.sql
 @@data/slr/slr_entity_sets.sql
+@@packages/slr/slr_pkg.hdr
+@@packages/slr/slr_pkg.bdy
 
 exit
