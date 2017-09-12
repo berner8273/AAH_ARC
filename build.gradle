@@ -1,3 +1,4 @@
+apply from: 'aptitude.gradle'
 apply from: 'db.gradle'
 
 tasks.getByPath ( ':aah:aahCustom:aahSubLedger:installDbScripts' ).mustRunAfter       ( tasks.getByPath ( ':aah:aahCustom:aahGui:installDbScripts' ) );

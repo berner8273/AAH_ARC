@@ -1,0 +1,111 @@
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.apache.tools.ant.filters.ReplaceTokens;
+
+subprojects {
+    final Path PATH_TO_APTITUDE_SRC_DIR     = Paths.get ( projectDir.toURI() ).resolve ( 'src' ).resolve ( 'main' ).resolve ( 'aptitude' );
+    final Path PATH_TO_APTITUDE_BUILD_DIR   = Paths.get ( buildDir.toURI() ).resolve ( 'aptitude' );
+    final Path PATH_TO_APTITUDE_BASE_FOLDER = Paths.get ( "${environmentProperties.aptitudeBaseDirectory}" );
+    final Path PATH_TO_APTITUDE_BIN_FOLDER  = PATH_TO_APTITUDE_BASE_FOLDER.resolve ( 'bin' );
+    final Path PATH_TO_APTCMD               = PATH_TO_APTITUDE_BIN_FOLDER.resolve  ( 'aptcmd' );
+
+    task deployAptitudeExecutionFolders () {
+        onlyIf {
+            Files.exists ( PATH_TO_APTITUDE_SRC_DIR );
+        }
+
+        doLast {
+            DirectoryStream aptitudeSrcDirStream = Files.newDirectoryStream ( PATH_TO_APTITUDE_SRC_DIR );
+
+            try {
+                aptitudeSrcDirStream.each {
+                    if ( Files.isDirectory ( it ) && ! Files.isHidden ( it ) ) {
+                        String executionFolderName = it.fileName.toString ();
+                        try {
+                            exec {
+                                commandLine "${PATH_TO_APTCMD}" , '-add_folder' , '-folder' , executionFolderName , '-host' , "${environmentProperties.aptitudeHost}" , '-port' , "${environmentProperties.aptitudeServerPort}" , '-login' , "os\$${environmentProperties.aptitudeLinuxUsername}" , '-os_auth' , 'yes'
+                            }
+                        }
+                        catch ( Exception e )
+                        {
+                            //Do nothing
+                        }
+                    }
+                }
+            }
+            catch ( Exception e ) {
+                throw e;
+            }
+            finally {
+                aptitudeSrcDirStream.close ();
+            }
+        }
+    }
+
+    task prepareAptitudeProjects ( type: Copy , dependsOn: clean ) {
+        onlyIf {
+            Files.exists ( PATH_TO_APTITUDE_SRC_DIR );
+        }
+
+        from ( PATH_TO_APTITUDE_SRC_DIR.toFile().toString() ) {
+            exclude     '**/*.config'
+        }
+        from ( PATH_TO_APTITUDE_SRC_DIR.toFile().toString() ) {
+            include     '**/*.config'
+            filter      ( ReplaceTokens , tokens : [ env : env ] )
+            filter      ( ReplaceTokens , tokens : environmentProperties )
+        }
+        into PATH_TO_APTITUDE_BUILD_DIR.toFile()
+    }
+
+    task deployAptitudeProjects ( dependsOn: prepareAptitudeProjects ) {
+        mustRunAfter {
+            [ 'installDbScripts' , 'deployAptitudeExecutionFolders' ]
+        }
+        onlyIf {
+            project.hasProperty ( 'brdFileSet' );
+            Files.exists ( PATH_TO_APTITUDE_BUILD_DIR );
+        }
+        doLast {
+            assert ( brdFileSet == 'all' || brdFileSet.tokenize ( '.' ).last () == 'brd' );
+
+            DirectoryStream aptitudeSrcDirStream = Files.newDirectoryStream ( PATH_TO_APTITUDE_BUILD_DIR );
+
+            try {
+                aptitudeSrcDirStream.each {
+                    executionFolder -> if ( Files.isDirectory ( executionFolder ) && ! Files.isHidden ( executionFolder ) ) {
+                                           DirectoryStream projectDirStream = Files.newDirectoryStream ( executionFolder , "*.{brd}" );
+
+                                           try {
+                                               projectDirStream.each {
+                                                   if ( brdFileSet in [ 'all' , it.fileName.toString() ] ) {
+                                                       String executionFolderName = executionFolder.fileName.toString ();
+                                                       String pathToProject       = it.toString ();
+
+                                                       exec {
+                                                           commandLine "${PATH_TO_APTCMD}" , '-deploy' , '-project_file_path' , "${pathToProject}" , '-config_file_path' , "${pathToProject}.config" , '-redeployment_type' , 'full' , '-folder' , "${executionFolderName}" , '-host' , "${environmentProperties.aptitudeHost}" , '-port' , "${environmentProperties.aptitudeServerPort}" , '-login' , "os\$${environmentProperties.aptitudeLinuxUsername}" , '-os_auth' , 'yes'
+                                                       }
+                                                   }
+                                               }
+                                           }
+                                           catch ( Exception e ) {
+                                               throw e;
+                                           }
+                                           finally {
+                                               projectDirStream.close ();
+                                           }
+                                       }
+                }
+            }
+            catch ( Exception e ) {
+                throw e;
+            }
+            finally {
+                aptitudeSrcDirStream.close ();
+            }
+        }
+    }
+}
