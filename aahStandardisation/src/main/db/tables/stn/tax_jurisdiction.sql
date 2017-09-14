@@ -4,10 +4,12 @@ create table stn.tax_jurisdiction
 ,   tax_jurisdiction_cd    varchar2 ( 2 char )                                   not null
 ,   tax_jurisdiction_descr varchar2 ( 100 char )                                 not null
 ,   lpg_id                 number   ( 38 , 0 )   default 1                       not null
+,   tax_jurisdiction_sts   varchar2 ( 1 char )   default 'A'                     not null
 ,   event_status           varchar2 ( 1 char )   default 'U'                     not null
 ,   feed_uuid              raw      ( 16 )                                       not null
 ,   no_retries             number   ( 38 , 0 )   default 0                       not null
 ,   step_run_sid           number   ( 38 , 0 )   default 0                       not null
 ,   constraint pk_tj       primary key ( row_sid )
 ,   constraint uk_tj       unique      ( tax_jurisdiction_cd , feed_uuid )
+,   constraint ck_tax_jurisdiction_sts check       ( tax_jurisdiction_sts in ( 'A' , 'I' ) )
 );
