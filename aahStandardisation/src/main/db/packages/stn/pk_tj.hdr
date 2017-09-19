@@ -1,8 +1,3 @@
---- Generator tool: Aptitude Studio
---- Generator gender: Oracle
---- Generation time: 8/14/2017 1:50:15 PM
----
-
 CREATE OR REPLACE PACKAGE stn.PK_TJ AS
     PROCEDURE pr_tax_jurisdiction_prc
         (
