@@ -194,19 +194,21 @@ drop index fbi_fsrgc_message_id;
 drop index fbi_fsrohs_message_id;
 drop index fbi_fsrpl_message_id;
 
-revoke select                   on fdr.fr_general_lookup            from stn;
-revoke select , insert , update on fdr.fr_stan_raw_acc_event        from stn;
-revoke select , insert , update on fdr.fr_stan_raw_general_codes    from stn;
-revoke select , insert , update on fdr.fr_stan_raw_general_lookup   from stn;
-revoke select                   on fdr.fr_internal_proc_entity_type from stn;
-revoke select , insert , update on fdr.fr_stan_raw_org_hier_node    from stn;
-revoke select , insert , update on fdr.fr_stan_raw_org_hier_struc   from stn;
-revoke select                   on fdr.fr_posting_schema            from stn;
-revoke select , insert , update on fdr.fr_general_code_types        from stn;
-revoke select , insert , update on fdr.is_user                      from stn;
-revoke select , insert , update on fdr.is_groupuser                 from stn;
-revoke select                   on fdr.is_group                     from stn;
-revoke          insert          on fdr.fr_rate_type                 from stn;
+revoke select ,                   delete on fdr.fr_fx_rate                   from stn;
+revoke select                            on fdr.fr_general_lookup            from stn;
+revoke select , insert , update          on fdr.fr_stan_raw_acc_event        from stn;
+revoke select , insert , update          on fdr.fr_stan_raw_general_codes    from stn;
+revoke select , insert , update          on fdr.fr_stan_raw_general_lookup   from stn;
+revoke select                            on fdr.fr_internal_proc_entity_type from stn;
+revoke select , insert , update          on fdr.fr_stan_raw_org_hier_node    from stn;
+revoke select , insert , update          on fdr.fr_stan_raw_org_hier_struc   from stn;
+revoke select                            on fdr.fr_posting_schema            from stn;
+revoke select , insert , update          on fdr.fr_general_code_types        from stn;
+revoke select ,          update          on fdr.fr_general_codes             from stn;
+revoke select , insert , update          on fdr.is_user                      from stn;
+revoke select , insert , update          on fdr.is_groupuser                 from stn;
+revoke select                            on fdr.is_group                     from stn;
+revoke          insert                   on fdr.fr_rate_type                 from stn;
 
 conn ~gui_logon
 

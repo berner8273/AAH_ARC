@@ -45,6 +45,7 @@ conn ~fdr_logon
 @@data/fdr/fr_party_legal.sql
 @@data/fdr/fr_internal_proc_entity_type.sql
 @@data/fdr/fr_internal_proc_entity.sql
+@@data/fdr/fr_general_codes.sql
 @@data/fdr/fr_general_lookup_type.sql
 @@data/fdr/fr_general_lookup.sql
 @@data/fdr/fr_general_code_types.sql
@@ -56,6 +57,7 @@ conn ~fdr_logon
 @@data/fdr/fr_instr_type_class.sql
 @@data/fdr/fr_instrument_type.sql
 @@data/fdr/fr_instrument.sql
+@@grants/tables/fdr/fr_fx_rate.sql
 @@grants/tables/fdr/fr_general_code_types.sql
 @@grants/tables/fdr/fr_general_lookup.sql
 @@grants/tables/fdr/fr_posting_schema.sql
