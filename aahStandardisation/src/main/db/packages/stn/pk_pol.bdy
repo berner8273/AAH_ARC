@@ -4,7 +4,8 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
             p_step_run_sid IN NUMBER,
             p_lpg_id IN NUMBER,
             p_no_updated_hpol_records OUT NUMBER,
-            p_no_updated_fsrfr_records OUT NUMBER
+            p_no_updated_fsrfr_records OUT NUMBER,
+            p_no_updated_hpoltj_records OUT NUMBER
         )
     AS
     BEGIN
@@ -63,6 +64,39 @@ and exists (
                   and p.process_name  = 'insurance_policy-standardise'
            );
         p_no_updated_fsrfr_records := SQL%ROWCOUNT;
+        UPDATE HOPPER_INSURANCE_POLICY_TJ hpoltj
+            SET
+                EVENT_STATUS = 'X',
+                PROCESS_ID = TO_CHAR(p_step_run_sid)
+            WHERE
+                    hpoltj.EVENT_STATUS != 'P'
+and hpoltj.LPG_ID        = p_lpg_id
+and exists (
+               select
+                      null
+                 from
+                           stn.insurance_policy  pol
+                      join stn.insurance_policy_tax_jurisd  iptj  on (
+                                                                          pol.policy_id = iptj.policy_id
+                                                                      and pol.feed_uuid = iptj.feed_uuid
+                                                                     )
+                      join stn.identified_record idr on pol.row_sid   = idr.row_sid
+                where
+                      iptj.row_sid      = hpoltj.message_id
+                  and iptj.event_status = 'U'
+           )
+and exists (
+               select
+                      null
+                 from
+                           stn.step_run sr
+                      join stn.step     s  on sr.step_id   = s.step_id
+                      join stn.process  p  on s.process_id = p.process_id
+                where
+                      sr.step_run_sid = to_number ( hpoltj.PROCESS_ID )
+                  and p.process_name  = 'insurance_policy-standardise'
+           );
+        p_no_updated_hpoltj_records := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_policy_idf
@@ -331,13 +365,15 @@ and exists (
             p_step_run_sid IN NUMBER,
             p_total_no_fsrip_published OUT NUMBER,
             p_total_no_fsriptj_published OUT NUMBER,
+            p_total_no_pol_tj_updated OUT NUMBER,
             p_total_no_fsrfr_published OUT NUMBER,
-            p_total_no_frt_published OUT NUMBER
+            p_total_no_frt_published OUT NUMBER,
+            p_total_no_pol_fx_rate_deleted OUT NUMBER
         )
     AS
     BEGIN
         INSERT INTO HOPPER_INSURANCE_POLICY
-            (POLICY_ID, ORIGINAL_POLICY_ID, UNDERWRITING_LE_CD, EXTERNAL_REINSURER_LE_CD, ACCIDENT_YR, CLOSE_DT, EXPECTED_MATURITY_DT, UNDERWRITING_YR, PORTFOLIO_CD, PREMIUM_TYP, IS_MARK_TO_MARKET, IS_CREDIT_DEFAULT_SWAP, LINE_OF_BUSINESS_CD, TRANSACTION_CCY, STREAM_ID, ULTIMATE_PARENT_STREAM_ID, PARENT_STREAM_ID, LE_CD, HAS_PROFIT_COMMISSIONS, CESSION_TYP, GROSS_PAR_PCT, NET_PAR_PCT, GROSS_PREMIUM_PCT, CEDING_COMMISSION_PCT, NET_PREMIUM_PCT, POOLING_PCT, START_DT, EFFECTIVE_DT, STOP_DT, TERMINATION_DT, LOSS_LAYER_PCT, VIE_CD, VIE_EFFECTIVE_DT, BUY_OR_SELL, POLICY_HOLDER_LE_CD, SYSTEM_CD, POLICY_HOLDER_ADDRESS, INSTRUMENT_TYPE, EVENT_CODE, MESSAGE_ID, PROCESS_ID, FINANCIAL_INSTRUMENT_ID, CESSION_DESCR)
+            (POLICY_ID, ORIGINAL_POLICY_ID, UNDERWRITING_LE_CD, EXTERNAL_REINSURER_LE_CD, ACCIDENT_YR, CLOSE_DT, EXPECTED_MATURITY_DT, UNDERWRITING_YR, PORTFOLIO_CD, PREMIUM_TYP, IS_MARK_TO_MARKET, IS_CREDIT_DEFAULT_SWAP, LINE_OF_BUSINESS_CD, TRANSACTION_CCY, STREAM_ID, ULTIMATE_PARENT_STREAM_ID, PARENT_STREAM_ID, LE_CD, HAS_PROFIT_COMMISSIONS, CESSION_TYP, GROSS_PAR_PCT, NET_PAR_PCT, GROSS_PREMIUM_PCT, CEDING_COMMISSION_PCT, NET_PREMIUM_PCT, POOLING_PCT, START_DT, EFFECTIVE_DT, STOP_DT, TERMINATION_DT, LOSS_LAYER_PCT, VIE_CD, VIE_EFFECTIVE_DT, BUY_OR_SELL, POLICY_HOLDER_LE_CD, SYSTEM_CD, POLICY_HOLDER_ADDRESS, INSTRUMENT_TYPE, EVENT_CODE, MESSAGE_ID, PROCESS_ID, FINANCIAL_INSTRUMENT_ID, POLICY_NAME_STREAM_ID, POLICY_NAME, EXECUTION_TYP, EARNINGS_CALC_METHOD, RPT_LE_CD, ACTUAL_MATURITY_DT, POLICY_TYP, IS_UNCOLLECTABLE, POLICY_VERSION)
             SELECT
                 pol.POLICY_ID AS POLICY_ID,
                 pol.ORIGINAL_POLICY_ID AS ORIGINAL_POLICY_ID,
@@ -381,7 +417,25 @@ and exists (
                 TO_CHAR(cs.ROW_SID) AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 TO_CHAR(cs.STREAM_ID) AS FINANCIAL_INSTRUMENT_ID,
-                TO_CHAR(cs.STREAM_ID) AS CESSION_DESCR
+                pol.POLICY_NAME || ' - ' || TO_CHAR(cs.STREAM_ID) AS POLICY_NAME_STREAM_ID,
+                pol.POLICY_NAME AS POLICY_NAME,
+                pol.EXECUTION_TYP AS EXECUTION_TYP,
+                pol.EARNINGS_CALC_METHOD AS EARNINGS_CALC_METHOD,
+                cession_rpt_le.PL_PARTY_LEGAL_CLICODE AS RPT_LE_CD,
+                pol.ACTUAL_MATURITY_DT AS ACTUAL_MATURITY_DT,
+                pol.POLICY_TYP AS POLICY_TYP,
+                pol.IS_UNCOLLECTABLE AS IS_UNCOLLECTABLE,
+                (
+select nvl(max(ft.t_fdr_ver_no),0) + 1
+  from
+       fdr.fr_trade ft
+  join 
+       fdr.fr_instr_insure_extend fiie
+    on fiie.iie_instrument_id       = ft.t_i_instrument_id
+  where
+       fiie.iie_cover_signing_party = pol.POLICY_ID
+   and ft.t_source_tran_no          = cs.STREAM_ID
+) AS POLICY_VERSION
             FROM
                 INSURANCE_POLICY pol
                 INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
@@ -390,21 +444,23 @@ and exists (
                 INNER JOIN fdr.FR_PARTY_LEGAL underwriting_le ON pol.UNDERWRITING_LE_ID = to_number ( underwriting_le.PL_GLOBAL_ID )
                 LEFT OUTER JOIN fdr.FR_PARTY_LEGAL external_reinsurer_le ON pol.external_reinsurer_le_id = to_number ( external_reinsurer_le.PL_GLOBAL_ID )
                 INNER JOIN fdr.FR_PARTY_LEGAL cession_le ON cs.le_id = to_number ( cession_le.PL_GLOBAL_ID )
+                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL cession_rpt_le ON cs.rpt_le_id = to_number ( cession_rpt_le.PL_GLOBAL_ID )
                 INNER JOIN POL_DEFAULT pold ON 1 = 1
             WHERE
                 pol.EVENT_STATUS = 'V' AND cs.EVENT_STATUS = 'V';
         p_total_no_fsrip_published := SQL%ROWCOUNT;
-        INSERT INTO hopper_insurance_policy_tj
-            (policy_tax, policy_id, tax_jurisdiction_cd, tax_jurisdiction_sts, message_id, process_id, lpg_id, valid_from)
+        INSERT INTO HOPPER_INSURANCE_POLICY_TJ
+            (POLICY_TAX, POLICY_ID_TAX_CD, POLICY_ID, TAX_JURISDICTION_CD, TAX_JURISDICTION_STS, MESSAGE_ID, PROCESS_ID, LPG_ID, VALID_FROM)
             SELECT
-                pold.POLICY_TAX AS policy_tax,
-                poltjd.POLICY_ID AS policy_id,
-                poltjd.TAX_JURISDICTION_CD AS tax_jurisdiction_cd,
-                'A' AS tax_jurisdiction_sts,
-                TO_CHAR(poltjd.ROW_SID) AS message_id,
-                TO_CHAR(poltjd.STEP_RUN_SID) AS process_id,
-                poltjd.LPG_ID AS lpg_id,
-                fd.EFFECTIVE_DT AS valid_from
+                pold.POLICY_TAX AS POLICY_TAX,
+                poltjd.POLICY_ID || '_' || poltjd.TAX_JURISDICTION_CD AS POLICY_ID_TAX_CD,
+                poltjd.POLICY_ID AS POLICY_ID,
+                poltjd.TAX_JURISDICTION_CD AS TAX_JURISDICTION_CD,
+                'A' AS TAX_JURISDICTION_STS,
+                TO_CHAR(poltjd.ROW_SID) AS MESSAGE_ID,
+                TO_CHAR(poltjd.STEP_RUN_SID) AS PROCESS_ID,
+                poltjd.LPG_ID AS LPG_ID,
+                fd.EFFECTIVE_DT AS VALID_FROM
             FROM
                 INSURANCE_POLICY_TAX_JURISD poltjd
                 INNER JOIN POL_DEFAULT pold ON 1 = 1
@@ -412,6 +468,34 @@ and exists (
             WHERE
                 poltjd.EVENT_STATUS = 'V';
         p_total_no_fsriptj_published := SQL%ROWCOUNT;
+        UPDATE fdr.FR_GENERAL_CODES
+            SET
+                GC_ACTIVE = 'I',
+                GC_VALID_TO = CURRENT_DATE - 1
+            WHERE
+                    FR_GENERAL_CODES.GC_GCT_CODE_TYPE_ID = 'POLICY_TAX'
+and exists
+   (
+     select
+           null
+     from 
+           stn.insurance_policy_tax_jurisd iptj
+     where 
+            iptj.policy_id            = FR_GENERAL_CODES.GC_CLIENT_TEXT1
+        and iptj.event_status         = 'V'
+   )
+and not exists
+   (
+     select
+           null
+     from 
+           stn.insurance_policy_tax_jurisd iptj
+     where 
+            iptj.policy_id            = FR_GENERAL_CODES.GC_CLIENT_TEXT1
+        and iptj.tax_jurisdiction_cd  = FR_GENERAL_CODES.GC_CLIENT_TEXT2
+        and iptj.event_status         = 'V'
+   );
+        p_total_no_pol_tj_updated := SQL%ROWCOUNT;
         INSERT INTO fdr.FR_RATE_TYPE
             (RTY_RATE_TYPE_ID, RTY_RATE_TYPE_DESCRIPTION, RTY_ACTIVE, RTY_INPUT_BY, RTY_AUTH_BY, RTY_AUTH_STATUS, RTY_INPUT_TIME, RTY_VALID_FROM, RTY_VALID_TO)
             SELECT
@@ -472,6 +556,40 @@ and not exists (
             WHERE
                 polfxr.EVENT_STATUS = 'V';
         p_total_no_fsrfr_published := SQL%ROWCOUNT;
+        DELETE FROM
+            fdr.FR_FX_RATE FR_FX_RATE
+        WHERE
+                    FR_FX_RATE.FR_RTY_RATE_TYPE_ID like '/POL/%'
+and exists
+   (
+     select
+           null
+      from
+           stn.insurance_policy_fx_rate ipfr
+      join stn.insurance_policy ip
+           on ip.policy_id    = ipfr.policy_id
+          and ip.step_run_sid = ipfr.step_run_sid
+     where 
+            '/POL/' || ipfr.policy_id  = FR_FX_RATE.FR_RTY_RATE_TYPE_ID
+        and ipfr.event_status          = 'V'
+   )
+and not exists
+   (
+     select
+           null
+      from
+           stn.insurance_policy_fx_rate ipfr
+      join stn.insurance_policy ip
+           on ip.policy_id    = ipfr.policy_id
+          and ip.step_run_sid = ipfr.step_run_sid
+     where 
+            ip.CLOSE_DT                = FR_FX_RATE.FR_FXRATE_DATE
+        and ipfr.from_ccy              = FR_FX_RATE.FR_CU_CURRENCY_NUMER_ID
+        and ipfr.to_ccy                = FR_FX_RATE.FR_CU_CURRENCY_DENOM_ID
+        and '/POL/' || ipfr.policy_id  = FR_FX_RATE.FR_RTY_RATE_TYPE_ID
+        and ipfr.event_status          = 'V'
+   );
+        p_total_no_pol_fx_rate_deleted := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_policy_rval
@@ -1240,6 +1358,8 @@ and (
             where
                   p.process_name                 = 'insurance_policy-standardise'
               and to_number ( hiptj.message_id ) = poltjd.ROW_SID
+              and poltjd.EVENT_STATUS            = 'V'
+              and hiptj.event_status             = 'U'
        );
         p_no_fsriptj_processed_records := SQL%ROWCOUNT;
         UPDATE INSURANCE_POLICY pol
@@ -1272,6 +1392,8 @@ and (
             where
                   p.process_name                 = 'insurance_policy-standardise'
               and to_number ( fsrfr.message_id ) = polfxr.ROW_SID
+              and polfxr.EVENT_STATUS            = 'V'
+              and fsrfr.event_status             = 'U'
        );
         p_no_fsrfr_processed_records := SQL%ROWCOUNT;
         UPDATE CESSION_LINK cl
@@ -1312,13 +1434,16 @@ and exists (
         v_no_identified_records NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hpol_records NUMBER(38, 9) DEFAULT 0;
         v_no_updated_fsrfr_records NUMBER(38, 9) DEFAULT 0;
+        v_no_updated_hpoltj_records NUMBER(38, 9) DEFAULT 0;
         v_no_validated_cession_records NUMBER(38, 9) DEFAULT 0;
         v_no_errored_cession_records NUMBER(38, 9) DEFAULT 0;
         v_no_validated_fx_records NUMBER(38, 9) DEFAULT 0;
         v_total_no_fsrip_published NUMBER(38, 9) DEFAULT 0;
         v_total_no_fsriptj_published NUMBER(38, 9) DEFAULT 0;
+        v_total_no_pol_tj_updated NUMBER(38, 9) DEFAULT 0;
         v_total_no_frt_published NUMBER(38, 9) DEFAULT 0;
         v_total_no_fsrfr_published NUMBER(38, 9) DEFAULT 0;
+        v_total_no_pol_fx_rate_deleted NUMBER(38, 9) DEFAULT 0;
         v_no_fsrip_processed_records NUMBER(38, 9) DEFAULT 0;
         v_no_fsriptj_processed_records NUMBER(38, 9) DEFAULT 0;
         v_no_fsrfr_processed_records NUMBER(38, 9) DEFAULT 0;
@@ -1331,19 +1456,22 @@ and exists (
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
         IF v_no_identified_records > 0 THEN
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
-            pr_policy_chr(p_step_run_sid, p_lpg_id, v_no_updated_hpol_records, v_no_updated_fsrfr_records);
+            pr_policy_chr(p_step_run_sid, p_lpg_id, v_no_updated_hpol_records, v_no_updated_fsrfr_records, v_no_updated_hpoltj_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed policy hopper records', 'v_no_updated_hpol_records', NULL, v_no_updated_hpol_records, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed FX rate hopper records', 'v_no_updated_fsrfr_records', NULL, v_no_updated_fsrfr_records, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed tax jurisdiction hopper records', 'v_no_updated_hpoltj_records', NULL, v_no_updated_hpoltj_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate policy records' );
             pr_policy_rval(p_step_run_sid);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set policy status = "V"' );
             pr_policy_svs(p_step_run_sid, v_no_validated_cession_records, v_no_errored_cession_records, v_no_validated_fx_records);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish policy records' );
-            pr_policy_pub(p_step_run_sid, v_total_no_fsrip_published, v_total_no_fsriptj_published, v_total_no_fsrfr_published, v_total_no_frt_published);
+            pr_policy_pub(p_step_run_sid, v_total_no_fsrip_published, v_total_no_fsriptj_published, v_total_no_pol_tj_updated, v_total_no_fsrfr_published, v_total_no_frt_published, v_total_no_pol_fx_rate_deleted);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing insurance policy hopper records', 'v_total_no_fsrip_published', NULL, v_total_no_fsrip_published, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing insurance policy tax jurisd records', 'v_total_no_fsriptj_published', NULL, v_total_no_fsriptj_published, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed updating inactive insurance policy tax jurisd records', 'v_total_no_pol_tj_updated', NULL, v_total_no_pol_tj_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing fx rate type records', 'v_total_no_frt_published', NULL, v_total_no_frt_published, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed deleting prior insurance policy fx rate records', 'v_total_no_pol_fx_rate_deleted', NULL, v_total_no_pol_fx_rate_deleted, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing fx rate hopper records', 'v_total_no_fsrfr_published', NULL, v_total_no_fsrfr_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish log records' );
             pr_publish_log;
