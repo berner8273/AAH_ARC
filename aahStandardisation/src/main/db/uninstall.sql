@@ -38,6 +38,8 @@ drop package body stn.pk_glcf;
 drop package      stn.pk_glcf;
 drop package body stn.pk_le;
 drop package      stn.pk_le;
+drop package body stn.pk_ledg;
+drop package      stn.pk_ledg;
 drop package body stn.pk_lel;
 drop package      stn.pk_lel;
 drop package body stn.pk_le_hier;
@@ -71,6 +73,9 @@ drop view  stn.hopper_insurance_policy;
 drop view  stn.hopper_insurance_policy_tj;
 drop view  stn.insurance_policy_hierarchy;
 drop view  stn.pol_default;
+drop view  stn.hopper_accounting_basis_ledger
+drop view  stn.hopper_legal_entity_ledger;
+drop view  stn.ledger_default;
 drop table stn.vie_posting_method_ledger;
 drop table stn.process_code_module;
 drop table stn.validation_column;
@@ -132,6 +137,9 @@ drop table stn.gl_combo_edit_process;
 drop table stn.user_group;
 drop table stn.user_detail;
 drop table stn.tax_jurisdiction;
+drop table stn.accounting_basis_ledger;
+drop table stn.legal_entity_ledger;
+drop table stn.ledger;
 
 conn ~fdr_logon
 
@@ -142,8 +150,8 @@ delete from fdr.fr_global_parameter          where lpg_id = 2;
 delete from fdr.fr_trade                     where t_fdr_tran_no             not in ( 'DEFAULT' );
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
-delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' );
-delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' );
+delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' );
+delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' );
 delete from fdr.fr_fx_rate;
 delete from fdr.fr_party_business_lookup     where pbl_lookup_key                 != 'DEFAULT';
 delete from fdr.fr_party_business            where pbu_party_bus_client_code      != 'DEFAULT';
@@ -195,14 +203,16 @@ drop index fbi_fsrohs_message_id;
 drop index fbi_fsrpl_message_id;
 
 revoke select ,                   delete on fdr.fr_fx_rate                   from stn;
-revoke select                            on fdr.fr_general_lookup            from stn;
+revoke select ,                          on fdr.fr_gaap                      from stn;
+revoke select ,          update          on fdr.fr_general_lookup            from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_acc_event        from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_general_codes    from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_general_lookup   from stn;
 revoke select                            on fdr.fr_internal_proc_entity_type from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_node    from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_struc   from stn;
-revoke select                            on fdr.fr_posting_schema            from stn;
+revoke select ,                          on fdr.fr_party_legal               from stn;
+revoke select , insert , update          on fdr.fr_posting_schema            from stn;
 revoke select , insert , update          on fdr.fr_general_code_types        from stn;
 revoke select ,          update          on fdr.fr_general_codes             from stn;
 revoke select , insert , update          on fdr.is_user                      from stn;

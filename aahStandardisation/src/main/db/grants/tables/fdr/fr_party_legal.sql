@@ -1,0 +1,1 @@
+grant select on fdr.fr_party_legal to stn;

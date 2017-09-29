@@ -57,9 +57,11 @@ conn ~fdr_logon
 @@data/fdr/fr_instrument_type.sql
 @@data/fdr/fr_instrument.sql
 @@grants/tables/fdr/fr_fx_rate.sql
+@@grants/tables/fdr/fr_gaap.sql
 @@grants/tables/fdr/fr_general_codes.sql
 @@grants/tables/fdr/fr_general_code_types.sql
 @@grants/tables/fdr/fr_general_lookup.sql
+@@grants/tables/fdr/fr_party_legal.sql
 @@grants/tables/fdr/fr_posting_schema.sql
 @@grants/tables/fdr/fr_stan_raw_acc_event.sql
 @@grants/tables/fdr/fr_stan_raw_general_codes.sql
@@ -82,6 +84,7 @@ conn ~fdr_logon
 
 conn ~stn_logon
 
+@@tables/stn/accounting_basis_ledger.sql
 @@tables/stn/broken_feed.sql
 @@tables/stn/business_type.sql
 @@tables/stn/cession.sql
@@ -113,8 +116,10 @@ conn ~stn_logon
 @@tables/stn/insurance_policy.sql
 @@tables/stn/insurance_policy_fx_rate.sql
 @@tables/stn/insurance_policy_tax_jurisd.sql
+@@tables/stn/ledger.sql
 @@tables/stn/elimination_legal_entity.sql
 @@tables/stn/legal_entity.sql
+@@tables/stn/legal_entity_ledger.sql
 @@tables/stn/legal_entity_link.sql
 @@tables/stn/legal_entity_type.sql
 @@tables/stn/line_of_business.sql
@@ -147,12 +152,15 @@ conn ~stn_logon
 @@views/stn/feed_missing_record_count.sql
 @@views/stn/fxr_default.sql
 @@views/stn/gla_default.sql
+@@views/stn/hopper_accounting_basis_ledger.sql
 @@views/stn/hopper_gl_chartfield.sql
 @@views/stn/hopper_gl_combo_edit_gc.sql
 @@views/stn/hopper_gl_combo_edit_gl.sql
+@@views/stn/hopper_legal_entity_ledger.sql
 @@views/stn/hopper_tax_jurisdiction.sql
 @@views/stn/tax_jurisdiction_default.sql
 @@views/stn/le_default.sql
+@@views/stn/ledger_default.sql
 @@views/stn/row_val_error_log_default.sql
 @@views/stn/set_val_error_log_default.sql
 @@views/stn/validation_detail.sql
@@ -164,6 +172,7 @@ conn ~stn_logon
 @@views/stn/hopper_insurance_policy_tj.sql
 @@views/stn/insurance_policy_hierarchy.sql
 @@views/stn/pol_default.sql
+@@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
 @@ri_constraints/stn/cession_event.sql
@@ -183,6 +192,7 @@ conn ~stn_logon
 @@ri_constraints/stn/insurance_policy_fx_rate.sql
 @@ri_constraints/stn/insurance_policy_tax_jurisd.sql
 @@ri_constraints/stn/legal_entity.sql
+@@ri_constraints/stn/legal_entity_ledger.sql
 @@ri_constraints/stn/legal_entity_link.sql
 @@ri_constraints/stn/posting_accounting_basis.sql
 @@ri_constraints/stn/posting_method_derivation_ic.sql
@@ -242,6 +252,8 @@ conn ~stn_logon
 @@packages/stn/pk_dept.bdy
 @@packages/stn/pk_le.hdr
 @@packages/stn/pk_le.bdy
+@@packages/stn/pk_ledg.hdr
+@@packages/stn/pk_ledg.bdy
 @@packages/stn/pk_lel.hdr
 @@packages/stn/pk_lel.bdy
 @@packages/stn/pk_le_hier.hdr

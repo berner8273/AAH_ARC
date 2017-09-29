@@ -4,6 +4,7 @@ insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'GLA_DEFAULT'              , 'Default values used in the GL account standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'DEPT_DEFAULT'             , 'Default values used in the department standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'LE_DEFAULT'               , 'Default values used in the legal entity standardisation process' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'LEDGER_DEFAULT'           , 'Default values used in the ledger standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'GCE_DEFAULT'              , 'Default values used in the GL combo edit standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'COMBO_CHECK'              , 'Rules determining valid combo edit combinations' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'COMBO_APPLICABLE'         , 'Rules determining data checked by combo edit process' );
@@ -11,4 +12,6 @@ insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'USER_DEFAULT'             , 'Default values used in the user standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'TAX_JURISDICTION_DEFAULT' , 'Default values used in the tax jurisdiction standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'POL_DEFAULT'              , 'Default values used in the insurance policy standardisation process' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_BASIS_LEDGER'  , 'Accounting basis ledger relationships' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'LEGAL_ENTITY_LEDGER'      , 'Legal entity ledger relationships' );
 commit;

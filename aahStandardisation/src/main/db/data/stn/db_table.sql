@@ -16,5 +16,8 @@ insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'gl_combo_edit_ru
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'user_detail' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'user_group' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'tax_jurisdiction' );
+insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'ledger' );
+insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'accounting_basis_ledger' );
+insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'legal_entity_ledger' );
 
 commit;
