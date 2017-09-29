@@ -95,12 +95,13 @@ and not exists (
     PROCEDURE pr_gl_account_pub
         (
             p_step_run_sid IN NUMBER,
-            p_total_no_published OUT NUMBER
+            p_total_no_published OUT NUMBER,
+            p_total_no_sub_acct_published OUT NUMBER
         )
     AS
     BEGIN
         INSERT INTO fdr.FR_STAN_RAW_GL_ACCOUNT
-            (SRGA_GA_ACCOUNT_CODE, SRGA_GA_ACTIVE, SRGA_GA_ACCOUNT_TYPE, SRGA_GA_CLIENT_TEXT2, SRGA_GA_ACCOUNT_NAME, SRGA_GA_ACCOUNT_ADJ_TYPE, SRGA_GA_CLIENT_TEXT3, LPG_ID, MESSAGE_ID, PROCESS_ID)
+            (SRGA_GA_ACCOUNT_CODE, SRGA_GA_ACTIVE, SRGA_GA_ACCOUNT_TYPE, SRGA_GA_CLIENT_TEXT2, SRGA_GA_ACCOUNT_NAME, SRGA_GA_ACCOUNT_ADJ_TYPE, SRGA_GA_CLIENT_TEXT3, SRGA_GA_CLIENT_TEXT4, LPG_ID, MESSAGE_ID, PROCESS_ID)
             SELECT
                 gla.ACCT_CD AS SRGA_GA_ACCOUNT_CODE,
                 gla.ACCT_STS AS SRGA_GA_ACTIVE,
@@ -109,6 +110,7 @@ and not exists (
                 gla.ACCT_DESCR AS SRGA_GA_ACCOUNT_NAME,
                 GLA_DEFAULT.ADJUSTMENT_TYPE AS SRGA_GA_ACCOUNT_ADJ_TYPE,
                 GLA_DEFAULT.ACCOUNT_GENUS AS SRGA_GA_CLIENT_TEXT3,
+                gla.ACCT_CD AS SRGA_GA_CLIENT_TEXT4,
                 gla.LPG_ID AS LPG_ID,
                 TO_CHAR(gla.ROW_SID) AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID
@@ -117,6 +119,25 @@ and not exists (
                 INNER JOIN IDENTIFIED_RECORD idr ON gla.ROW_SID = idr.ROW_SID
                 INNER JOIN GLA_DEFAULT ON 1 = 1;
         p_total_no_published := SQL%ROWCOUNT;
+        INSERT INTO fdr.FR_STAN_RAW_GL_ACCOUNT
+            (SRGA_GA_ACCOUNT_CODE, SRGA_GA_ACTIVE, SRGA_GA_ACCOUNT_TYPE, SRGA_GA_CLIENT_TEXT2, SRGA_GA_ACCOUNT_NAME, SRGA_GA_ACCOUNT_ADJ_TYPE, SRGA_GA_CLIENT_TEXT3, SRGA_GA_CLIENT_TEXT4, LPG_ID, MESSAGE_ID, PROCESS_ID)
+            SELECT
+                gla.ACCT_CD || '-01' AS SRGA_GA_ACCOUNT_CODE,
+                gla.ACCT_STS AS SRGA_GA_ACTIVE,
+                gla.ACCT_TYP AS SRGA_GA_ACCOUNT_TYPE,
+                gla.ACCT_CAT AS SRGA_GA_CLIENT_TEXT2,
+                gla.ACCT_DESCR AS SRGA_GA_ACCOUNT_NAME,
+                GLA_DEFAULT.ADJUSTMENT_TYPE AS SRGA_GA_ACCOUNT_ADJ_TYPE,
+                GLA_DEFAULT.ACCOUNT_GENUS AS SRGA_GA_CLIENT_TEXT3,
+                gla.ACCT_CD AS SRGA_GA_CLIENT_TEXT4,
+                gla.LPG_ID AS LPG_ID,
+                TO_CHAR(gla.ROW_SID) || '.01' AS MESSAGE_ID,
+                TO_CHAR(p_step_run_sid) AS PROCESS_ID
+            FROM
+                GL_ACCOUNT gla
+                INNER JOIN IDENTIFIED_RECORD idr ON gla.ROW_SID = idr.ROW_SID
+                INNER JOIN GLA_DEFAULT ON 1 = 1;
+        p_total_no_sub_acct_published := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_gl_account_sps
@@ -170,6 +191,7 @@ and not exists (
         v_no_processed_records NUMBER(38, 9) DEFAULT 0;
         v_total_no_published NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hopper_records NUMBER(38, 9) DEFAULT 0;
+        v_total_no_sub_acct_published NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify GL account records' );
@@ -180,8 +202,9 @@ and not exists (
             pr_gl_account_chr(p_step_run_sid, p_lpg_id, v_no_updated_hopper_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed hopper records', 'v_no_updated_hopper_records', NULL, v_no_updated_hopper_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish GL account records' );
-            pr_gl_account_pub(p_step_run_sid, v_total_no_published);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing records', 'v_total_no_published', NULL, v_total_no_published, NULL);
+            pr_gl_account_pub(p_step_run_sid, v_total_no_published, v_total_no_sub_acct_published);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing GL account records', 'v_total_no_published', NULL, v_total_no_published, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing sub-account records', 'v_total_no_sub_acct_published', NULL, v_total_no_sub_acct_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set GL Account status = "P"' );
             pr_gl_account_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
@@ -192,6 +215,11 @@ and not exists (
             END IF;
             IF v_no_processed_records <> v_total_no_published THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_total_no_published', NULL, NULL, NULL, NULL);
+                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
+                raise pub_val_mismatch;
+            END IF;
+            IF v_total_no_published <> v_total_no_sub_acct_published THEN
+                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_published <> v_total_no_sub_acct_published', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
                 raise pub_val_mismatch;
             END IF;

@@ -4,4 +4,6 @@ insert into stn.gl_account_category ( acct_cat , acct_cat_descr ) values ( 'E' ,
 insert into stn.gl_account_category ( acct_cat , acct_cat_descr ) values ( 'L' , 'Liability account' );
 insert into stn.gl_account_category ( acct_cat , acct_cat_descr ) values ( 'Q' , 'Equity account' );
 insert into stn.gl_account_category ( acct_cat , acct_cat_descr ) values ( 'R' , 'Revenue or non-GAAP account' );
+insert into stn.gl_account_category ( acct_cat , acct_cat_descr ) values ( 'S' , 'Statistical account' );
+insert into stn.gl_account_category ( acct_cat , acct_cat_descr ) values ( 'T' , 'Trial balance account' );
 commit;
