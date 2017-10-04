@@ -15,5 +15,5 @@ create table stn.gl_account
 ,   constraint pk_gla          primary key ( row_sid )
 ,   constraint uk_gla          unique      ( acct_cd , effective_dt , feed_uuid )
 ,   constraint ck_gla_acct_sts check       ( acct_sts in ( 'A' , 'I' ) )
-,   constraint ck_gla_acct_typ check       ( acct_typ in ( 'B' , 'P' ) )
+,   constraint ck_gla_acct_typ check       ( acct_typ in ( 'B' , 'P' , 'S' ) )
 );
