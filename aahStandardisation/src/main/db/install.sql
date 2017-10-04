@@ -108,6 +108,7 @@ conn ~stn_logon
 @@tables/stn/fx_rate_type.sql
 @@tables/stn/gl_account.sql
 @@tables/stn/gl_account_category.sql
+@@tables/stn/gl_account_hierarchy.sql
 @@tables/stn/gl_chartfield.sql
 @@tables/stn/gl_chartfield_type.sql
 @@tables/stn/gl_combo_edit_assignment.sql
