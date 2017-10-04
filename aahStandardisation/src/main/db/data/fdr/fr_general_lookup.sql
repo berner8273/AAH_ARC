@@ -69,4 +69,5 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'POLICY_HOLDER_ADDRESS' , 'NVS' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'INSTRUMENT_TYPE'       , 'INSURANCE_POLICY' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'EVENT_CODE'            , 'IN_POLCY' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'ACCOUNTING_EVENT_DEFAULT' , 'ACTIVE_FLAG'           , 'A' );                                                                                                                                                                       
 commit;

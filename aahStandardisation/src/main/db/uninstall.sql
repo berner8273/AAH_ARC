@@ -52,6 +52,8 @@ drop package body stn.pk_tj;
 drop package      stn.pk_tj;
 drop package body stn.pk_pol;
 drop package      stn.pk_pol;
+drop package body stn.pk_acc_event;
+drop package      stn.pk_acc_event;
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -76,6 +78,8 @@ drop view  stn.pol_default;
 drop view  stn.hopper_accounting_basis_ledger
 drop view  stn.hopper_legal_entity_ledger;
 drop view  stn.ledger_default;
+drop view  stn.hopper_accounting_event;
+drop view  stn.accounting_event_default;
 drop table stn.vie_posting_method_ledger;
 drop table stn.process_code_module;
 drop table stn.validation_column;
@@ -140,6 +144,7 @@ drop table stn.tax_jurisdiction;
 drop table stn.accounting_basis_ledger;
 drop table stn.legal_entity_ledger;
 drop table stn.ledger;
+drop table stn.accounting_event;
 
 conn ~fdr_logon
 
@@ -202,6 +207,7 @@ drop index fbi_fsrgc_message_id;
 drop index fbi_fsrohs_message_id;
 drop index fbi_fsrpl_message_id;
 
+revoke select , insert , update          on fdr.fr_acc_event_type            from stn;
 revoke select ,                   delete on fdr.fr_fx_rate                   from stn;
 revoke select ,                          on fdr.fr_gaap                      from stn;
 revoke select ,          update          on fdr.fr_general_lookup            from stn;

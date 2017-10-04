@@ -56,6 +56,7 @@ conn ~fdr_logon
 @@data/fdr/fr_instr_type_class.sql
 @@data/fdr/fr_instrument_type.sql
 @@data/fdr/fr_instrument.sql
+@@grants/tables/fdr/fr_acc_event_type.sql
 @@grants/tables/fdr/fr_fx_rate.sql
 @@grants/tables/fdr/fr_gaap.sql
 @@grants/tables/fdr/fr_general_codes.sql
@@ -85,6 +86,7 @@ conn ~fdr_logon
 conn ~stn_logon
 
 @@tables/stn/accounting_basis_ledger.sql
+@@tables/stn/accounting_event.sql
 @@tables/stn/broken_feed.sql
 @@tables/stn/business_type.sql
 @@tables/stn/cession.sql
@@ -172,6 +174,8 @@ conn ~stn_logon
 @@views/stn/hopper_insurance_policy_tj.sql
 @@views/stn/insurance_policy_hierarchy.sql
 @@views/stn/pol_default.sql
+@@views/stn/accounting_event_default.sql
+@@views/stn/hopper_accounting_event.sql
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
@@ -240,6 +244,8 @@ conn ~stn_logon
 @@data/stn/posting_method_ledger.sql
 @@data/stn/vie_posting_method_ledger.sql
 @@procedures/stn/pr_publish_log.sql
+@@packages/stn/pk_acc_event.hdr
+@@packages/stn/pk_acc_event.bdy
 @@packages/stn/pk_fxr.hdr
 @@packages/stn/pk_fxr.bdy
 @@packages/stn/pk_gce.hdr

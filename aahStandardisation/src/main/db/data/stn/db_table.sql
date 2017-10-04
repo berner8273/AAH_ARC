@@ -19,5 +19,6 @@ insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'tax_jurisdiction
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'ledger' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'accounting_basis_ledger' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'legal_entity_ledger' );
+insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'accounting_event' );
 
 commit;

@@ -73,7 +73,7 @@ and not exists (
                   l.row_sid = idr.row_sid
        );
         p_no_l_identified_recs := SQL%ROWCOUNT;
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated ledger step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated ledger step_run_sid', 'p_no_l_identified_recs', NULL, sql%rowcount, NULL);
         UPDATE ACCOUNTING_BASIS_LEDGER abl
             SET
                 STEP_RUN_SID = p_step_run_sid
@@ -89,7 +89,7 @@ and not exists (
               and abl.feed_uuid = l.feed_uuid
        );
         p_no_abl_identified_recs := SQL%ROWCOUNT;
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated accounting_basis_ledger step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated accounting_basis_ledger step_run_sid', 'p_no_abl_identified_recs', NULL, sql%rowcount, NULL);
         UPDATE LEGAL_ENTITY_LEDGER lel
             SET
                 STEP_RUN_SID = p_step_run_sid
@@ -105,7 +105,7 @@ and not exists (
               and lel.feed_uuid = l.feed_uuid
        );
         p_no_lel_identified_recs := SQL%ROWCOUNT;
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated legal_entity_ledger step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated legal_entity_ledger step_run_sid', 'p_no_lel_identified_recs', NULL, sql%rowcount, NULL);
     END;
     
     PROCEDURE pr_ledger_pub
@@ -316,6 +316,7 @@ and not exists (
     
     PROCEDURE pr_ledger_sps
         (
+            p_step_run_sid IN NUMBER,
             p_no_l_processed_records OUT NUMBER,
             p_no_abl_processed_records OUT NUMBER,
             p_no_lel_processed_records OUT NUMBER
@@ -358,6 +359,7 @@ and exists (
              and fps.ps_posting_schema_group = LEDGER_DEFAULT.LEDGER_GROUP
            ) AND l.ROW_SID = L1.ROW_SID);
         p_no_l_processed_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of ledger records set to processed', 'p_no_l_processed_records', NULL, sql%rowcount, NULL);
         UPDATE ACCOUNTING_BASIS_LEDGER abl
             SET
                 EVENT_STATUS = 'P'
@@ -378,6 +380,7 @@ and exists (
                   to_number ( habl.message_id ) = abl.ROW_SID
        );
         p_no_abl_processed_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of accounting_basis_ledger records set to processed', 'p_no_abl_processed_records', NULL, sql%rowcount, NULL);
         UPDATE LEGAL_ENTITY_LEDGER lel
             SET
                 EVENT_STATUS = 'P'
@@ -398,6 +401,7 @@ and exists (
                   to_number ( hlel.message_id ) = lel.ROW_SID
        );
         p_no_lel_processed_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of legal_entity_ledger records set to processed', 'p_no_lel_processed_records', NULL, sql%rowcount, NULL);
     END;
     
     PROCEDURE pr_ledger_svs
@@ -579,7 +583,7 @@ and exists (
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified ledger standardisation records', 'v_no_identified_records', NULL, v_no_l_identified_records + v_no_abl_identified_records + v_no_lel_identified_records, NULL);
         IF v_no_l_identified_records > 0 THEN
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed ledger hopper records' );
-            pr_ledger_chr(p_step_run_sid, p_lpg_id, v_no_habl_updated_records, v_no_lel_identified_records);
+            pr_ledger_chr(p_step_run_sid, p_lpg_id, v_no_habl_updated_records, v_no_hlel_updated_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed hopper acct basis ledger records', 'v_no_habl_updated_records', NULL, v_no_habl_updated_records, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed hopper legal entity ledger records', 'v_no_hlel_updated_records', NULL, v_no_hlel_updated_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate ledger records' );
@@ -597,23 +601,25 @@ and exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish ledger standardise log records' );
             pr_publish_log;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set ledger status = "P"' );
-            pr_ledger_sps(v_no_l_processed_records, v_no_abl_processed_records, v_no_lel_processed_records);
+            pr_ledger_sps(p_step_run_sid, v_no_l_processed_records, v_no_abl_processed_records, v_no_lel_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for ledger records', 'v_no_processed_records', NULL, v_no_l_processed_records + v_no_abl_processed_records + v_no_lel_processed_records, NULL);
             IF v_no_l_validated_records <> v_no_l_processed_records THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_ud_validated_records <> v_no_ud_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
             END IF;
-            IF 1 <> 1 AND v_no_abl_validated_records <> v_no_abl_processed_records THEN
+            IF v_no_abl_validated_records <> v_no_abl_processed_records THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_ug_validated_records <> v_no_ug_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
                 raise pub_val_mismatch;
             END IF;
-            IF 1 <> 1 AND v_no_lel_validated_records <> v_no_lel_processed_records THEN
+            IF v_no_lel_validated_records <> v_no_lel_processed_records THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_ug_validated_records <> v_no_ug_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
                 raise pub_val_mismatch;
             END IF;
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified ledger standardisation records', 'v_no_identified_records', NULL, v_no_l_identified_records + v_no_abl_identified_records + v_no_lel_identified_records, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for ledger records', 'v_no_processed_records', NULL, v_no_l_processed_records + v_no_abl_processed_records + v_no_lel_processed_records, NULL);
             p_no_processed_records := v_no_l_processed_records
                                     + v_no_abl_processed_records
                                     + v_no_lel_processed_records;

@@ -14,4 +14,6 @@ insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'POL_DEFAULT'              , 'Default values used in the insurance policy standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_BASIS_LEDGER'  , 'Accounting basis ledger relationships' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'LEGAL_ENTITY_LEDGER'      , 'Legal entity ledger relationships' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_EVENT_DEFAULT' , 'Default values used in the accounting event standardisation' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_EVENT'         , 'Accounting event hierarchy' );
 commit;
