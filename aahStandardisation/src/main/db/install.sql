@@ -119,6 +119,7 @@ conn ~stn_logon
 @@tables/stn/insurance_policy.sql
 @@tables/stn/insurance_policy_fx_rate.sql
 @@tables/stn/insurance_policy_tax_jurisd.sql
+@@tables/stn/journal_line.sql
 @@tables/stn/ledger.sql
 @@tables/stn/elimination_legal_entity.sql
 @@tables/stn/legal_entity.sql
@@ -161,6 +162,8 @@ conn ~stn_logon
 @@views/stn/hopper_gl_combo_edit_gl.sql
 @@views/stn/hopper_legal_entity_ledger.sql
 @@views/stn/hopper_tax_jurisdiction.sql
+@@views/stn/hopper_journal_line.sql
+@@views/stn/hopper_journal_line_default.sql
 @@views/stn/tax_jurisdiction_default.sql
 @@views/stn/le_default.sql
 @@views/stn/ledger_default.sql
@@ -273,5 +276,7 @@ conn ~stn_logon
 @@packages/stn/pk_tj.bdy
 @@packages/stn/pk_pol.hdr
 @@packages/stn/pk_pol.bdy
+@@packages/stn/pk_jl.hdr
+@@packages/stn/pk_jl.bdy
 
 exit

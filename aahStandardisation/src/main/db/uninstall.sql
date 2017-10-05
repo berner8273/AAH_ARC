@@ -54,6 +54,8 @@ drop package body stn.pk_pol;
 drop package      stn.pk_pol;
 drop package body stn.pk_acc_event;
 drop package      stn.pk_acc_event;
+drop package body stn.pk_jl;
+drop package      stn.pk_jl;
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -77,6 +79,8 @@ drop view  stn.insurance_policy_hierarchy;
 drop view  stn.pol_default;
 drop view  stn.hopper_accounting_basis_ledger
 drop view  stn.hopper_legal_entity_ledger;
+drop view  stn.hopper_journal_line;
+drop view  stn.journal_line_default;
 drop view  stn.ledger_default;
 drop view  stn.hopper_accounting_event;
 drop view  stn.accounting_event_default;
@@ -146,6 +150,7 @@ drop table stn.legal_entity_ledger;
 drop table stn.ledger;
 drop table stn.accounting_event;
 drop table stn.gl_account_hierarchy;
+drop table stn.journal_line
 
 conn ~fdr_logon
 
