@@ -8,4 +8,5 @@ insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_
 insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_id ) values ( 8  , 'stn.pr_user_group_rval'         , ( select code_module_typ_id from stn.code_module_type where code_module_typ_cd = 'STD_RVAL' ) );
 insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_id ) values ( 9  , 'stn.pr_policy_rval'             , ( select code_module_typ_id from stn.code_module_type where code_module_typ_cd = 'STD_RVAL' ) );
 insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_id ) values ( 10 , 'stn.pr_ledger_rval'             , ( select code_module_typ_id from stn.code_module_type where code_module_typ_cd = 'STD_RVAL' ) );
+insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_id ) values ( 11 , 'stn.pr_journal_line_rval'       , ( select code_module_typ_id from stn.code_module_type where code_module_typ_cd = 'STD_RVAL' ) );
 commit;
