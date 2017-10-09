@@ -34,6 +34,15 @@ select
      , max ( case when fgl.lk_match_key1 = 'ATTRIBUTE6'              
                   then fgl.lk_lookup_value1                          
              end )                                                   attribute6
+     , max ( case when fgl.lk_match_key1 = 'ATTRIBUTE_TYP1'          
+                  then fgl.lk_lookup_value1                          
+             end )                                                   attribute_typ1
+     , max ( case when fgl.lk_match_key1 = 'ATTRIBUTE_TYP2'          
+                  then fgl.lk_lookup_value1                          
+             end )                                                   attribute_typ2
+     , max ( case when fgl.lk_match_key1 = 'ATTRIBUTE_TYP3'          
+                  then fgl.lk_lookup_value1                          
+             end )                                                   attribute_typ3
      , max ( case when fgl.lk_match_key1 = 'ATTRIBUTE_TYP4'          
                   then fgl.lk_lookup_value1                          
              end )                                                   attribute_typ4

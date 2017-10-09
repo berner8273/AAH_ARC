@@ -1,5 +1,5 @@
 CREATE OR REPLACE PACKAGE BODY stn.PK_GCE AS
-    PROCEDURE pr_gl_combo_edit_asgn_rval
+    PROCEDURE pr_gl_combo_edit_rval
     AS
     BEGIN
         INSERT INTO STANDARDISATION_LOG
@@ -8,7 +8,7 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_GCE AS
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
                 rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                TO_CHAR(gcea.LE_ID) AS error_value,
+                gcea.LE_CD AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
                 vdl.COLUMN_NM AS field_in_error_name,
@@ -22,21 +22,21 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_GCE AS
                 fd.FEED_SID AS FEED_SID
             FROM
                 GL_COMBO_EDIT_ASSIGNMENT gcea
-                INNER JOIN GL_COMBO_EDIT_PROCESS gcep ON gcea.PRC_CD = gcep.PRC_CD
+                INNER JOIN GL_COMBO_EDIT_PROCESS gcep ON gcea.PRC_CD = gcep.PRC_CD AND gcea.FEED_UUID = gcep.FEED_UUID
                 INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON gcea.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON gcea.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'gcea-le_id'
+                    vdl.VALIDATION_CD = 'gcea-le_cd'
 and not exists (
                    select
                           null
                      from
                           fdr.fr_party_legal fpl
                     where
-                          fpl.pl_global_id = gcea.LE_ID
+                          fpl.pl_party_legal_clicode = gcea.LE_CD
                )
             UNION ALL
             SELECT
@@ -57,7 +57,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 GL_COMBO_EDIT_ASSIGNMENT gcea
-                INNER JOIN GL_COMBO_EDIT_PROCESS gcep ON gcea.PRC_CD = gcep.PRC_CD
+                INNER JOIN GL_COMBO_EDIT_PROCESS gcep ON gcea.PRC_CD = gcep.PRC_CD AND gcea.FEED_UUID = gcep.FEED_UUID
                 INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON gcea.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON gcea.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
@@ -73,11 +73,69 @@ and not exists (
                     where
                           fps.ps_posting_schema = gcea.LEDGER_CD
                );
+        INSERT INTO STANDARDISATION_LOG
+            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
+            SELECT
+                SubQuery.CATEGORY_ID AS CATEGORY_ID,
+                SubQuery.ERROR_STATUS AS ERROR_STATUS,
+                SubQuery.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                SubQuery.error_value AS ERROR_VALUE,
+                SubQuery.event_text AS EVENT_TEXT,
+                SubQuery.EVENT_TYPE AS EVENT_TYPE,
+                SubQuery.field_in_error_name AS FIELD_IN_ERROR_NAME,
+                SubQuery.LPG_ID AS LPG_ID,
+                SubQuery.PROCESSING_STAGE AS PROCESSING_STAGE,
+                SubQuery.row_in_error_key_id AS ROW_IN_ERROR_KEY_ID,
+                SubQuery.table_in_error_name AS TABLE_IN_ERROR_NAME,
+                SubQuery.rule_identity AS RULE_IDENTITY,
+                SubQuery.CODE_MODULE_NM AS CODE_MODULE_NM,
+                SubQuery.STEP_RUN_SID AS STEP_RUN_SID,
+                SubQuery.FEED_SID AS FEED_SID
+            FROM
+                (SELECT
+                    vdl.TABLE_NM AS table_in_error_name,
+                    gcer.ROW_SID AS row_in_error_key_id,
+                    gcer.ACCT_CD AS error_value,
+                    gcer.LPG_ID AS LPG_ID,
+                    vdl.COLUMN_NM AS field_in_error_name,
+                    rveld.EVENT_TYPE AS EVENT_TYPE,
+                    rveld.ERROR_STATUS AS ERROR_STATUS,
+                    rveld.CATEGORY_ID AS CATEGORY_ID,
+                    rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                    rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                    vdl.VALIDATION_CD AS rule_identity,
+                    FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE AS todays_business_dt,
+                    fd.SYSTEM_CD AS SYSTEM_CD,
+                    vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                    gcer.STEP_RUN_SID AS STEP_RUN_SID,
+                    vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                    fd.FEED_SID AS FEED_SID
+                FROM
+                    GL_COMBO_EDIT_RULE gcer
+                    INNER JOIN GL_COMBO_EDIT_PROCESS gcep ON gcer.PRC_CD = gcep.PRC_CD AND gcer.FEED_UUID = gcep.FEED_UUID
+                    INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
+                    INNER JOIN FEED fd ON gcer.FEED_UUID = fd.FEED_UUID
+                    INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON gcer.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                    INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                    INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+                WHERE
+                        vdl.VALIDATION_CD = 'gcer-acct_cd'
+and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_gl_account fga
+                    where
+                         fga.ga_account_code = gcer.ACCT_CD
+               )) SubQuery;
     END;
     
-    PROCEDURE pr_gl_combo_edit_asgn_sps
+    PROCEDURE pr_gl_combo_edit_sps
         (
-            p_no_processed_records OUT NUMBER
+            p_step_run_sid IN NUMBER,
+            p_no_gcea_processed_records OUT NUMBER,
+            p_no_gcep_processed_records OUT NUMBER,
+            p_no_gcer_processed_records OUT NUMBER
         )
     AS
     BEGIN
@@ -90,16 +148,81 @@ and not exists (
                   null
              from
                  fdr.fr_stan_raw_general_codes  fsrgc
-            join stn.gl_combo_edit_process      gcep   on to_char(trunc(to_number(fsrgc.message_id))) = to_char(gcep.row_sid)||to_char(gcea.ROW_SID)
-                                                      and gcep.feed_uuid = gcea.FEED_UUID
+             join
+                 fdr.fr_party_legal             fpl   on gcea.LE_CD = fpl.PL_PARTY_LEGAL_CLICODE
+             join
+                 stn.gl_combo_edit_process      gcep  on gcea.PRC_CD = gcep.PRC_CD
+                                                     and gcea.FEED_UUID = gcep.FEED_UUID
+             join
+                 stn.identified_record          idr   on gcep.row_sid = idr.row_sid
+             join
+                 stn.gce_default                gced  on 1 = 1
+           where fsrgc.event_status      = 'U'
+             and fsrgc.process_id        = gcea.STEP_RUN_SID
+             and fsrgc.srgc_client_text1 = gced.ATTRIBUTE_TYP1
+             and fsrgc.srgc_client_code  = fpl.PL_GLOBAL_ID
+       )
+and exists (
+           select
+                  null
+             from
+                 fdr.fr_stan_raw_general_codes  fsrgc
+             join
+                 stn.gl_combo_edit_process      gcep  on gcea.PRC_CD = gcep.PRC_CD
+                                                     and gcea.FEED_UUID = gcep.FEED_UUID
+             join
+                 stn.identified_record          idr   on gcep.row_sid = idr.row_sid
+             join
+                 stn.gce_default                gced  on 1 = 1
+           where fsrgc.event_status      = 'U'
+             and fsrgc.process_id        = gcea.STEP_RUN_SID
+             and fsrgc.srgc_client_text1 = gced.ATTRIBUTE_TYP3
+             and fsrgc.srgc_client_code  = gcea.LEDGER_CD
+       );
+        p_no_gcea_processed_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gcea', 'p_no_gcea_processed_records', NULL, p_no_gcea_processed_records, NULL);
+        UPDATE GL_COMBO_EDIT_PROCESS gcep
+            SET
+                EVENT_STATUS = 'P'
+            WHERE
+                exists (
+           select
+                  null
+             from
+                       fdr.fr_stan_raw_general_lookup fsrgl
+                  join stn.identified_record   idr   on to_number ( fsrgl.message_id ) = idr.row_sid
+            where
+                  idr.row_sid = gcep.ROW_SID
+              and fsrgl.SRLK_LKT_LOOKUP_TYPE_CODE = 'COMBO_RULESET'
+       );
+        p_no_gcep_processed_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gcep', 'p_no_gcep_processed_records', NULL, p_no_gcep_processed_records, NULL);
+        UPDATE GL_COMBO_EDIT_RULE gcer
+            SET
+                EVENT_STATUS = 'P'
+            WHERE
+                exists (
+           select
+                  null
+             from
+                 fdr.fr_stan_raw_general_codes  fsrgc
+            join stn.gl_combo_edit_process      gcep   on to_char(trunc(to_number(fsrgc.message_id))) = to_char(gcep.row_sid)||to_char(gcer.ROW_SID)
+                                                      and gcep.feed_uuid = gcer.FEED_UUID
             join stn.identified_record          idr    on gcep.row_sid = idr.row_sid
        );
-        p_no_processed_records := SQL%ROWCOUNT;
+        p_no_gcer_processed_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gcer', 'p_no_gcer_processed_records', NULL, p_no_gcer_processed_records, NULL);
     END;
     
-    PROCEDURE pr_gl_combo_edit_asgn_svs
+    PROCEDURE pr_gl_combo_edit_svs
         (
-            p_no_validated_records OUT NUMBER
+            p_step_run_sid IN NUMBER,
+            p_no_gcea_errored_records OUT NUMBER,
+            p_no_gcea_validated_records OUT NUMBER,
+            p_no_gcep_errored_records OUT NUMBER,
+            p_no_gcep_validated_records OUT NUMBER,
+            p_no_gcer_errored_records OUT NUMBER,
+            p_no_gcer_validated_records OUT NUMBER
         )
     AS
     BEGIN
@@ -115,6 +238,8 @@ and not exists (
             where
                   sl.row_in_error_key_id = gcea.ROW_SID
        );
+        p_no_gcea_errored_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting error status for gcea', 'p_no_gcea_errored_records', NULL, p_no_gcea_errored_records, NULL);
         UPDATE GL_COMBO_EDIT_ASSIGNMENT gcea
             SET
                 EVENT_STATUS = 'V'
@@ -138,7 +263,83 @@ and     exists (
                       and gcep.prc_cd  = gcea.prc_cd
                       and gcep.feed_uuid = gcea.feed_uuid
                );
-        p_no_validated_records := SQL%ROWCOUNT;
+        p_no_gcea_validated_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting valid status for gcea', 'p_no_gcea_validated_records', NULL, p_no_gcea_validated_records, NULL);
+        UPDATE GL_COMBO_EDIT_PROCESS gcep
+            SET
+                EVENT_STATUS = 'E'
+            WHERE
+                exists (
+           select
+                  null
+             from
+                  stn.standardisation_log sl
+            where
+                  sl.row_in_error_key_id = gcep.ROW_SID
+       );
+        p_no_gcep_errored_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting error status for gcep', 'p_no_gcep_errored_records', NULL, p_no_gcep_errored_records, NULL);
+        UPDATE GL_COMBO_EDIT_PROCESS gcep
+            SET
+                EVENT_STATUS = 'V'
+            WHERE
+                    not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = gcep.ROW_SID
+               )
+and     exists (
+                   select
+                          null
+                     from
+                          stn.identified_record idr
+                    where
+                          gcep.ROW_SID = idr.row_sid
+               );
+        p_no_gcep_validated_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting valid status for gcep', 'p_no_gcep_validated_records', NULL, p_no_gcep_validated_records, NULL);
+        UPDATE GL_COMBO_EDIT_RULE gcer
+            SET
+                EVENT_STATUS = 'E'
+            WHERE
+                exists (
+           select
+                  null
+             from
+                  stn.standardisation_log sl
+            where
+                  sl.row_in_error_key_id = gcer.ROW_SID
+       );
+        p_no_gcer_errored_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting error status for gcer', 'p_no_gcer_errored_records', NULL, p_no_gcer_errored_records, NULL);
+        UPDATE GL_COMBO_EDIT_RULE gcer
+            SET
+                EVENT_STATUS = 'V'
+            WHERE
+                    not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = gcer.ROW_SID
+               )
+and     exists (
+                   select
+                          null
+                     from
+                          stn.identified_record idr
+                        , stn.gl_combo_edit_process gcep
+                    where
+                          gcep.row_sid = idr.row_sid
+                      and gcep.prc_cd  = gcer.PRC_CD
+                      and gcep.feed_uuid = gcer.feed_uuid
+               );
+        p_no_gcer_validated_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting valid status for gcer', 'p_no_gcer_validated_records', NULL, p_no_gcer_validated_records, NULL);
     END;
     
     PROCEDURE pr_gl_combo_edit_chr
@@ -248,70 +449,6 @@ and not exists (
        );
         p_no_gcer_identified_recs := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated GL combo edit.step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
-    END;
-    
-    PROCEDURE pr_gl_combo_edit_process_sps
-        (
-            p_no_processed_records OUT NUMBER
-        )
-    AS
-    BEGIN
-        UPDATE GL_COMBO_EDIT_PROCESS gcep
-            SET
-                EVENT_STATUS = 'P'
-            WHERE
-                exists (
-           select
-                  null
-             from
-                       fdr.fr_stan_raw_general_lookup fsrgl
-                  join stn.identified_record   idr   on to_number ( fsrgl.message_id ) = idr.row_sid
-            where
-                  idr.row_sid = gcep.ROW_SID
-              and fsrgl.SRLK_LKT_LOOKUP_TYPE_CODE = 'COMBO_RULESET'
-       );
-        p_no_processed_records := SQL%ROWCOUNT;
-    END;
-    
-    PROCEDURE pr_gl_combo_edit_process_svs
-        (
-            p_no_validated_records OUT NUMBER
-        )
-    AS
-    BEGIN
-        UPDATE GL_COMBO_EDIT_PROCESS gcep
-            SET
-                EVENT_STATUS = 'E'
-            WHERE
-                exists (
-           select
-                  null
-             from
-                  stn.standardisation_log sl
-            where
-                  sl.row_in_error_key_id = gcep.ROW_SID
-       );
-        UPDATE GL_COMBO_EDIT_PROCESS gcep
-            SET
-                EVENT_STATUS = 'V'
-            WHERE
-                    not exists (
-                   select
-                          null
-                     from
-                          stn.standardisation_log sl
-                    where
-                          sl.row_in_error_key_id = gcep.ROW_SID
-               )
-and     exists (
-                   select
-                          null
-                     from
-                          stn.identified_record idr
-                    where
-                          gcep.ROW_SID = idr.row_sid
-               );
-        p_no_validated_records := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_gl_combo_edit_pub
@@ -495,7 +632,7 @@ and     exists (
                 gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V';
         p_no_fsrgl_combo_check_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO)
+            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
             SELECT
                 gcep.LPG_ID AS LPG_ID,
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.2' AS MESSAGE_ID,
@@ -505,7 +642,8 @@ and     exists (
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO
+                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
+                GCE_DEFAULT.ATTRIBUTE_TYP2 AS COMBO_VALUE_TYPE
             FROM
                 GL_COMBO_EDIT_PROCESS gcep
                 INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
@@ -515,17 +653,18 @@ and     exists (
                 gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V';
         p_no_fsrgc_acct_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO)
+            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
             SELECT
                 gcep.LPG_ID AS LPG_ID,
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcea.ROW_SID) || '.1' AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE1 AS COMBO_SET_CD,
-                TO_CHAR(gcea.LE_ID) AS COMBO_SET_VALUE,
+                gcea.LE_ID AS COMBO_SET_VALUE,
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO
+                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
+                GCE_DEFAULT.ATTRIBUTE_TYP1 AS COMBO_VALUE_TYPE
             FROM
                 GL_COMBO_EDIT_PROCESS gcep
                 INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
@@ -533,7 +672,7 @@ and     exists (
                 INNER JOIN (SELECT DISTINCT
                     gcea.EVENT_STATUS AS EVENT_STATUS,
                     gcea.FEED_UUID AS FEED_UUID,
-                    gcea.LE_ID AS LE_ID,
+                    fpl.PL_GLOBAL_ID AS LE_ID,
                     gcea.LPG_ID AS LPG_ID,
                     gcea.NO_RETRIES AS NO_RETRIES,
                     gcea.PRC_CD AS PRC_CD,
@@ -541,9 +680,10 @@ and     exists (
                     MIN(gcea.ROW_SID) AS ROW_SID
                 FROM
                     GL_COMBO_EDIT_ASSIGNMENT gcea
+                    INNER JOIN fdr.FR_PARTY_LEGAL fpl ON gcea.LE_CD = fpl.PL_PARTY_LEGAL_CLICODE
                 GROUP BY
                     gcea.PRC_CD,
-                    gcea.LE_ID,
+                    fpl.PL_GLOBAL_ID,
                     gcea.LPG_ID,
                     gcea.EVENT_STATUS,
                     gcea.FEED_UUID,
@@ -553,7 +693,7 @@ and     exists (
                 gcep.EVENT_STATUS = 'V' AND gcea.EVENT_STATUS = 'V';
         p_no_fsrgc_le_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO)
+            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
             SELECT
                 gcep.LPG_ID AS LPG_ID,
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcea.ROW_SID) || '.3' AS MESSAGE_ID,
@@ -563,7 +703,8 @@ and     exists (
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO
+                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
+                GCE_DEFAULT.ATTRIBUTE_TYP3 AS COMBO_VALUE_TYPE
             FROM
                 GL_COMBO_EDIT_PROCESS gcep
                 INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
@@ -591,7 +732,7 @@ and     exists (
                 gcep.EVENT_STATUS = 'V' AND gcea.EVENT_STATUS = 'V';
         p_no_fsrgc_ledger_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO)
+            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
             SELECT
                 gcep.LPG_ID AS LPG_ID,
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.6' AS MESSAGE_ID,
@@ -601,7 +742,8 @@ and     exists (
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO
+                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
+                GCE_DEFAULT.ATTRIBUTE_TYP6 AS COMBO_VALUE_TYPE
             FROM
                 GL_COMBO_EDIT_PROCESS gcep
                 INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
@@ -629,7 +771,7 @@ and     exists (
                 gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.AFFILIATE_LE_CD <> '%';
         p_no_fsrgc_affiliate_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO)
+            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
             SELECT
                 gcep.LPG_ID AS LPG_ID,
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.4' AS MESSAGE_ID,
@@ -639,7 +781,8 @@ and     exists (
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO
+                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
+                GCE_DEFAULT.ATTRIBUTE_TYP4 AS COMBO_VALUE_TYPE
             FROM
                 GL_COMBO_EDIT_PROCESS gcep
                 INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
@@ -667,7 +810,7 @@ and     exists (
                 gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.DEPT_CD <> '%';
         p_no_fsrgc_department_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO)
+            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
             SELECT
                 gcep.LPG_ID AS LPG_ID,
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.5' AS MESSAGE_ID,
@@ -677,7 +820,8 @@ and     exists (
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO
+                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
+                GCE_DEFAULT.ATTRIBUTE_TYP5 AS COMBO_VALUE_TYPE
             FROM
                 GL_COMBO_EDIT_PROCESS gcep
                 INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
@@ -735,132 +879,6 @@ and     exists (
         p_no_fgct_inserted := SQL%ROWCOUNT;
     END;
     
-    PROCEDURE pr_gl_combo_edit_rule_rval
-    AS
-    BEGIN
-        INSERT INTO STANDARDISATION_LOG
-            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
-            SELECT
-                SubQuery.CATEGORY_ID AS CATEGORY_ID,
-                SubQuery.ERROR_STATUS AS ERROR_STATUS,
-                SubQuery.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                SubQuery.error_value AS ERROR_VALUE,
-                SubQuery.event_text AS EVENT_TEXT,
-                SubQuery.EVENT_TYPE AS EVENT_TYPE,
-                SubQuery.field_in_error_name AS FIELD_IN_ERROR_NAME,
-                SubQuery.LPG_ID AS LPG_ID,
-                SubQuery.PROCESSING_STAGE AS PROCESSING_STAGE,
-                SubQuery.row_in_error_key_id AS ROW_IN_ERROR_KEY_ID,
-                SubQuery.table_in_error_name AS TABLE_IN_ERROR_NAME,
-                SubQuery.rule_identity AS RULE_IDENTITY,
-                SubQuery.CODE_MODULE_NM AS CODE_MODULE_NM,
-                SubQuery.STEP_RUN_SID AS STEP_RUN_SID,
-                SubQuery.FEED_SID AS FEED_SID
-            FROM
-                (SELECT
-                    vdl.TABLE_NM AS table_in_error_name,
-                    gcer.ROW_SID AS row_in_error_key_id,
-                    gcer.ACCT_CD AS error_value,
-                    gcer.LPG_ID AS LPG_ID,
-                    vdl.COLUMN_NM AS field_in_error_name,
-                    rveld.EVENT_TYPE AS EVENT_TYPE,
-                    rveld.ERROR_STATUS AS ERROR_STATUS,
-                    rveld.CATEGORY_ID AS CATEGORY_ID,
-                    rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                    rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                    vdl.VALIDATION_CD AS rule_identity,
-                    FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE AS todays_business_dt,
-                    fd.SYSTEM_CD AS SYSTEM_CD,
-                    vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
-                    gcer.STEP_RUN_SID AS STEP_RUN_SID,
-                    vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                    fd.FEED_SID AS FEED_SID
-                FROM
-                    GL_COMBO_EDIT_RULE gcer
-                    INNER JOIN GL_COMBO_EDIT_PROCESS gcep ON gcer.PRC_CD = gcep.PRC_CD
-                    INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
-                    INNER JOIN FEED fd ON gcer.FEED_UUID = fd.FEED_UUID
-                    INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON gcer.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
-                    INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
-                    INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
-                WHERE
-                        vdl.VALIDATION_CD = 'gcer-acct_cd'
-and not exists (
-                   select
-                          null
-                     from
-                          fdr.fr_gl_account fga
-                    where
-                         fga.ga_account_code = gcer.ACCT_CD
-               )) SubQuery;
-    END;
-    
-    PROCEDURE pr_gl_combo_edit_rule_sps
-        (
-            p_no_processed_records OUT NUMBER
-        )
-    AS
-    BEGIN
-        UPDATE GL_COMBO_EDIT_RULE gcer
-            SET
-                EVENT_STATUS = 'P'
-            WHERE
-                exists (
-           select
-                  null
-             from
-                 fdr.fr_stan_raw_general_codes  fsrgc
-            join stn.gl_combo_edit_process      gcep   on to_char(trunc(to_number(fsrgc.message_id))) = to_char(gcep.row_sid)||to_char(gcer.ROW_SID)
-                                                      and gcep.feed_uuid = gcer.FEED_UUID
-            join stn.identified_record          idr    on gcep.row_sid = idr.row_sid
-       );
-        p_no_processed_records := SQL%ROWCOUNT;
-    END;
-    
-    PROCEDURE pr_gl_combo_edit_rule_svs
-        (
-            p_no_validated_records OUT NUMBER
-        )
-    AS
-    BEGIN
-        UPDATE GL_COMBO_EDIT_RULE gcer
-            SET
-                EVENT_STATUS = 'E'
-            WHERE
-                exists (
-           select
-                  null
-             from
-                  stn.standardisation_log sl
-            where
-                  sl.row_in_error_key_id = gcer.ROW_SID
-       );
-        UPDATE GL_COMBO_EDIT_RULE gcer
-            SET
-                EVENT_STATUS = 'V'
-            WHERE
-                    not exists (
-                   select
-                          null
-                     from
-                          stn.standardisation_log sl
-                    where
-                          sl.row_in_error_key_id = gcer.ROW_SID
-               )
-and     exists (
-                   select
-                          null
-                     from
-                          stn.identified_record idr
-                        , stn.gl_combo_edit_process gcep
-                    where
-                          gcep.row_sid = idr.row_sid
-                      and gcep.prc_cd  = gcer.PRC_CD
-                      and gcep.feed_uuid = gcer.feed_uuid
-               );
-        p_no_validated_records := SQL%ROWCOUNT;
-    END;
-    
     PROCEDURE pr_gl_combo_edit_prc
         (
             p_step_run_sid IN NUMBER,
@@ -869,8 +887,14 @@ and     exists (
             p_no_failed_records OUT NUMBER
         )
     AS
+        v_no_gcea_identified_records NUMBER(38, 9) DEFAULT 0;
         v_no_gcep_identified_records NUMBER(38, 9) DEFAULT 0;
+        v_no_gcer_identified_records NUMBER(38, 9) DEFAULT 0;
+        v_no_gcea_errored_records NUMBER(38, 9) DEFAULT 0;
         v_no_gcea_validated_records NUMBER(38, 9) DEFAULT 0;
+        v_no_gcep_errored_records NUMBER(38, 9) DEFAULT 0;
+        v_no_gcep_validated_records NUMBER(38, 9) DEFAULT 0;
+        v_no_gcer_errored_records NUMBER(38, 9) DEFAULT 0;
         v_no_gcer_validated_records NUMBER(38, 9) DEFAULT 0;
         v_no_gcea_processed_records NUMBER(38, 9) DEFAULT 0;
         v_no_gcep_processed_records NUMBER(38, 9) DEFAULT 0;
@@ -891,9 +915,6 @@ and     exists (
         v_no_fsrgc_department_pub NUMBER(38, 9) DEFAULT 0;
         v_no_fsrgc_product_pub NUMBER(38, 9) DEFAULT 0;
         v_no_fgct_inserted NUMBER(38, 9) DEFAULT 0;
-        v_no_gcea_identified_records NUMBER(38, 9) DEFAULT 0;
-        v_no_gcer_identified_records NUMBER(38, 9) DEFAULT 0;
-        v_no_gcep_validated_records NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify GL combo edit process records' );
@@ -904,21 +925,12 @@ and     exists (
             pr_gl_combo_edit_chr(p_step_run_sid, p_lpg_id, v_total_no_fsrgc_updated, v_total_no_fsrgl_updated);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed GL Combo Edit General Code hopper records', 'v_total_no_fsrgc_updated', NULL, v_total_no_fsrgc_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed GL Combo Edit General lookup hopper records', 'v_total_no_fsrgl_updated', NULL, v_total_no_fsrgl_updated, NULL);
-            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate GL Combo Edit Assignment records' );
-            pr_gl_combo_edit_asgn_rval;
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations for gl-combo-edit-assignments', NULL, NULL, NULL, NULL);
-            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate gl-combo-edit-rule records' );
-            pr_gl_combo_edit_rule_rval;
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations for gl-combo-edit-rule', NULL, NULL, NULL, NULL);
-            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set gl-combo-edit-assignment status = "V"' );
-            pr_gl_combo_edit_asgn_svs(v_no_gcea_validated_records);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting validated status for gl-combo-edit-assignment', 'v_no_gcea_validated_records', NULL, v_no_gcea_validated_records, NULL);
-            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set gl-combo-edit-rule status = "V"' );
-            pr_gl_combo_edit_rule_svs(v_no_gcer_validated_records);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting validated status for gl-combo-edit-rule', 'v_no_gcer_validated_records', NULL, v_no_gcer_validated_records, NULL);
-            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set gl-combo-edit-rule status = "V"' );
-            pr_gl_combo_edit_process_svs(v_no_gcep_validated_records);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting validated status for gl-combo-edit-process', 'v_no_gcep_validated_records', NULL, v_no_gcep_validated_records, NULL);
+            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validation gl combo edit records' );
+            pr_gl_combo_edit_rval;
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations for gl combo edit records', NULL, NULL, NULL, NULL);
+            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set gl combo edit status = "V"' );
+            pr_gl_combo_edit_svs(p_step_run_sid, v_no_gcea_errored_records, v_no_gcea_validated_records, v_no_gcep_errored_records, v_no_gcep_validated_records, v_no_gcer_errored_records, v_no_gcer_validated_records);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting validated status for gl combo edit', 'Total validated records', NULL, v_no_gcea_validated_records + v_no_gcep_validated_records + v_no_gcer_validated_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish gl combo edit records' );
             pr_gl_combo_edit_pub(p_step_run_sid, v_no_fsrgl_combo_ruleset_pub, v_no_fsrgl_combo_appl_1_pub, v_no_fsrgl_combo_appl_2_pub, v_no_fsrgl_combo_appl_3_pub, v_no_fsrgl_combo_check_pub, v_no_fsrgc_acct_pub, v_no_fsrgc_le_pub, v_no_fsrgc_ledger_pub, v_no_fsrgc_affiliate_pub, v_no_fsrgc_department_pub, v_no_fsrgc_product_pub, v_no_fgct_inserted);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing general lookup hopper records', 'v_total_no_fsrgl_published', NULL, v_no_fsrgl_combo_appl_1_pub + v_no_fsrgl_combo_appl_2_pub + v_no_fsrgl_combo_appl_3_pub + v_no_fsrgl_combo_check_pub + v_no_fsrgl_combo_ruleset_pub, NULL);
@@ -927,14 +939,8 @@ and     exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish gl combo edit log records' );
             pr_publish_log;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set gl combo edit assignment status = "P"' );
-            pr_gl_combo_edit_asgn_sps(v_no_gcea_processed_records);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for gl combo edit assignment records', 'v_no_gcea_processed_records', NULL, v_no_gcea_processed_records, NULL);
-            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set gl combo edit process status = "P"' );
-            pr_gl_combo_edit_process_sps(v_no_gcep_processed_records);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for gl combo edit process records', 'v_no_gcep_processed_records', NULL, v_no_gcep_processed_records, NULL);
-            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set gl combo edit rule status = "P"' );
-            pr_gl_combo_edit_rule_sps(v_no_gcer_processed_records);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status gl combo edit rule records', 'v_no_gcer_processed_records', NULL, v_no_gcer_processed_records, NULL);
+            pr_gl_combo_edit_sps(p_step_run_sid, v_no_gcea_processed_records, v_no_gcep_processed_records, v_no_gcer_processed_records);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gl combo edit records', 'Total processed records', NULL, v_no_gcea_processed_records + v_no_gcep_processed_records + v_no_gcer_processed_records, NULL);
             IF v_no_gcep_validated_records <> v_no_gcep_processed_records THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcep_validated_records <> v_no_gcep_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
