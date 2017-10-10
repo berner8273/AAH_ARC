@@ -27,6 +27,7 @@ conn ~stn_logon
 conn ~rdr_logon
 
 @@views/rdr/rrv_accounting_basis_ledger.sql
+@@views/rdr/rrv_accounting_event_hierarchy.sql
 @@views/rdr/rrv_gl_account_hierarchy.sql
 @@views/rdr/rrv_legal_entity_ledger.sql
 @@views/rdr/rrv_slr_jrnl_lines_ag.sql
