@@ -126,7 +126,7 @@ and not exists (
                 tj.TAX_JURISDICTION_DESCR AS TAX_JURISDICTION_DESCR,
                 tj_default.SRGC_GCT_CODE_TYPE_ID AS SRGC_GCT_CODE_TYPE_ID,
                 tj.EVENT_STATUS AS EVENT_STATUS,
-                TO_CHAR(tj.ROW_SID) AS MESSAGE_ID,
+                TO_CHAR(tj.ROW_SID) || '.' || TO_CHAR(tj.STEP_RUN_SID) AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 tj.LPG_ID AS LPG_ID,
                 tj.TAX_JURISDICTION_STS AS TAX_JURISDICTION_STS
@@ -152,8 +152,8 @@ and not exists (
            select
                   null
              from
-                       stn.hopper_tax_jurisdiction htj
-                  join stn.identified_record    idr  on to_number ( htj.message_id ) = idr.row_sid
+                       stn.hopper_tax_jurisdiction  htj
+                  join stn.identified_record        idr  on trunc ( to_number ( htj.message_id ) ) = idr.row_sid
             where
                   idr.row_sid = tj.ROW_SID
        );
