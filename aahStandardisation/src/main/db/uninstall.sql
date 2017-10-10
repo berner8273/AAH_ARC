@@ -215,7 +215,7 @@ drop index fbi_fsrpl_message_id;
 
 revoke select , insert , update          on fdr.fr_acc_event_type            from stn;
 revoke select ,                   delete on fdr.fr_fx_rate                   from stn;
-revoke select ,                          on fdr.fr_gaap                      from stn;
+revoke select                            on fdr.fr_gaap                      from stn;
 revoke select ,          update          on fdr.fr_general_lookup            from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_acc_event        from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_general_codes    from stn;
@@ -223,7 +223,7 @@ revoke select , insert , update          on fdr.fr_stan_raw_general_lookup   fro
 revoke select                            on fdr.fr_internal_proc_entity_type from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_node    from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_struc   from stn;
-revoke select ,                          on fdr.fr_party_legal               from stn;
+revoke select                            on fdr.fr_party_legal               from stn;
 revoke select , insert , update          on fdr.fr_posting_schema            from stn;
 revoke select , insert , update          on fdr.fr_general_code_types        from stn;
 revoke select ,          update          on fdr.fr_general_codes             from stn;
