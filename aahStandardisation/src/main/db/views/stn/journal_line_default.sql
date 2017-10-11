@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW STN.JOURNAL_LINE_DEFAULT
+CREATE OR REPLACE VIEW stn.journal_line_default
 AS
 
 
@@ -57,5 +57,5 @@ AS
 
      FROM fdr.fr_general_lookup fgl
     WHERE fgl.lk_lkt_lookup_type_code = 'JOURNAL_LINE_DEFAULT'
-    
+
 --    grant select on fdr.fr_general_lookup to STN with grant option
