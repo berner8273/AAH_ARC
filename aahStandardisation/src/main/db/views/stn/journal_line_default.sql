@@ -1,7 +1,5 @@
 CREATE OR REPLACE VIEW stn.journal_line_default
 AS
-
-
  select
        max ( case when fgl.lk_match_key1 = 'SRA_AE_SOURCE_SYSTEM'
                   then fgl.lk_lookup_value1
@@ -54,8 +52,6 @@ AS
        max ( case when fgl.lk_match_key1 = 'SRA_AE_PBU_EXT_PARTY_CODE'
                   then fgl.lk_lookup_value1
              end )   SRA_AE_PBU_EXT_PARTY_CODE
-
      FROM fdr.fr_general_lookup fgl
     WHERE fgl.lk_lkt_lookup_type_code = 'JOURNAL_LINE_DEFAULT'
-
---    grant select on fdr.fr_general_lookup to STN with grant option
+;

@@ -150,7 +150,7 @@ drop table stn.legal_entity_ledger;
 drop table stn.ledger;
 drop table stn.accounting_event;
 drop table stn.gl_account_hierarchy;
-drop table stn.journal_line
+drop table stn.journal_line;
 
 conn ~fdr_logon
 
@@ -161,8 +161,8 @@ delete from fdr.fr_global_parameter          where lpg_id = 2;
 delete from fdr.fr_trade                     where t_fdr_tran_no             not in ( 'DEFAULT' );
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
-delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT' );
-delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT' );
+delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT','JOURNAL_LINE_DEFAULT' );
+delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT','JOURNAL_LINE_DEFAULT' );
 delete from fdr.fr_fx_rate;
 delete from fdr.fr_party_business_lookup     where pbl_lookup_key                 != 'DEFAULT';
 delete from fdr.fr_party_business            where pbu_party_bus_client_code      != 'DEFAULT';
