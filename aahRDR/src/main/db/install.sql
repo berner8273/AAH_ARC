@@ -23,6 +23,9 @@ define rdr_logon    = ~rdr_user/~rdr_password@~tns_alias
 conn ~stn_logon
 
 @@grants/tables/stn/gl_account_hierarchy.sql
+@@grants/tables/slr/slr_fak_combinations.sql
+@@grants/tables/slr/slr_eba_combinations.sql
+@@grants/tables/slr/slr_eba_daily_balances.sql
 
 conn ~rdr_logon
 
@@ -31,5 +34,11 @@ conn ~rdr_logon
 @@views/rdr/rrv_gl_account_hierarchy.sql
 @@views/rdr/rrv_legal_entity_ledger.sql
 @@views/rdr/rrv_slr_jrnl_lines_ag.sql
+@@views/rdr/rrv_slr_fak_combinations_ag.sql
+@@views/rdr/rrv_slr_fak_daily_balances_ag.sql
+@@views/rdr/rrv_slr_eba_combinations_ag.sql
+@@views/rdr/rrv_slr_eba_daily_balances_ag.sql
+
+
 
 exit
