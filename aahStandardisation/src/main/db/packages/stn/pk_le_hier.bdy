@@ -14,7 +14,7 @@ as
         as
         begin
               select
-                     foht.oht_org_hier_client_code       basis_typ
+                     foht.oht_org_hier_client_code       legal_entity_link_typ
                    , pfpl.pl_party_legal_clicode         elimination_parent_le_cd
                    , min ( cfpl.pl_party_legal_clicode ) elimination_le_cd
                      bulk
@@ -38,6 +38,7 @@ as
                        on cfon.on_pl_party_legal_id = cfpl.pl_party_legal_id
                where
                      cfpl.is_interco_elim_entity = 'Y'
+                 and foht.oht_org_hier_client_code in ( 'GAAP_CONSOLIDATION' , 'STAT_CONSOLIDATION' )
             group by
                      foht.oht_org_hier_client_code
                    , pfpl.pl_party_legal_clicode
@@ -57,7 +58,7 @@ as
                                            select
                                                   null                           parent_le_cd
                                                 , fon.on_org_node_client_code    child_le_cd
-                                                , foht.oht_org_hier_client_code  basis_typ
+                                                , foht.oht_org_hier_client_code  legal_entity_link_typ
                                                 , fpl.is_interco_elim_entity
                                              from
                                                              fdr.fr_org_network        fon
@@ -97,7 +98,7 @@ as
                                            select
                                                   pfon.on_org_node_client_code  parent_le_cd
                                                 , cfon.on_org_node_client_code  child_le_cd
-                                                , foht.oht_org_hier_client_code basis_typ
+                                                , foht.oht_org_hier_client_code legal_entity_link_typ
                                                 , fpl.is_interco_elim_entity
                                              from
                                                        fdr.fr_org_node_structure fons
@@ -121,7 +122,7 @@ as
                                     (
                                                    select
                                                           d.child_le_cd                               le_cd
-                                                        , d.basis_typ                                 basis_typ
+                                                        , d.legal_entity_link_typ                                 legal_entity_link_typ
                                                         , sys_connect_by_path ( d.child_le_cd , '/' ) path_to_le
                                                         , d.is_interco_elim_entity
                                                      from
@@ -130,26 +131,26 @@ as
                                                           d.parent_le_cd is null
                                                connect by
                                                           prior d.child_le_cd = d.parent_le_cd
-                                                      and prior d.basis_typ   = d.basis_typ
+                                                      and prior d.legal_entity_link_typ   = d.legal_entity_link_typ
                                         order siblings by
                                                           d.child_le_cd asc
                                     )
                                         select
                                                le1.le_cd       le_1_cd
                                              , le2.le_cd       le_2_cd
-                                             , le1.basis_typ   basis_typ
+                                             , le1.legal_entity_link_typ   legal_entity_link_typ
                                              , le1.path_to_le  path_to_le_1
                                              , le2.path_to_le  path_to_le_2
                                           from
                                                     le_hier le1
-                                               join le_hier le2 on le1.basis_typ = le2.basis_typ
+                                               join le_hier le2 on le1.legal_entity_link_typ = le2.legal_entity_link_typ
                                          where
                                                le1.le_cd > le2.le_cd
                              ) loop
 
             v_elimination_rec.le_1_cd             := hierarchy_rec.le_1_cd;
             v_elimination_rec.le_2_cd             := hierarchy_rec.le_2_cd;
-            v_elimination_rec.basis_typ           := hierarchy_rec.basis_typ;
+            v_elimination_rec.basis_typ           := hierarchy_rec.legal_entity_link_typ;
             v_elimination_rec.path_to_le_1        := hierarchy_rec.path_to_le_1;
             v_elimination_rec.path_to_le_2        := hierarchy_rec.path_to_le_2;
             v_elimination_rec.elimination_le_cd   := null;
@@ -191,7 +192,7 @@ as
                                        common_parent                      cp
                                   join table ( v_elimination_entity_tab ) eet on (
                                                                                          cp.path_segment_le_cd = eet.elimination_parent_le_cd
-                                                                                     and eet.basis_typ         = hierarchy_rec.basis_typ
+                                                                                     and eet.basis_typ         = hierarchy_rec.legal_entity_link_typ
                                                                                  )
                        )
                  where
@@ -288,7 +289,7 @@ as
                    stn.elimination_legal_entity
                  (
                      step_run_sid
-                 ,   basis_typ
+                 ,   legal_entity_link_typ
                  ,   le_1_cd
                  ,   le_2_cd
                  ,   elimination_le_cd
@@ -328,7 +329,7 @@ as
                                  count(*) cnt
                             from (
                                      select
-                                            basis_typ
+                                            legal_entity_link_typ
                                           , le_1_cd
                                           , le_2_cd
                                           , elimination_le_cd
@@ -341,7 +342,7 @@ as
                                             step_run_sid = v_old_step_run_sid
                                       minus
                                      select
-                                            basis_typ
+                                            legal_entity_link_typ
                                           , le_1_cd
                                           , le_2_cd
                                           , elimination_le_cd
@@ -358,7 +359,7 @@ as
                                  count(*) cnt
                             from (
                                      select
-                                            basis_typ
+                                            legal_entity_link_typ
                                           , le_1_cd
                                           , le_2_cd
                                           , elimination_le_cd
@@ -371,7 +372,7 @@ as
                                             step_run_sid = p_step_run_sid
                                       minus
                                      select
-                                            basis_typ
+                                            legal_entity_link_typ
                                           , le_1_cd
                                           , le_2_cd
                                           , elimination_le_cd
@@ -439,7 +440,7 @@ as
                                             select
                                                    null                           parent_le_cd
                                                  , fon.on_org_node_client_code    child_le_cd
-                                                 , foht.oht_org_hier_client_code  basis_typ
+                                                 , foht.oht_org_hier_client_code  legal_entity_link_typ
                                                  , fpl.is_vie_entity
                                               from
                                                               fdr.fr_org_network        fon
@@ -473,13 +474,14 @@ as
                                                                          cfon.on_org_node_client_code   = fon.on_org_node_client_code
                                                                      and cfons.ons_oht_org_hier_type_id = foht.oht_org_hier_type_id
                                                               )
+                                                          and foht.oht_org_hier_client_code in ( 'GAAP_CONSOLIDATION' )
 
                                          union all
 
                                             select
                                                    pfon.on_org_node_client_code  parent_le_cd
                                                  , cfon.on_org_node_client_code  child_le_cd
-                                                 , foht.oht_org_hier_client_code basis_typ
+                                                 , foht.oht_org_hier_client_code legal_entity_link_typ
                                                  , fpl.is_vie_entity
                                               from
                                                         fdr.fr_org_node_structure fons
@@ -494,9 +496,10 @@ as
                                                                    fdr.fr_party_legal
                                                         ) fpl
                                                      on cfon.on_pl_party_legal_id = fpl.pl_party_legal_id
+                                             where foht.oht_org_hier_client_code in ( 'GAAP_CONSOLIDATION' )
                                      )
                                                     select
-                                                           d.basis_typ                                 basis_typ
+                                                           d.legal_entity_link_typ                                 legal_entity_link_typ
                                                          , d.child_le_cd                               vie_le_cd
                                                          , level                                       vie_le_level
                                                          , sys_connect_by_path ( d.child_le_cd , '/' ) path_to_vie_le_cd
@@ -508,7 +511,7 @@ as
                                                            d.parent_le_cd is null
                                                 connect by
                                                            prior d.child_le_cd = d.parent_le_cd
-                                                       and prior d.basis_typ   = d.basis_typ
+                                                       and prior d.legal_entity_link_typ   = d.legal_entity_link_typ
                                          order siblings by
                                                            d.child_le_cd asc
                               )
@@ -523,14 +526,14 @@ as
                                                       regexp_substr ( vie_entity.path_to_vie_le_cd , '[^/]+' , 1 , level ) is not null
                                        )
                 loop
-                    vie_segment_key := vie_entity.basis_typ || '-' || le_path_segment.path_segment_le_cd || '-' || vie_entity.vie_le_cd;
+                    vie_segment_key := vie_entity.legal_entity_link_typ || '-' || le_path_segment.path_segment_le_cd || '-' || vie_entity.vie_le_cd;
 
                     if not v_segment_tab.exists ( vie_segment_key )
                     then
                         v_counter := v_counter + 1;
 
                         v_segment_tab ( vie_segment_key )                       := vie_segment_key;
-                        v_vie_path_segment_tab ( v_counter ).basis_typ          := vie_entity.basis_typ;
+                        v_vie_path_segment_tab ( v_counter ).basis_typ          := vie_entity.legal_entity_link_typ;
                         v_vie_path_segment_tab ( v_counter ).vie_le_cd          := vie_entity.vie_le_cd;
                         v_vie_path_segment_tab ( v_counter ).vie_le_level       := vie_entity.vie_le_level;
                         v_vie_path_segment_tab ( v_counter ).segment_lvl        := le_path_segment.lvl;
@@ -632,7 +635,7 @@ as
                                            select
                                                   null                           parent_le_cd
                                                 , fon.on_org_node_client_code    child_le_cd
-                                                , foht.oht_org_hier_client_code  basis_typ
+                                                , foht.oht_org_hier_client_code  legal_entity_link_typ
                                                 , fpl.is_vie_entity
                                              from
                                                              fdr.fr_org_network        fon
@@ -672,7 +675,7 @@ as
                                            select
                                                   pfon.on_org_node_client_code  parent_le_cd
                                                 , cfon.on_org_node_client_code  child_le_cd
-                                                , foht.oht_org_hier_client_code basis_typ
+                                                , foht.oht_org_hier_client_code legal_entity_link_typ
                                                 , fpl.is_vie_entity
                                              from
                                                        fdr.fr_org_node_structure fons
@@ -692,7 +695,7 @@ as
                                     )
                                                    select
                                                           d.child_le_cd                               le_cd
-                                                        , d.basis_typ                                 basis_typ
+                                                        , d.legal_entity_link_typ                                 legal_entity_link_typ
                                                         , sys_connect_by_path ( d.child_le_cd , '/' ) path_to_le
                                                      from
                                                           le_base d
@@ -700,17 +703,17 @@ as
                                                           d.parent_le_cd is null
                                                connect by
                                                           prior d.child_le_cd = d.parent_le_cd
-                                                      and prior d.basis_typ   = d.basis_typ
+                                                      and prior d.legal_entity_link_typ   = d.legal_entity_link_typ
                                         order siblings by
                                                           d.child_le_cd asc
                              ) loop
 
             v_vie_rec.le_cd      := hierarchy_rec.le_cd;
-            v_vie_rec.basis_typ  := hierarchy_rec.basis_typ;
+            v_vie_rec.basis_typ  := hierarchy_rec.legal_entity_link_typ;
             v_vie_rec.path_to_le := hierarchy_rec.path_to_le;
             v_vie_rec.vie_le_cd  := null;
 
-            pr_set_vie_le_cd ( hierarchy_rec.basis_typ , hierarchy_rec.path_to_le , v_vie_rec.vie_le_cd );
+            pr_set_vie_le_cd ( hierarchy_rec.legal_entity_link_typ , hierarchy_rec.path_to_le , v_vie_rec.vie_le_cd );
 
             if ( v_vie_rec.vie_le_cd is not null )
             then
@@ -787,7 +790,7 @@ as
                    stn.vie_legal_entity
                  (
                    step_run_sid
-                 , basis_typ
+                 , legal_entity_link_typ
                  , le_cd
                  , vie_le_cd
                  , path_to_le
@@ -821,7 +824,7 @@ as
                                  count(*) cnt
                             from (
                                      select
-                                            basis_typ
+                                            legal_entity_link_typ
                                           , le_cd
                                           , vie_le_cd
                                           , path_to_le
@@ -831,7 +834,7 @@ as
                                             step_run_sid = v_old_step_run_sid
                                       minus
                                      select
-                                            basis_typ
+                                            legal_entity_link_typ
                                           , le_cd
                                           , vie_le_cd
                                           , path_to_le
@@ -845,7 +848,7 @@ as
                                  count(*) cnt
                             from (
                                      select
-                                            basis_typ
+                                            legal_entity_link_typ
                                           , le_cd
                                           , vie_le_cd
                                           , path_to_le
@@ -855,7 +858,7 @@ as
                                             step_run_sid = p_step_run_sid
                                       minus
                                      select
-                                            basis_typ
+                                            legal_entity_link_typ
                                           , le_cd
                                           , vie_le_cd
                                           , path_to_le

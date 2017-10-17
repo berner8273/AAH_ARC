@@ -31,6 +31,9 @@ select
      , max ( case when fgl.lk_match_key1 = 'BOOK_STATUS'
                   then fgl.lk_lookup_value1
              end )                                               book_status
+     , max ( case when fgl.lk_match_key1 = 'LKT_CODE'
+                  then fgl.lk_lookup_value1
+             end )                                               lkt_code
   from
        fdr.fr_general_lookup fgl
  where

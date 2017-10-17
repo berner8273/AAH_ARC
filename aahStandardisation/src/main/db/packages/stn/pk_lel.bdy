@@ -82,7 +82,7 @@ and not exists (
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 child_legal_entity.LE_CD AS SRHS_ONS_CHILD_ORG_NODE_CODE,
                 parent_legal_entity.LE_CD AS SRHS_ONS_PARENT_ORG_NODE_CODE,
-                lel.BASIS_TYP AS SRHS_ONS_ORG_HIER_TYPE_CODE,
+                lel.LEGAL_ENTITY_LINK_TYP AS SRHS_ONS_ORG_HIER_TYPE_CODE,
                 LE_DEFAULT.ACTIVE_FLAG AS SRHS_ACTIVE
             FROM
                 LEGAL_ENTITY_LINK lel
@@ -137,7 +137,7 @@ and not exists (
                                where
                                      fonp.on_org_node_client_code = lep.le_cd
                                  and fonc.on_org_node_client_code = lec.le_cd
-                                 and foht.oht_org_hier_type_name  = lel.basis_typ
+                                 and foht.oht_org_hier_type_name  = lel.legal_entity_link_typ
                           );
         p_no_cancel_records_published := sql%rowcount;
     END;
