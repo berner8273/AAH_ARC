@@ -27,10 +27,10 @@ drop view rdr.rrv_accounting_event_hierarchy;
 drop view rdr.rrv_gl_account_hierarchy;
 drop view rdr.rrv_legal_entity_ledger;
 drop view rdr.rrv_slr_jrnl_lines_ag;
-drop view rdr.rrv_slr_fak_combinations_ag.sql;
-drop view rdr.rrv_slr_fak_daily_balances_ag.sql;
-drop view rdr.rrv_slr_eba_combinations_ag.sql;
-drop view rdr.rrv_slr_eba_daily_balances_ag.sql;
+drop view rdr.rrv_slr_fak_combinations_ag;
+drop view rdr.rrv_slr_fak_daily_balances_ag;
+drop view rdr.rrv_slr_eba_combinations_ag;
+drop view rdr.rrv_slr_eba_daily_balances_ag;
 
 conn ~stn_logon
 
