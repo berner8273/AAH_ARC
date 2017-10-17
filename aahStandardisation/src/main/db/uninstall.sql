@@ -162,6 +162,14 @@ drop package      fdr.pk_legal_entity;
 
 delete from fdr.fr_global_parameter          where lpg_id = 2;
 delete from fdr.fr_trade                     where t_fdr_tran_no             not in ( 'DEFAULT' );
+delete from fdr.fr_instrument                where i_instrument_id                != '1';
+delete from fdr.fr_instr_type_lookup         where itl_lookup_key                 != 'DEFAULT';
+delete from fdr.fr_instrument_type           where it_instr_type_client_code      != 'DEFAULT';
+delete from fdr.fr_instr_type_class_lookup   where itcl_lookup_key                != 'DEFAULT';
+delete from fdr.fr_instr_type_class          where itc_instr_type_class_name      != 'DEFAULT';
+delete from fdr.fr_instr_type_sclass_lookup  where itscl_lookup_key               != 'DEFAULT';
+delete from fdr.fr_instr_type_superclass     where itsc_instr_type_super_clicode  != 'DEFAULT';
+delete from fdr.fr_instr_insure_extend;
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
 delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT','JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' );
@@ -196,14 +204,14 @@ delete from fdr.fr_org_node_type             where ont_org_node_type_name       
 delete from fdr.is_groupuser                 where isgu_usr_ref                   != 3;
 delete from fdr.is_user                      where isusr_name                     != 'fdr_user';
 delete from fdr.is_group                     where isgrp_name                     = 'AG' ;
-delete from fdr.fr_instrument                where i_instrument_id                != '1';
-delete from fdr.fr_instr_type_lookup         where itl_lookup_key                 != 'DEFAULT';
-delete from fdr.fr_instrument_type           where it_instr_type_client_code      != 'DEFAULT';
-delete from fdr.fr_instr_type_class_lookup   where itcl_lookup_key                != 'DEFAULT';
-delete from fdr.fr_instr_type_class          where itc_instr_type_class_name      != 'DEFAULT';
-delete from fdr.fr_instr_type_sclass_lookup  where itscl_lookup_key               != 'DEFAULT';
-delete from fdr.fr_instr_type_superclass     where itsc_instr_type_super_clicode  != 'DEFAULT';
-delete from fdr.fr_instr_insure_extend;
+                                                                                         
+                                                                                               
+                                                                                               
+                                                                                               
+                                                                                               
+                                                                                               
+                                                                                               
+                                       
 delete from fdr.fr_address                   where ad_address_clicode             != 'DEFAULT';
 
 
