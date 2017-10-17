@@ -123,8 +123,10 @@ conn ~stn_logon
 @@tables/stn/ledger.sql
 @@tables/stn/elimination_legal_entity.sql
 @@tables/stn/legal_entity.sql
+@@tables/stn/legal_entity_alias.sql
 @@tables/stn/legal_entity_ledger.sql
 @@tables/stn/legal_entity_link.sql
+@@tables/stn/legal_entity_link_type.sql
 @@tables/stn/legal_entity_type.sql
 @@tables/stn/line_of_business.sql
 @@tables/stn/posting_accounting_basis.sql
@@ -160,6 +162,7 @@ conn ~stn_logon
 @@views/stn/hopper_gl_chartfield.sql
 @@views/stn/hopper_gl_combo_edit_gc.sql
 @@views/stn/hopper_gl_combo_edit_gl.sql
+@@views/stn/hopper_legal_entity_alias.sql
 @@views/stn/hopper_legal_entity_ledger.sql
 @@views/stn/hopper_tax_jurisdiction.sql
 @@views/stn/hopper_journal_line.sql
@@ -200,6 +203,7 @@ conn ~stn_logon
 @@ri_constraints/stn/insurance_policy_fx_rate.sql
 @@ri_constraints/stn/insurance_policy_tax_jurisd.sql
 @@ri_constraints/stn/legal_entity.sql
+@@ri_constraints/stn/legal_entity_alias.sql
 @@ri_constraints/stn/legal_entity_ledger.sql
 @@ri_constraints/stn/legal_entity_link.sql
 @@ri_constraints/stn/posting_accounting_basis.sql
@@ -232,6 +236,7 @@ conn ~stn_logon
 @@data/stn/gl_account_category.sql
 @@data/stn/gl_chartfield_type.sql
 @@data/stn/legal_entity_type.sql
+@@data/stn/legal_entity_link_type.sql
 @@data/stn/posting_accounting_basis_type.sql
 @@data/stn/premium_type.sql
 @@data/stn/vie_code.sql

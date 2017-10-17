@@ -249,6 +249,28 @@ and not exists (
             WHERE
                 le.IS_LEDGER_ENTITY = 'Y' AND le.EVENT_STATUS = 'V';
         p_total_no_fsrb_published := SQL%ROWCOUNT;
+        INSERT INTO HOPPER_LEGAL_ENTITY_ALIAS
+            (LPG_ID, MESSAGE_ID, PROCESS_ID, EVENT_STATUS, ALIAS_LE_CD, ALIAS_LE_DESCR, LE_ALIAS_RULE_TYP, LE_ALIAS_STS, LE_ID, EFFECTIVE_FROM, EFFECTIVE_TO)
+            SELECT
+                lea.LPG_ID AS LPG_ID,
+                TO_CHAR(lea.ROW_SID) AS MESSAGE_ID,
+                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
+                'U' AS EVENT_STATUS,
+                lea.ALIAS_LE_CD AS ALIAS_LE_CD,
+                lea.ALIAS_LE_DESCR AS ALIAS_LE_DESCR,
+                LE_DEFAULT.LKT_CODE AS LE_ALIAS_RULE_TYP,
+                LE_DEFAULT.ACTIVE_FLAG AS LE_ALIAS_STS,
+                lea.LE_ID AS LE_ID,
+                CURRENT_DATE AS EFFECTIVE_FROM,
+                TO_DATE('2099-12-31', 'YYYY-MM-DD HH24:MI:SS') AS EFFECTIVE_TO
+            FROM
+                LEGAL_ENTITY_ALIAS lea
+                INNER JOIN LEGAL_ENTITY le ON lea.LE_ID = le.LE_ID AND lea.FEED_UUID = le.FEED_UUID
+                INNER JOIN IDENTIFIED_RECORD idr ON le.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
+                INNER JOIN LE_DEFAULT ON 1 = 1
+            WHERE
+                le.EVENT_STATUS = 'V' AND lea.EVENT_STATUS = 'V';
     END;
     
     PROCEDURE pr_legal_entity_rval
@@ -332,6 +354,20 @@ and not exists (
                   idr.row_sid = le.ROW_SID
        );
         p_no_processed_records := SQL%ROWCOUNT;
+        UPDATE LEGAL_ENTITY_ALIAS lea
+            SET
+                EVENT_STATUS = 'P'
+            WHERE
+                exists (
+           select
+                  null
+             from
+                       fdr.fr_stan_raw_general_lookup fsrgl
+                  join stn.legal_entity        le    on le.le_id = lea.LE_ID and le.feed_uuid = lea.FEED_UUID
+                  join stn.identified_record   idr   on idr.row_sid = le.row_sid
+            where
+                  to_number ( fsrgl.message_id ) = lea.ROW_SID
+       );
     END;
     
     PROCEDURE pr_legal_entity_svs
@@ -373,6 +409,50 @@ and     exists (
                           le.ROW_SID = idr.row_sid
                );
         p_no_validated_records := SQL%ROWCOUNT;
+        UPDATE LEGAL_ENTITY_ALIAS lea
+            SET
+                EVENT_STATUS = 'E'
+            WHERE
+                exists (
+           select
+                  null
+             from
+                  stn.standardisation_log sl
+             join
+                  stn.legal_entity le
+               on
+                  le.le_id = lea.le_id and le.feed_uuid = lea.feed_uuid
+            where
+                  sl.row_in_error_key_id = le.row_sid
+       );
+        UPDATE LEGAL_ENTITY_ALIAS lea
+            SET
+                EVENT_STATUS = 'V'
+            WHERE
+                    not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                     join
+                          stn.legal_entity le
+                       on
+                          le.le_id = lea.le_id and le.feed_uuid = lea.feed_uuid
+                    where
+                          sl.row_in_error_key_id = le.row_sid
+               )
+and     exists (
+                   select
+                          null
+                     from
+                          stn.identified_record idr
+                     join
+                          stn.legal_entity le
+                       on
+                          le.le_id = lea.le_id and le.feed_uuid = lea.feed_uuid
+                    where
+                          le.row_sid = idr.row_sid
+               );
     END;
     
     PROCEDURE pr_legal_entity_prc

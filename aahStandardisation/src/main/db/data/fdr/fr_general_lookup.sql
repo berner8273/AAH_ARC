@@ -27,6 +27,7 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'EPG_ID'                         , 'AG' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'BANKING_TRADING'                , 'B' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'BOOK_STATUS'                    , 'Production' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'LKT_CODE'                       , 'LEGAL_ENTITY_ALIAS' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LEDGER_DEFAULT'           , 'ACTIVE_FLAG'                    , 'A' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LEDGER_DEFAULT'           , 'LEDGER_GROUP'                   , 'MAIN' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'RULE_SET'                       , 'AG' );

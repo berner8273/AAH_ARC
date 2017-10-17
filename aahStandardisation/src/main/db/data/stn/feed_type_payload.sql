@@ -4,6 +4,7 @@ insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'DEPARTMENT'   
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'GL_CHARTFIELD'    , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_chartfield' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'LEGAL_ENTITY'     , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'LEGAL_ENTITY'     , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_link' ) );
+insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'LEGAL_ENTITY'     , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'CESSION_EVENT'    , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'cession_event' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'INSURANCE_POLICY' , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'insurance_policy' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'INSURANCE_POLICY' , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'cession' ) );

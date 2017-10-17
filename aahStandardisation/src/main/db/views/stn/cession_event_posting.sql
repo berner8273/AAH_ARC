@@ -240,7 +240,7 @@ with
                 join stn.posting_ledger            pldgr  on vpml.ledger_id        = pldgr.ledger_id
                 join stn.vie_legal_entity          vle    on (
                                                                      cev_data.business_unit = vle.le_cd
-                                                                 and abasis.basis_typ       = vle.basis_typ
+                                                                 and abasis.basis_typ       = vle.legal_entity_link_typ
                                                              )
                 join (
                          select
@@ -557,7 +557,7 @@ with
                 join stn.elimination_legal_entity ele on (
                                                                  non_intercompany_data.business_unit = ele.le_1_cd
                                                              and non_intercompany_data.affiliate     = ele.le_2_cd
-                                                             and non_intercompany_data.basis_typ     = ele.basis_typ
+                                                             and non_intercompany_data.basis_typ     = ele.legal_entity_link_typ
                                                          )
                 join (
                          select

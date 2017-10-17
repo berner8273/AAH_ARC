@@ -4,7 +4,7 @@ create table stn.legal_entity
 ,   le_id                   number   ( 38 , 0 )                                              not null
 ,   le_cd                   varchar2 ( 20 char )                                             not null
 ,   le_descr                varchar2 ( 100 char )                                            not null
-,   functional_ccy          varchar2 ( 3 char )                                              not null
+,   functional_ccy          varchar2 ( 3 char )                                              null
 ,   legal_entity_typ        varchar2 ( 20 char )                                             not null
 ,   is_ledger_entity        varchar2 ( 1 char ) default 'N'                                  not null
 ,   is_interco_elim_entity  varchar2 ( 1 char ) default 'N'                                  not null
@@ -20,4 +20,5 @@ create table stn.legal_entity
 ,   constraint ck_is_ledger_entity       check ( is_ledger_entity       in ('Y','N') )
 ,   constraint ck_is_interco_elim_entity check ( is_interco_elim_entity in ('Y','N') )
 ,   constraint ck_is_vie_consol_entity   check ( is_vie_consol_entity   in ('Y','N') )
+,   constraint ck_func_ccy_internal      check ( ( legal_entity_typ = 'INTERNAL' AND functional_ccy IS NOT NULL ) OR legal_entity_typ <> 'INTERNAL' )
 );
