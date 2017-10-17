@@ -163,7 +163,7 @@ conn ~stn_logon
 @@views/stn/hopper_legal_entity_ledger.sql
 @@views/stn/hopper_tax_jurisdiction.sql
 @@views/stn/hopper_journal_line.sql
-@@views/stn/hopper_journal_line_default.sql
+@@views/stn/journal_line_default.sql
 @@views/stn/tax_jurisdiction_default.sql
 @@views/stn/le_default.sql
 @@views/stn/ledger_default.sql
