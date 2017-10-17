@@ -1,4 +1,4 @@
-create or replace force view rdr.rrv_slr_fak_daily_balances_ag
+create or replace view rdr.rrv_slr_fak_daily_balances_ag
 as
    select fdb_fak_id,
           fdb_balance_date,

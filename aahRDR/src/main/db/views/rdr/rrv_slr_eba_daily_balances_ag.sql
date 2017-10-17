@@ -1,4 +1,4 @@
-create or replace force view rdr.rrv_slr_eba_daily_balances_ag
+create or replace view rdr.rrv_slr_eba_daily_balances_ag
 as
    select edb_fak_id,
           edb_eba_id,
@@ -30,7 +30,7 @@ as
           edb_amended_on
      from slr.slr_eba_daily_balances db
           join rdr.rrv_slr_eba_combinations_ag ec
-             on db.edb_eba_id = ec.ec_eba_id 
+             on db.edb_eba_id = ec.ec_eba_id
           join rdr.rrv_slr_fak_combinations_ag fc
              on ec.ec_fak_id = fc.fc_fak_id
 ;

@@ -1,4 +1,4 @@
-create or replace force view rdr.rrv_slr_fak_combinations_ag
+create or replace view rdr.rrv_slr_fak_combinations_ag
 as
    select fc_fak_id,
           fc_epg_id,
