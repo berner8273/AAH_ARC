@@ -5,7 +5,6 @@ create table stn.cession_event
 ,   event_id            number ( 38 , 0 )                                  not null
 ,   accounting_dt       date                                               not null
 ,   stream_id           number ( 38 , 0 )                                  not null
-,   tax_jurisdiction_cd varchar2 ( 2 char )                                not null
 ,   basis_cd            varchar2 ( 20 char )                               not null
 ,   premium_typ         varchar2 ( 1 char )                                not null
 ,   business_typ        varchar2 ( 2 char )                                not null
@@ -24,5 +23,5 @@ create table stn.cession_event
 ,   no_retries          number ( 38 , 0 )   default 0                      not null
 ,   step_run_sid        number ( 38 , 0 )   default 0                      not null
 ,   constraint pk_cev primary key ( row_sid )
-,   constraint uk_cev unique      ( feed_uuid , correlation_uuid , event_id , accounting_dt , stream_id , tax_jurisdiction_cd , basis_cd , premium_typ , business_typ )
+,   constraint uk_cev unique      ( feed_uuid , correlation_uuid , event_id , accounting_dt , stream_id , basis_cd , premium_typ , business_typ )
 );
