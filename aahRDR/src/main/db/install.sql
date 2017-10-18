@@ -26,6 +26,8 @@ conn ~stn_logon
 @@grants/tables/slr/slr_fak_combinations.sql
 @@grants/tables/slr/slr_eba_combinations.sql
 @@grants/tables/slr/slr_eba_daily_balances.sql
+@@grants/tables/fdr/fr_account_lookup.sql
+
 
 conn ~rdr_logon
 
@@ -38,6 +40,12 @@ conn ~rdr_logon
 @@views/rdr/rrv_slr_fak_daily_balances_ag.sql
 @@views/rdr/rrv_slr_eba_combinations_ag.sql
 @@views/rdr/rrv_slr_eba_daily_balances_ag.sql
+@@views/rdr/rrv_fr_posting_driver_ag.sql
+@@views/rdr/rrv_fr_gl_account_ag.sql
+@@views/rdr/rrv_fr_account_lookup_ag.sql
+
+
+
 
 
 

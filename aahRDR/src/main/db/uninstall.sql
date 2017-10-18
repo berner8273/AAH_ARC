@@ -31,14 +31,16 @@ drop view rdr.rrv_slr_fak_combinations_ag;
 drop view rdr.rrv_slr_fak_daily_balances_ag;
 drop view rdr.rrv_slr_eba_combinations_ag;
 drop view rdr.rrv_slr_eba_daily_balances_ag;
+drop view rdr.rrv_fr_posting_driver_ag;
+drop view rdr.rrv_fr_gl_account_ag;
+drop view rdr.rrv_fr_account_lookup_ag;
 
 conn ~stn_logon
 
 revoke select   on stn.gl_account_hierarchy    from rdr;
-
 revoke select 	on slr.slr_fak_combinations    from rdr;
 revoke select 	on slr.slr_eba_combinations    from rdr;
 revoke select 	on slr.slr_eba_daily_balances  from rdr;
-
+revoke select	on fdr.fr_account_lookup.sql   from rdr;
 
 exit
