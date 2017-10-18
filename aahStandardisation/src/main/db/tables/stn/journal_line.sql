@@ -7,13 +7,13 @@ create table stn.journal_line
   ACCT_CD                VARCHAR2(20 CHAR)      NOT NULL,
   BASIS_CD               VARCHAR2(20 CHAR)      NOT NULL,
   LEDGER_CD              VARCHAR2(20 CHAR)      NOT NULL,
-  POLICY_ID              VARCHAR2(20 CHAR)      NOT NULL,
+  POLICY_ID              VARCHAR2(30 CHAR)      NOT NULL,
   STREAM_ID              NUMBER(38)             NOT NULL,
   AFFILIATE_LE_ID        NUMBER(38),
   COUNTERPARTY_LE_ID     NUMBER(38),
   DEPT_CD                VARCHAR2(20 CHAR)      NOT NULL,
-  BUSINESS_EVENT_TYP     VARCHAR2(30 CHAR)      NOT NULL,
-  JOURNAL_DESCR          VARCHAR2(100 CHAR)     NOT NULL,
+  BUSINESS_EVENT_TYP     VARCHAR2(20 CHAR)      NOT NULL,
+  JOURNAL_DESCR          VARCHAR2(20 CHAR)     NOT NULL,
   CHARTFIELD_1           VARCHAR2(20 CHAR)      NOT NULL,
   ACCIDENT_YR            NUMBER(4),
   UNDERWRITING_YR        NUMBER(4)              NOT NULL,
@@ -40,4 +40,5 @@ create table stn.journal_line
 ,   constraint uk_jl                     unique      (ACCOUNTING_DT, LE_ID, ACCT_CD, LEDGER_CD, STREAM_ID)
 ,   constraint ck_business_typ            check       ( business_typ      in ( 'A','D','C','CA','AA'))
 ,   constraint ck_premium_typ             check       ( premium_typ       in ( 'A','S','M','I','F','L' ))
+,   constraint ck_acct_cd                 check       ( length(acct_cd) = 8 OR length(acct_cd) = 11 )
 );
