@@ -6,7 +6,7 @@ create table stn.cession_event
 ,   accounting_dt       date                                               not null
 ,   stream_id           number ( 38 , 0 )                                  not null
 ,   basis_cd            varchar2 ( 20 char )                               not null
-,   premium_typ         varchar2 ( 1 char )                                not null
+,   premium_typ         varchar2 ( 1 char )
 ,   business_typ        varchar2 ( 2 char )                                not null
 ,   event_typ           varchar2 ( 30 char )                               not null
 ,   business_event_typ  varchar2 ( 50 char )                               not null
