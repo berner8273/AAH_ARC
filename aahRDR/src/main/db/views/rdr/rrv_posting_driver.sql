@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_fr_posting_driver_ag
+create or replace view rdr.rrv_posting_driver
 as
 select
 pd_posting_driver_id  

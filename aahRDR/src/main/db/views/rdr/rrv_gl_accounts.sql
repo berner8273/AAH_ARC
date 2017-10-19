@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_fr_gl_account_ag
+create or replace view rdr.rrv_gl_accounts
 as
 select 
 ga_account_code             
@@ -29,14 +29,14 @@ ga_account_code
 ,ga_client_text5             
 ,ga_account_owner            
 ,ga_revaluation_ind          
-,ga_fak_segment_flag_1 as ledger_cd      
-,ga_fak_segment_flag_2 as basis_cd      
-,ga_fak_segment_flag_3 as dept_cd      
-,ga_fak_segment_flag_4 as affiliate_le_id      
-,ga_fak_segment_flag_5 as chartfield_1      
-,ga_fak_segment_flag_6 as execution_typ      
-,ga_fak_segment_flag_7 as business_typ      
-,ga_fak_segment_flag_8 as policy_id      
+,ga_fak_segment_flag_1       
+,ga_fak_segment_flag_2       
+,ga_fak_segment_flag_3       
+,ga_fak_segment_flag_4       
+,ga_fak_segment_flag_5       
+,ga_fak_segment_flag_6       
+,ga_fak_segment_flag_7       
+,ga_fak_segment_flag_8       
 ,ga_fak_segment_flag_9       
 ,ga_fak_segment_flag_10      
 ,ga_eba_segment_flag_1       

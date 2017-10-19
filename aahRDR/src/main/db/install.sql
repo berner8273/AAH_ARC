@@ -40,11 +40,17 @@ conn ~rdr_logon
 @@views/rdr/rrv_slr_fak_daily_balances_ag.sql
 @@views/rdr/rrv_slr_eba_combinations_ag.sql
 @@views/rdr/rrv_slr_eba_daily_balances_ag.sql
-@@views/rdr/rrv_fr_posting_driver_ag.sql
-@@views/rdr/rrv_fr_gl_account_ag.sql
-@@views/rdr/rrv_fr_account_lookup_ag.sql
-
-
+@@views/rdr/rrv_gl_accounts.sql
+@@views/rdr/rrv_account_lookup.sql
+@@views/rdr/rrv_posting_driver.sql
+@@views/rdr/rrv_business_unit.sql
+@@views/rdr/rrv_ledger.sql
+@@views/rdr/rrv_department.sql
+@@views/rdr/rrv_program.sql
+@@views/rdr/rrv_tax_jurisdiction.sql
+@@views/rdr/rrv_combo_edit_rules.sql
+@@views/rdr/rrv_insurance_policy_fx.sql
+@@views/rdr/rrv_fx_rates.sql
 
 
 

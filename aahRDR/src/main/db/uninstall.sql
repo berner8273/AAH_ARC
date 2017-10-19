@@ -34,6 +34,18 @@ drop view rdr.rrv_slr_eba_daily_balances_ag;
 drop view rdr.rrv_fr_posting_driver_ag;
 drop view rdr.rrv_fr_gl_account_ag;
 drop view rdr.rrv_fr_account_lookup_ag;
+drop view rdr.rrv_gl_accounts;
+drop view rdr.rrv_account_lookup;
+drop view rdr.rrv_posting_driver;
+drop view rdr.rrv_business_unit;
+drop view rdr.rrv_ledger;
+drop view rdr.rrv_department;
+drop view rdr.rrv_program;
+drop view rdr.rrv_tax_jurisdiction;
+drop view rdr.rrv_combo_edit_rules;
+drop view rdr.rrv_insurance_policy_fx;
+drop view rdr.rrv_fx_rates;
+
 
 conn ~stn_logon
 
