@@ -3,7 +3,8 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_GL_ACCT AS
         (
             p_step_run_sid IN NUMBER,
             p_lpg_id IN NUMBER,
-            p_no_identified_recs OUT NUMBER
+            p_no_identified_recs OUT NUMBER,
+            p_no_si_identified_recs OUT NUMBER
         )
     AS
     BEGIN
@@ -44,6 +45,50 @@ and not exists (
                          sf.superseded_feed_sid = feed.FEED_SID
               );
         p_no_identified_recs := SQL%ROWCOUNT;
+        INSERT INTO IDENTIFIED_RECORD
+            (ROW_SID)
+            SELECT
+                gla.ROW_SID AS ROW_SID
+            FROM
+                GL_ACCOUNT gla
+                INNER JOIN FEED ON gla.FEED_UUID = feed.FEED_UUID
+                INNER JOIN (SELECT
+                    gla.ACCT_CD AS acct_cd,
+                    MAX(gla.EFFECTIVE_DT) AS effective_dt
+                FROM
+                    GL_ACCOUNT gla
+                    INNER JOIN fdr.FR_GLOBAL_PARAMETER fgp ON gla.LPG_ID = fgp.LPG_ID
+                WHERE
+                    gla.EFFECTIVE_DT <= fgp.GP_TODAYS_BUS_DATE
+and gla.ACCT_STS = 'I'
+and gla.ACCT_CD in (
+  SELECT gla.ACCT_CD
+    FROM GL_ACCOUNT gla
+    GROUP BY gla.ACCT_CD
+    having count(gla.ACCT_CD) = 1
+    )
+                GROUP BY
+                    gla.ACCT_CD) "gl-account-identify-si" ON gla.ACCT_CD = "gl-account-identify-si".acct_cd AND gla.EFFECTIVE_DT = "gl-account-identify-si".effective_dt
+            WHERE
+                    gla.EVENT_STATUS = 'U'
+and gla.LPG_ID       = p_lpg_id
+and not exists (
+                   select
+                          null
+                     from
+                          stn.broken_feed bf
+                    where
+                          bf.feed_sid = feed.FEED_SID
+               )
+and not exists (
+                  select
+                         null
+                    from
+                         stn.superseded_feed sf
+                   where
+                         sf.superseded_feed_sid = feed.FEED_SID
+              );
+        p_no_si_identified_recs := SQL%ROWCOUNT;
         UPDATE GL_ACCOUNT gla
             SET
                 STEP_RUN_SID = p_step_run_sid
@@ -91,7 +136,7 @@ and not exists (
               );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated event_status to X on discarded records', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_gl_account_pub
         (
             p_step_run_sid IN NUMBER,
@@ -104,7 +149,10 @@ and not exists (
             (SRGA_GA_ACCOUNT_CODE, SRGA_GA_ACTIVE, SRGA_GA_ACCOUNT_TYPE, SRGA_GA_CLIENT_TEXT2, SRGA_GA_ACCOUNT_NAME, SRGA_GA_ACCOUNT_ADJ_TYPE, SRGA_GA_CLIENT_TEXT3, SRGA_GA_CLIENT_TEXT4, LPG_ID, MESSAGE_ID, PROCESS_ID)
             SELECT
                 gla.ACCT_CD AS SRGA_GA_ACCOUNT_CODE,
-                gla.ACCT_STS AS SRGA_GA_ACTIVE,
+                (CASE
+                    WHEN gla.ACCT_STS = 'I' THEN 'A'
+                    ELSE gla.ACCT_STS
+                END) AS SRGA_GA_ACTIVE,
                 gla.ACCT_TYP AS SRGA_GA_ACCOUNT_TYPE,
                 gla.ACCT_CAT AS SRGA_GA_CLIENT_TEXT2,
                 gla.ACCT_DESCR AS SRGA_GA_ACCOUNT_NAME,
@@ -123,7 +171,10 @@ and not exists (
             (SRGA_GA_ACCOUNT_CODE, SRGA_GA_ACTIVE, SRGA_GA_ACCOUNT_TYPE, SRGA_GA_CLIENT_TEXT2, SRGA_GA_ACCOUNT_NAME, SRGA_GA_ACCOUNT_ADJ_TYPE, SRGA_GA_CLIENT_TEXT3, SRGA_GA_CLIENT_TEXT4, LPG_ID, MESSAGE_ID, PROCESS_ID)
             SELECT
                 gla.ACCT_CD || '-01' AS SRGA_GA_ACCOUNT_CODE,
-                gla.ACCT_STS AS SRGA_GA_ACTIVE,
+                (CASE
+                    WHEN gla.ACCT_STS = 'I' THEN 'A'
+                    ELSE gla.ACCT_STS
+                END) AS SRGA_GA_ACTIVE,
                 gla.ACCT_TYP AS SRGA_GA_ACCOUNT_TYPE,
                 gla.ACCT_CAT AS SRGA_GA_CLIENT_TEXT2,
                 gla.ACCT_DESCR AS SRGA_GA_ACCOUNT_NAME,
@@ -139,7 +190,7 @@ and not exists (
                 INNER JOIN GLA_DEFAULT ON 1 = 1;
         p_total_no_sub_acct_published := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_gl_account_sps
         (
             p_no_processed_records OUT NUMBER
@@ -161,7 +212,7 @@ and not exists (
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_gl_account_chr
         (
             p_step_run_sid IN NUMBER,
@@ -178,7 +229,7 @@ and not exists (
                 fsrga.EVENT_STATUS <> 'P' AND fsrga.LPG_ID = p_lpg_id;
         p_no_updated_hopper_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_gl_account_prc
         (
             p_step_run_sid IN NUMBER,
@@ -192,11 +243,12 @@ and not exists (
         v_total_no_published NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hopper_records NUMBER(38, 9) DEFAULT 0;
         v_total_no_sub_acct_published NUMBER(38, 9) DEFAULT 0;
+        v_no_si_identified_records NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify GL account records' );
-        pr_gl_account_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
+        pr_gl_account_idf(p_step_run_sid, p_lpg_id, v_no_identified_records, v_no_si_identified_records);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records + v_no_si_identified_records, NULL);
         IF v_no_identified_records > 0 THEN
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
             pr_gl_account_chr(p_step_run_sid, p_lpg_id, v_no_updated_hopper_records);
@@ -208,7 +260,7 @@ and not exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set GL Account status = "P"' );
             pr_gl_account_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
-            IF v_no_processed_records <> v_no_identified_records THEN
+            IF v_no_processed_records <> (v_no_identified_records + v_no_si_identified_records) THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_no_identified_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
                 raise pub_val_mismatch;
@@ -232,3 +284,5 @@ and not exists (
     END;
 END PK_GL_ACCT;
 /
+
+
