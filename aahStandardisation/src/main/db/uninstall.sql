@@ -68,7 +68,7 @@ drop view  stn.gce_default;
 drop view  stn.user_default;
 drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
-drop view  stn.cession_event_posting;
+--drop view  stn.cession_event_posting;
 drop view  stn.hopper_gl_combo_edit_gc;
 drop view  stn.hopper_gl_combo_edit_gl;
 drop view  stn.hopper_tax_jurisdiction;
@@ -126,8 +126,8 @@ drop table stn.vie_code;
 drop table stn.insurance_policy_fx_rate;
 drop table stn.insurance_policy_tax_jurisd;
 drop table stn.insurance_policy;
-drop table stn.line_of_business;
-drop table stn.premium_type;
+drop table stn.execution_type;
+drop table stn.policy_premium_type;
 drop table stn.cession_event;
 drop table stn.business_type;
 drop table stn.posting_method_ledger;
@@ -204,14 +204,6 @@ delete from fdr.fr_org_node_type             where ont_org_node_type_name       
 delete from fdr.is_groupuser                 where isgu_usr_ref                   != 3;
 delete from fdr.is_user                      where isusr_name                     != 'fdr_user';
 delete from fdr.is_group                     where isgrp_name                     = 'AG' ;
-                                                                                         
-                                                                                               
-                                                                                               
-                                                                                               
-                                                                                               
-                                                                                               
-                                                                                               
-                                       
 delete from fdr.fr_address                   where ad_address_clicode             != 'DEFAULT';
 
 

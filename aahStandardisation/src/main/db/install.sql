@@ -100,6 +100,7 @@ conn ~stn_logon
 @@tables/stn/db_table.sql
 @@tables/stn/department.sql
 @@tables/stn/event_type.sql
+@@tables/stn/execution_type.sql
 @@tables/stn/feed.sql
 @@tables/stn/feed_record_count.sql
 @@tables/stn/feed_type.sql
@@ -128,7 +129,7 @@ conn ~stn_logon
 @@tables/stn/legal_entity_link.sql
 @@tables/stn/legal_entity_link_type.sql
 @@tables/stn/legal_entity_type.sql
-@@tables/stn/line_of_business.sql
+@@tables/stn/policy_premium_type.sql
 @@tables/stn/posting_accounting_basis.sql
 @@tables/stn/posting_accounting_basis_type.sql
 @@tables/stn/posting_financial_calc.sql
@@ -138,7 +139,6 @@ conn ~stn_logon
 @@tables/stn/posting_method_derivation_le.sql
 @@tables/stn/posting_method_derivation_mtm.sql
 @@tables/stn/posting_method_ledger.sql
-@@tables/stn/premium_type.sql
 @@tables/stn/process_code_module.sql
 @@tables/stn/standardisation_log.sql
 @@tables/stn/superseded_feed.sql
@@ -173,7 +173,7 @@ conn ~stn_logon
 @@views/stn/row_val_error_log_default.sql
 @@views/stn/set_val_error_log_default.sql
 @@views/stn/validation_detail.sql
-@@views/stn/cession_event_posting.sql
+--@@views/stn/cession_event_posting.sql
 @@views/stn/gce_default.sql
 @@views/stn/user_default.sql
 @@views/stn/hopper_cession_event.sql
@@ -238,9 +238,9 @@ conn ~stn_logon
 @@data/stn/legal_entity_type.sql
 @@data/stn/legal_entity_link_type.sql
 @@data/stn/posting_accounting_basis_type.sql
-@@data/stn/premium_type.sql
+@@data/stn/policy_premium_type.sql
+@@data/stn/execution_type.sql
 @@data/stn/vie_code.sql
-@@data/stn/line_of_business.sql
 @@data/stn/event_type.sql
 @@data/stn/vie_event_type.sql
 @@data/stn/posting_accounting_basis.sql

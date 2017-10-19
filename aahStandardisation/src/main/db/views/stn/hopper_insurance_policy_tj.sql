@@ -5,6 +5,7 @@ select
      , fsrgc.srgc_client_code      policy_id_tax_cd
      , fsrgc.srgc_client_text1     policy_id
      , fsrgc.srgc_client_text2     tax_jurisdiction_cd
+     , fsrgc.srgc_client_text3     tax_jurisdiction_pct
      , fsrgc.srgc_active           tax_jurisdiction_sts
      , fsrgc.event_status          event_status
      , fsrgc.message_id            message_id

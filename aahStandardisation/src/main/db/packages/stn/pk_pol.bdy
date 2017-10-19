@@ -373,41 +373,47 @@ and exists (
     AS
     BEGIN
         INSERT INTO HOPPER_INSURANCE_POLICY
-            (POLICY_ID, ORIGINAL_POLICY_ID, UNDERWRITING_LE_CD, EXTERNAL_REINSURER_LE_CD, ACCIDENT_YR, CLOSE_DT, EXPECTED_MATURITY_DT, UNDERWRITING_YR, PORTFOLIO_CD, PREMIUM_TYP, IS_MARK_TO_MARKET, IS_CREDIT_DEFAULT_SWAP, LINE_OF_BUSINESS_CD, TRANSACTION_CCY, STREAM_ID, ULTIMATE_PARENT_STREAM_ID, PARENT_STREAM_ID, LE_CD, HAS_PROFIT_COMMISSIONS, CESSION_TYP, GROSS_PAR_PCT, NET_PAR_PCT, GROSS_PREMIUM_PCT, CEDING_COMMISSION_PCT, NET_PREMIUM_PCT, POOLING_PCT, START_DT, EFFECTIVE_DT, STOP_DT, TERMINATION_DT, LOSS_LAYER_PCT, VIE_CD, VIE_EFFECTIVE_DT, BUY_OR_SELL, POLICY_HOLDER_LE_CD, SYSTEM_CD, POLICY_HOLDER_ADDRESS, INSTRUMENT_TYPE, EVENT_CODE, MESSAGE_ID, PROCESS_ID, FINANCIAL_INSTRUMENT_ID, POLICY_NAME_STREAM_ID, POLICY_NAME, EXECUTION_TYP, EARNINGS_CALC_METHOD, RPT_LE_CD, ACTUAL_MATURITY_DT, POLICY_TYP, IS_UNCOLLECTABLE, POLICY_VERSION)
+            (POLICY_ID, POLICY_NM, POLICY_ABBR_NM, ORIGINAL_POLICY_ID, UNDERWRITING_LE_CD, EXTERNAL_LE_CD, CLOSE_DT, EXPECTED_MATURITY_DT, POLICY_UNDERWRITING_YR, POLICY_ACCIDENT_YR, POLICY_TYP, POLICY_PREMIUM_TYP, IS_CREDIT_DEFAULT_SWAP, IS_MARK_TO_MARKET, EXECUTION_TYP, TRANSACTION_CCY, IS_UNCOLLECTIBLE, EARNINGS_CALC_METHOD, STREAM_ID, ULTIMATE_PARENT_STREAM_ID, PARENT_STREAM_ID, LE_CD, CESSION_TYP, GROSS_PAR_PCT, NET_PAR_PCT, GROSS_PREMIUM_PCT, CEDING_COMMISSION_PCT, NET_PREMIUM_PCT, START_DT, EFFECTIVE_DT, STOP_DT, TERMINATION_DT, LOSS_POS, VIE_STATUS, VIE_EFFECTIVE_DT, VIE_ACCT_DT, ACCIDENT_YR, UNDERWRITING_YR, PORTFOLIO_CD, BUY_OR_SELL, POLICY_HOLDER_LE_CD, SYSTEM_CD, POLICY_HOLDER_ADDRESS, INSTRUMENT_TYPE, EVENT_CODE, MESSAGE_ID, PROCESS_ID, FINANCIAL_INSTRUMENT_ID, POLICY_NAME_STREAM_ID, POLICY_VERSION)
             SELECT
                 pol.POLICY_ID AS POLICY_ID,
+                pol.POLICY_NM AS POLICY_NM,
+                pol.POLICY_ABBR_NM AS POLICY_ABBR_NM,
                 pol.ORIGINAL_POLICY_ID AS ORIGINAL_POLICY_ID,
                 underwriting_le.PL_PARTY_LEGAL_CLICODE AS UNDERWRITING_LE_CD,
-                external_reinsurer_le.PL_PARTY_LEGAL_CLICODE AS EXTERNAL_REINSURER_LE_CD,
-                TO_CHAR(pol.ACCIDENT_YR) AS ACCIDENT_YR,
+                external_le.PL_PARTY_LEGAL_CLICODE AS EXTERNAL_LE_CD,
                 pol.CLOSE_DT AS CLOSE_DT,
                 pol.EXPECTED_MATURITY_DT AS EXPECTED_MATURITY_DT,
-                pol.UNDERWRITING_YR AS UNDERWRITING_YR,
-                cession_le.PL_PARTY_LEGAL_CLICODE AS PORTFOLIO_CD,
-                pol.PREMIUM_TYP AS PREMIUM_TYP,
-                pol.IS_MARK_TO_MARKET AS IS_MARK_TO_MARKET,
+                pol.POLICY_UNDERWRITING_YR AS POLICY_UNDERWRITING_YR,
+                TO_CHAR(pol.POLICY_ACCIDENT_YR) AS POLICY_ACCIDENT_YR,
+                pol.POLICY_TYP AS POLICY_TYP,
+                pol.POLICY_PREMIUM_TYP AS POLICY_PREMIUM_TYP,
                 pol.IS_CREDIT_DEFAULT_SWAP AS IS_CREDIT_DEFAULT_SWAP,
-                pol.LINE_OF_BUSINESS_CD AS LINE_OF_BUSINESS_CD,
+                pol.IS_MARK_TO_MARKET AS IS_MARK_TO_MARKET,
+                pol.EXECUTION_TYP AS EXECUTION_TYP,
                 pol.TRANSACTION_CCY AS TRANSACTION_CCY,
+                pol.IS_UNCOLLECTIBLE AS IS_UNCOLLECTIBLE,
+                pol.EARNINGS_CALC_METHOD AS EARNINGS_CALC_METHOD,
                 TO_CHAR(cs.STREAM_ID) AS STREAM_ID,
                 TO_CHAR(iph.ULTIMATE_PARENT_STREAM_ID) AS ULTIMATE_PARENT_STREAM_ID,
                 TO_CHAR(iph.PARENT_STREAM_ID) AS PARENT_STREAM_ID,
                 cession_le.PL_PARTY_LEGAL_CLICODE AS LE_CD,
-                cs.HAS_PROFIT_COMMISSIONS AS HAS_PROFIT_COMMISSIONS,
                 cs.CESSION_TYP AS CESSION_TYP,
                 cs.GROSS_PAR_PCT AS GROSS_PAR_PCT,
                 cs.NET_PAR_PCT AS NET_PAR_PCT,
                 cs.GROSS_PREMIUM_PCT AS GROSS_PREMIUM_PCT,
                 cs.CEDING_COMMISSION_PCT AS CEDING_COMMISSION_PCT,
                 cs.NET_PREMIUM_PCT AS NET_PREMIUM_PCT,
-                cs.POOLING_PCT AS POOLING_PCT,
                 cs.START_DT AS START_DT,
                 cs.EFFECTIVE_DT AS EFFECTIVE_DT,
                 cs.STOP_DT AS STOP_DT,
                 cs.TERMINATION_DT AS TERMINATION_DT,
-                cs.LOSS_LAYER_PCT AS LOSS_LAYER_PCT,
-                cs.VIE_CD AS VIE_CD,
+                cs.LOSS_POS AS LOSS_POS,
+                cs.VIE_STATUS AS VIE_STATUS,
                 cs.VIE_EFFECTIVE_DT AS VIE_EFFECTIVE_DT,
+                cs.VIE_ACCT_DT AS VIE_ACCT_DT,
+                cs.ACCIDENT_YR AS ACCIDENT_YR,
+                cs.UNDERWRITING_YR AS UNDERWRITING_YR,
+                cession_le.PL_PARTY_LEGAL_CLICODE AS PORTFOLIO_CD,
                 pold.BUY_OR_SELL AS BUY_OR_SELL,
                 cession_le.PL_PARTY_LEGAL_CLICODE AS POLICY_HOLDER_LE_CD,
                 pold.SYSTEM_INSTANCE AS SYSTEM_CD,
@@ -417,14 +423,7 @@ and exists (
                 TO_CHAR(cs.ROW_SID) AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 TO_CHAR(cs.STREAM_ID) AS FINANCIAL_INSTRUMENT_ID,
-                pol.POLICY_NAME || ' - ' || TO_CHAR(cs.STREAM_ID) AS POLICY_NAME_STREAM_ID,
-                pol.POLICY_NAME AS POLICY_NAME,
-                pol.EXECUTION_TYP AS EXECUTION_TYP,
-                pol.EARNINGS_CALC_METHOD AS EARNINGS_CALC_METHOD,
-                cession_rpt_le.PL_PARTY_LEGAL_CLICODE AS RPT_LE_CD,
-                pol.ACTUAL_MATURITY_DT AS ACTUAL_MATURITY_DT,
-                pol.POLICY_TYP AS POLICY_TYP,
-                pol.IS_UNCOLLECTABLE AS IS_UNCOLLECTABLE,
+                pol.POLICY_NM || ' - ' || TO_CHAR(cs.STREAM_ID) AS POLICY_NAME_STREAM_ID,
                 (
 select nvl(max(ft.t_fdr_ver_no),0) + 1
   from
@@ -442,20 +441,20 @@ select nvl(max(ft.t_fdr_ver_no),0) + 1
                 INNER JOIN CESSION cs ON pol.POLICY_ID = cs.POLICY_ID AND pol.FEED_UUID = cs.FEED_UUID
                 INNER JOIN INSURANCE_POLICY_HIERARCHY iph ON cs.STREAM_ID = iph.STREAM_ID AND cs.FEED_UUID = iph.FEED_UUID
                 INNER JOIN fdr.FR_PARTY_LEGAL underwriting_le ON pol.UNDERWRITING_LE_ID = to_number ( underwriting_le.PL_GLOBAL_ID )
-                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL external_reinsurer_le ON pol.external_reinsurer_le_id = to_number ( external_reinsurer_le.PL_GLOBAL_ID )
-                INNER JOIN fdr.FR_PARTY_LEGAL cession_le ON cs.le_id = to_number ( cession_le.PL_GLOBAL_ID )
-                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL cession_rpt_le ON cs.rpt_le_id = to_number ( cession_rpt_le.PL_GLOBAL_ID )
+                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL external_le ON pol.EXTERNAL_LE_ID = to_number ( external_le.PL_GLOBAL_ID )
+                INNER JOIN fdr.FR_PARTY_LEGAL cession_le ON cs.LE_ID = to_number ( cession_le.PL_GLOBAL_ID )
                 INNER JOIN POL_DEFAULT pold ON 1 = 1
             WHERE
                 pol.EVENT_STATUS = 'V' AND cs.EVENT_STATUS = 'V';
         p_total_no_fsrip_published := SQL%ROWCOUNT;
         INSERT INTO HOPPER_INSURANCE_POLICY_TJ
-            (POLICY_TAX, POLICY_ID_TAX_CD, POLICY_ID, TAX_JURISDICTION_CD, TAX_JURISDICTION_STS, MESSAGE_ID, PROCESS_ID, LPG_ID, VALID_FROM)
+            (POLICY_TAX, POLICY_ID_TAX_CD, POLICY_ID, TAX_JURISDICTION_CD, TAX_JURISDICTION_PCT, TAX_JURISDICTION_STS, MESSAGE_ID, PROCESS_ID, LPG_ID, VALID_FROM)
             SELECT
                 pold.POLICY_TAX AS POLICY_TAX,
                 poltjd.POLICY_ID || '_' || poltjd.TAX_JURISDICTION_CD AS POLICY_ID_TAX_CD,
                 poltjd.POLICY_ID AS POLICY_ID,
                 poltjd.TAX_JURISDICTION_CD AS TAX_JURISDICTION_CD,
+                TO_CHAR(poltjd.TAX_JURISDICTION_PCT) AS TAX_JURISDICTION_PCT,
                 'A' AS TAX_JURISDICTION_STS,
                 TO_CHAR(poltjd.ROW_SID) AS MESSAGE_ID,
                 TO_CHAR(poltjd.STEP_RUN_SID) AS PROCESS_ID,
@@ -603,7 +602,7 @@ and not exists
             SELECT
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 pol.TRANSACTION_CCY AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
@@ -639,7 +638,7 @@ and not exists (
             SELECT
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 TO_CHAR(pol.UNDERWRITING_LE_ID) AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
@@ -680,7 +679,7 @@ and not exists (
             SELECT
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 polfxr.TO_CCY AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
@@ -725,7 +724,7 @@ and not exists (
             SELECT
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 polfxr.FROM_CCY AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
@@ -770,7 +769,7 @@ and not exists (
             SELECT
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 TO_CHAR(cs.LE_ID) AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
@@ -821,7 +820,89 @@ and not exists (
             SELECT
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                'vie_acct_dt cannot be null' AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                cs.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                cs.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                cs.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                CESSION cs
+                INNER JOIN FEED fd ON cs.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cs.LPG_ID = gp.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN POL_DEFAULT pold ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'cs-vie_acct_dt'
+and (
+        cs.VIE_STATUS   in ( 'CONSO' , 'DECONSO' )
+    and cs.VIE_ACCT_DT  is null
+    )
+and  exists (
+                select
+                       null
+                  from
+                            stn.insurance_policy  pol
+                       join stn.identified_record idr on pol.row_sid = idr.row_sid
+                 where
+                       pol.policy_id = cs.policy_id
+                   and pol.feed_uuid = cs.FEED_UUID
+            )
+
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                'vie_effective_dt cannot be null' AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                cs.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                cs.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                cs.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                CESSION cs
+                INNER JOIN FEED fd ON cs.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cs.LPG_ID = gp.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN POL_DEFAULT pold ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'cs-vie_eff_dt'
+and (
+        cs.VIE_STATUS   in ( 'CONSO' , 'DECONSO' )
+    and cs.VIE_EFFECTIVE_DT  is null
+    )
+and  exists (
+                select
+                       null
+                  from
+                            stn.insurance_policy  pol
+                       join stn.identified_record idr on pol.row_sid = idr.row_sid
+                 where
+                       pol.policy_id = cs.policy_id
+                   and pol.feed_uuid = cs.FEED_UUID
+            )
+
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 'Child stream''s policy ID = ''' || TO_CHAR(pcs.POLICY_ID) || ''' ; Parent stream''s policy ID = ''' || TO_CHAR(ccs.POLICY_ID) || '''' AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
