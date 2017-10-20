@@ -4,7 +4,6 @@ insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'DEPARTMENT'   
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'GL_CHARTFIELD'    , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'gl_chartfield' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'LEGAL_ENTITY'     , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'LEGAL_ENTITY'     , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_link' ) );
-insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'LEGAL_ENTITY'     , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'CESSION_EVENT'    , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'cession_event' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'INSURANCE_POLICY' , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'insurance_policy' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'INSURANCE_POLICY' , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'cession' ) );
@@ -22,5 +21,4 @@ insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'LEDGER'       
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'LEDGER'           , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_ledger' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'ACCOUNTING_EVENT' , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'accounting_event' ) );
 insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'JOURNAL_LINE'     , ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'journal_line' ) );
-insert into stn.feed_type_payload ( feed_typ , dbt_id ) values ( 'ROLL_DATE'        , ( select dbt_id from stn.db_table where db_nm = 'fdr' and table_nm = 'fr_global_parameter' ) );
 commit;

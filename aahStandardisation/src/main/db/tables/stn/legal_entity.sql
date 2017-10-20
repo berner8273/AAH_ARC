@@ -4,11 +4,13 @@ create table stn.legal_entity
 ,   le_id                   number   ( 38 , 0 )                                              not null
 ,   le_cd                   varchar2 ( 20 char )                                             not null
 ,   le_descr                varchar2 ( 100 char )                                            not null
-,   functional_ccy          varchar2 ( 3 char )                                              null
+,   functional_ccy          varchar2 ( 3 char )
 ,   legal_entity_typ        varchar2 ( 20 char )                                             not null
 ,   is_ledger_entity        varchar2 ( 1 char ) default 'N'                                  not null
 ,   is_interco_elim_entity  varchar2 ( 1 char ) default 'N'                                  not null
 ,   is_vie_consol_entity    varchar2 ( 1 char ) default 'N'                                  not null
+,   rpt_cd                  varchar2 ( 20 char )
+,   rpt_descr               varchar2 ( 100 char )
 ,   lpg_id                  number   ( 38 , 0 ) default 1                                    not null
 ,   event_status            varchar2 ( 1 char ) default 'U'                                  not null
 ,   feed_uuid               raw ( 16 )                                                       not null

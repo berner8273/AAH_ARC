@@ -124,7 +124,6 @@ conn ~stn_logon
 @@tables/stn/ledger.sql
 @@tables/stn/elimination_legal_entity.sql
 @@tables/stn/legal_entity.sql
-@@tables/stn/legal_entity_alias.sql
 @@tables/stn/legal_entity_ledger.sql
 @@tables/stn/legal_entity_link.sql
 @@tables/stn/legal_entity_link_type.sql
@@ -180,6 +179,7 @@ conn ~stn_logon
 @@views/stn/hopper_insurance_policy.sql
 @@views/stn/hopper_insurance_policy_tj.sql
 @@views/stn/insurance_policy_hierarchy.sql
+@@views/stn/insurance_policy_reference.sql
 @@views/stn/pol_default.sql
 @@views/stn/accounting_event_default.sql
 @@views/stn/hopper_accounting_event.sql
@@ -203,7 +203,6 @@ conn ~stn_logon
 @@ri_constraints/stn/insurance_policy_fx_rate.sql
 @@ri_constraints/stn/insurance_policy_tax_jurisd.sql
 @@ri_constraints/stn/legal_entity.sql
-@@ri_constraints/stn/legal_entity_alias.sql
 @@ri_constraints/stn/legal_entity_ledger.sql
 @@ri_constraints/stn/legal_entity_link.sql
 @@ri_constraints/stn/posting_accounting_basis.sql

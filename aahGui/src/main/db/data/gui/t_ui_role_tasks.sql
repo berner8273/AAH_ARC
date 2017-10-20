@@ -1,5 +1,3 @@
-delete from gui.t_ui_role_tasks where role_id not in ( 'role.administrator' , 'role.all.journal.types' , 'role.all.accounts' );
-
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.administrator' , 'task.static.data.licensed.modules.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.administrator' , 'task.usermgt.users.add' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.administrator' , 'task.usermgt.users.change.password' );

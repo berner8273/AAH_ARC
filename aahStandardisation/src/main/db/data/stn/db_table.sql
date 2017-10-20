@@ -4,7 +4,6 @@ insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'department' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'gl_chartfield' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'legal_entity' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'legal_entity_link' );
-insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'legal_entity_alias' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'cession_event' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'insurance_policy' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'insurance_policy_fx_rate' );

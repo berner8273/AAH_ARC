@@ -55,6 +55,8 @@ insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id fr
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) , 'is_ledger_entity' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) , 'is_interco_elim_entity' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) , 'is_vie_consol_entity' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) , 'rpt_cd' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) , 'rpt_descr' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) , 'lpg_id' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) , 'event_status' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity' ) , 'feed_uuid' );
@@ -70,16 +72,6 @@ insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id fr
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_link' ) , 'feed_uuid' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_link' ) , 'no_retries' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_link' ) , 'step_run_sid' );
-
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) , 'row_sid' );
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) , 'le_id' );
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) , 'alias_le_cd' );
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) , 'alias_le_descr' );
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) , 'lpg_id' );
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) , 'event_status' );
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) , 'feed_uuid' );
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) , 'no_retries' );
-insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'legal_entity_alias' ) , 'step_run_sid' );
 
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'cession_event' ) , 'row_sid' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'cession_event' ) , 'correlation_uuid' );

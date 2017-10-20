@@ -19,8 +19,8 @@ define gui_logon    = ~gui_user/~gui_password@~tns_alias
 conn ~gui_logon
 
 delete from gui.t_ui_jrnl_line_meta;
-delete from gui.t_ui_role_tasks         where role_id not in ( 'role.administrator' , 'role.all.journal.types' , 'role.all.accounts' );
-delete from gui.t_ui_roles              where role_id not in ( 'role.administrator' , 'role.all.journal.types' , 'role.all.accounts' );
+delete from gui.t_ui_role_tasks         where role_id in ( 'role.subledger.administrator' , 'role.reference.data.user' , 'role.reference.data.approver' , 'role.subledger.user' , 'role.subledger.manager' , 'role.subledger.viewer' , 'role.subledger.configurator' );
+delete from gui.t_ui_roles              where role_id in ( 'role.subledger.administrator' , 'role.reference.data.user' , 'role.reference.data.approver' , 'role.subledger.user' , 'role.subledger.manager' , 'role.subledger.viewer' , 'role.subledger.configurator' );
 commit;
 
 exit
