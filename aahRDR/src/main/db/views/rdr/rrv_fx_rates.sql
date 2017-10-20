@@ -1,4 +1,4 @@
-create or replace view rrv_fx_rates
+create or replace view rdr.rrv_fx_rates
 as
 select
 fr_fxrate_date           

@@ -1,4 +1,4 @@
-create or replace view rrv_accounting_event
+create or replace view rdr.rrv_accounting_event
 as
 select
  ae_accevent_id            

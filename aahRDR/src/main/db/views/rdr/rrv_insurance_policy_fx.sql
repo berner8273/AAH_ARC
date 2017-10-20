@@ -1,4 +1,4 @@
-create or replace view rrv_insurance_policy_fx
+create or replace view rdr.rrv_insurance_policy_fx
 as
 select
 fr_fxrate_date           
@@ -14,6 +14,5 @@ fr_fxrate_date
 ,fr_fxrate_date_fwd       
 ,fr_fxrate_id
 from fdr.fr_fx_rate
-where fr_rty_rate_type_id like ‘/POL/%’
-;
-             
+where fr_rty_rate_type_id like '%POL%'
+;           

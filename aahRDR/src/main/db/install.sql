@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
-whenever sqlerror exit failure
+-- whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -51,6 +51,7 @@ conn ~rdr_logon
 @@views/rdr/rrv_tax_jurisdiction.sql
 @@views/rdr/rrv_combo_edit_rules.sql
 @@views/rdr/rrv_insurance_policy_fx.sql
+@@views/rdr/rrv_insurance_policy.sql
 @@views/rdr/rrv_fx_rates.sql
 
 
