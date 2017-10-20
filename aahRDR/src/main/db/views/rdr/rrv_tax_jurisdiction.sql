@@ -24,5 +24,5 @@ gc_general_code_id
 ,gc_valid_to          
 ,gc_delete_time
 from fdr.fr_general_codes
-where gc_gct_code_type_id = 'TAX_JURISDICTION'
+where gc_gct_code_type_id = 'POLICY_TAX'
 ;

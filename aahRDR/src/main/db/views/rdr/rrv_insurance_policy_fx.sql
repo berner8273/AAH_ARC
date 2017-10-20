@@ -1,38 +1,19 @@
-create or replace view rdr.rrv_insurance_policy_fx
+create or replace view rrv_insurance_policy_fx
 as
 select
-LK_LOOKUP_KEY_ID         
-,LK_LKT_LOOKUP_TYPE_CODE  
-,LK_MATCH_KEY1            
-,LK_MATCH_KEY2            
-,LK_MATCH_KEY3            
-,LK_MATCH_KEY4            
-,LK_MATCH_KEY5            
-,LK_MATCH_KEY6            
-,LK_MATCH_KEY7            
-,LK_MATCH_KEY8            
-,LK_MATCH_KEY9            
-,LK_MATCH_KEY10           
-,LK_LOOKUP_VALUE1         
-,LK_LOOKUP_VALUE2         
-,LK_LOOKUP_VALUE3         
-,LK_LOOKUP_VALUE4         
-,LK_LOOKUP_VALUE5         
-,LK_LOOKUP_VALUE6         
-,LK_LOOKUP_VALUE7         
-,LK_LOOKUP_VALUE8         
-,LK_LOOKUP_VALUE9         
-,LK_LOOKUP_VALUE10        
-,LK_VALID_FROM            
-,LK_VALID_TO              
-,LK_INPUT_BY              
-,LK_INPUT_TIME            
-,LK_AUTH_BY               
-,LK_AUTH_STATUS           
-,LK_DELETE_TIME           
-,LK_ACTIVE     
-,LPG_ID        
-,LK_EFFECTIVE_FROM   
-,LK_EFFECTIVE_TO
-from fdr.fr_general_lookup
+fr_fxrate_date           
+,fr_cu_currency_numer_id  
+,fr_cu_currency_denom_id  
+,fr_si_sys_inst_id        
+,fr_fx_rate               
+,fr_rty_rate_type_id      
+,fr_pl_party_legal_id     
+,fr_active                
+,fr_input_by              
+,fr_input_time            
+,fr_fxrate_date_fwd       
+,fr_fxrate_id
+from fdr.fr_fx_rate
+where fr_rty_rate_type_id like ‘/POL/%’
 ;
+             
