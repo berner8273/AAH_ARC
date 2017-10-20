@@ -42,6 +42,7 @@ conn ~rdr_logon
 @@views/rdr/rrv_slr_eba_daily_balances_ag.sql
 @@views/rdr/rrv_gl_accounts.sql
 @@views/rdr/rrv_account_lookup.sql
+@@views/rdr/rrv_accounting_event.sql
 @@views/rdr/rrv_posting_driver.sql
 @@views/rdr/rrv_business_unit.sql
 @@views/rdr/rrv_ledger.sql

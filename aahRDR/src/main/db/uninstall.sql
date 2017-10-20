@@ -35,6 +35,7 @@ drop view rdr.rrv_fr_posting_driver_ag;
 drop view rdr.rrv_fr_gl_account_ag;
 drop view rdr.rrv_fr_account_lookup_ag;
 drop view rdr.rrv_gl_accounts;
+drop view rdr.rrv_gl_accounting_event;
 drop view rdr.rrv_account_lookup;
 drop view rdr.rrv_posting_driver;
 drop view rdr.rrv_business_unit;
