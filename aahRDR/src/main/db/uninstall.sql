@@ -66,5 +66,6 @@ revoke select   on slr.slr_eba_daily_balances  from rdr;
 conn ~fdr_logon
 
 revoke select   on fdr.fr_account_lookup       from rdr;
+revoke select   on fdr.fr_posting_schema       from rdr;
 
 exit

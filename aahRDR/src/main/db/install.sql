@@ -41,6 +41,7 @@ conn ~slr_logon
 conn ~fdr_logon
 
 @@grants/tables/fdr/fr_account_lookup.sql
+@@grants/tables/fdr/fr_posting_schema.sql
 
 conn ~rdr_logon
 
