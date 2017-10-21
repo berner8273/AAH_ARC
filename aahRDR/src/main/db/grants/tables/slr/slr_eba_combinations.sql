@@ -1,1 +1,1 @@
-grant select on slr.slr_eba_combinations to RDR with grant option
+grant select on slr.slr_eba_combinations to rdr;

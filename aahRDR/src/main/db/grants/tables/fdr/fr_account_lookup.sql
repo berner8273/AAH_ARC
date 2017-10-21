@@ -1,1 +1,1 @@
-grant select on fdr.fr_account_lookup to RDR
+grant select on fdr.fr_account_lookup to rdr;
