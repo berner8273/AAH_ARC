@@ -23,6 +23,10 @@ define gui_user     = @guiUsername@
 define gui_password = @guiPassword@
 define gui_logon    = ~gui_user/~gui_password@~tns_alias
 
+define slr_user     = @slrUsername@
+define slr_password = @slrPassword@
+define slr_logon    = ~slr_user/~slr_password@~tns_alias
+
 conn ~stn_logon
 
 drop procedure stn.pr_publish_log;
@@ -249,5 +253,9 @@ revoke select , insert , update , delete on gui.t_ui_user_roles              fro
 revoke select , insert , update          on gui.t_ui_user_entities           from stn;
 revoke select , insert , update          on gui.t_ui_departments             from stn;
 revoke select                            on gui.t_ui_roles                   from stn;
+
+conn ~slr_logon
+
+revoke select                            on slr.slr_entity_periods           from stn;
 
 exit

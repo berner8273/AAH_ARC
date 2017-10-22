@@ -23,6 +23,14 @@ define gui_user     = @guiUsername@
 define gui_password = @guiPassword@
 define gui_logon    = ~gui_user/~gui_password@~tns_alias
 
+define slr_user     = @slrUsername@
+define slr_password = @slrPassword@
+define slr_logon    = ~slr_user/~slr_password@~tns_alias
+
+conn ~slr_logon
+
+@@grants/tables/slr/slr_entity_periods.sql
+
 conn ~gui_logon
 
 @@grants/tables/gui/t_ui_departments.sql
