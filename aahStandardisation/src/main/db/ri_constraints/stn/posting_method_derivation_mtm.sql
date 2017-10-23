@@ -1,2 +1,0 @@
-alter table stn.posting_method_derivation_mtm add constraint fk_et_psmdm  foreign key ( event_typ_id ) references stn.event_type     ( event_typ_id );
-alter table stn.posting_method_derivation_mtm add constraint fk_psm_psmdm foreign key ( psm_id )       references stn.posting_method ( psm_id );

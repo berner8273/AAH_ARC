@@ -1,2 +1,0 @@
-alter table stn.step_run_state add constraint fk_srs_sr   foreign key ( step_run_sid )       references stn.step_run        ( step_run_sid );
-alter table stn.step_run_state add constraint fk_srs_srst foreign key ( step_run_status_id ) references stn.step_run_status ( step_run_status_id );

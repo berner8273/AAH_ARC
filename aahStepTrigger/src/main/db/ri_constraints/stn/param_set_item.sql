@@ -1,1 +1,0 @@
-alter table stn.param_set_item add constraint fk_psi_ps foreign key ( param_set_id ) references stn.param_set ( param_set_id );

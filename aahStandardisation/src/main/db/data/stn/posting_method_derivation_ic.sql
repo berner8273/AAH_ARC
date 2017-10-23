@@ -1,5 +1,0 @@
-insert into stn.posting_method_derivation_ic ( basis_id , psm_id ) values ( ( select basis_id from stn.posting_accounting_basis where basis_cd = 'US_STAT'  ) , ( select psm_id from stn.posting_method where psm_cd = 'INTERCOMPANY' ) );
-insert into stn.posting_method_derivation_ic ( basis_id , psm_id ) values ( ( select basis_id from stn.posting_accounting_basis where basis_cd = 'US_GAAP'  ) , ( select psm_id from stn.posting_method where psm_cd = 'INTERCOMPANY' ) );
-insert into stn.posting_method_derivation_ic ( basis_id , psm_id ) values ( ( select basis_id from stn.posting_accounting_basis where basis_cd = 'UK_GAAP'  ) , ( select psm_id from stn.posting_method where psm_cd = 'INTERCOMPANY' ) );
-insert into stn.posting_method_derivation_ic ( basis_id , psm_id ) values ( ( select basis_id from stn.posting_accounting_basis where basis_cd = 'BER_STAT' ) , ( select psm_id from stn.posting_method where psm_cd = 'INTERCOMPANY' ) );
-commit;

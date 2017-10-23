@@ -1,1 +1,0 @@
-grant select on fdr.fr_internal_proc_entity_type to stn;

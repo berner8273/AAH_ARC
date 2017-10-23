@@ -1,2 +1,0 @@
-alter table stn.insurance_policy add constraint fk_pt_ip  foreign key ( premium_typ )         references stn.premium_type     ( premium_typ );
-alter table stn.insurance_policy add constraint fk_lob_ip foreign key ( line_of_business_cd ) references stn.line_of_business ( line_of_business_cd );

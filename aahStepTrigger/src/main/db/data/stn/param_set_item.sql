@@ -1,4 +1,0 @@
-insert into stn.param_set_item ( param_set_id , param_set_item_cd , param_set_item_val ) values ( ( select param_set_id from stn.param_set where param_set_cd = 'standardisation-reference-data' ) , 'lpg_id'             , '1' );
-insert into stn.param_set_item ( param_set_id , param_set_item_cd , param_set_item_val ) values ( ( select param_set_id from stn.param_set where param_set_cd = 'dsr-reference-data' )             , 'lpg_id'             , '1' );
-insert into stn.param_set_item ( param_set_id , param_set_item_cd , param_set_item_val ) values ( ( select param_set_id from stn.param_set where param_set_cd = 'dsr-reference-data' )             , 'disable_accounting' , 'Y' );
-commit;

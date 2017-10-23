@@ -1,2 +1,0 @@
-alter table stn.process_code_module add constraint fk_p_pcm  foreign key ( process_id )     references stn.process     ( process_id );
-alter table stn.process_code_module add constraint fk_cm_pcm foreign key ( code_module_id ) references stn.code_module ( code_module_id );

@@ -1,1 +1,0 @@
-alter table stn.feed add constraint fk_ft_f foreign key ( feed_typ ) references stn.feed_type ( feed_typ );

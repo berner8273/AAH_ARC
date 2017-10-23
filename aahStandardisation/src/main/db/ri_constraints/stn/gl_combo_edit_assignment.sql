@@ -1,1 +1,0 @@
-alter table stn.gl_combo_edit_assignment add constraint fk_cep_cea foreign key ( prc_cd , feed_uuid ) references stn.gl_combo_edit_process ( prc_cd , feed_uuid );

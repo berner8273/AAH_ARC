@@ -1,2 +1,0 @@
-alter table stn.process add constraint fk_p_pj foreign key ( project_id )      references stn.project      ( project_id );
-alter table stn.process add constraint fk_p_pt foreign key ( process_type_id ) references stn.process_type ( process_type_id );

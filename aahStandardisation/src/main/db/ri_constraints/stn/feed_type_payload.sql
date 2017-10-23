@@ -1,2 +1,0 @@
-alter table stn.feed_type_payload add constraint fk_ft_ftp foreign key ( feed_typ ) references stn.feed_type ( feed_typ );
-alter table stn.feed_type_payload add constraint fk_ft_dbt foreign key ( dbt_id )   references stn.db_table  ( dbt_id );

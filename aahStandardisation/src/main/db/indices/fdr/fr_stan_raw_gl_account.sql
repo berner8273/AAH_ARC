@@ -1,1 +1,0 @@
-create unique index fbi_fsrga_message_id on fdr.fr_stan_raw_gl_account ( to_number ( message_id ) );

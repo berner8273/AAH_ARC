@@ -1,1 +1,0 @@
-alter table stn.fx_rate add constraint fk_fxr_fxrt foreign key ( rate_typ ) references stn.fx_rate_type ( rate_typ );

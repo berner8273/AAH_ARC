@@ -1,1 +1,0 @@
-create unique index fbi_fsrpl_message_id on fdr.fr_stan_raw_party_legal ( to_number ( message_id ) );

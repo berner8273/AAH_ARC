@@ -1,4 +1,0 @@
-insert into stn.process_code_module ( process_id , code_module_id ) values ( ( select process_id from stn.process where process_name = 'fx_rate-standardise' )      , ( select code_module_id from stn.code_module where code_module_nm = 'stn.pr_fx_rate_rval' ) );
-insert into stn.process_code_module ( process_id , code_module_id ) values ( ( select process_id from stn.process where process_name = 'fx_rate-standardise' )      , ( select code_module_id from stn.code_module where code_module_nm = 'stn.pr_fx_rate_sval' ) );
-insert into stn.process_code_module ( process_id , code_module_id ) values ( ( select process_id from stn.process where process_name = 'legal_entity-standardise' ) , ( select code_module_id from stn.code_module where code_module_nm = 'stn.pr_legal_entity_link_rval' ) );
-commit;
