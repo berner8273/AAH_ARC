@@ -1,0 +1,2 @@
+alter table stn.project add constraint fk_p_ef  foreign key ( folder_id )       references stn.execution_folder ( folder_id );
+alter table stn.project add constraint fk_p_pty foreign key ( project_type_id ) references stn.project_type     ( project_type_id );

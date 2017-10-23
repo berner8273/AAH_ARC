@@ -1,0 +1,1 @@
+grant select on stn.gl_account_hierarchy to rdr;

@@ -1,0 +1,1 @@
+alter table stn.user_group add constraint fk_u_ug foreign key ( employee_id , feed_uuid ) references stn.user_detail ( employee_id , feed_uuid );

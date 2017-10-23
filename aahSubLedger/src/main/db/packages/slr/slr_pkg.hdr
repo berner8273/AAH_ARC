@@ -1,0 +1,15 @@
+CREATE OR REPLACE PACKAGE slr.SLR_PKG AS
+    PROCEDURE pr_fx_rate
+        (
+            p_lpg_id IN NUMBER,
+            p_no_processed_records OUT NUMBER,
+            p_no_failed_records OUT NUMBER
+        );
+    PROCEDURE pr_account
+        (
+            p_lpg_id IN NUMBER,
+            p_no_processed_records OUT NUMBER,
+            p_no_failed_records OUT NUMBER
+        );
+        END SLR_PKG;
+/

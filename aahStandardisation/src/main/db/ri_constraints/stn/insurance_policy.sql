@@ -1,0 +1,2 @@
+alter table stn.insurance_policy add constraint fk_ppt_ip foreign key ( policy_premium_typ ) references stn.policy_premium_type ( policy_premium_typ );
+alter table stn.insurance_policy add constraint fk_et_ip  foreign key ( execution_typ )      references stn.execution_type      ( execution_typ );

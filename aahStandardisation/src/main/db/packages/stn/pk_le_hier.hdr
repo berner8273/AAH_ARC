@@ -1,0 +1,74 @@
+create or replace package stn.pk_le_hier
+as
+    /*
+     * Intercompany elimination legal entity related
+     */
+    type le_elimination_entity_rec is record
+    (
+        basis_typ                varchar2 ( 500 char )
+    ,   elimination_parent_le_cd fdr.fr_party_legal.pl_party_legal_clicode%type
+    ,   elimination_le_cd        fdr.fr_party_legal.pl_party_legal_clicode%type
+    );
+
+    type le_elimination_entity_tab is table of le_elimination_entity_rec index by binary_integer;
+
+    type le_elimination_rec is record
+    (
+        le_1_cd                         fdr.fr_party_legal.pl_party_legal_clicode%type
+    ,   le_2_cd                         fdr.fr_party_legal.pl_party_legal_clicode%type
+    ,   elimination_le_cd               fdr.fr_party_legal.pl_party_legal_clicode%type
+    ,   basis_typ                       fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
+    ,   path_to_le_1                    varchar2 ( 500 char )
+    ,   path_to_le_2                    varchar2 ( 500 char )
+    ,   common_parent_le_cd             fdr.fr_party_legal.pl_party_legal_clicode%type
+    );
+
+    type le_elimination_tab is table of le_elimination_rec;
+
+    function fn_get_elimination_entities
+    (
+        p_step_run_sid in number default 0
+    )
+    return stn.pk_le_hier.le_elimination_tab pipelined;
+
+    procedure pr_gen_interco
+    (
+        p_step_run_sid in number
+    );
+
+    /*
+     * VIE consoliation legal entity related
+     */
+    type le_vie_path_segment_rec is record
+    (
+        basis_typ          fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
+    ,   vie_le_cd          fdr.fr_party_legal.pl_party_legal_clicode%type
+    ,   vie_le_level       number   ( 38 , 0 )
+    ,   segment_lvl        number   ( 38 , 0 )
+    ,   path_segment_le_cd fdr.fr_party_legal.pl_party_legal_clicode%type
+    );
+
+    type le_vie_path_segment_tab is table of le_vie_path_segment_rec index by binary_integer;
+
+    type le_vie_rec is record
+    (
+        le_cd      fdr.fr_party_legal.pl_party_legal_clicode%type
+    ,   basis_typ  fdr.fr_org_hierarchy_type.oht_org_hier_client_code%type
+    ,   path_to_le varchar2 ( 500 char )
+    ,   vie_le_cd  fdr.fr_party_legal.pl_party_legal_clicode%type
+    );
+
+    type le_vie_tab is table of le_vie_rec;
+
+    function fn_get_vie_entities
+    (
+        p_step_run_sid in number default 0
+    )
+    return stn.pk_le_hier.le_vie_tab pipelined;
+
+    procedure pr_gen_vie
+    (
+        p_step_run_sid in number
+    );
+end pk_le_hier;
+/

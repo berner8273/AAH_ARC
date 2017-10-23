@@ -1,0 +1,3 @@
+alter table stn.validation add constraint fk_cm_v foreign key ( code_module_id )      references stn.code_module      ( code_module_id );
+alter table stn.validation add constraint fk_vt_v foreign key ( validation_typ_id )   references stn.validation_type  ( validation_typ_id );
+alter table stn.validation add constraint fk_vl_v foreign key ( validation_level_id ) references stn.validation_level ( validation_level_id );

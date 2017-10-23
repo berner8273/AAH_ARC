@@ -1,0 +1,1 @@
+alter table stn.step_run_param add constraint fk_srp_sr foreign key ( step_run_sid ) references stn.step_run ( step_run_sid );

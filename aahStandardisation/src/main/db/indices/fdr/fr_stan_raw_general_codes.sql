@@ -1,0 +1,1 @@
+create unique index fbi_fsrgc_message_id on fdr.fr_stan_raw_general_codes ( to_number ( message_id ) );
