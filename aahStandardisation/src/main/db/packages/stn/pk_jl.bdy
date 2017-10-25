@@ -28,7 +28,7 @@ and exists (
            );
         p_no_updated_hopper_records := SQL%ROWCOUNT;
     END;
-
+    
     PROCEDURE pr_journal_line_idf
         (
             p_step_run_sid IN NUMBER,
@@ -111,7 +111,7 @@ and not exists (
               );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated event_status to X on discarded journal_line records', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-
+    
     PROCEDURE pr_journal_line_pub
         (
             p_step_run_sid IN NUMBER,
@@ -120,27 +120,28 @@ and not exists (
     AS
     BEGIN
         INSERT INTO hopper_journal_line
-            (le_id, acct_cd, ledger_cd, basis_cd, book_cd, affiliate_le_id, accident_yr, underwriting_yr, policy_id, stream_id, tax_jurisdiction_cd, posting_schema, counterparty_le_id, dept_cd, chartfield_1, execution_typ, business_typ, owner_le_id, premium_typ, transaction_ccy, transaction_amt, sra_ae_dr_cr, accounting_dt, ultimate_parent_le_id, event_typ, functional_ccy, functional_amt, reporting_ccy, reporting_amt, sra_ae_source_system, sra_ae_itsc_inst_typ_sclss_cd, event_status, lpg_id, process_id, message_id, sra_ae_posting_date, sra_ae_instr_type_map_code, sra_si_account_sys_inst_code, sra_si_instr_sys_inst_code, sra_si_party_sys_inst_code, sra_si_static_sys_inst_code, sra_ae_ipe_int_entity_code, sra_ae_pbu_ext_party_code, sra_ae_aet_acc_event_type_code, sra_ae_cu_local_currency_code, sra_ae_cu_base_currency_code, sra_ae_i_instrument_clicode, sra_ae_it_instr_type_code, sra_ae_itc_inst_typ_cls_code, sra_ae_pe_person_code, sra_ae_gl_instrument_id)
+            (le_id, acct_cd, ledger_cd, basis_cd, book_cd, affiliate_le_id, accident_yr, underwriting_yr, policy_id, stream_id, tax_jurisdiction_cd, posting_schema, counterparty_le_id, dept_cd, chartfield_1, execution_typ, business_typ, owner_le_id, premium_typ, journal_descr, transaction_ccy, transaction_amt, sra_ae_dr_cr, accounting_dt, ultimate_parent_le_id, event_typ, functional_ccy, functional_amt, reporting_ccy, reporting_amt, business_event_typ, event_seq_id, sra_ae_source_system, sra_ae_itsc_inst_typ_sclss_cd, event_status, lpg_id, process_id, message_id, sra_ae_posting_date, sra_ae_instr_type_map_code, sra_si_account_sys_inst_code, sra_si_instr_sys_inst_code, sra_si_party_sys_inst_code, sra_si_static_sys_inst_code, sra_ae_ipe_int_entity_code, sra_ae_pbu_ext_party_code, sra_ae_aet_acc_event_type_code, sra_ae_cu_local_currency_code, sra_ae_cu_base_currency_code, sra_ae_i_instrument_clicode, sra_ae_it_instr_type_code, sra_ae_itc_inst_typ_cls_code, sra_ae_pe_person_code, sra_ae_gl_instrument_id)
             SELECT
-                jl.LE_ID AS le_id,
+                pl_le_id.PL_PARTY_LEGAL_ID AS le_id,
                 jl.ACCT_CD AS acct_cd,
                 jl.LEDGER_CD AS ledger_cd,
                 jl.BASIS_CD AS basis_cd,
                 jl.LE_ID AS book_cd,
-                jl.AFFILIATE_LE_ID AS affiliate_le_id,
+                pl_affiliate.PL_PARTY_LEGAL_ID AS affiliate_le_id,
                 jl.ACCIDENT_YR AS accident_yr,
                 jl.UNDERWRITING_YR AS underwriting_yr,
                 jl.POLICY_ID AS policy_id,
                 jl.STREAM_ID AS stream_id,
                 jl.TAX_JURISDICTION_CD AS tax_jurisdiction_cd,
                 jl.LEDGER_CD AS posting_schema,
-                jl.COUNTERPARTY_LE_ID AS counterparty_le_id,
+                pl_counter_party.PL_PARTY_LEGAL_ID AS counterparty_le_id,
                 jl.DEPT_CD AS dept_cd,
                 jl.CHARTFIELD_1 AS chartfield_1,
                 jl.EXECUTION_TYP AS execution_typ,
                 jl.BUSINESS_TYP AS business_typ,
-                jl.OWNER_LE_ID AS owner_le_id,
+                pl_owner_le_id.PL_PARTY_LEGAL_ID AS owner_le_id,
                 jl.PREMIUM_TYP AS premium_typ,
+                jl.JOURNAL_DESCR AS journal_descr,
                 jl.TRANSACTION_CCY AS transaction_ccy,
                 jl.TRANSACTION_AMT AS transaction_amt,
                 (CASE
@@ -148,12 +149,14 @@ and not exists (
                     ELSE 'CR'
                 END) AS sra_ae_dr_cr,
                 jl.ACCOUNTING_DT AS accounting_dt,
-                jl.ULTIMATE_PARENT_LE_ID AS ultimate_parent_le_id,
+                pl_ultimate_parent_le_id.PL_PARTY_LEGAL_ID AS ultimate_parent_le_id,
                 jl.EVENT_TYP AS event_typ,
                 jl.FUNCTIONAL_CCY AS functional_ccy,
                 jl.FUNCTIONAL_AMT AS functional_amt,
                 jl.REPORTING_CCY AS reporting_ccy,
                 jl.REPORTING_AMT AS reporting_amt,
+                jl.BUSINESS_EVENT_TYP AS business_event_typ,
+                jl.EVENT_SEQ_ID AS event_seq_id,
                 jl_default.SRA_AE_SOURCE_SYSTEM AS sra_ae_source_system,
                 jl_default.SRA_AE_ITSC_INST_TYP_SCLSS_CD AS sra_ae_itsc_inst_typ_sclss_cd,
                 'U' AS event_status,
@@ -180,10 +183,15 @@ and not exists (
                 journal_line jl
                 INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
-                INNER JOIN journal_line_default jl_default ON 1 = 1;
+                INNER JOIN journal_line_default jl_default ON 1 = 1
+                INNER JOIN fdr.FR_PARTY_LEGAL pl_le_id ON jl.LE_ID = pl_le_id.PL_GLOBAL_ID
+                INNER JOIN fdr.FR_PARTY_LEGAL pl_owner_le_id ON jl.OWNER_LE_ID = pl_owner_le_id.PL_GLOBAL_ID
+                INNER JOIN fdr.FR_PARTY_LEGAL pl_ultimate_parent_le_id ON jl.ULTIMATE_PARENT_LE_ID = pl_ultimate_parent_le_id.PL_GLOBAL_ID
+                INNER JOIN fdr.FR_PARTY_LEGAL pl_counter_party ON jl.COUNTERPARTY_LE_ID = pl_counter_party.PL_GLOBAL_ID
+                INNER JOIN fdr.FR_PARTY_LEGAL pl_affiliate ON jl.AFFILIATE_LE_ID = pl_affiliate.PL_GLOBAL_ID;
         p_total_no_published := SQL%ROWCOUNT;
     END;
-
+    
     PROCEDURE pr_journal_line_rval
     AS
     BEGIN
@@ -693,7 +701,7 @@ and not exists (
 jl.ACCOUNTING_DT between sep.ep_bus_period_start and sep.ep_bus_period_end and sep.ep_status = 'O'
                );
     END;
-
+    
     PROCEDURE pr_journal_line_sps
         (
             p_no_processed_records OUT NUMBER
@@ -715,7 +723,7 @@ jl.ACCOUNTING_DT between sep.ep_bus_period_start and sep.ep_bus_period_end and s
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-
+    
     PROCEDURE journal_line_svs
         (
             p_no_validated_records OUT NUMBER
@@ -756,7 +764,7 @@ and     exists (
                );
         p_no_validated_records := SQL%ROWCOUNT;
     END;
-
+    
     PROCEDURE pr_journal_line_sval
         (
             p_step_run_sid IN NUMBER,
@@ -809,7 +817,7 @@ and not exists (
                );
         v_no_broken_feeds := SQL%ROWCOUNT;
     END;
-
+    
     PROCEDURE pr_journal_line_prc
         (
             p_step_run_sid IN NUMBER,
@@ -862,4 +870,3 @@ and not exists (
         END IF;
     END;
 END PK_JL;
-/
