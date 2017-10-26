@@ -1,15 +1,77 @@
-CREATE OR REPLACE PACKAGE slr.SLR_PKG AS
-    PROCEDURE pr_fx_rate
-        (
-            p_lpg_id IN NUMBER,
-            p_no_processed_records OUT NUMBER,
-            p_no_failed_records OUT NUMBER
-        );
-    PROCEDURE pr_account
-        (
-            p_lpg_id IN NUMBER,
-            p_no_processed_records OUT NUMBER,
-            p_no_failed_records OUT NUMBER
-        );
-        END SLR_PKG;
+create or replace PACKAGE  SLR.SLR_PKG AS
+
+PROCEDURE pPROCESS_SLR
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
+	p_rate_set IN slr_entities.ent_rate_set%TYPE
+);
+
+PROCEDURE pCHECK_JRNL_ERRORS(p_entity in VARCHAR2);
+
+---------------------------------------------------------------------------------
+-- Entity or entity set specifc date routines. See SLR_UTILITIES_PKG for others.
+---------------------------------------------------------------------------------
+PROCEDURE pROLL_ENTITY_DATE(p_entity IN VARCHAR2, p_business_date in DATE DEFAULT NULL, p_update_end_date in CHAR DEFAULT 'Y');
+PROCEDURE pUPDATE_NON_WORKING_DAYS(p_entity in VARCHAR2);
+
+---------------------------------------------------------------------------------
+-- Import Procedures
+---------------------------------------------------------------------------------
+PROCEDURE pIMPORT_SLR_ALL_JRNLS
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
+    p_process_id IN NUMBER
+);
+PROCEDURE pIMPORT_SLR_JRNLS
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
+    p_process_id IN NUMBER
+);
+PROCEDURE pInsertFakEbaCombinations
+(
+    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+    p_process_id IN NUMBER,
+    p_business_date SLR_ENTITIES.ENT_BUSINESS_DATE%TYPE -- IF NULL then AE is not filtered using date
+);
+
+
+
+---------------------------------------------------------------------------------
+-- Static Data Loads
+---------------------------------------------------------------------------------
+PROCEDURE PR_ACCOUNT(p_lpg_id IN NUMBER,p_no_processed_records OUT NUMBER,p_no_failed_records OUT NUMBER);
+PROCEDURE pUPDATE_SLR_CURRENCIES(pLPG_ID IN NUMBER, o_records_processed OUT NUMBER, o_records_failed OUT NUMBER);
+PROCEDURE PR_FX_RATE(p_lpg_id IN NUMBER, p_no_processed_records OUT NUMBER,p_no_failed_records OUT NUMBER);
+PROCEDURE pUPDATE_SLR_SEGMENT_3(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
+PROCEDURE pUPDATE_SLR_SEGMENT_4(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
+PROCEDURE pUPDATE_SLR_SEGMENT_5(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
+PROCEDURE pUPDATE_SLR_SEGMENT_6(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
+PROCEDURE pUPDATE_SLR_SEGMENT_7(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
+PROCEDURE pUPDATE_SLR_SEGMENT_8(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
+
+
+---------------------------------------------------------------------------------
+-- Reconciliations
+---------------------------------------------------------------------------------
+PROCEDURE pREC_AET_JRNLS (p_epg_id IN VARCHAR2,
+                            p_entity IN VARCHAR2 DEFAULT NULL,
+                            p_date_from IN DATE DEFAULT NULL,
+                            p_date_to IN DATE DEFAULT NULL);
+
+PROCEDURE pSLR_INTERNAL_REC (p_epg_id IN VARCHAR2,
+                            p_entity IN VARCHAR2 DEFAULT NULL,
+                            p_date_from IN DATE DEFAULT NULL,
+                            p_date_to IN DATE DEFAULT NULL);
+
+procedure pCustRunBalanceMovementProcess( pProcess     IN slr_process.p_process%TYPE
+                                         ,pEntProcSet  IN slr_bm_entity_processing_set.bmeps_set_id%TYPE
+                                         ,pConfig      IN slr_process_config.pc_config%TYPE
+                                         ,pSource      IN slr_process_source.sps_source_name%TYPE
+                                         ,pBalanceDate IN DATE
+                                         ,pRateSet     IN slr_entity_rates.er_entity_set%TYPE
+                                        );
+
+PROCEDURE pSLR_DAYS_PERIODS;
+
+END SLR_PKG;
 /

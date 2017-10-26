@@ -1,5 +1,1295 @@
-CREATE OR REPLACE PACKAGE BODY slr.SLR_PKG AS
-    PROCEDURE pr_fx_rate
+create or replace PACKAGE BODY     SLR_PKG AS
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+-- Private procedures
+---------------------------------------------------------------------------------
+    PROCEDURE pEntityBusinessDate
+    (
+        p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+        p_process_id IN NUMBER,
+        p_business_date OUT DATE
+    );
+
+    PROCEDURE pRollbackImportExchange
+    (
+        p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+        p_subpartition_name IN VARCHAR2,
+        p_pm_table_name IN VARCHAR2
+    );
+
+---------------------------------------------------------------------------------
+-- Private package attributes
+---------------------------------------------------------------------------------
+    gv_msg        VARCHAR2(1000);   -- General messsage field
+    gs_stage      CHAR(3) := 'SLR';
+
+	-- For new way of posting
+    e_internal_processing_error EXCEPTION;
+    e_lock_acquire_error EXCEPTION;
+    e_fak_daily_balances_error EXCEPTION;
+    e_invalid_dates EXCEPTION;
+
+    c_lock_request_timeout CONSTANT NUMBER := 300; -- seconds
+
+-- -----------------------------------------------------------------------------------------------
+-- Procedure:   pPROCESS_SLR (entity)
+-- Description: Run the sub-ledger for a specified entity.
+-- Notes:
+-- -----------------------------------------------------------------------------------------------
+PROCEDURE pPROCESS_SLR
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+	p_rate_set IN slr_entities.ent_rate_set%TYPE
+)
+AS
+
+    s_proc_name VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pPROCESS_SLR';
+    lv_process_id NUMBER(30) := 0;
+    lv_lock_handle VARCHAR2(100);
+    lv_lock_result INTEGER;
+    lvCount NUMBER;
+    lv_use_headers 	boolean;
+
+	lv_START_TIME 	PLS_INTEGER := 0;
+
+BEGIN
+    ----------------------------------------
+    -- Set processId for whole processing
+    ----------------------------------------
+    SELECT SEQ_PROCESS_NUMBER.NEXTVAL INTO lv_process_id  FROM DUAL;
+
+    -- ----------------------------------------------------------------------
+    -- 01-JUN-2010    pUpdateJrnlLinesUnposted has to be called to copy data
+    --                from SLR_JRNL_HEADERS_UNPOSTED to SLR_JRNL_LINES_UNPOSTED.
+    --                Optimised Sub Ledger validation and posting processes ignore SLR_JRNL_HEADERS_UNPOSTED table.
+    --                All necessary data should be present in SLR_JRNL_LINES_UNPOSTED table.
+    -- ----------------------------------------------------------------------
+    SLR_UTILITIES_PKG.pUpdateJrnlLinesUnposted(p_entity_proc_group);
+    COMMIT;
+
+    --------------------
+    -- Lock request
+    --------------------
+    -- Lock is needed, because we can't handle more than one processing for the same entity group.
+
+    DBMS_LOCK.ALLOCATE_UNIQUE('MAH_PROCESS_SLR_' || p_entity_proc_group, lv_lock_handle);
+
+    lv_lock_result := DBMS_LOCK.REQUEST(lv_lock_handle, DBMS_LOCK.X_MODE, 5);
+    IF lv_lock_result != 0 THEN
+		 gv_msg := 'Can''t acquire lock for pProcessSlr for entity group ' || p_entity_proc_group ||
+	                '. Probably another processing for this entity group is running.';
+
+	    pr_error(slr_global_pkg.C_MAJERR, gv_msg, slr_global_pkg.C_SLRFUNC, s_proc_name, null, null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+        SLR_ADMIN_PKG.Error('ERROR in ' || s_proc_name || ': ' || gv_msg);
+        RAISE e_lock_acquire_error;
+    ELSE
+        ----------------------
+        -- Main processing
+        ----------------------
+		lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+        pIMPORT_SLR_JRNLS(p_entity_proc_group, lv_process_id);
+		SLR_ADMIN_PKG.PerfInfo( 'Import JL function. Import journal function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+
+		----------------------------------------------------------------------
+        -- Assign existing journals to current batch
+		-- Mark Jrnl Lines from previous runs as Unposted
+		----------------------------------------------------------------------
+		lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+        SLR_UTILITIES_PKG.pResetFailedJournals(p_entity_proc_group, lv_process_id, lv_use_headers);
+		SLR_ADMIN_PKG.PerfInfo( 'Reset Failed JL function. Reset Failed JL function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+
+		BEGIN
+		lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+        DBMS_STATS.GATHER_TABLE_STATS(ownname=>'SLR',tabname=>'SLR_JRNL_LINES_UNPOSTED',estimate_percent=>dbms_stats.auto_sample_size,degree=>8, granularity => 'ALL');
+
+		SLR_ADMIN_PKG.PerfInfo( 'Gather table statistics. Execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+		END;
+
+	   ----------------------------------------------------------------------------------------
+        -- Check that there are actually some records in the unposted table before calling
+        --  the core validate and post procedure. If there is no data then the core
+        --  procedure will raise some messages saying that there is no data.
+        ----------------------------------------------------------------------------------------
+        SELECT COUNT(1) INTO lvCount FROM SLR_JRNL_LINES_UNPOSTED
+        WHERE JLU_JRNL_STATUS = 'U'
+        AND JLU_EPG_ID = p_entity_proc_group
+        AND ROWNUM <= 1;
+
+        IF lvCount >= 1 THEN
+            ----------------------
+            -- Validate and Post
+            ----------------------
+			lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+            SLR_VALIDATE_JOURNALS_PKG.pValidateJournals(p_epg_id => p_entity_proc_group, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => p_rate_set);
+			SLR_ADMIN_PKG.PerfInfo( 'Validate function. Validate function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+			lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+            SLR_POST_JOURNALS_PKG.pPostJournals(p_epg_id => p_entity_proc_group, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => p_rate_set);
+			SLR_ADMIN_PKG.PerfInfo( 'Post Journals. Post Journals function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+
+        ELSE
+            -- Log a message - 0 indicates it is an informational message
+            pr_error(0, 'Sub-Ledger posting not performed for Entity Processing Group ' || p_entity_proc_group || '.  No journals to post.',
+                                0, s_proc_name, 'SLR_JRNL_LINES_UNPOSTED', null, 'Entity', 'SLR', 'PL/SQL', SQLCODE);
+        END IF;
+
+        --------------------
+        -- Lock release
+        --------------------
+        lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
+    END IF;
+
+EXCEPTION
+WHEN e_lock_acquire_error THEN
+        -- error was logged before
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pPROCESS_SLR');
+    WHEN OTHERS THEN
+        lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
+        SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, '', 'Error in pPROCESS_SLR for entity group ' || p_entity_proc_group, lv_process_id, p_entity_proc_group);
+        SLR_ADMIN_PKG.Error('Error in pPROCESS_SLR for entity group ' || p_entity_proc_group);
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pPROCESS_SLR: ' || SQLERRM);
+
+END pPROCESS_SLR;
+
+-- -----------------------------------------------------------------------
+-- Procedure: pIMPORT_SLR_ALL_JRNLS
+-- -----------------------------------------------------------------------
+-- Procedure to import journal lines from the AET to the SLR Unposted
+-- tables
+--
+-- BJP 22-AUG-2007 Initial Creation
+-- -----------------------------------------------------------------------
+PROCEDURE pIMPORT_SLR_ALL_JRNLS
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+    p_process_id IN NUMBER
+)
+AS
+
+    p_process NUMBER;
+    s_proc_name       VARCHAR2(50) := 'SLR_CLIENT_PROCEDURES_PKG.pIMPORT_SLR_ALL_JRNLS';
+
+BEGIN
+    	If p_process_id IS NULL THEN
+			SELECT   SEQ_PROCESS_NUMBER.NEXTVAL INTO p_process FROM  DUAL;
+		ELSE
+			p_process := p_process_id;
+		end if;
+
+		pIMPORT_SLR_JRNLS(p_entity_proc_group, p_process);
+
+EXCEPTION
+    WHEN OTHERS THEN
+        pr_error(slr_global_pkg.C_MAJERR, '(1) Failure to import journals: '
+                 ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'FR_ACCOUNTING_EVENT', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pIMPORT_SLR_ALL_JRNLS: ' || SQLERRM);
+
+END pIMPORT_SLR_ALL_JRNLS;
+
+-- -----------------------------------------------------------------------
+-- Procedure: pIMPORT_SLR_JRNLS
+-- -----------------------------------------------------------------------
+-- Procedure to generate Journal Lines and to insert journal
+-- headers. These are generated from the FR_ACCOUNTING_EVENT table
+-- which is subsequently updated to show the records have been moved
+-- -----------------------------------------------------------------------
+-- -----------------------------------------------------------------------
+-- Procedure References:
+--      FR_ACCOUNTING_EVENT
+--      SLR_JOURNAL_LINES
+--      SLR_JOURNAL_HEADERS
+--
+-- -----------------------------------------------------------------------
+-- Procedure Steps
+-- 1) Select the system date
+-- 2) Open up cursor over FR_ACCOUNTING_EVENT
+-- 3) Insert journal headers
+-- 4) Insert journal lines
+-- 5) Update accounting event to show records have been extracted
+-- 6) Commit the records
+--
+-- -----------------------------------------------------------------------
+-- History
+-- BJP 22-AUG-2007 Initial Creation
+-- -----------------------------------------------------------------------
+PROCEDURE pIMPORT_SLR_JRNLS
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+    p_process_id IN NUMBER
+)
+AS
+    s_proc_name CONSTANT VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pIMPORT_SLR_JRNLS';
+    lv_business_date SLR_ENTITIES.ENT_BUSINESS_DATE%TYPE;
+    lv_user VARCHAR2(30);
+    lv_gp_todays_bus_date FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE%TYPE;
+    lv_subpartition_name VARCHAR2(30);
+    lv_lock_handle VARCHAR2(100);
+    lv_lock_result INTEGER;
+    lv_part_move_table_name VARCHAR2(100);
+    lv_rollback_exchange BOOLEAN := FALSE;
+    lv_rows_on_subpartition NUMBER(12);
+    lv_date_condition VARCHAR(250);
+    lv_sql VARCHAR2(32000);
+    lv_START_TIME PLS_INTEGER := 0;
+    lvAuthOn            DATE;
+	TYPE cur_type IS REF CURSOR;
+	cValidateRows cur_type;
+	v_posting_date FR_ACCOUNTING_EVENT.AE_POSTING_DATE%TYPE;
+BEGIN
+    SLR_ADMIN_PKG.InitLog(p_entity_proc_group, p_process_id);
+    SLR_ADMIN_PKG.Debug('pIMPORT_SLR_JRNLS - begin');
+
+    EXECUTE IMMEDIATE 'ALTER SESSION ENABLE PARALLEL DML';
+    EXECUTE IMMEDIATE 'ALTER SESSION SET DDL_LOCK_TIMEOUT = ' || SLR_UTILITIES_PKG.fGetDdlLockTimeout();
+
+    pEntityBusinessDate(p_entity_proc_group, p_process_id, lv_business_date);
+
+    SELECT USER INTO lv_user FROM DUAL;
+
+    SELECT TRUNC(SYSDATE) INTO lv_gp_todays_bus_date FROM DUAL;
+    SELECT SYSDATE INTO lvAuthOn FROM DUAL;
+
+    pInsertFakEbaCombinations(p_entity_proc_group, p_process_id, lv_business_date);
+    
+    lv_sql := '
+        INSERT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'IMPORT_INSERT_UNPOSTED') || ' INTO SLR_JRNL_LINES_UNPOSTED
+        (
+            JLU_JRNL_HDR_ID,
+            JLU_JRNL_LINE_NUMBER,
+            JLU_FAK_ID,
+            JLU_EBA_ID,
+            JLU_JRNL_STATUS,
+            JLU_JRNL_STATUS_TEXT,
+            JLU_JRNL_PROCESS_ID,
+            JLU_DESCRIPTION,
+            JLU_SOURCE_JRNL_ID,
+            JLU_EFFECTIVE_DATE,
+            JLU_VALUE_DATE,
+            JLU_ENTITY,
+            JLU_EPG_ID,
+            JLU_ACCOUNT,
+            JLU_SEGMENT_1,
+            JLU_SEGMENT_2,
+            JLU_SEGMENT_3,
+            JLU_SEGMENT_4,
+            JLU_SEGMENT_5,
+            JLU_SEGMENT_6,
+            JLU_SEGMENT_7,
+            JLU_SEGMENT_8,
+            JLU_SEGMENT_9,
+            JLU_SEGMENT_10,
+            JLU_ATTRIBUTE_1,
+            JLU_ATTRIBUTE_2,
+            JLU_ATTRIBUTE_3,
+            JLU_ATTRIBUTE_4,
+            JLU_ATTRIBUTE_5,
+            JLU_REFERENCE_1,
+            JLU_REFERENCE_2,
+            JLU_REFERENCE_3,
+            JLU_REFERENCE_4,
+            JLU_REFERENCE_5,
+            JLU_REFERENCE_6,
+            JLU_REFERENCE_7,
+            JLU_REFERENCE_8,
+            JLU_REFERENCE_9,
+            JLU_REFERENCE_10,
+            JLU_TRAN_CCY,
+            JLU_TRAN_AMOUNT,
+            JLU_BASE_RATE,
+            JLU_BASE_CCY,
+            JLU_BASE_AMOUNT,
+            JLU_LOCAL_RATE,
+            JLU_LOCAL_CCY,
+            JLU_LOCAL_AMOUNT,
+            JLU_CREATED_BY,
+            JLU_CREATED_ON,
+            JLU_AMENDED_BY,
+            JLU_AMENDED_ON,
+            JLU_JRNL_TYPE,
+            JLU_JRNL_DESCRIPTION,
+            JLU_JRNL_SOURCE,
+            JLU_JRNL_SOURCE_JRNL_ID,
+            JLU_JRNL_AUTHORISED_BY,
+            JLU_JRNL_AUTHORISED_ON,
+            JLU_JRNL_VALIDATED_BY,
+            JLU_JRNL_VALIDATED_ON,
+            JLU_JRNL_POSTED_BY,
+            JLU_JRNL_POSTED_ON,
+            JLU_JRNL_TOTAL_HASH_DEBIT,
+            JLU_JRNL_TOTAL_HASH_CREDIT,
+            JLU_JRNL_REF_ID,
+            JLU_JRNL_REV_DATE,
+            JLU_TRANSLATION_DATE
+
+        )
+        SELECT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'IMPORT_INSERT_UNPOSTED_SUBSELECT') || '
+            MAX(FNSLR_GETHEADERID()) OVER
+            (
+                PARTITION BY AE_AET_ACC_EVENT_TYPE_ID, AE_POSTING_DATE,  AE_ACC_EVENT_ID,  AE_SOURCE_SYSTEM, AE_JOURNAL_TYPE, AE_REVERSE_DATE
+            )
+            AS JLU_JRNL_HDR_ID,
+            NVL
+            (
+                AE_TRANSACTION_NO, ROW_NUMBER() OVER
+                (
+                    PARTITION BY AE_AET_ACC_EVENT_TYPE_ID, AE_POSTING_DATE,  AE_ACC_EVENT_ID,  AE_SOURCE_SYSTEM, AE_JOURNAL_TYPE, AE_REVERSE_DATE
+                    ORDER BY NULL
+                )
+            ) AS JLU_JRNL_LINE_NUMBER,
+            FC_FAK_ID AS JLU_FAK_ID,
+            EC_EBA_ID AS JLU_EBA_ID,
+            ''U'' AS JLU_JRNL_STATUS,
+            NULL AS JLU_JRNL_STATUS_TEXT,
+            :process_id___1 AS JLU_JRNL_PROCESS_ID,
+            AE_GL_NARRATIVE AS JLU_DESCRIPTION,
+            AE_ACC_EVENT_ID AS JLU_SOURCE_JRNL_ID,
+            AE_POSTING_DATE AS JLU_EFFECTIVE_DATE,
+            NVL(AE_VALUE_DATE, AE_POSTING_DATE) AS JLU_VALUE_DATE,
+            AE_GL_ENTITY AS JLU_ENTITY,
+            AE_EPG_ID AS JLU_EPG_ID,
+            AE_GL_ACCOUNT AS JLU_ACCOUNT,
+            AE_POSTING_SCHEMA AS JLU_SEGMENT_1,
+            AE_GAAP AS JLU_SEGMENT_2,
+            AE_DIMENSION_2 AS JLU_SEGMENT_3,
+            AE_DIMENSION_4 AS JLU_SEGMENT_4,
+            AE_DIMENSION_1 AS JLU_SEGMENT_5,
+            AE_DIMENSION_11 AS JLU_SEGMENT_6,
+            AE_DIMENSION_12 AS JLU_SEGMENT_7,
+            AE_DIMENSION_7 AS JLU_SEGMENT_8,
+            ''NVS'' AS JLU_SEGMENT_9,
+            ''NVS'' AS JLU_SEGMENT_10,
+            AE_DIMENSION_8 AS JLU_ATTRIBUTE_1,
+            AE_DIMENSION_9 AS JLU_ATTRIBUTE_2,
+            AE_DIMENSION_14 AS JLU_ATTRIBUTE_3,
+            AE_CLIENT_SPARE_ID4 AS JLU_ATTRIBUTE_4,
+            ''NVS'' AS JLU_ATTRIBUTE_5,
+            AE_DIMENSION_15 AS JLU_REFERENCE_1,
+            AE_CLIENT_SPARE_ID3 AS JLU_REFERENCE_2,
+            AE_DIMENSION_6 AS JLU_REFERENCE_3,
+            AE_DIMENSION_13 AS JLU_REFERENCE_4,
+            AE_CLIENT_SPARE_ID11 AS JLU_REFERENCE_5,
+            AE_DIMENSION_5 AS JLU_REFERENCE_6,
+            AE_DIMENSION_9 AS JLU_REFERENCE_7,
+            ''NVS'' AS JLU_REFERENCE_8,
+            ''NVS'' AS JLU_REFERENCE_9,
+            ''NVS'' AS JLU_REFERENCE_10,
+            AE_ISO_CURRENCY_CODE AS JLU_TRAN_CCY,
+            AE_AMOUNT AS JLU_TRAN_AMOUNT,
+            AE_BASE_RATE AS JLU_BASE_RATE,
+            AE_CLIENT_SPARE_ID7 AS JLU_BASE_CCY,
+            AE_CLIENT_SPARE_ID8 AS JLU_BASE_AMOUNT,
+            AE_LOCAL_RATE AS JLU_LOCAL_RATE,
+            AE_CLIENT_SPARE_ID5 AS JLU_LOCAL_CCY,
+            AE_CLIENT_SPARE_ID6 JLU_LOCAL_AMOUNT,
+            :user___3 AS JLU_CREATED_BY,
+            :gp_todays_bus_date___4 AS JLU_CREATED_ON,
+            :user___5 AS JLU_AMENDED_BY,
+            :gp_todays_bus_date___6 AS JLU_AMENDED_ON,
+            AE_JOURNAL_TYPE AS JLU_JRNL_TYPE,
+            NULL AS JLU_JRNL_DESCRIPTION,
+            AE_SOURCE_SYSTEM AS JLU_JRNL_SOURCE,
+            AE_ACC_EVENT_ID AS JLU_JRNL_SOURCE_JRNL_ID,
+            ''SLR'' AS JLU_JRNL_AUTHORISED_BY,
+            SYSDATE AS JLU_JRNL_AUTHORISED_ON,
+            NULL AS JLU_JRNL_VALIDATED_BY,
+            NULL AS JLU_JRNL_VALIDATED_ON,
+            NULL AS JLU_JRNL_POSTED_BY,
+            NULL AS JLU_JRNL_POSTED_ON,
+            SUM(CASE WHEN ROUND(AE_AMOUNT,2) > 0.00 THEN AE_AMOUNT ELSE 0 END) OVER
+                (PARTITION BY AE_AET_ACC_EVENT_TYPE_ID, AE_POSTING_DATE,  AE_ACC_EVENT_ID,  AE_SOURCE_SYSTEM, AE_JOURNAL_TYPE, AE_REVERSE_DATE
+                 ORDER BY NULL)
+                AS JLU_JRNL_TOTAL_HASH_DEBIT,
+            SUM(CASE WHEN ROUND(AE_AMOUNT,2) < 0.00 THEN AE_AMOUNT ELSE 0 END) OVER
+                (PARTITION BY AE_AET_ACC_EVENT_TYPE_ID, AE_POSTING_DATE,  AE_ACC_EVENT_ID,  AE_SOURCE_SYSTEM, AE_JOURNAL_TYPE, AE_REVERSE_DATE
+                 ORDER BY NULL)
+                AS JLU_JRNL_TOTAL_HASH_CREDIT,
+            NULL AS JLU_JRNL_REF_ID,
+            AE_REVERSE_DATE AS JLU_JRNL_REV_DATE,
+            NVL(AE_TRANSLATION_DATE, AE_POSTING_DATE) AS JLU_TRANSLATION_DATE
+        FROM FR_ACCOUNTING_EVENT
+        JOIN SLR_ENTITIES
+            ON ENT_ENTITY = AE_GL_ENTITY
+        JOIN SLR_FAK_COMBINATIONS
+            ON AE_DIMENSION_11 = FC_SEGMENT_6
+            AND AE_GL_ACCOUNT = FC_ACCOUNT 
+            AND AE_ISO_CURRENCY_CODE = FC_CCY
+            AND AE_EPG_ID = FC_EPG_ID 
+            AND AE_GL_ENTITY = FC_ENTITY
+            AND AE_POSTING_SCHEMA = FC_SEGMENT_1 
+            AND AE_GAAP = FC_SEGMENT_2
+            AND AE_DIMENSION_2 = FC_SEGMENT_3 
+            AND AE_DIMENSION_4 = FC_SEGMENT_4
+            AND AE_DIMENSION_1 = FC_SEGMENT_5
+            AND AE_DIMENSION_12 = FC_SEGMENT_7 
+            AND AE_DIMENSION_7 = FC_SEGMENT_8
+            AND ''NVS'' = FC_SEGMENT_9 
+            AND ''NVS'' = FC_SEGMENT_10
+        JOIN SLR_EBA_COMBINATIONS
+            ON AE_DIMENSION_8 = EC_ATTRIBUTE_1 
+            AND EC_FAK_ID = FC_FAK_ID
+            AND AE_DIMENSION_9 = EC_ATTRIBUTE_2 
+            AND AE_DIMENSION_14 = EC_ATTRIBUTE_3
+            AND AE_CLIENT_SPARE_ID4 = EC_ATTRIBUTE_4
+            AND ''NVS'' = EC_ATTRIBUTE_5
+            AND AE_EPG_ID = EC_EPG_ID
+        WHERE AE_EPG_ID = ''' || p_entity_proc_group || '''
+            AND AE_POSTING_DATE <= :business_date___7
+    ';
+    SLR_ADMIN_PKG.Debug('Importing AE', lv_sql);
+    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+
+    --SLR_ADMIN_PKG.Debug('PARAM VALUES FOR p_process_id, lv_business_date, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date', p_process_id||'~'||lv_business_date||'~'||lv_user||'~'||lv_gp_todays_bus_date||'~'||lv_user||'~'||lv_gp_todays_bus_date||'~'||lv_business_date);
+    
+    EXECUTE IMMEDIATE lv_sql USING p_process_id, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        COMMIT;
+        SLR_ADMIN_PKG.Info('No records in FR_ACCOUNTING_EVENT to import into SLR_JRNL_LINES_UNPOSTED');
+        pr_error(0, 'No records in FR_ACCOUNTING_EVENT to import into SLR_JRNL_LINES_UNPOSTED', 1, s_proc_name, 'FR_ACCOUNTING_EVENT', p_process_id, 'Process Id', 'SLR', 'PL/SQL');
+        RETURN; -- no recors were imported
+    ELSE
+        COMMIT;
+        SLR_ADMIN_PKG.Info('ACCOUNTING EVENTS imported to SLR_JRNL_LINES_UNPOSTED');
+        SLR_ADMIN_PKG.PerfInfo( 'Import. Import query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+    END IF;
+
+    lv_subpartition_name := SLR_UTILITIES_PKG.fSubpartitionName(p_entity_proc_group, lv_business_date);
+    IF SLR_UTILITIES_PKG.fUserSubpartitionExists('FDR','FR_ACCOUNTING_EVENT_IMP', lv_subpartition_name) = FALSE THEN
+        SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, 'FR_ACCOUNTING_EVENT_IMP',
+            'Lack of subpartition in FR_ACCOUNTING_EVENT_IMP for EPG ' || p_entity_proc_group
+            || ' and business date ' || lv_business_date, p_process_id,p_entity_proc_group);
+        SLR_ADMIN_PKG.Error('ERROR in ' || s_proc_name || ': lack of subpartition in FR_ACCOUNTING_EVENT_IMP for EPG '
+            || p_entity_proc_group || ' and business date ' || lv_business_date);
+        RAISE e_internal_processing_error;
+    END IF;
+
+    EXECUTE IMMEDIATE '
+        SELECT /*+ noparallel */ COUNT(*) FROM FR_ACCOUNTING_EVENT_IMP
+        SUBPARTITION (' || lv_subpartition_name || ') WHERE ROWNUM < 2'
+    INTO lv_rows_on_subpartition;
+
+
+
+    IF lv_rows_on_subpartition > 0 THEN
+        SLR_ADMIN_PKG.Debug('Processing without exchanging partition');
+        lv_date_condition := 'AE_POSTING_DATE <= ''' || lv_business_date || '''';
+    ELSE
+        SLR_ADMIN_PKG.Debug('Processing with exchanging partition');
+
+        lv_date_condition := 'AE_POSTING_DATE < ''' || lv_business_date || '''';
+        lv_part_move_table_name := 'FDR.FR_IMP_PM_' || p_entity_proc_group;
+
+        PR_TRUNCATE_PART_MOVE_TABLE(p_entity_proc_group);
+
+        DBMS_LOCK.ALLOCATE_UNIQUE('MAH_SLR_IMPORT', lv_lock_handle);
+        lv_lock_result := DBMS_LOCK.REQUEST(lv_lock_handle, DBMS_LOCK.X_MODE, c_lock_request_timeout);
+        IF lv_lock_result != 0 THEN
+            SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, 'FR_ACCOUNTING_EVENT',
+                'Error during import from FR_ACCOUNTING_EVENT to SLR_JRNL_LINES_UNPOSTED: can''t acquire lock to exchange partitions',
+                p_process_id,p_entity_proc_group);
+            SLR_ADMIN_PKG.Error('ERROR in ' || s_proc_name || ': Error during import from FR_ACCOUNTING_EVENT
+                to SLR_JRNL_LINES_UNPOSTED: can''t acquire lock to exchange partitions');
+            RAISE e_lock_acquire_error;
+        END IF;
+
+        lv_rollback_exchange := TRUE;
+        EXECUTE IMMEDIATE 'ALTER TABLE FDR.FR_ACCOUNTING_EVENT EXCHANGE SUBPARTITION '
+            || lv_subpartition_name || ' WITH TABLE ' || lv_part_move_table_name || ' WITHOUT VALIDATION';
+
+
+        EXECUTE IMMEDIATE 'ALTER TABLE FDR.FR_ACCOUNTING_EVENT_IMP EXCHANGE SUBPARTITION '
+            || lv_subpartition_name || ' WITH TABLE ' || lv_part_move_table_name || ' WITHOUT VALIDATION';
+
+        lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
+    END IF;
+
+    lv_sql := '
+        INSERT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'IMPORT_INSERT_ARCH') || ' INTO FR_ACCOUNTING_EVENT_IMP
+        (
+            AE_ACCEVENT_DATE,
+            AE_ACCEVENT_ID,
+            AE_ACC_EVENT_ID,
+            AE_AET_ACC_EVENT_TYPE_ID,
+            AE_AMOUNT,
+            AE_BASE_AMOUNT,
+            AE_BASE_CURRENCY_CODE,
+            AE_BASE_RATE,
+            AE_CALC_PERIOD,
+            AE_CLIENT_DATE1,
+            AE_CLIENT_SPARE_ID1,
+            AE_CLIENT_SPARE_ID10,
+            AE_CLIENT_SPARE_ID11,
+            AE_CLIENT_SPARE_ID12,
+            AE_CLIENT_SPARE_ID2,
+            AE_CLIENT_SPARE_ID3,
+            AE_CLIENT_SPARE_ID4,
+            AE_CLIENT_SPARE_ID5,
+            AE_CLIENT_SPARE_ID6,
+            AE_CLIENT_SPARE_ID7,
+            AE_CLIENT_SPARE_ID8,
+            AE_CLIENT_SPARE_ID9,
+            AE_DIMENSION_1,
+            AE_DIMENSION_10,
+            AE_DIMENSION_11,
+            AE_DIMENSION_12,
+            AE_DIMENSION_13,
+            AE_DIMENSION_14,
+            AE_DIMENSION_15,
+            AE_DIMENSION_2,
+            AE_DIMENSION_3,
+            AE_DIMENSION_4,
+            AE_DIMENSION_5,
+            AE_DIMENSION_6,
+            AE_DIMENSION_7,
+            AE_DIMENSION_8,
+            AE_DIMENSION_9,
+            AE_DR_CR,
+            AE_EPG_ID,
+            AE_FDR_TRAN_NO,
+            AE_GAAP,
+            AE_GL_ACCOUNT,
+            AE_GL_ACCOUNT_ALIAS,
+            AE_GL_BOOK,
+            AE_GL_CASH_FLOW_TYPE,
+            AE_GL_CLIENT1_ORG_UNIT_ID,
+            AE_GL_CLIENT2_ORG_UNIT_ID,
+            AE_GL_CLIENT3_ORG_UNIT_ID,
+            AE_GL_CONTRACT_ID,
+            AE_GL_COST_CENTRE,
+            AE_GL_ENTITY,
+            AE_GL_INSTRUMENT_ID,
+            AE_GL_INSTR_SUPER_CLASS,
+            AE_GL_LEDGER_ID,
+            AE_GL_NARRATIVE,
+            AE_GL_PARTY_BUSINESS_ID,
+            AE_GL_PERSON_ID,
+            AE_GL_PLANT_ID,
+            AE_GL_PRODUCT_PART_ID,
+            AE_GL_PROFIT_CENTRE,
+            AE_GL_RIGHTS_CATEG_ID,
+            AE_GL_RIGHTS_SUBCATEG_ID,
+            AE_GL_SHIP_TO_COUNTRY_ID,
+            AE_GL_TAX_CODE_ID,
+            AE_GL_TRANSACTION_ID,
+            AE_IL_INSTR_LEG_ID,
+            AE_INPUT_TIME,
+            AE_IN_REPOSITORY_IND,
+            AE_ISO_CURRENCY_CODE,
+            AE_I_INSTRUMENT_ID,
+            AE_JOURNAL_TYPE,
+            AE_LEDGER_PERIOD,
+            AE_LEDGER_REC_STATUS,
+            AE_LEDGER_REC_STATUS2,
+            AE_LOCAL_AMOUNT,
+            AE_LOCAL_CURRENCY_CODE,
+            AE_LOCAL_RATE,
+            AE_NUMBER_OF_PERIODS,
+            AE_POSTING_CODE,
+            AE_POSTING_DATE,
+            AE_POSTING_SCHEMA,
+            AE_RATE_DATE,
+            AE_REP_SCHEMA_UPD,
+            AE_RET_AGV_OR_ARREARS,
+            AE_RET_AMORT_FLAG,
+            AE_RET_CA_CALENDAR_NAME,
+            AE_RET_POST_PERIOD,
+            AE_RET_RECOG_TYPE_ID,
+            AE_REVERSE_DATE,
+            AE_RULES_AMOUNT_REF_ID,
+            AE_RULE_ID,
+            AE_SOURCE_JRNL_ID,
+            AE_SOURCE_SYSTEM,
+            AE_SOURCE_TRAN_NO,
+            AE_SUB_EVENT_ID,
+            AE_SUB_LEDGER_UPD,
+            AE_TRANSACTION_NO,
+            AE_TRANSLATION_DATE,
+            AE_VALUE_DATE,
+            LPG_ID,
+			AE_CLIENT_SPARE_ID13,
+			AE_CLIENT_SPARE_ID14,
+			AE_CLIENT_SPARE_ID15,
+			AE_CLIENT_SPARE_ID16,
+			AE_CLIENT_SPARE_ID17,
+			AE_CLIENT_SPARE_ID18,
+			AE_CLIENT_SPARE_ID19,
+			AE_CLIENT_SPARE_ID20,
+			AE_CLIENT_DATE2,
+			AE_CLIENT_DATE3,
+			AE_CLIENT_DATE4,
+			AE_CLIENT_DATE5
+        )
+        SELECT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'IMPORT_INSERT_ARCH_SUBSELECT') || '
+            AE_ACCEVENT_DATE,
+            AE_ACCEVENT_ID,
+            AE_ACC_EVENT_ID,
+            AE_AET_ACC_EVENT_TYPE_ID,
+            AE_AMOUNT,
+            AE_BASE_AMOUNT,
+            AE_BASE_CURRENCY_CODE,
+            AE_BASE_RATE,
+            AE_CALC_PERIOD,
+            AE_CLIENT_DATE1,
+            AE_CLIENT_SPARE_ID1,
+            AE_CLIENT_SPARE_ID10,
+            AE_CLIENT_SPARE_ID11,
+            AE_CLIENT_SPARE_ID12,
+            AE_CLIENT_SPARE_ID2,
+            AE_CLIENT_SPARE_ID3,
+            AE_CLIENT_SPARE_ID4,
+            AE_CLIENT_SPARE_ID5,
+            AE_CLIENT_SPARE_ID6,
+            AE_CLIENT_SPARE_ID7,
+            AE_CLIENT_SPARE_ID8,
+            AE_CLIENT_SPARE_ID9,
+            AE_DIMENSION_1,
+            AE_DIMENSION_10,
+            AE_DIMENSION_11,
+            AE_DIMENSION_12,
+            AE_DIMENSION_13,
+            AE_DIMENSION_14,
+            AE_DIMENSION_15,
+            AE_DIMENSION_2,
+            AE_DIMENSION_3,
+            AE_DIMENSION_4,
+            AE_DIMENSION_5,
+            AE_DIMENSION_6,
+            AE_DIMENSION_7,
+            AE_DIMENSION_8,
+            AE_DIMENSION_9,
+            AE_DR_CR,
+            AE_EPG_ID,
+            AE_FDR_TRAN_NO,
+            AE_GAAP,
+            AE_GL_ACCOUNT,
+            AE_GL_ACCOUNT_ALIAS,
+            AE_GL_BOOK,
+            AE_GL_CASH_FLOW_TYPE,
+            AE_GL_CLIENT1_ORG_UNIT_ID,
+            AE_GL_CLIENT2_ORG_UNIT_ID,
+            AE_GL_CLIENT3_ORG_UNIT_ID,
+            AE_GL_CONTRACT_ID,
+            AE_GL_COST_CENTRE,
+            AE_GL_ENTITY,
+            AE_GL_INSTRUMENT_ID,
+            AE_GL_INSTR_SUPER_CLASS,
+            AE_GL_LEDGER_ID,
+            AE_GL_NARRATIVE,
+            AE_GL_PARTY_BUSINESS_ID,
+            AE_GL_PERSON_ID,
+            AE_GL_PLANT_ID,
+            AE_GL_PRODUCT_PART_ID,
+            AE_GL_PROFIT_CENTRE,
+            AE_GL_RIGHTS_CATEG_ID,
+            AE_GL_RIGHTS_SUBCATEG_ID,
+            AE_GL_SHIP_TO_COUNTRY_ID,
+            AE_GL_TAX_CODE_ID,
+            AE_GL_TRANSACTION_ID,
+            AE_IL_INSTR_LEG_ID,
+            AE_INPUT_TIME,
+            AE_IN_REPOSITORY_IND,
+            AE_ISO_CURRENCY_CODE,
+            AE_I_INSTRUMENT_ID,
+            AE_JOURNAL_TYPE,
+            AE_LEDGER_PERIOD,
+            AE_LEDGER_REC_STATUS,
+            AE_LEDGER_REC_STATUS2,
+            AE_LOCAL_AMOUNT,
+            AE_LOCAL_CURRENCY_CODE,
+            AE_LOCAL_RATE,
+            AE_NUMBER_OF_PERIODS,
+            AE_POSTING_CODE,
+            AE_POSTING_DATE,
+            AE_POSTING_SCHEMA,
+            AE_RATE_DATE,
+            AE_REP_SCHEMA_UPD,
+            AE_RET_AGV_OR_ARREARS,
+            AE_RET_AMORT_FLAG,
+            AE_RET_CA_CALENDAR_NAME,
+            AE_RET_POST_PERIOD,
+            AE_RET_RECOG_TYPE_ID,
+            AE_REVERSE_DATE,
+            AE_RULES_AMOUNT_REF_ID,
+            AE_RULE_ID,
+            AE_SOURCE_JRNL_ID,
+            AE_SOURCE_SYSTEM,
+            AE_SOURCE_TRAN_NO,
+            AE_SUB_EVENT_ID,
+            AE_SUB_LEDGER_UPD,
+            AE_TRANSACTION_NO,
+            AE_TRANSLATION_DATE,
+            AE_VALUE_DATE,
+            LPG_ID,
+			AE_CLIENT_SPARE_ID13,
+			AE_CLIENT_SPARE_ID14,
+			AE_CLIENT_SPARE_ID15,
+			AE_CLIENT_SPARE_ID16,
+			AE_CLIENT_SPARE_ID17,
+			AE_CLIENT_SPARE_ID18,
+			AE_CLIENT_SPARE_ID19,
+			AE_CLIENT_SPARE_ID20,
+			AE_CLIENT_DATE2,
+			AE_CLIENT_DATE3,
+			AE_CLIENT_DATE4,
+			AE_CLIENT_DATE5
+        FROM FR_ACCOUNTING_EVENT
+        WHERE AE_EPG_ID = ''' || p_entity_proc_group || '''
+        AND ' || lv_date_condition
+    ;
+    SLR_ADMIN_PKG.Debug('Inserting rows into FR_ACCOUNTING_EVENT_IMP', lv_sql);
+    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+    EXECUTE IMMEDIATE lv_sql;
+    COMMIT;
+    SLR_ADMIN_PKG.PerfInfo( 'Import Copy AE. Import Copy AE query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+
+    SLR_ADMIN_PKG.Info('Rows copied to FR_ACCOUNTING_EVENT_IMP');
+
+
+	BEGIN
+		lv_sql :=  'SELECT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'SELECT_ACC_EVENT') || ' DISTINCT AE_POSTING_DATE FROM FR_ACCOUNTING_EVENT
+            WHERE AE_POSTING_DATE <= to_date(''' || lv_business_date || ''') AND AE_EPG_ID = ''' || p_entity_proc_group || ''' ';
+
+		OPEN cValidateRows FOR lv_sql;
+		LOOP
+			FETCH cValidateRows INTO v_posting_date;
+			EXIT WHEN cValidateRows%NOTFOUND;
+        TRUNC_AE_SUBPART( SLR_UTILITIES_PKG.fSubpartitionName(p_entity_proc_group, v_posting_date) );
+		END LOOP;
+		CLOSE cValidateRows;
+
+	EXCEPTION
+        WHEN OTHERS THEN
+            SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, 'FR_ACCOUNTING_EVENT',
+                'Import finished but records from FR_ACCOUNTING_EVENT were not removed due to error.',
+                p_process_id,p_entity_proc_group);
+            SLR_ADMIN_PKG.Error('Import finished but records from FR_ACCOUNTING_EVENT were not removed due to error.');
+	END;
+    SLR_ADMIN_PKG.Info('Imported rows removed from FR_ACCOUNTING_EVENT');
+
+    EXECUTE IMMEDIATE 'ALTER SESSION DISABLE PARALLEL DML';
+
+    SLR_ADMIN_PKG.Debug('pIMPORT_SLR_JRNLS - end');
+
+EXCEPTION
+    WHEN e_lock_acquire_error THEN
+        -- error was logged before
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during import');
+
+    WHEN e_internal_processing_error THEN
+        -- e_internal_processing_error exception was logged in procedure which raised it
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during import');
+
+    WHEN OTHERS THEN
+        ROLLBACK;
+        lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
+        SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, 'FR_ACCOUNTING_EVENT',
+            'Error during import from FR_ACCOUNTING_EVENT to SLR_JRNL_LINES_UNPOSTED.',
+            p_process_id,p_entity_proc_group);
+        SLR_ADMIN_PKG.Error('ERROR in ' || s_proc_name || ': ' || SQLERRM);
+        IF lv_rollback_exchange = TRUE THEN
+            pRollbackImportExchange(p_entity_proc_group, lv_subpartition_name, lv_part_move_table_name);
+        END IF;
+
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pIMPORT_SLR_JRNLS: ' || SQLERRM);
+
+END pIMPORT_SLR_JRNLS;
+
+----------------------------------------------------------------------------------------
+-- Used during batch processing to assign FAK/EBA combinations base on accounting events
+-- NOTE: Mappings in following merge queries should be updated
+-- to be coherent with segments and atrributes settings from import
+-- (insert query in pIMPORT_SLR_JRNLS procedure)
+-----------------------------------------------------------------------------------------
+
+PROCEDURE pInsertFakEbaCombinations
+(
+    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+    p_process_id IN NUMBER,
+    p_business_date SLR_ENTITIES.ENT_BUSINESS_DATE%TYPE
+)
+IS
+    s_proc_name VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pInsertFakEbaCombinations';
+    lv_START_TIME 	PLS_INTEGER := 0;
+    lv_sql VARCHAR2(32000);
+BEGIN
+
+    lv_sql := '
+        INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'MERGE_FAK') || ' INTO SLR_FAK_COMBINATIONS
+        (
+            FC_EPG_ID,
+            FC_ENTITY,
+            FC_ACCOUNT,
+            FC_CCY,
+            FC_SEGMENT_1,
+            FC_SEGMENT_2,
+            FC_SEGMENT_3,
+            FC_SEGMENT_4,
+            FC_SEGMENT_5,
+            FC_SEGMENT_6,
+            FC_SEGMENT_7,
+            FC_SEGMENT_8,
+            FC_SEGMENT_9,
+            FC_SEGMENT_10,
+            FC_FAK_ID
+        )
+        WITH ROWS_TO_INSERT AS
+        (
+            SELECT DISTINCT
+                AE_EPG_ID,
+                AE_GL_ENTITY,
+                AE_GL_ACCOUNT,
+                AE_ISO_CURRENCY_CODE,
+                AE_POSTING_SCHEMA,
+                AE_GAAP,
+                AE_DIMENSION_2,
+                AE_DIMENSION_4,
+                AE_DIMENSION_1,
+                AE_DIMENSION_11,
+                AE_DIMENSION_12,
+                AE_DIMENSION_7
+            FROM FR_ACCOUNTING_EVENT
+            WHERE AE_EPG_ID = ''' || p_epg_id || '''
+                AND AE_POSTING_DATE <= :business_date___1
+            MINUS
+                SELECT
+                    FC_EPG_ID, FC_ENTITY, FC_ACCOUNT, FC_CCY,
+                    FC_SEGMENT_1, FC_SEGMENT_2, FC_SEGMENT_3, FC_SEGMENT_4,
+                    FC_SEGMENT_5, FC_SEGMENT_6, FC_SEGMENT_7, FC_SEGMENT_8
+                FROM SLR_FAK_COMBINATIONS
+                WHERE FC_EPG_ID = ''' || p_epg_id || '''
+        )
+        SELECT
+            AE_EPG_ID,
+            AE_GL_ENTITY,
+            AE_GL_ACCOUNT,
+            AE_ISO_CURRENCY_CODE,
+            AE_POSTING_SCHEMA,
+            AE_GAAP,
+            AE_DIMENSION_2,
+            AE_DIMENSION_4,
+            AE_DIMENSION_1,
+            AE_DIMENSION_11,
+            AE_DIMENSION_12,
+            AE_DIMENSION_7,
+            ''NVS'',
+            ''NVS'',
+            SEQ_SLR_FAK_COMBO_ID.NEXTVAL
+        FROM ROWS_TO_INSERT
+    ';
+    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+    EXECUTE IMMEDIATE lv_sql USING p_business_date;
+    COMMIT;
+    SLR_ADMIN_PKG.PerfInfo( 'FAKC. FAK combination query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+    SLR_ADMIN_PKG.Info('New FAK combinations inserted');
+
+    lv_sql := '
+        INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'MERGE_EBA') || ' INTO SLR_EBA_COMBINATIONS
+        (
+            EC_EPG_ID,
+            EC_FAK_ID,
+            EC_EBA_ID,
+            EC_ATTRIBUTE_1,
+            EC_ATTRIBUTE_2,
+            EC_ATTRIBUTE_3,
+            EC_ATTRIBUTE_4,
+            EC_ATTRIBUTE_5
+        )
+        WITH ROWS_TO_INSERT AS
+        (
+            SELECT DISTINCT
+                AE_EPG_ID,
+                FC_FAK_ID,
+                AE_DIMENSION_8, 
+                AE_DIMENSION_9, 
+                AE_DIMENSION_14, 
+                AE_CLIENT_SPARE_ID4 
+            FROM FR_ACCOUNTING_EVENT
+            JOIN SLR_FAK_COMBINATIONS
+              ON AE_GL_ACCOUNT = FC_ACCOUNT 
+                AND AE_ISO_CURRENCY_CODE = FC_CCY
+                AND AE_EPG_ID = FC_EPG_ID 
+                AND AE_GL_ENTITY = FC_ENTITY
+                AND AE_POSTING_SCHEMA = FC_SEGMENT_1 
+                AND AE_GAAP = FC_SEGMENT_2
+                AND AE_DIMENSION_2 = FC_SEGMENT_3 
+                AND AE_DIMENSION_4 = FC_SEGMENT_4
+                AND AE_DIMENSION_1 = FC_SEGMENT_5 
+                AND AE_DIMENSION_11 = FC_SEGMENT_6
+                AND AE_DIMENSION_12 = FC_SEGMENT_7 
+                AND AE_DIMENSION_7 = FC_SEGMENT_8
+                AND ''NVS'' = FC_SEGMENT_9 
+                AND ''NVS'' = FC_SEGMENT_10
+            WHERE AE_EPG_ID = ''' || p_epg_id || '''
+                AND AE_POSTING_DATE <= :business_date___1
+            MINUS
+                SELECT
+                    EC_EPG_ID,
+                    EC_FAK_ID,
+                    EC_ATTRIBUTE_1,
+                    EC_ATTRIBUTE_2,
+                    EC_ATTRIBUTE_3,
+                    EC_ATTRIBUTE_4
+                FROM SLR_EBA_COMBINATIONS
+                WHERE EC_EPG_ID = ''' || p_epg_id || '''
+        )
+        SELECT
+            AE_EPG_ID,
+            FC_FAK_ID,
+            SEQ_EBA_COMBO_ID.NEXTVAL,
+            AE_DIMENSION_8, 
+            AE_DIMENSION_9, 
+            AE_DIMENSION_14, 
+            AE_CLIENT_SPARE_ID4,
+            ''NVS''
+        FROM ROWS_TO_INSERT
+    ';
+
+    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+    EXECUTE IMMEDIATE lv_sql USING p_business_date;
+    COMMIT;
+    SLR_ADMIN_PKG.PerfInfo( 'EBAC. EBA combination query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+    SLR_ADMIN_PKG.Info('New EBA combinations inserted');
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, 'SLR_FAK/EBA_COMBINATIONS',
+            'Error during inserting new combinations to SLR_FAK/EBA_COMBINATIONS',
+            p_process_id, p_epg_id);
+        SLR_ADMIN_PKG.Error('Error during inserting new combinations to SLR_FAK/EBA_COMBINATIONS');
+        RAISE e_internal_processing_error; -- raised to stop processing
+
+END pInsertFakEbaCombinations;
+
+------------------------------------------------------------------
+
+
+PROCEDURE pUPDATE_SLR_SEGMENT_3(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
+
+s_proc_name         VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_SEGMENT_3';
+v_records_processed NUMBER(18);
+
+BEGIN
+   
+    DELETE FROM  slr_fak_segment_3 seg3
+          WHERE  seg3.fs3_entity_set IN (SELECT  DISTINCT ent.ent_segment_3_set
+                                           FROM  slr.slr_entities ent
+                                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+												       AND frlpg.lc_lpg_id = pLPG_ID);
+
+    INSERT INTO slr_fak_segment_3 (
+            fs3_entity_set,
+            fs3_segment_value,
+            fs3_segment_description,
+            fs3_status,
+            fs3_created_by,
+            fs3_created_on,
+            fs3_amended_by,
+            fs3_amended_on)
+   SELECT  seg3.ent_segment_3_set,
+            frbk.bo_book_clicode,
+            frbk.bo_book_name,
+            'A',
+            USER,
+            TRUNC(SYSDATE),
+            USER,
+            TRUNC(SYSDATE)
+      FROM  fdr.fr_book frbk
+            CROSS JOIN (
+                    SELECT DISTINCT ent.ent_segment_3_set
+                    FROM  slr.slr_entities ent
+                    INNER JOIN fdr.fr_lpg_config frlpg 
+                            ON frlpg.lc_grp_code = ent.ent_entity
+                           AND frlpg.lc_lpg_id = pLPG_ID
+                        ) seg3;   
+
+    SELECT  COUNT(*)
+	  INTO  v_records_processed
+	  FROM  slr_fak_segment_3;
+
+	p_no_processed_records := v_records_processed;
+	p_no_failed_records := 0;
+	
+END pUPDATE_SLR_SEGMENT_3;
+
+
+PROCEDURE pUPDATE_SLR_SEGMENT_4(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
+
+s_proc_name         VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_SEGMENT_4';
+v_records_processed NUMBER(18);
+
+BEGIN
+
+
+   
+    DELETE FROM  slr_fak_segment_4 seg4
+          WHERE  seg4.fs4_entity_set IN (SELECT  DISTINCT ent.ent_segment_4_set
+                                           FROM  slr.slr_entities ent
+                                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+												       AND frlpg.lc_lpg_id = pLPG_ID);
+
+    INSERT INTO slr_fak_segment_4 (
+            fs4_entity_set,
+            fs4_segment_value,
+            fs4_segment_description,
+            fs4_status,
+            fs4_created_by,
+            fs4_created_on,
+            fs4_amended_by,
+            fs4_amended_on)
+    SELECT  seg4.ent_segment_4_set,
+            pl.pl_party_legal_id,
+            pl.pl_int_ext_flag,
+            'A',
+            USER,
+            TRUNC(SYSDATE),
+            USER,
+            TRUNC(SYSDATE)
+      FROM  fdr.fr_party_legal pl
+            CROSS JOIN (SELECT  DISTINCT ent.ent_segment_4_set
+                          FROM  slr.slr_entities ent
+                                INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+								  AND frlpg.lc_lpg_id = pLPG_ID) seg4 
+            WHERE pl.pl_int_ext_flag in ('I','E') 
+            AND PL.PL_PARTY_LEGAL_ID <> 'NVS'
+     ;
+
+    SELECT  COUNT(*)
+	  INTO  v_records_processed
+	  FROM  slr_fak_segment_4;
+
+	p_no_processed_records := v_records_processed;
+	p_no_failed_records := 0;
+
+END pUPDATE_SLR_SEGMENT_4;
+
+
+PROCEDURE pUPDATE_SLR_SEGMENT_5(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
+
+s_proc_name         VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_SEGMENT_5';
+v_records_processed NUMBER(18);
+
+BEGIN
+
+       DELETE FROM  slr_fak_segment_5 seg5
+          WHERE  seg5.fs5_entity_set IN (SELECT  DISTINCT ent.ent_segment_5_set
+                                           FROM  slr.slr_entities ent
+                                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+												       AND frlpg.lc_lpg_id = pLPG_ID);
+
+    INSERT INTO slr_fak_segment_5 (
+            fs5_entity_set,
+            fs5_segment_value,
+            fs5_segment_description,
+            fs5_status,
+            fs5_created_by,
+            fs5_created_on,
+            fs5_amended_by,
+            fs5_amended_on)
+    SELECT  seg5.ent_segment_5_set,
+            frgc.gc_client_code,
+            frgc.gc_client_text2,
+            'A',
+            USER,
+            TRUNC(SYSDATE),
+            USER,
+            TRUNC(SYSDATE)
+      FROM  fdr.fr_general_codes frgc
+            CROSS JOIN (SELECT  DISTINCT ent.ent_segment_5_set
+                          FROM  slr.slr_entities ent
+                                INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+								  AND frlpg.lc_lpg_id = pLPG_ID) seg5 
+            WHERE frgc.gc_gct_code_type_id = 'GL_CHARTFIELD'
+     ;
+
+    SELECT  COUNT(*)
+	  INTO  v_records_processed
+	  FROM  slr_fak_segment_5;
+
+	p_no_processed_records := v_records_processed;
+	p_no_failed_records := 0;
+	
+END pUPDATE_SLR_SEGMENT_5;
+
+PROCEDURE pUPDATE_SLR_SEGMENT_6(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
+
+s_proc_name         VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_SEGMENT_7';
+v_records_processed NUMBER(18);
+
+BEGIN
+   
+    DELETE FROM  slr_fak_segment_6 seg6
+          WHERE  seg6.fs6_entity_set IN (SELECT  DISTINCT ent.ent_segment_6_set
+                                           FROM  slr.slr_entities ent
+                                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+												       AND frlpg.lc_lpg_id = pLPG_ID);
+
+    INSERT INTO slr_fak_segment_6 (
+            fs6_entity_set,
+            fs6_segment_value,
+            fs6_segment_description,
+            fs6_status,
+            fs6_created_by,
+            fs6_created_on,
+            fs6_amended_by,
+            fs6_amended_on)
+    SELECT  seg6.ent_segment_6_set,
+            ip.execution_typ,
+            ip.execution_typ,
+            'A',
+            USER,
+            TRUNC(SYSDATE),
+            USER,
+            TRUNC(SYSDATE)
+      FROM  stn.insurance_policy ip
+            CROSS JOIN (SELECT  DISTINCT ent.ent_segment_6_set
+                          FROM  slr.slr_entities ent
+                                INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+								  AND frlpg.lc_lpg_id = pLPG_ID) seg6 
+            WHERE ip.execution_typ in ('MTM','NON-MTM');
+
+    SELECT  COUNT(*)
+	  INTO  v_records_processed
+	  FROM  slr_fak_segment_6;
+
+	p_no_processed_records := v_records_processed;
+	p_no_failed_records := 0;
+	
+END pUPDATE_SLR_SEGMENT_6;
+
+PROCEDURE pUPDATE_SLR_SEGMENT_7(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
+
+s_proc_name         VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_SEGMENT_7';
+v_records_processed NUMBER(18);
+
+BEGIN
+
+    DELETE FROM  slr_fak_segment_7 seg7
+          WHERE  seg7.fs7_entity_set IN (SELECT  DISTINCT ent.ent_segment_7_set
+                                           FROM  slr.slr_entities ent
+                                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+												       AND frlpg.lc_lpg_id = pLPG_ID);
+
+    INSERT INTO slr_fak_segment_7 (
+            fs7_entity_set,
+            fs7_segment_value,
+            fs7_segment_description,
+            fs7_status,
+            fs7_created_by,
+            fs7_created_on,
+            fs7_amended_by,
+            fs7_amended_on)
+    SELECT  seg7.ent_segment_7_set,
+            bt.business_typ,
+            bt.business_typ,
+            'A',
+            USER,
+            TRUNC(SYSDATE),
+            USER,
+            TRUNC(SYSDATE)
+      FROM  stn.business_type bt
+            CROSS JOIN (SELECT  DISTINCT ent.ent_segment_7_set
+                          FROM  slr.slr_entities ent
+                                INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+								  AND frlpg.lc_lpg_id = pLPG_ID) seg7 ;
+
+    SELECT  COUNT(*)
+	  INTO  v_records_processed
+	  FROM  slr_fak_segment_7;
+
+	p_no_processed_records := v_records_processed;
+	p_no_failed_records := 0;
+	
+END pUPDATE_SLR_SEGMENT_7;
+
+
+PROCEDURE pUPDATE_SLR_SEGMENT_8(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
+
+s_proc_name         VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_SEGMENT_8';
+v_records_processed NUMBER(18);
+
+BEGIN
+
+    DELETE FROM  slr_fak_segment_8 seg8
+          WHERE  seg8.fs8_entity_set IN (SELECT  DISTINCT ent.ent_segment_8_set
+                                           FROM  slr.slr_entities ent
+                                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
+												       AND frlpg.lc_lpg_id = pLPG_ID);
+
+    INSERT INTO slr_fak_segment_8 (
+            fs8_entity_set,
+            fs8_segment_value,
+            fs8_segment_description,
+            fs8_status,
+            fs8_created_by,
+            fs8_created_on,
+            fs8_amended_by,
+            fs8_amended_on)
+    SELECT  seg8.ent_segment_8_set,
+            frinstr.i_instrument_id,
+            FREXT.IIE_COVER_NOTE_DESCRIPTION,
+            'A',
+            USER,
+            TRUNC(SYSDATE),
+            USER,
+            TRUNC(SYSDATE)
+      FROM  fdr.fr_instrument frinstr
+            CROSS JOIN (SELECT  DISTINCT ent.ent_segment_8_set
+                        FROM  slr.slr_entities ent
+                        INNER JOIN fdr.fr_lpg_config frlpg 
+                          ON frlpg.lc_grp_code = ent.ent_entity
+                          AND frlpg.lc_lpg_id = pLPG_ID
+                        ) seg8 
+            INNER JOIN fdr.fr_instr_insure_extend frext
+                  ON frinstr.i_instrument_id = frext.iie_instrument_id
+            WHERE frinstr.i_it_instr_type_id = 'INSURANCE_POLICY';
+
+    SELECT  COUNT(*)
+	  INTO  v_records_processed
+	  FROM  slr_fak_segment_8;
+
+	p_no_processed_records := v_records_processed;
+	p_no_failed_records := 0;
+	
+END pUPDATE_SLR_SEGMENT_8;
+
+-- -----------------------------------------------------------------------
+-- Procedure:      pUPDATE_SLR_CURRENCIES
+-- Function:       Insert data into SLR_ENTITY_CURRENCIES
+-- Note:           All entities will probably share the same currency but
+--                 this can be run per entity in each batch per entity to
+--                 ensure it is always up to date
+--
+-- BJP 22-AUG-2007 Initial Creation
+-- -----------------------------------------------------------------------
+
+PROCEDURE pUPDATE_SLR_CURRENCIES(pLPG_ID IN NUMBER, o_records_processed OUT NUMBER, o_records_failed OUT NUMBER) AS
+
+s_proc_name VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_CURRENCIES';
+lvEntitySet SLR_ENTITIES.ENT_CURRENCY_SET%TYPE;
+v_records_processed NUMBER(18);
+
+BEGIN
+
+    SELECT  DISTINCT ent.ent_currency_set
+	  INTO  lvEntitySet
+      FROM  fdr.fr_lpg_config frlpg
+            INNER JOIN  slr_entities ent ON frlpg.lc_grp_code = ent.ent_entity
+     WHERE  frlpg.lc_lpg_id = pLPG_ID;
+
+    SLR_FDR_PROCEDURES_PKG.PUPDATE_SLR_CURRENCIES(lvEntitySet);
+	
+	SELECT  COUNT(*)
+	  INTO  v_records_processed
+	  FROM  slr_entity_currencies;
+
+	o_records_processed := v_records_processed;
+	o_records_failed := 0;
+
+END pUPDATE_SLR_CURRENCIES;
+
+
+PROCEDURE pr_fx_rate
         (
             p_lpg_id IN NUMBER,
             p_no_processed_records OUT NUMBER,
@@ -74,7 +1364,8 @@ CREATE OR REPLACE PACKAGE BODY slr.SLR_PKG AS
         p_no_processed_records := SQL%ROWCOUNT;
         p_no_failed_records := 0;
     end pr_fx_rate;
-    PROCEDURE pr_account
+    
+PROCEDURE pr_account
         (
             p_lpg_id IN NUMBER,
             p_no_processed_records OUT NUMBER,
@@ -163,5 +1454,883 @@ CREATE OR REPLACE PACKAGE BODY slr.SLR_PKG AS
         p_no_processed_records := SQL%ROWCOUNT;
         p_no_failed_records := 0;
     end pr_account;
+-- -----------------------------------------------------------------------
+-- Procedure:      pUPDATE_SLR_ENTITY_RATES
+-- Function:       Insert data into SLR_ENTITY_ENTITY_RATES
+-- Note:           This defaults the required rate type to CLOSING
+--
+-- BJP 22-AUG-2007 Initial Creation
+-- -----------------------------------------------------------------------
+PROCEDURE pUPDATE_SLR_ENTITY_RATES(p_entity IN VARCHAR2,
+                                   p_business_date in DATE DEFAULT NULL) AS
+
+s_proc_name VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_ENTITY_RATES';
+lvBusinessDate DATE;
+
+BEGIN
+
+    SELECT ENT_BUSINESS_DATE
+    INTO   lvBusinessDate
+    FROM   SLR_ENTITIES
+    WHERE  ENT_ENTITY = p_entity;
+
+    lvBusinessDate := NVL(p_business_date, lvBusinessDate);
+
+    SLR_FDR_PROCEDURES_PKG.PUPDATE_SLR_ENTITY_RATES(p_entity, lvBusinessDate, 'SPOT');
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+        pr_error(slr_global_pkg.C_MAJERR, 'Failure to insert entity rates, invalid entity supplied: '
+                                ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITY', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+  WHEN OTHERS THEN
+        pr_error(slr_global_pkg.C_MAJERR, 'Failure to insert entity rates: '
+                                ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITY_RATES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pUPDATE_SLR_ENTITY_RATES: ' || SQLERRM);
+
+END pUPDATE_SLR_ENTITY_RATES;
+
+-- -----------------------------------------------------------------------
+-- Procedure:       pREC_AET_JRNLS
+-- Function:        Reconciliation of journals between FDR and SLR.
+-- Note:
+--
+-- BJP 22-AUG-2007 Initial Creation
+-- -----------------------------------------------------------------------
+PROCEDURE pREC_AET_JRNLS (p_epg_id IN VARCHAR2,
+                            p_entity IN VARCHAR2 DEFAULT NULL,
+                            p_date_from IN DATE DEFAULT NULL,
+                            p_date_to IN DATE DEFAULT NULL) AS
+
+    s_proc_name       VARCHAR2(50) := 'SLR_CLIENT_PROCEDURES_PKG.pREC_AET_JRNLS';
+    e_epg_id_is_null      EXCEPTION;
+    e_epg_not_exists      EXCEPTION;
+    e_entity_not_in_epg   EXCEPTION;
+    e_wrong_dates      	  EXCEPTION;
+    v_count               NUMBER(1);
+
+BEGIN
+
+    IF p_epg_id IS NULL THEN
+        raise e_epg_id_is_null;
+    END IF;
+
+    IF p_epg_id IS NOT NULL AND p_entity IS NULL THEN
+
+        SELECT count(*) into v_count
+        FROM SLR_ENTITY_PROC_GROUP
+        WHERE EPG_ID=p_epg_id;
+
+        IF v_count = 0 THEN
+            raise e_epg_not_exists;
+        END IF;
+
+    ELSIF p_epg_id IS NOT NULL AND p_entity IS NOT NULL THEN
+
+        SELECT count(*) into v_count
+        FROM SLR_ENTITY_PROC_GROUP
+        WHERE EPG_ID=p_epg_id
+        AND EPG_ENTITY=p_entity;
+
+        IF v_count = 0 THEN
+            raise e_entity_not_in_epg;
+        END IF;
+
+    END IF;
+
+    DELETE FROM SLR_AET_JOURNAL_REC WHERE SAJR_GL_ENTITY = p_entity;
+
+    INSERT INTO SLR_AET_JOURNAL_REC (
+        SAJR_JOURNAL_ID,
+        SAJR_GL_ENTITY,
+        SAJR_GL_ACCOUNT,
+        SAJR_SEGMENT_1,
+        SAJR_SEGMENT_2,
+        SAJR_SEGMENT_3,
+        SAJR_SEGMENT_4,
+        SAJR_SEGMENT_5,
+        SAJR_SEGMENT_6,
+        SAJR_ATTRIBUTE_1,
+        SAJR_ATTRIBUTE_2,
+        SAJR_ATTRIBUTE_3,
+        SAJR_ATTRIBUTE_4,
+        SAJR_ISO_CURRENCY_CODE,
+        SAJR_AE_AMOUNT)
+     SELECT
+        SEQ_SLR_SAJR_JOURNAL_ID.NEXTVAL,
+        A.*
+     FROM
+        (SELECT
+            AE_GL_ENTITY                       AE_GL_ENTITY,
+            AE_GL_ACCOUNT                      AE_GL_ACCOUNT,
+            AE_POSTING_SCHEMA                  AE_POSTING_SCHEMA,
+            AE_GAAP                            AE_GAAP,
+            AE_GL_BOOK                         AE_GL_BOOK,
+            Nvl(AE_GL_INSTR_SUPER_CLASS,'NVS') AE_GL_INSTR_SUPER_CLASS,
+            Nvl(AE_GL_INSTRUMENT_ID,'NVS')     AE_GL_INSTRUMENT_ID,
+            Nvl(AE_GL_PARTY_BUSINESS_ID,'NVS') AE_GL_PARTY_BUSINESS_ID,
+            Nvl(AE_FDR_TRAN_NO,'NVS')          AE_FDR_TRAN_NO,
+            AE_SOURCE_SYSTEM                   AE_SOURCE_SYSTEM,
+            Nvl(AE_GL_PERSON_ID,'NVS')         AE_GL_PERSON_ID,
+            'NVS'                              STRATEGY,
+            AE_ISO_CURRENCY_CODE               AE_ISO_CURRENCY_CODE,
+            sum(ROUND(AE_AMOUNT,3))            AE_AMOUNT
+        FROM
+            FR_ACCOUNTING_EVENT_IMP
+        WHERE
+            AE_EPG_ID = p_epg_id
+            AND AE_SUB_LEDGER_UPD = 'Y'
+            AND AE_GL_ENTITY = NVL(p_entity, ae_gl_entity)
+            AND AE_POSTING_DATE BETWEEN NVL(p_date_from, AE_POSTING_DATE) AND NVL(p_date_to, AE_POSTING_DATE)
+        GROUP BY
+            AE_GL_ENTITY,
+            AE_POSTING_SCHEMA,
+            AE_GAAP,
+            AE_GL_ACCOUNT,
+            AE_GL_BOOK,
+            Nvl(AE_GL_INSTR_SUPER_CLASS,'NVS'),
+            Nvl(AE_GL_INSTRUMENT_ID,'NVS'),
+            Nvl(AE_GL_PARTY_BUSINESS_ID,'NVS'),
+            Nvl(AE_FDR_TRAN_NO,'NVS'),
+            AE_SOURCE_SYSTEM,
+            Nvl(AE_GL_PERSON_ID,'NVS'),
+            'NVS',
+            AE_ISO_CURRENCY_CODE) A;
+
+    MERGE INTO SLR_AET_JOURNAL_REC
+    USING (SELECT
+               JL_ENTITY,
+               JL_ACCOUNT,
+               JL_SEGMENT_1,
+               JL_SEGMENT_2,
+               JL_SEGMENT_3,
+               JL_SEGMENT_4,
+               JL_SEGMENT_5,
+               JL_SEGMENT_6,
+               JL_ATTRIBUTE_1,
+               JL_ATTRIBUTE_2,
+               JL_ATTRIBUTE_3,
+               JL_ATTRIBUTE_4,
+               JL_TRAN_CCY,
+               SUM(ROUND(JL_TRAN_AMOUNT,3)) as SUM_JL_TRAN_AMOUNT
+           FROM (SELECT
+                     JLU_ENTITY      as JL_ENTITY,
+                     JLU_ACCOUNT     as JL_ACCOUNT,
+                     JLU_SEGMENT_1   as JL_SEGMENT_1,
+                     JLU_SEGMENT_2   as JL_SEGMENT_2,
+                     JLU_SEGMENT_3   as JL_SEGMENT_3,
+                     JLU_SEGMENT_4   as JL_SEGMENT_4,
+                     JLU_SEGMENT_5   as JL_SEGMENT_5,
+                     JLU_SEGMENT_6   as JL_SEGMENT_6,
+                     JLU_ATTRIBUTE_1 as JL_ATTRIBUTE_1,
+                     JLU_ATTRIBUTE_2 as JL_ATTRIBUTE_2,
+                     JLU_ATTRIBUTE_3 as JL_ATTRIBUTE_3,
+                     JLU_ATTRIBUTE_4 as JL_ATTRIBUTE_4,
+                     JLU_TRAN_CCY    as JL_TRAN_CCY,
+                     JLU_TRAN_AMOUNT as JL_TRAN_AMOUNT
+                 FROM
+                     SLR_JRNL_LINES_UNPOSTED
+                 WHERE
+                    JLU_EPG_ID = p_epg_id
+                    AND JLU_ATTRIBUTE_2 NOT LIKE 'MADJ%'  --exclude MADJ
+                    AND JLU_ENTITY = NVL(p_entity, JLU_ENTITY)
+                    AND JLU_EFFECTIVE_DATE BETWEEN NVL(p_date_from, JLU_EFFECTIVE_DATE) AND NVL(p_date_to, JLU_EFFECTIVE_DATE)
+         UNION ALL
+         SELECT
+                     JL_ENTITY,
+                     JL_ACCOUNT,
+                     JL_SEGMENT_1,
+                     JL_SEGMENT_2,
+                     JL_SEGMENT_3,
+                     JL_SEGMENT_4,
+                     JL_SEGMENT_5,
+                     JL_SEGMENT_6,
+                     JL_ATTRIBUTE_1,
+                     JL_ATTRIBUTE_2,
+                     JL_ATTRIBUTE_3,
+                     JL_ATTRIBUTE_4,
+                     JL_TRAN_CCY,
+                     JL_TRAN_AMOUNT
+                 FROM
+                     SLR_JRNL_LINES
+                 WHERE
+                     JL_EPG_ID = p_epg_id
+                     AND JL_ATTRIBUTE_2 NOT LIKE 'MADJ%'
+                     AND JL_ENTITY = NVL(p_entity, JL_ENTITY)
+                     AND JL_EFFECTIVE_DATE BETWEEN NVL(p_date_from, JL_EFFECTIVE_DATE) AND NVL(p_date_to, JL_EFFECTIVE_DATE))  --exclude MADJ
+                 GROUP BY
+                     JL_ENTITY,
+                     JL_ACCOUNT,
+                     JL_SEGMENT_1,
+                     JL_SEGMENT_2,
+                     JL_SEGMENT_3,
+                     JL_SEGMENT_4,
+                     JL_SEGMENT_5,
+                     JL_SEGMENT_6,
+                     JL_ATTRIBUTE_1,
+                     JL_ATTRIBUTE_2,
+                     JL_ATTRIBUTE_3,
+                     JL_ATTRIBUTE_4,
+                     JL_TRAN_CCY) JRNLS
+          ON (SAJR_GL_ENTITY            = JRNLS.JL_ENTITY
+          AND SAJR_GL_ACCOUNT           = JRNLS.JL_ACCOUNT
+          AND SAJR_SEGMENT_1            = JRNLS.JL_SEGMENT_1
+          AND SAJR_SEGMENT_2            = JRNLS.JL_SEGMENT_2
+          AND SAJR_SEGMENT_3            = JRNLS.JL_SEGMENT_3
+          AND SAJR_SEGMENT_4            = JRNLS.JL_SEGMENT_4
+          AND SAJR_SEGMENT_5            = JRNLS.JL_SEGMENT_5
+          AND SAJR_SEGMENT_6            = JRNLS.JL_SEGMENT_6
+          AND SAJR_ATTRIBUTE_1          = JRNLS.JL_ATTRIBUTE_1
+          AND SAJR_ATTRIBUTE_2          = JRNLS.JL_ATTRIBUTE_2
+          AND SAJR_ATTRIBUTE_3          = JRNLS.JL_ATTRIBUTE_3
+          AND SAJR_ATTRIBUTE_4          = JRNLS.JL_ATTRIBUTE_4
+          AND SAJR_ISO_CURRENCY_CODE    = JRNLS.JL_TRAN_CCY)
+    WHEN MATCHED THEN
+    UPDATE SET
+        SAJR_JRNL_AMOUNT = SUM_JL_TRAN_AMOUNT,
+        SAJR_RECONCILED  = decode(SAJR_AE_AMOUNT, SUM_JL_TRAN_AMOUNT, 'Y','N')
+    WHEN NOT MATCHED THEN
+    INSERT (
+        SAJR_JOURNAL_ID,
+        SAJR_GL_ENTITY,
+        SAJR_GL_ACCOUNT,
+        SAJR_SEGMENT_1,
+        SAJR_SEGMENT_2,
+        SAJR_SEGMENT_3,
+        SAJR_SEGMENT_4,
+        SAJR_SEGMENT_5,
+        SAJR_SEGMENT_6,
+        SAJR_ATTRIBUTE_1,
+        SAJR_ATTRIBUTE_2,
+        SAJR_ATTRIBUTE_3,
+        SAJR_ATTRIBUTE_4,
+        SAJR_ISO_CURRENCY_CODE,
+        SAJR_JRNL_AMOUNT,
+        SAJR_RECONCILED)
+    VALUES (
+        SEQ_SLR_SAJR_JOURNAL_ID.NEXTVAL,
+        JL_ENTITY,
+        JL_ACCOUNT,
+        JL_SEGMENT_1,
+        JL_SEGMENT_2,
+        JL_SEGMENT_3,
+        JL_SEGMENT_4,
+        JL_SEGMENT_5,
+        JL_SEGMENT_6,
+        JL_ATTRIBUTE_1,
+        JL_ATTRIBUTE_2,
+        JL_ATTRIBUTE_3,
+        JL_ATTRIBUTE_4,
+        JL_TRAN_CCY,
+        SUM_JL_TRAN_AMOUNT,
+        'N');
+
+  COMMIT;
+
+EXCEPTION
+    WHEN e_epg_id_is_null THEN
+        gv_msg := 'EPG_ID must be given.';
+        pr_error(slr_global_pkg.C_MAJERR, gv_msg, slr_global_pkg.C_TECHNICAL, s_proc_name, 'FR_ACCOUNTING_EVENT', null, 'p_epg_id', gs_stage, 'PL/SQL', SQLCODE);
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20002, gv_msg);
+
+    WHEN e_epg_not_exists THEN
+        gv_msg := 'Entity Processing Group '||p_epg_id||' doesn''t exist.';
+        pr_error(slr_global_pkg.C_MAJERR, gv_msg, slr_global_pkg.C_TECHNICAL, s_proc_name, 'FR_ACCOUNTING_EVENT', null, 'p_epg_id', gs_stage, 'PL/SQL', SQLCODE);
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20003, gv_msg);
+
+    WHEN e_entity_not_in_epg THEN
+        gv_msg := 'Entity '||p_entity||' is not in given Entity Processing Group: '||p_epg_id||' ';
+        pr_error(slr_global_pkg.C_MAJERR, gv_msg, slr_global_pkg.C_TECHNICAL, s_proc_name, 'FR_ACCOUNTING_EVENT', null, 'p_entity', gs_stage, 'PL/SQL', SQLCODE);
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20004, gv_msg);
+
+    WHEN OTHERS THEN
+        pr_error(slr_global_pkg.C_MAJERR, 'Failure to reconcile journals: '
+                                ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'FR_ACCOUNTING_EVENT', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pREC_AET_JRNLS: ' || SQLERRM);
+
+END pREC_AET_JRNLS;
+
+-- -----------------------------------------------------------------------
+-- Procedure:       pSLR_INTERNAL_REC
+-- Function:        Calls internal SLR recs for the supplied entity
+-- Note:
+--
+-- BJP 22-AUG-2007 Initial Creation
+-- -----------------------------------------------------------------------
+PROCEDURE pSLR_INTERNAL_REC (p_epg_id IN VARCHAR2,
+                            p_entity IN VARCHAR2 DEFAULT NULL,
+                            p_date_from IN DATE DEFAULT NULL,
+                            p_date_to IN DATE DEFAULT NULL) AS
+
+    s_proc_name         VARCHAR2(50) := 'SLR_CLIENT_PROCEDURES_PKG.pSLR_INTERNAL_REC';
+    lvBusinessDate      DATE;
+    lvPriorBusinessDate DATE;
+    lv_entity SLR_ENTITIES.ENT_ENTITY%TYPE;
+BEGIN
+
+    IF p_date_from IS NULL AND p_date_to IS NULL THEN
+        SELECT EPG_ENTITY INTO lv_entity
+        FROM SLR_ENTITY_PROC_GROUP
+        WHERE EPG_ID = p_epg_id
+            AND ROWNUM = 1;
+
+        SELECT GP_TODAYS_BUS_DATE, GP_YESTERDAY_BUS_DATE
+        INTO lvBusinessDate, lvPriorBusinessDate
+        FROM FR_GLOBAL_PARAMETER
+        LEFT OUTER JOIN FR_LPG_CONFIG
+            ON NVL(LC_LPG_ID, 1) = LPG_ID
+        WHERE NVL(LC_GRP_CODE, lv_entity) = lv_entity
+            AND LC_LPG_ID = LPG_ID;
+    ELSIF p_date_from IS NOT NULL AND p_date_to IS NOT NULL THEN
+        lvPriorBusinessDate := p_date_from;
+        lvBusinessDate := p_date_to;
+    END IF;
+
+    pREC_AET_JRNLS(p_epg_id, p_entity, p_date_from, p_date_to);
+
+    SLR_RECONCILIATION_PKG.pReconcileAccountsMovement(p_epg_id, p_entity, lvPriorBusinessDate, lvBusinessDate);
+
+
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        pr_error(slr_global_pkg.C_MAJERR, 'Failure to run reconciliation, invalid EPG_ID supplied: '
+                                ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITY_PROC_GROUP', null, 'EPG_ID', gs_stage, 'PL/SQL', SQLCODE);
+    WHEN OTHERS THEN
+        pr_error(slr_global_pkg.C_MAJERR, 'Failure to run reconciliation: '
+                                ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pSLR_INTERNAL_REC: ' || SQLERRM);
+
+END pSLR_INTERNAL_REC;
+
+-- -----------------------------------------------------------------------
+-- Procedure:       pROLL_ENTITY_DATE
+-- Function:        Rolls dates as specified for the specified entity
+-- Note:
+--
+-- BJP 22-AUG-2007 Initial Creation
+-- -----------------------------------------------------------------------
+PROCEDURE pROLL_ENTITY_DATE(p_entity in VARCHAR2, p_business_date in DATE DEFAULT NULL, p_update_end_date in CHAR DEFAULT 'Y') AS
+
+    s_proc_name      VARCHAR2(50) := 'SLR_CLIENT_PROCEDURES_PKG.pROLL_ENTITY_DATE ';
+    lvBusinessDate   DATE;
+
+    lvCurrYearFirstBusDate    DATE;
+    lvCleardownYearEndDate    DATE;
+    lvBusinessYear            NUMBER(4,0);
+	e_raise_exception         EXCEPTION;
+
+BEGIN
+
+	BEGIN
+		IF p_business_date IS NULL THEN
+			SELECT GP_TODAYS_BUS_DATE
+            INTO   lvBusinessDate
+            FROM   FR_GLOBAL_PARAMETER,
+                   FR_LPG_CONFIG
+            WHERE  LC_GRP_CODE = p_entity
+            AND    LC_LPG_ID   = LPG_ID;
+        ELSE
+            lvBusinessDate := p_business_date;
+        END IF;
+
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates, unable to get business date: '
+                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+            RAISE e_raise_exception;
+    END;
+
+    SLR_CALENDAR_PKG.pSetEntityBusinessDate(p_entity, lvBusinessDate);
+
+    --find business year
+    BEGIN
+       SELECT EP_BUS_YEAR
+            INTO lvBusinessYear
+            FROM SLR_ENTITY_PERIODS
+            WHERE EP_ENTITY = p_entity
+            AND lvBusinessDate BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
+            AND EP_PERIOD_TYPE != 0;
+
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates, business year not defined: '
+                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+            RAISE e_raise_exception;
+    END;
+
+    BEGIN
+        --find final period end for a given business year (CleardownYearEndDate)
+        SELECT EP_BUS_PERIOD_END
+            INTO lvCleardownYearEndDate
+            FROM SLR_ENTITY_PERIODS
+            WHERE EP_ENTITY = p_entity
+            AND EP_BUS_YEAR = lvBusinessYear
+            AND EP_PERIOD_TYPE = 2;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates, no final period defined for a business year: '
+                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+            RAISE e_raise_exception;
+    END;
+
+    BEGIN
+        --find the begininig of a given business year (CurrYearFirstBusDate)
+        SELECT min(EP_CAL_PERIOD_START)
+            INTO lvCurrYearFirstBusDate
+            FROM SLR_ENTITY_PERIODS
+            WHERE EP_ENTITY = p_entity
+            AND EP_BUS_YEAR = lvBusinessYear;
+
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates, unable to get business date or no final period defined for a business year.'
+                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+            RAISE e_raise_exception;
+    END;
+    /*IF TO_CHAR(lvBusinessDate,'MM') in ('11','12') THEN
+        lvCurrYearFirstBusDate := TO_DATE('01-NOV-' || TO_CHAR(lvBusinessDate,'YYYY'),'DD-MON-YYYY', 'NLS_DATE_LANGUAGE = ENGLISH');
+        lvCleardownYearEndDate := TO_DATE('31-OCT-' || TO_CHAR(TO_NUMBER(TO_CHAR(lvBusinessDate,'YYYY'))+1),'DD-MON-YYYY', 'NLS_DATE_LANGUAGE = ENGLISH');
+    ELSE
+        lvCurrYearFirstBusDate := TO_DATE('01-NOV-' || TO_CHAR(TO_NUMBER(TO_CHAR(lvBusinessDate,'YYYY'))-1),'DD-MON-YYYY', 'NLS_DATE_LANGUAGE = ENGLISH');
+        lvCleardownYearEndDate := TO_DATE('31-OCT-' || TO_CHAR(lvBusinessDate,'YYYY'),'DD-MON-YYYY', 'NLS_DATE_LANGUAGE = ENGLISH');
+    END IF;*/
+
+    --also set these two fields as they are not set by core package as they depend on configuration
+    IF UPPER(p_update_end_date) =  'Y' THEN
+    SLR_CALENDAR_PKG.pSetCleardownYearEndDate(p_entity, lvCleardownYearEndDate);
+    END IF;
+   --SLR_CALENDAR_PKG.pSetCurrYearFirstBusDate(p_entity, lvCurrYearFirstBusDate);
+
+EXCEPTION
+    WHEN TOO_MANY_ROWS THEN
+        pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates, more than one final period declared for business year: '
+                 ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITY_PERIODS', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+    WHEN e_raise_exception THEN
+        null;
+    WHEN OTHERS THEN
+        pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates: '
+                 ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pROLL_ENTITY_DATE: ' || SQLERRM);
+
+END pROLL_ENTITY_DATE;
+
+-- -----------------------------------------------------------------------
+-- Procedure:       pCHECK_JRNL_ERRORS
+-- Function:        Checks for unposted journals
+-- Note:
+--
+-- BJP 22-AUG-2007 Initial Creation
+-- -----------------------------------------------------------------------
+PROCEDURE pCHECK_JRNL_ERRORS(p_entity in VARCHAR2) IS
+  v_count        NUMBER := 0;
+  s_proc_name    VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pCHECK_JRNL_ERRORS';
+
+  e_jrnl_errors  EXCEPTION;
+
+BEGIN
+
+    SELECT COUNT(1)
+    INTO   v_count
+    FROM   slr_jrnl_headers_unposted hdr, slr_entities ent
+    WHERE  hdr.JHU_JRNL_ENTITY = ent.ENT_ENTITY
+    AND    hdr.JHU_JRNL_STATUS in ('E','V','U')
+    AND    hdr.JHU_JRNL_TYPE   not like 'MADJ%'
+    AND    hdr.JHU_JRNL_DATE   >= ent.ENT_BUSINESS_DATE
+    AND    ent.ENT_ENTITY      = p_entity;
+
+  -- If entries exist, then raise unhandled exception.
+  IF v_count > 0 THEN
+    -- Log to log table
+    pr_error(slr_global_pkg.C_MAJERR, 'Error: There are ' || v_count || ' unposted journal headers',
+                            slr_global_pkg.C_SLRFUNC, s_proc_name, 'SLR_JRNL_HEADERS_UNPOSTED', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+
+    RAISE e_jrnl_errors;
+
+  END IF;
+
+END pCHECK_JRNL_ERRORS;
+
+-- -----------------------------------------------------------------------
+-- Procedure:       pUPDATE_NON_WORKING_DAYS
+-- Function:        Update SLR Entity Days and SLR Entity Periods so that
+--                  any changes to working days in the FDR are taken into account
+-- Note:            If a working day was set to be a bank holiday after it
+--                  already has journals posted to it then this would still close
+--                  the day so no journals would be allowed on it
+--
+-- BJP 22-AUG-2007  Initial version
+-- -----------------------------------------------------------------------
+PROCEDURE pUPDATE_NON_WORKING_DAYS
+(
+    p_entity in VARCHAR2
+)
+AS
+
+    s_proc_name       VARCHAR2(50) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_NON_WORKING_DAYS';
+    lvTableName       VARCHAR2(30);
+    lvEntitySet       SLR_ENTITIES.ENT_PERIODS_AND_DAYS_SET%TYPE;
+
+BEGIN
+
+    lvTableName := 'SLR_ENTITIES';
+
+    SELECT ENT_PERIODS_AND_DAYS_SET
+    INTO   lvEntitySet
+    FROM   SLR_ENTITIES
+    WHERE  ENT_ENTITY = p_entity;
+
+    lvTableName := 'SLR_ENTITY_DAYS';
+
+    --Close days marked as Open that have a bank holiday defined in the FDR
+    UPDATE
+        slr_entity_days ed1
+    SET
+        ed_status = 'C'
+    WHERE EXISTS (
+        SELECT 1
+        FROM
+            slr_entity_days ed2 inner join fr_party_legal
+            ON  ed_entity_set     = lvEntitySet
+            AND pl_party_legal_id = p_entity
+            AND ed_status         = 'O'
+                INNER JOIN fr_country
+                ON pl_co_country_resid_id = co_country_id
+                    INNER JOIN fr_calendar
+                    ON co_ca_calendar_name = ca_calendar_name
+                        INNER JOIN fr_holiday_date
+                        ON  hd_ca_calendar_name = ca_calendar_name
+                        AND ed_date             = hd_holiday_date
+                        AND HD_ACTIVE = 'A'
+        WHERE
+            ed1.ed_entity_set = ed2.ed_entity_set
+        AND ed1.ed_date    = ed2.ed_date);
+
+    --Re-open days marked as Closed that do not have a bank holiday defined in the FDR
+    UPDATE
+        slr_entity_days ed1
+    SET
+        ed_status = 'O'
+    WHERE EXISTS (
+        SELECT 1
+        FROM
+            slr_entity_days ed2 inner join fr_party_legal
+            ON  ed_entity_set          = lvEntitySet
+            AND ed_status              = 'C'
+           -- AND to_char(ed_date,'DY')  NOT IN ('SAT','SUN')
+            AND pl_party_legal_id      = p_entity
+                INNER JOIN fr_country
+                ON pl_co_country_resid_id = co_country_id
+                  INNER JOIN fr_calendar
+                   ON co_ca_calendar_name = ca_calendar_name
+				  AND CASE
+                   WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'MON' THEN
+						( SELECT MAX(CAW_MONDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                   WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'TUE' THEN
+                        ( SELECT MAX(CAW_TUESDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                   WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'WED' THEN
+						( SELECT MAX(CAW_WEDNESDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                   WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'THU' THEN
+						( SELECT MAX(CAW_THURSDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                   WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'FRI' THEN
+						( SELECT MAX(CAW_FRIDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                   WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'SAT' THEN
+						( SELECT MAX(CAW_SATURDAY)FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                   WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'SUN' THEN
+						( SELECT MAX(CAW_SUNDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                  END = 1
+                       LEFT OUTER JOIN fr_holiday_date
+                       ON  ca_calendar_name = hd_ca_calendar_name
+                       AND ed_date          = hd_holiday_date
+                       AND HD_ACTIVE = 'A'
+        WHERE
+            hd_ca_calendar_name IS NULL
+        AND ed1.ed_entity_set = ed2.ed_entity_set
+        AND ed1.ed_date    = ed2.ed_date);
+
+    lvTableName := 'SLR_ENTITY_PERIODS';
+
+    --Update first and last business date on all open periods
+    UPDATE
+        slr_entity_periods
+    SET
+        (EP_BUS_PERIOD_START, EP_BUS_PERIOD_END) = (
+            SELECT
+                MIN(ED_DATE),
+                MAX(ED_DATE)
+            FROM
+                slr_entity_days
+            WHERE
+                ED_ENTITY_SET           = lvEntitySet
+            AND ED_STATUS               = 'O'
+            AND ED_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END)
+    WHERE
+        EP_ENTITY       = p_entity
+    AND EP_STATUS       = 'O'
+    AND EP_PERIOD_TYPE != 0
+    AND (EP_BUS_PERIOD_START != (SELECT MIN(ED_DATE)
+                                 FROM   SLR_ENTITY_DAYS
+                                 WHERE  ED_ENTITY_SET           = lvEntitySet
+                                 AND    ED_STATUS               = 'O'
+                                 AND ED_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END)
+         OR
+         EP_BUS_PERIOD_END   != (SELECT MAX(ED_DATE)
+                                 FROM   SLR_ENTITY_DAYS
+                                 WHERE  ED_ENTITY_SET           = lvEntitySet
+                                 AND    ED_STATUS               = 'O'
+                                 AND ED_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END));
+
+    COMMIT;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        pr_error(slr_global_pkg.C_MAJERR, 'Failed to update SLR Non Working Days for entity: '
+                            ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, lvTableName, null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+    WHEN OTHERS THEN
+        pr_error(slr_global_pkg.C_MAJERR, 'Failed to update SLR Non Working Days for entity: '
+                            ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, lvTableName, null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pUPDATE_NON_WORKING_DAYS: ' || SQLERRM);
+
+END pUPDATE_NON_WORKING_DAYS;
+
+---------------------------------------------------------------------------------------------------
+-- Procedure pEntityBusinessDate
+--  Returns Entity Business Date for given Entity Processing Group.
+--  An error is raised when Entities from given EPG don't have the same Business Date.
+---------------------------------------------------------------------------------------------------
+PROCEDURE pEntityBusinessDate
+(
+    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+    p_process_id IN NUMBER,
+    p_business_date OUT DATE
+)
+AS
+    s_proc_name VARCHAR2(65) := 'SLR_CLIENT_PROCEDURES_PKG.pEntityBusinessDate';
+BEGIN
+
+    FOR r IN
+    (
+        SELECT EPG_ID, COUNT(DISTINCT ENT_BUSINESS_DATE)
+        FROM SLR_ENTITY_PROC_GROUP
+        JOIN SLR_ENTITIES
+            ON EPG_ENTITY = ENT_ENTITY
+        WHERE EPG_ID = p_epg_id
+        GROUP BY EPG_ID
+        HAVING COUNT(DISTINCT ENT_BUSINESS_DATE) > 1
+    )
+    LOOP
+        SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, 'SLR_ENTITIES',
+            'Entities from EPG ''' || r.EPG_ID || ''' have different business date',
+            p_process_id,p_epg_id);
+        RAISE e_internal_processing_error; -- raised to stop processing
+    END LOOP;
+
+    BEGIN
+        SELECT ENT_BUSINESS_DATE
+        INTO p_business_date
+        FROM SLR_ENTITIES
+        WHERE ENT_ENTITY =
+        (
+            SELECT EPG_ENTITY
+            FROM SLR_ENTITY_PROC_GROUP
+            WHERE EPG_ID = p_epg_id
+                AND ROWNUM = 1
+        );
+    EXCEPTION
+        WHEN OTHERS THEN
+            SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, 'SLR_ENTITIES',
+                'Can''t find business date for EPG ' || p_epg_id, p_process_id,p_epg_id);
+            SLR_ADMIN_PKG.Error('ERROR: Can''t find business date. ' || SQLERRM);
+            RAISE e_internal_processing_error; -- raised to stop processing
+    END;
+
+END pEntityBusinessDate;
+
+PROCEDURE pRollbackImportExchange
+(
+    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+    p_subpartition_name IN VARCHAR2,
+    p_pm_table_name IN VARCHAR2
+)
+AS
+    lv_sql VARCHAR2(32000);
+BEGIN
+    SLR_ADMIN_PKG.Info('Rollbacking EXCHANGE PARTITION between FR_ACCOUNTING_EVENT and FR_ACCOUNTING_EVENT_IMP');
+
+    lv_sql := '
+        INSERT INTO FDR.FR_ACCOUNTING_EVENT
+
+        SELECT * FROM
+        (
+            SELECT * FROM FR_ACCOUNTING_EVENT_IMP
+            SUBPARTITION (' || p_subpartition_name || ')
+        )
+        UNION ALL
+        (
+            SELECT * FROM ' || p_pm_table_name || '
+        )
+    ';
+    SLR_ADMIN_PKG.Debug('Running SQL for rollback', lv_sql);
+    EXECUTE IMMEDIATE lv_sql;
+    COMMIT;
+
+    lv_sql := 'DELETE FROM FDR.FR_ACCOUNTING_EVENT_IMP SUBPARTITION(' || p_subpartition_name || ')';
+    SLR_ADMIN_PKG.Debug('Running SQL for rollback', lv_sql);
+    EXECUTE IMMEDIATE lv_sql;
+    COMMIT;
+
+    SLR_ADMIN_PKG.Info('Rollback successfully done');
+END;
+
+
+procedure pCustRunBalanceMovementProcess( pProcess     IN slr_process.p_process%TYPE
+                                         ,pEntProcSet  IN slr_bm_entity_processing_set.bmeps_set_id%TYPE
+                                         ,pConfig      IN slr_process_config.pc_config%TYPE
+                                         ,pSource      IN slr_process_source.sps_source_name%TYPE
+                                         ,pBalanceDate IN DATE
+                                         ,pRateSet     IN slr_entity_rates.er_entity_set%TYPE
+                                        )
+AS
+  v_min_date DATE;
+  v_max_date DATE;
+  v_min_period_end DATE;
+  v_max_period_end DATE;
+  v_min_status CHAR(1);
+  v_max_status CHAR(1);
+  pprocessId NUMBER;
+
+  CURSOR cEntityProcGroups(pEntProcSet IN slr_bm_entity_processing_set.bmeps_set_id%TYPE,pConfig IN slr_process_config.pc_config%TYPE,pProcess IN slr_process.p_process%TYPE) IS
+        SELECT DISTINCT JLU_EPG_ID
+        FROM SLR_JRNL_LINES_UNPOSTED
+        WHERE jlu_jrnl_status = 'U'
+        AND JLU_ENTITY IN (SELECT BMEPS_ENTITY FROM SLR_BM_ENTITY_PROCESSING_SET WHERE BMEPS_SET_ID = pEntProcSet)
+        OR JLU_ENTITY IN (SELECT PCD_ENTITY FROM SLR_PROCESS_CONFIG_DETAIL WHERE pcd_pc_config = pConfig AND pcd_pc_P_process = pProcess AND NVL(PCD_ENTITY,'**SOURCE**') <> '**SOURCE**')
+        ;
+
+
+begin
+
+    --logic for previous year balances <begin> --
+    --we need to run processes for the end of the previous year as long as it's not closed, --
+    --in case that there were any backdated transactions that would not be otherwise taken as source for balance movement processes --
+    --and therefore render the end year reports invalid --
+
+    --check if balance date is the same for all entities within processing set--
+    SELECT min(ENT_BUSINESS_DATE), max(ENT_BUSINESS_DATE) into v_min_date, v_max_date FROM
+    slr_entities where ent_entity in (select BMEPS_ENTITY from SLR_BM_ENTITY_PROCESSING_SET where BMEPS_SET_ID = pEntProcSet);
+
+    IF v_min_date <> v_max_date THEN
+        RAISE_APPLICATION_ERROR(-20001,'Entity business date not consistent within entity processing set: '|| NVL(pEntProcSet, ''));
+    end if;
+
+    --last working day of the previous year and period status must be the same for all entities within entity processing set
+    SELECT MIN( b.ep_bus_period_end), MAX( b.ep_bus_period_end), MIN(b.EP_STATUS), MAX(b.EP_STATUS)
+    into v_min_period_end, v_max_period_end, v_min_status, v_max_status FROM
+    SLR_BM_ENTITY_PROCESSING_SET LEFT JOIN slr_entity_periods a ON (a.EP_ENTITY = BMEPS_ENTITY)
+    LEFT JOIN slr_entity_periods b ON (a.EP_ENTITY = b.EP_ENTITY AND a.EP_BUS_YEAR-1 = b.EP_BUS_YEAR )
+    WHERE BMEPS_SET_ID = pEntProcSet
+    AND v_min_date BETWEEN a.ep_cal_period_start AND a.ep_cal_period_end
+    AND b.ep_period_type = 2;
+
+    IF v_min_status <> v_max_status THEN
+        RAISE_APPLICATION_ERROR(-20001,'The status of the last working day of the previous year is not consistent within entity processing set: '|| NVL(pEntProcSet, ''));
+    END IF;
+
+  --if previous business year is still open run process for the end of previous year and post created journals
+    if v_min_status = 'O' then
+        --providing that last working day of the previous year is the same for all entities
+        IF v_min_period_end <> v_max_period_end THEN
+            RAISE_APPLICATION_ERROR(-20001,'Last working day of the previous year is not consistent within entity processing set: '|| NVL(pEntProcSet, ''));
+        end if;
+
+        SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess(pProcess,pEntProcSet,pConfig,pSource,v_min_period_end,pRateSet,pprocessId);
+
+        FOR cEntityProcGroup IN cEntityProcGroups(pEntProcSet,pConfig,pProcess)
+        LOOP
+           SLR_UTILITIES_PKG.pRunValidateAndPost(cEntityProcGroup.JLU_EPG_ID,NULL, pprocessId);
+        END LOOP;
+
+
+    END IF;
+    --logic for previous year balances <end> --
+
+  SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess(pProcess,pEntProcSet,pConfig,pSource,pBalanceDate,pRateSet,pprocessId);
+
+        FOR cEntityProcGroup IN cEntityProcGroups(pEntProcSet,pConfig,pProcess)
+        LOOP
+            SLR_UTILITIES_PKG.pRunValidateAndPost(cEntityProcGroup.JLU_EPG_ID,NULL, pprocessId);
+        END LOOP;
+
+   COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        pr_error(slr_global_pkg.C_MAJERR, null, slr_global_pkg.C_TECHNICAL, 'SLR_CLIENT_PROCEDURES_PKG.pCustRunBalanceMovementProcess', NULL, NULL, NULL, 'SLR', 'PL/SQL', SQLCODE);
+        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pCustRunBalanceMovementProcess: ' || SQLERRM);
+
+END pCustRunBalanceMovementProcess;
+
+-- ----------------------------------------------------------------------------
+-- Procedure:   pSLR_DAYS_PERIODS
+-- Description: calls SLR_ENTITY_DAYS procedure from SLR_UTILITIES package
+--              for every entity set using a loop
+-- Note:        Created by Konrad Bafia
+--
+-- ----------------------------------------------------------------------------
+PROCEDURE pSLR_DAYS_PERIODS
+AS
+    s_proc_name       VARCHAR2(80) := 'SLR_PKG.pSLR_DAYS_PERIODS';
+    v_start_date date := trunc(sysdate-1500);
+    v_end_date date := trunc(sysdate+1500);
+    v_entity_set SLR_ENTITY_DAYS.ED_ENTITY_SET%type;
+    v_entity VARCHAR2(100);
+
+       
+   CURSOR entity_set_cur
+   IS
+      SELECT ES_ENTITY_SET
+      FROM SLR.SLR_ENTITY_SETS
+      ORDER BY ES_ENTITY_SET ASC
+  ;
+  
+   CURSOR entity_cur
+   IS  
+      SELECT ENT_ENTITY
+      FROM SLR.SLR_ENTITIES
+      ORDER BY ENT_ENTITY ASC
+   ;
+BEGIN
+
+/* BEGIN SLR DAY LOAD */
+
+     OPEN entity_set_cur;
+     
+     LOOP
+        FETCH entity_set_cur INTO v_entity_set;
+        EXIT WHEN entity_set_cur%NOTFOUND;
+
+        SLR.SLR_UTILITIES_PKG.PUPDATE_SLR_ENTITY_DAYS(V_ENTITY_SET,V_START_DATE,V_END_DATE,'O','AAH');
+        
+     END LOOP;
+
+     CLOSE entity_set_cur;
+
+/* BEGIN SLR DAY LOAD */
+
+     OPEN entity_cur;
+     
+     LOOP
+        FETCH entity_cur INTO v_entity;
+        EXIT WHEN entity_cur%NOTFOUND;
+        
+        SLR_CALENDAR_PKG.pSetEntityPeriods(v_entity, 1, v_start_date, v_end_date, 'O');
+        
+     END LOOP;
+
+     CLOSE entity_cur;
+
+END pSLR_DAYS_PERIODS;
+    
+    
 END SLR_PKG;
-/

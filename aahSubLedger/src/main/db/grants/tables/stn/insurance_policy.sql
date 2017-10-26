@@ -1,0 +1,1 @@
+grant SELECT on STN.INSURANCE_POLICY to SLR;

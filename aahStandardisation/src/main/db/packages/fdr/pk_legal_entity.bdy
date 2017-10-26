@@ -155,7 +155,7 @@ as
                  , 'ENT_SEGMENT_9_SET'                           ent_segment_9_set
                  , 'ENT_SEGMENT_10_SET'                          ent_segment_10_set
                  , slg.sl_ledger_name                            ent_sl_ledger_name
-                 , 'Y'                                           ent_apply_fx_translation
+                 , 'N'                                           ent_apply_fx_translation
                  , 'Y'                                           ent_adjustment_flag
                  , user                                          ent_created_by
                  , sysdate                                       ent_created_on

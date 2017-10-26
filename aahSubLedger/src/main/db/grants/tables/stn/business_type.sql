@@ -1,0 +1,1 @@
+grant SELECT on STN.BUSINESS_TYPE to SLR;
