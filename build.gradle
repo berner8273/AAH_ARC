@@ -1,6 +1,8 @@
 apply from: 'aptitude.gradle'
 apply from: 'db.gradle'
 
+tasks.getByPath ( ':aah:aahCustom:aahETL:installDbScripts' ).mustRunAfter             ( tasks.getByPath ( ':aah:aahCustom:aahRDR:installDbScripts' ) );
+
 tasks.getByPath ( ':aah:aahCustom:aahRDR:installDbScripts' ).mustRunAfter             ( tasks.getByPath ( ':aah:aahCustom:aahSubLedger:installDbScripts' ) );
 
 tasks.getByPath ( ':aah:aahCustom:aahSubLedger:installDbScripts' ).mustRunAfter       ( tasks.getByPath ( ':aah:aahCustom:aahGui:installDbScripts' ) );
@@ -9,6 +11,9 @@ tasks.getByPath ( ':aah:aahCustom:aahGui:installDbScripts' ).mustRunAfter       
 
 tasks.getByPath ( ':aah:aahCustom:aahStandardisation:installDbScripts' ).mustRunAfter ( tasks.getByPath ( ':aah:aahCustom:aahStepTrigger:installDbScripts' ) );
 
+
+
+tasks.getByPath ( ':aah:aahCustom:aahRDR:uninstallDbScripts' ).mustRunAfter             ( tasks.getByPath ( ':aah:aahCustom:aahETL:uninstallDbScripts' ) );
 
 tasks.getByPath ( ':aah:aahCustom:aahSubLedger:uninstallDbScripts' ).mustRunAfter       ( tasks.getByPath ( ':aah:aahCustom:aahRDR:uninstallDbScripts' ) );
 
@@ -19,10 +24,10 @@ tasks.getByPath ( ':aah:aahCustom:aahStandardisation:uninstallDbScripts' ).mustR
 tasks.getByPath ( ':aah:aahCustom:aahStepTrigger:uninstallDbScripts' ).mustRunAfter     ( tasks.getByPath ( ':aah:aahCustom:aahStandardisation:uninstallDbScripts' ) );
 
 
-task buildDb ( dependsOn : [ ":aah:aahCustom:aahStepTrigger:testDbScriptDeployment" , ":aah:aahCustom:aahStandardisation:testDbScriptDeployment" , ":aah:aahCustom:aahGui:installDbScripts" , ":aah:aahCustom:aahSubLedger:installDbScripts" , ":aah:aahCustom:aahRDR:installDbScripts" ] ) {
+task buildDb ( dependsOn : [ ":aah:aahCustom:aahStepTrigger:testDbScriptDeployment" , ":aah:aahCustom:aahStandardisation:testDbScriptDeployment" , ":aah:aahCustom:aahGui:installDbScripts" , ":aah:aahCustom:aahSubLedger:installDbScripts" , ":aah:aahCustom:aahRDR:installDbScripts" , ":aah:aahCustom:aahETL:installDbScripts" ] ) {
 
 }
 
-task uninstallDbScripts ( dependsOn : [ ":aah:aahCustom:aahStepTrigger:uninstallDbScripts" , ":aah:aahCustom:aahStandardisation:uninstallDbScripts" , ":aah:aahCustom:aahGui:uninstallDbScripts" , ":aah:aahCustom:aahSubLedger:uninstallDbScripts" , ":aah:aahCustom:aahRDR:uninstallDbScripts" ] ) {
+task uninstallDbScripts ( dependsOn : [ ":aah:aahCustom:aahStepTrigger:uninstallDbScripts" , ":aah:aahCustom:aahStandardisation:uninstallDbScripts" , ":aah:aahCustom:aahGui:uninstallDbScripts" , ":aah:aahCustom:aahSubLedger:uninstallDbScripts" , ":aah:aahCustom:aahRDR:uninstallDbScripts" , ":aah:aahCustom:aahETL:uninstallDbScripts" ] ) {
 
 }
