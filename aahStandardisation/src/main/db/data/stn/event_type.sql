@@ -13,7 +13,9 @@ insert into stn.event_type ( event_typ ) values ( 'CNTGY_RESERVE_FX_DIF' );
 insert into stn.event_type ( event_typ ) values ( 'CNTGY_RESERVE_REL' );
 insert into stn.event_type ( event_typ ) values ( 'CNTRPDOTH' );
 insert into stn.event_type ( event_typ ) values ( 'COM' );
-insert into stn.event_type ( event_typ ) values ( 'DAC_CC_CAP' );
+
+insert into stn.event_type ( event_typ ) values ( 'DAC_CC_AMORT' );
+insert into stn.event_type ( event_typ ) values ( 'DAC_CC_CAP_DEF' );
 insert into stn.event_type ( event_typ ) values ( 'DAC_CC_DEF' );
 insert into stn.event_type ( event_typ ) values ( 'DAC_OVH_CAP' );
 insert into stn.event_type ( event_typ ) values ( 'DAC_OVH_DEF' );
@@ -54,12 +56,15 @@ insert into stn.event_type ( event_typ ) values ( 'PC_CASH_OFFSET' );
 insert into stn.event_type ( event_typ ) values ( 'PC_RECEIPT_PAYMENT' );
 insert into stn.event_type ( event_typ ) values ( 'PC_RESERVES' );
 insert into stn.event_type ( event_typ ) values ( 'PGAAP_UPR' );
+insert into stn.event_type ( event_typ ) values ( 'PGAAP_UPR_INITIAL' );
+
 insert into stn.event_type ( event_typ ) values ( 'TSC' );
 insert into stn.event_type ( event_typ ) values ( 'TSC_PAID' );
 insert into stn.event_type ( event_typ ) values ( 'TSC_PAID_CONTRA' );
 insert into stn.event_type ( event_typ ) values ( 'UKRECCC' );
 insert into stn.event_type ( event_typ ) values ( 'UKRECWP' );
 insert into stn.event_type ( event_typ ) values ( 'UPR' );
+insert into stn.event_type ( event_typ ) values ( 'UPR_INITIAL' );
 insert into stn.event_type ( event_typ ) values ( 'WP_ACCRN' );
 insert into stn.event_type ( event_typ ) values ( 'WP_ADJ' );
 insert into stn.event_type ( event_typ ) values ( 'WP_FUT_TO_CUR' );

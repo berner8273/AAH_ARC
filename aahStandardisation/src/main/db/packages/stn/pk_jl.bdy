@@ -126,7 +126,7 @@ and not exists (
                 jl.ACCT_CD AS acct_cd,
                 jl.LEDGER_CD AS ledger_cd,
                 jl.BASIS_CD AS basis_cd,
-                jl.LE_ID AS book_cd,
+                pl_le_id.PL_PARTY_LEGAL_ID AS book_cd,
                 pl_affiliate.PL_PARTY_LEGAL_ID AS affiliate_le_id,
                 jl.ACCIDENT_YR AS accident_yr,
                 jl.UNDERWRITING_YR AS underwriting_yr,
@@ -170,7 +170,7 @@ and not exists (
                 jl_default.SRA_SI_PARTY_SYS_INST_CODE AS sra_si_party_sys_inst_code,
                 jl_default.SRA_SI_STATIC_SYS_INST_CODE AS sra_si_static_sys_inst_code,
                 jl_default.SRA_AE_IPE_INT_ENTITY_CODE AS sra_ae_ipe_int_entity_code,
-                jl_default.SRA_AE_PBU_EXT_PARTY_CODE AS sra_ae_pbu_ext_party_code,
+                NULL AS sra_ae_pbu_ext_party_code,
                 jl_default.SRA_AE_AET_ACC_EVENT_TYPE_CODE AS sra_ae_aet_acc_event_type_code,
                 jl_default.SRA_AE_CU_LOCAL_CURRENCY_CODE AS sra_ae_cu_local_currency_code,
                 jl_default.SRA_AE_CU_BASE_CURRENCY_CODE AS sra_ae_cu_base_currency_code,
@@ -289,7 +289,7 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-ultimate_parent_le_id'
+                    vdl.VALIDATION_CD = 'jl-ultimate_parent_le_id' and  jl.ULTIMATE_PARENT_LE_ID is not null
 and not exists (
                    select
                           null
@@ -323,7 +323,7 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-tax_jurisdiction_cd'
+                    vdl.VALIDATION_CD = 'jl-tax_jurisdiction_cd' and  jl.TAX_JURISDICTION_CD is not null
 and not exists (
                    select
                           null
@@ -357,7 +357,7 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-owner_le_id'
+                    vdl.VALIDATION_CD = 'jl-owner_le_id' and jl.OWNER_LE_ID is not null
 and not exists (
                    select
                           null
@@ -391,7 +391,7 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-chartfield_1'
+                    vdl.VALIDATION_CD = 'jl-chartfield_1' and jl.CHARTFIELD_1 is not null
 and not exists (
                    select
                           null
@@ -426,7 +426,7 @@ and fgc.gc_gct_code_type_id='GL_CHARTFIELD'
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-counterparty_le_id'
+                    vdl.VALIDATION_CD = 'jl-counterparty_le_id' and  jl.COUNTERPARTY_LE_ID is not null
 and not exists (
                    select
                           null
@@ -460,7 +460,7 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-dept_cd'
+                    vdl.VALIDATION_CD = 'jl-dept_cd' and jl.DEPT_CD is not null
 and not exists (
                    select
                           null
@@ -494,7 +494,7 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-policy_id'
+                    vdl.VALIDATION_CD = 'jl-policy_id' and jl.POLICY_ID is not null
 and not exists (
                    select
                           null
@@ -562,14 +562,14 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-affiliate_le_id'
+                    vdl.VALIDATION_CD = 'jl-affiliate_le_id' and jl.AFFILIATE_LE_ID is not null
 and not exists (
                    select
                           null
                      from
                           fdr.fr_party_legal fpl
                     where
-                          fpl.pl_global_id = jl.AFFILIATE_LE_ID
+                          fpl.pl_global_id = jl.AFFILIATE_LE_ID 
                )
             UNION ALL
             SELECT
@@ -630,7 +630,7 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-event_typ'
+                    vdl.VALIDATION_CD = 'jl-event_typ' and jl.EVENT_TYP is not null
 and not exists (
                    select
                           null
