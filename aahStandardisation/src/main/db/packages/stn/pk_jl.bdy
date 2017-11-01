@@ -179,7 +179,7 @@ and not exists (
                 jl_default.SRA_AE_ITC_INST_TYP_CLS_CODE AS sra_ae_itc_inst_typ_cls_code,
                 jl_default.SRA_AE_PE_PERSON_CODE AS sra_ae_pe_person_code,
                 jl_default.SRA_AE_GL_INSTRUMENT_ID AS sra_ae_gl_instrument_id,
-                TO_CHAR(jl.ROW_SID) AS sra_ae_event_audit_id,
+                (MIN(jl.ROW_SID) OVER (PARTITION BY jl.CORRELATION_ID ORDER BY jl.ROW_SID)) AS sra_ae_event_audit_id,
                 'PERC' AS sra_ae_journal_type,
                 TO_CHAR(jl.ROW_SID) AS sra_ae_source_jrnl_id
             FROM
