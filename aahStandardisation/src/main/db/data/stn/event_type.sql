@@ -12,7 +12,7 @@ insert into stn.event_type ( event_typ ) values ( 'CNTGY_RESERVE_ADJUST' );
 insert into stn.event_type ( event_typ ) values ( 'CNTGY_RESERVE_CONTR' );
 insert into stn.event_type ( event_typ ) values ( 'CNTGY_RESERVE_FX_DIF' );
 insert into stn.event_type ( event_typ ) values ( 'CNTGY_RESERVE_REL' );
-insert into stn.event_type ( event_typ ) values ( 'CONV_OPENING_BAL' );
+insert into stn.event_type ( event_typ ) values ( 'CONV_BALANCE' );
 insert into stn.event_type ( event_typ ) values ( 'DAC_CC_AMORT' );
 insert into stn.event_type ( event_typ ) values ( 'DAC_CC_CAP_DEF' );
 insert into stn.event_type ( event_typ ) values ( 'DAC_CC_ELIM' );
