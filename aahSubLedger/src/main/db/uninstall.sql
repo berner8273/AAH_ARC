@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
-whenever sqlerror exit failure
+--whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -30,6 +30,8 @@ delete from fdr.fr_gaap;
 delete from fdr.fr_posting_schema;
 delete from fdr.fr_lpg_config;
 delete from fdr.fr_account_lookup_param;
+delete from fdr.fr_account_lookup;
+delete from fdr.fr_posting_driver;
 delete from fdr.fr_financial_amount;
 
 conn ~slr_logon

@@ -38,7 +38,8 @@ insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id f
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPC_UPR_INITIAL'  ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_AR'           ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_PGAAP_UPR_CH' ) ); 
-insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_PGAAP_UPR_IN' ) ); 
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_PGAAP_UPR_IN' ) );  
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_UPR'          ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_UPR_CHANGE'   ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_UPR_INITIAL'  ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_ACC'          ) );

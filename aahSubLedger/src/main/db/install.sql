@@ -34,6 +34,8 @@ delete from fdr.fr_account_lookup_param;
 @@data/fdr/fr_posting_schema.sql
 @@data/fdr/fr_account_lookup_param.sql
 @@data/fdr/fr_financial_amount.sql
+@@data/fdr/fr_posting_driver.sql
+@@data/fdr/fr_account_lookup.sql
 
 conn ~slr_logon
 

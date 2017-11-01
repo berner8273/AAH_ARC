@@ -139,6 +139,8 @@ drop table stn.execution_type;
 drop table stn.policy_premium_type;
 drop table stn.cession_event;
 drop table stn.business_type;
+drop table stn.posting_amount_derivation;
+drop table stn.posting_amount_derivation_type;
 drop table stn.posting_method_ledger;
 drop table stn.posting_method_derivation_et;
 drop table stn.posting_method_derivation_ic;
