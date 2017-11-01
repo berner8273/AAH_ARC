@@ -35,5 +35,5 @@ insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_orde
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'maha02_adjustment_load'          	, 1 , 'FDR' , 1 , 'FDR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'roll_date'                       	, 1 , 'FDR' , 1 , 'FDR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'autosubmit_transactions-utilities' , 1 , 'GUI' , 1 , 'GUI' , 'R' , 'aah' );
-insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'check_resubmitted_erros-utilities' , 1 , 'GUI' , 1 , 'GUI' , 'R' , 'aah' );
+insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'check_resubmitted_errors-utilities' , 1 , 'GUI' , 1 , 'GUI' , 'R' , 'aah' );
 commit;
