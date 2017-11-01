@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
-whenever sqlerror exit failure
+--whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -15,7 +15,7 @@ define sys_user     = @sysUsername@
 define sys_password = @sysPassword@
 define sys_logon    = ~sys_user/~sys_password@~tns_alias
 
-conn ~sys_logon
+conn ~sys_logon as sysdba
 
 drop role aah_load;
 drop user aah_ssis;

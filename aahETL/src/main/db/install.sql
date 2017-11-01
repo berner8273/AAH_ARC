@@ -15,7 +15,7 @@ define sys_user     = @sysUsername@
 define sys_password = @sysPassword@
 define sys_logon    = ~sys_user/~sys_password@~tns_alias
 
-conn ~sys_logon
+conn ~sys_logon as sysdba
 
 @@roles/aah_load.sql
 @@users/aah_ssis.sql
