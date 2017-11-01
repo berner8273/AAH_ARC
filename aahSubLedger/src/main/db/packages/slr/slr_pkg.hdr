@@ -1,4 +1,4 @@
-create or replace PACKAGE  SLR.SLR_PKG AS
+create or replace PACKAGE slr.slr_pkg AS
 
 PROCEDURE pPROCESS_SLR
 (

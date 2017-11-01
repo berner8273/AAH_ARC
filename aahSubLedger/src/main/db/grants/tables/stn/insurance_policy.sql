@@ -1,1 +1,1 @@
-grant SELECT on STN.INSURANCE_POLICY to SLR;
+grant SELECT on stn.insurance_policy to slr;

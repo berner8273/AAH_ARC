@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY     SLR_PKG AS
+create or replace PACKAGE BODY slr.slr_pkg AS
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
@@ -410,26 +410,26 @@ BEGIN
         JOIN SLR_ENTITIES
             ON ENT_ENTITY = AE_GL_ENTITY
         JOIN SLR_FAK_COMBINATIONS
-            ON AE_DIMENSION_11 = FC_SEGMENT_6
+            ON NVL(AE_DIMENSION_11,''NVS'') = FC_SEGMENT_6
             AND AE_GL_ACCOUNT = FC_ACCOUNT 
             AND AE_ISO_CURRENCY_CODE = FC_CCY
             AND AE_EPG_ID = FC_EPG_ID 
             AND AE_GL_ENTITY = FC_ENTITY
             AND AE_POSTING_SCHEMA = FC_SEGMENT_1 
             AND AE_GAAP = FC_SEGMENT_2
-            AND AE_DIMENSION_2 = FC_SEGMENT_3 
-            AND AE_DIMENSION_4 = FC_SEGMENT_4
-            AND AE_DIMENSION_1 = FC_SEGMENT_5
-            AND AE_DIMENSION_12 = FC_SEGMENT_7 
-            AND AE_DIMENSION_7 = FC_SEGMENT_8
+            AND NVL(AE_DIMENSION_2,''NVS'') = FC_SEGMENT_3 
+            AND NVL(AE_DIMENSION_4,''NVS'') = FC_SEGMENT_4
+            AND NVL(AE_DIMENSION_1,''NVS'') = FC_SEGMENT_5
+            AND NVL(AE_DIMENSION_12,''NVS'') = FC_SEGMENT_7 
+            AND NVL(AE_DIMENSION_7,''NVS'') = FC_SEGMENT_8
             AND ''NVS'' = FC_SEGMENT_9 
             AND ''NVS'' = FC_SEGMENT_10
         JOIN SLR_EBA_COMBINATIONS
-            ON AE_DIMENSION_8 = EC_ATTRIBUTE_1 
+            ON NVL(AE_DIMENSION_8,''NVS'') = EC_ATTRIBUTE_1 
             AND EC_FAK_ID = FC_FAK_ID
-            AND AE_DIMENSION_9 = EC_ATTRIBUTE_2 
-            AND AE_DIMENSION_14 = EC_ATTRIBUTE_3
-            AND AE_CLIENT_SPARE_ID4 = EC_ATTRIBUTE_4
+            AND NVL(AE_DIMENSION_9,''NVS'') = EC_ATTRIBUTE_2 
+            AND NVL(AE_DIMENSION_14,''NVS'') = EC_ATTRIBUTE_3
+            AND NVL(AE_CLIENT_SPARE_ID4,''NVS'') = EC_ATTRIBUTE_4
             AND ''NVS'' = EC_ATTRIBUTE_5
             AND AE_EPG_ID = EC_EPG_ID
         WHERE AE_EPG_ID = ''' || p_entity_proc_group || '''
@@ -438,7 +438,7 @@ BEGIN
     SLR_ADMIN_PKG.Debug('Importing AE', lv_sql);
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
 
-    --SLR_ADMIN_PKG.Debug('PARAM VALUES FOR p_process_id, lv_business_date, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date', p_process_id||'~'||lv_business_date||'~'||lv_user||'~'||lv_gp_todays_bus_date||'~'||lv_user||'~'||lv_gp_todays_bus_date||'~'||lv_business_date);
+    SLR_ADMIN_PKG.Debug('PARAM VALUES FOR p_process_id, lv_business_date, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date', p_process_id||'~'||lv_business_date||'~'||lv_user||'~'||lv_gp_todays_bus_date||'~'||lv_user||'~'||lv_gp_todays_bus_date||'~'||lv_business_date);
     
     EXECUTE IMMEDIATE lv_sql USING p_process_id, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date;
 
@@ -865,12 +865,12 @@ BEGIN
             AE_ISO_CURRENCY_CODE,
             AE_POSTING_SCHEMA,
             AE_GAAP,
-            AE_DIMENSION_2,
-            AE_DIMENSION_4,
-            AE_DIMENSION_1,
-            AE_DIMENSION_11,
-            AE_DIMENSION_12,
-            AE_DIMENSION_7,
+            NVL(AE_DIMENSION_2,''NVS''),
+            NVL(AE_DIMENSION_4,''NVS''),
+            NVL(AE_DIMENSION_1,''NVS''),
+            NVL(AE_DIMENSION_11,''NVS''),
+            NVL(AE_DIMENSION_12,''NVS''),
+            NVL(AE_DIMENSION_7,''NVS''),
             ''NVS'',
             ''NVS'',
             SEQ_SLR_FAK_COMBO_ID.NEXTVAL
@@ -911,12 +911,12 @@ BEGIN
                 AND AE_GL_ENTITY = FC_ENTITY
                 AND AE_POSTING_SCHEMA = FC_SEGMENT_1 
                 AND AE_GAAP = FC_SEGMENT_2
-                AND AE_DIMENSION_2 = FC_SEGMENT_3 
-                AND AE_DIMENSION_4 = FC_SEGMENT_4
-                AND AE_DIMENSION_1 = FC_SEGMENT_5 
-                AND AE_DIMENSION_11 = FC_SEGMENT_6
-                AND AE_DIMENSION_12 = FC_SEGMENT_7 
-                AND AE_DIMENSION_7 = FC_SEGMENT_8
+                AND NVL(AE_DIMENSION_2,''NVS'') = FC_SEGMENT_3 
+                AND NVL(AE_DIMENSION_4,''NVS'') = FC_SEGMENT_4
+                AND NVL(AE_DIMENSION_1,''NVS'') = FC_SEGMENT_5 
+                AND NVL(AE_DIMENSION_11,''NVS'') = FC_SEGMENT_6
+                AND NVL(AE_DIMENSION_12,''NVS'') = FC_SEGMENT_7 
+                AND NVL(AE_DIMENSION_7,''NVS'') = FC_SEGMENT_8
                 AND ''NVS'' = FC_SEGMENT_9 
                 AND ''NVS'' = FC_SEGMENT_10
             WHERE AE_EPG_ID = ''' || p_epg_id || '''
@@ -936,10 +936,10 @@ BEGIN
             AE_EPG_ID,
             FC_FAK_ID,
             SEQ_EBA_COMBO_ID.NEXTVAL,
-            AE_DIMENSION_8, 
-            AE_DIMENSION_9, 
-            AE_DIMENSION_14, 
-            AE_CLIENT_SPARE_ID4,
+            NVL(AE_DIMENSION_8,''NVS''), 
+            NVL(AE_DIMENSION_9,''NVS''), 
+            NVL(AE_DIMENSION_14,''NVS''), 
+            NVL(AE_CLIENT_SPARE_ID4,''NVS''),
             ''NVS''
         FROM ROWS_TO_INSERT
     ';

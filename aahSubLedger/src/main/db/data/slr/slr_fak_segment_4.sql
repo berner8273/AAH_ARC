@@ -17,3 +17,4 @@ INSERT INTO slr.slr_fak_segment_4 (
             TRUNC(SYSDATE)
       FROM  dual
 ;
+commit;

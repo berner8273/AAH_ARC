@@ -1,1 +1,1 @@
-grant SELECT on STN.BUSINESS_TYPE to SLR;
+grant SELECT on stn.business_type to slr;
