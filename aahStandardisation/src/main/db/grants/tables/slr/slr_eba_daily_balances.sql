@@ -1,0 +1,1 @@
+grant select on slr.slr_eba_daily_balances to stn;

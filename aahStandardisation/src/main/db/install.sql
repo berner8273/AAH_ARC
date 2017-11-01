@@ -30,6 +30,9 @@ define slr_logon    = ~slr_user/~slr_password@~tns_alias
 conn ~slr_logon
 
 @@grants/tables/slr/slr_entity_periods.sql
+@@grants/tables/slr/slr_eba_combinations.sql
+@@grants/tables/slr/slr_fak_combinations.sql
+@@grants/tables/slr/slr_eba_daily_balances.sql
 
 conn ~gui_logon
 
@@ -65,12 +68,15 @@ conn ~fdr_logon
 @@data/fdr/fr_instrument_type.sql
 @@data/fdr/fr_instrument.sql
 @@grants/tables/fdr/fr_acc_event_type.sql
+@@grants/tables/fdr/fr_account_lookup.sql
 @@grants/tables/fdr/fr_fx_rate.sql
 @@grants/tables/fdr/fr_gaap.sql
 @@grants/tables/fdr/fr_general_codes.sql
 @@grants/tables/fdr/fr_general_code_types.sql
 @@grants/tables/fdr/fr_general_lookup.sql
+@@grants/tables/fdr/fr_gl_account.sql
 @@grants/tables/fdr/fr_party_legal.sql
+@@grants/tables/fdr/fr_posting_driver.sql
 @@grants/tables/fdr/fr_posting_schema.sql
 @@grants/tables/fdr/fr_stan_raw_acc_event.sql
 @@grants/tables/fdr/fr_stan_raw_general_codes.sql
@@ -142,8 +148,10 @@ conn ~stn_logon
 @@tables/stn/posting_financial_calc.sql
 @@tables/stn/posting_ledger.sql
 @@tables/stn/posting_method.sql
+@@tables/stn/posting_method_derivation_et.sql
 @@tables/stn/posting_method_derivation_ic.sql
 @@tables/stn/posting_method_derivation_le.sql
+@@tables/stn/posting_method_derivation_link.sql
 @@tables/stn/posting_method_derivation_mtm.sql
 @@tables/stn/posting_method_ledger.sql
 @@tables/stn/process_code_module.sql
@@ -180,7 +188,9 @@ conn ~stn_logon
 @@views/stn/row_val_error_log_default.sql
 @@views/stn/set_val_error_log_default.sql
 @@views/stn/validation_detail.sql
---@@views/stn/cession_event_posting.sql
+@@views/stn/vie_event_cd.sql
+@@views/stn/cession_event_posting.sql
+@@views/stn/ce_default.sql
 @@views/stn/gce_default.sql
 @@views/stn/user_default.sql
 @@views/stn/hopper_cession_event.sql
@@ -191,6 +201,7 @@ conn ~stn_logon
 @@views/stn/pol_default.sql
 @@views/stn/accounting_event_default.sql
 @@views/stn/hopper_accounting_event.sql
+@@views/stn/posting_account_derivation.sql
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
@@ -254,8 +265,10 @@ conn ~stn_logon
 @@data/stn/posting_financial_calc.sql
 @@data/stn/posting_ledger.sql
 @@data/stn/posting_method.sql
+@@data/stn/posting_method_derivation_et.sql
 @@data/stn/posting_method_derivation_ic.sql
 @@data/stn/posting_method_derivation_le.sql
+@@data/stn/posting_method_derivation_link.sql
 @@data/stn/posting_method_derivation_mtm.sql
 @@data/stn/posting_method_ledger.sql
 @@data/stn/vie_posting_method_ledger.sql
@@ -290,5 +303,7 @@ conn ~stn_logon
 @@packages/stn/pk_pol.bdy
 @@packages/stn/pk_jl.hdr
 @@packages/stn/pk_jl.bdy
+@@packages/stn/pk_cev.hdr
+@@packages/stn/pk_cev.bdy
 
 exit

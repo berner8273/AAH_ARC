@@ -1,0 +1,2 @@
+alter table stn.posting_method_derivation_link add constraint fk_psmdm_psmdl1  foreign key ( psm_mtm_row_sid_1 )  references stn.posting_method_derivation_mtm ( row_sid );
+alter table stn.posting_method_derivation_link add constraint fk_psmdm_psmdl2  foreign key ( psm_mtm_row_sid_2 )  references stn.posting_method_derivation_mtm ( row_sid );

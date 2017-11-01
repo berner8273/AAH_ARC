@@ -53,7 +53,10 @@ as
           fsra.message_id                       message_id,
           fsra.lpg_id                           lpg_id,
           fsra.sra_ae_posting_date              sra_ae_posting_date,
-          fsra.sra_ae_instr_type_map_code       sra_ae_instr_type_map_code
+          fsra.sra_ae_instr_type_map_code       sra_ae_instr_type_map_code,
+          fsra.sra_ae_source_jrnl_id						sra_ae_source_jrnl_id,
+          fsra.sra_ae_event_audit_id						sra_ae_event_audit_id,
+          fsra.sra_ae_journal_type							sra_ae_journal_type          
      from fdr.fr_stan_raw_adjustment fsra
   with
        check option
