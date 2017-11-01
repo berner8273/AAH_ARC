@@ -1,5 +1,6 @@
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'MTM'              , 'Mark-to-market method' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'NON_MTM'          , 'Non mark-to-market method' );
+insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'NON_MTM_PLUS'     , 'Non mark-to-market plus method' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'STAT_ONLY'        , 'STAT only postings' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'GAAP_ONLY'        , 'GAAP only postings' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'GAAP_TO_CORE'     , 'Post GAAP amounts to CORE ledger' );
