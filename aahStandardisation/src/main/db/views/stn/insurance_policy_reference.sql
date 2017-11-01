@@ -1,3 +1,5 @@
+
+
 create or replace view stn.insurance_policy_reference
 as
 select
@@ -57,4 +59,6 @@ select
        fdr.fr_instr_insure_extend fiie on fiie.iie_instrument_id = fi.i_instrument_id
   join
        fdr.fr_trade               ft   on ft.t_i_instrument_id   = fi.i_instrument_id
+ where
+       ft.t_fdr_ver_no = (select max(ft1.t_fdr_ver_no) from fdr.fr_trade ft1 where ft1.t_source_tran_no = ft.t_source_tran_no)
      ;

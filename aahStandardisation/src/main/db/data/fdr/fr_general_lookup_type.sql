@@ -18,4 +18,5 @@ insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_EVENT'         , 'Accounting event hierarchy' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'LEGAL_ENTITY_ALIAS'       , 'Legal entity code and description aliases for RDR' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'JOURNAL_LINE_DEFAULT'     , 'Default values used in the journal line standardisation process' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'CE_DEFAULT'               , 'Default values used in the cession event standardisation process' );
 commit;

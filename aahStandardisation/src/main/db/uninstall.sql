@@ -60,6 +60,8 @@ drop package body stn.pk_acc_event;
 drop package      stn.pk_acc_event;
 drop package body stn.pk_jl;
 drop package      stn.pk_jl;
+drop package body stn.pk_cev;
+drop package      stn.pk_cev;
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -72,7 +74,10 @@ drop view  stn.gce_default;
 drop view  stn.user_default;
 drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
---drop view  stn.cession_event_posting;
+drop view  stn.posting_account_derivation;
+drop view  stn.ce_default;
+drop view  stn.cession_event_posting;
+drop view  stn.vie_event_cd;
 drop view  stn.hopper_gl_combo_edit_gc;
 drop view  stn.hopper_gl_combo_edit_gl;
 drop view  stn.hopper_tax_jurisdiction;
@@ -135,8 +140,10 @@ drop table stn.policy_premium_type;
 drop table stn.cession_event;
 drop table stn.business_type;
 drop table stn.posting_method_ledger;
+drop table stn.posting_method_derivation_et;
 drop table stn.posting_method_derivation_ic;
 drop table stn.posting_method_derivation_le;
+drop table stn.posting_method_derivation_link;
 drop table stn.posting_method_derivation_mtm;
 drop table stn.posting_accounting_basis;
 drop table stn.posting_accounting_basis_type;
@@ -221,9 +228,11 @@ drop index fbi_fsrohs_message_id;
 drop index fbi_fsrpl_message_id;
 
 revoke select , insert , update          on fdr.fr_acc_event_type            from stn;
+revoke select                            on fdr.fr_account_lookup            from stn;
 revoke select ,                   delete on fdr.fr_fx_rate                   from stn;
 revoke select                            on fdr.fr_gaap                      from stn;
 revoke select ,          update          on fdr.fr_general_lookup            from stn;
+revoke select                            on fdr.fr_gl_account                from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_acc_event        from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_general_codes    from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_general_lookup   from stn;
@@ -231,6 +240,7 @@ revoke select                            on fdr.fr_internal_proc_entity_type fro
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_node    from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_struc   from stn;
 revoke select                            on fdr.fr_party_legal               from stn;
+revoke select                            on fdr.fr_posting_driver            from stn;
 revoke select , insert , update          on fdr.fr_posting_schema            from stn;
 revoke select , insert , update          on fdr.fr_general_code_types        from stn;
 revoke select ,          update          on fdr.fr_general_codes             from stn;
@@ -257,5 +267,8 @@ revoke select                            on gui.t_ui_roles                   fro
 conn ~slr_logon
 
 revoke select                            on slr.slr_entity_periods           from stn;
+revoke select                            on slr.slr_eba_combinations         from stn;
+revoke select                            on slr.slr_fak_combinations         from stn;
+revoke select                            on slr.slr_eba_daily_balances       from stn;
 
 exit
