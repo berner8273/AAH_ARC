@@ -1,3 +1,5 @@
+
+
 create or replace view stn.cession_event_posting
 as
 with
@@ -38,6 +40,7 @@ with
               , accounting_dt
               , event_typ
               , event_typ_id
+              , business_event_typ
               , policy_id
               , stream_id
               , parent_stream_id
@@ -100,6 +103,7 @@ with
                                then etout.event_typ_id
                                else et.event_typ_id
                            end event_typ_id
+                         , cev.business_event_typ
                          , ce_data.policy_id
                          , cev.stream_id
                          , ce_data.parent_stream_id
@@ -248,6 +252,7 @@ with
               , cev_data.execution_typ
               , cev_data.policy_typ
               , et.event_typ
+              , cev_data.business_event_typ
               , vle.vie_le_cd                     business_unit
               , null                              affiliate
               , pldgr.ledger_cd
@@ -319,6 +324,7 @@ with
               , abasis.basis_cd
               , pldgr.ledger_cd
               , cev_data.event_typ
+              , cev_data.business_event_typ
               , cev_data.is_mark_to_market
               , cev_data.vie_cd
               , cev_data.premium_typ
@@ -434,6 +440,7 @@ with
               , abasis.basis_cd
               , pldgr.ledger_cd
               , cev_data.event_typ
+              , cev_data.business_event_typ
               , cev_data.is_mark_to_market
               , cev_data.vie_cd
               , cev_data.premium_typ
@@ -500,6 +507,7 @@ with
                     )
                     , cev_data.event_typ
                 ) event_typ
+              , cev_data.business_event_typ
               , cev_data.is_mark_to_market
               , cev_data.vie_cd
               , case
@@ -594,6 +602,7 @@ with
               , basis_cd
               , ledger_cd
               , event_typ
+              , business_event_typ
               , is_mark_to_market
               , vie_cd
               , premium_typ
@@ -654,6 +663,7 @@ with
                             , basis_cd
                             , ledger_cd
                             , event_typ
+                            , business_event_typ
                             , is_mark_to_market
                             , vie_cd
                             , premium_typ
@@ -696,6 +706,7 @@ with
                             , basis_cd
                             , ledger_cd
                             , event_typ
+                            , business_event_typ
                             , is_mark_to_market
                             , vie_cd
                             , premium_typ
@@ -738,6 +749,7 @@ with
                             , basis_cd
                             , ledger_cd
                             , event_typ
+                            , business_event_typ
                             , is_mark_to_market
                             , vie_cd
                             , premium_typ
@@ -783,6 +795,7 @@ with
               , non_intercompany_data.basis_typ
               , pldgr.ledger_cd
               , non_intercompany_data.event_typ
+              , non_intercompany_data.business_event_typ
               , non_intercompany_data.is_mark_to_market
               , non_intercompany_data.vie_cd
               , non_intercompany_data.premium_typ
@@ -865,6 +878,7 @@ with
               , basis_typ
               , ledger_cd
               , event_typ
+              , business_event_typ
               , is_mark_to_market
               , vie_cd
               , premium_typ
@@ -914,6 +928,7 @@ with
                          , intercompany_data.basis_typ
                          , intercompany_data.ledger_cd
                          , intercompany_data.event_typ
+                         , intercompany_data.business_event_typ
                          , intercompany_data.is_mark_to_market
                          , intercompany_data.vie_cd
                          , intercompany_data.premium_typ
@@ -1014,6 +1029,7 @@ with
                   , execution_typ
                   , policy_typ
                   , event_typ
+                  , business_event_typ
                   , business_unit
                   , affiliate
                   , ledger_cd
@@ -1047,6 +1063,7 @@ with
                   , execution_typ
                   , policy_typ
                   , event_typ
+                  , business_event_typ
                   , business_unit
                   , affiliate
                   , ledger_cd
@@ -1080,6 +1097,7 @@ with
                   , execution_typ
                   , policy_typ
                   , event_typ
+                  , business_event_typ
                   , business_unit
                   , affiliate
                   , ledger_cd
