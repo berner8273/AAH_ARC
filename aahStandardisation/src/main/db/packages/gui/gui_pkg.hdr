@@ -1,0 +1,13 @@
+CREATE OR REPLACE package GUI.gui_pkg
+    as
+        procedure pk_auto_resub
+            (
+                lpg in number,
+                increment_retries in char
+            );
+        procedure pk_check_resub
+            (
+                lpg in number
+            );
+            end gui_pkg;
+/
