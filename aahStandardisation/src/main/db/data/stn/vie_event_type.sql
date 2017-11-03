@@ -1,7 +1,10 @@
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECC_AR'           ) );  
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECC_DAC'          ) );  
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECD_ACC'          ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECD_AR'           ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECD_DAC'          ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_ACC'          ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_AR'           ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_CC'           ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_DAC'          ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_DEF'          ) );
@@ -21,6 +24,7 @@ insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id f
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIELF_CASE'         ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIELF_CNLM'         ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIELF_CNPL'         ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIELF_CNSS'         ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIELF_LAE'          ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIELF_LAES'         ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIELF_LMI'          ) );

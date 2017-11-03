@@ -79,7 +79,8 @@ and not exists (
                 (SELECT
                     ae.EVENT_TYP AS EVENT_TYP,
                     ae.EVENT_TYP_DESCR AS EVENT_TYP_DESCR,
-                    aed.ACTIVE_FLAG AS ACTIVE_FLAG
+                    aed.ACTIVE_FLAG AS ACTIVE_FLAG,
+                    aed.SYSTEM_INSTANCE AS SYSTEM_INSTANCE
                 FROM
                     ACCOUNTING_EVENT ae
                     INNER JOIN IDENTIFIED_RECORD idr ON ae.ROW_SID = idr.ROW_SID
@@ -92,10 +93,27 @@ and not exists (
                     AET_ACC_EVENT_TYPE_NAME = stn_accounting_event.EVENT_TYP_DESCR
             WHEN NOT MATCHED THEN
                 INSERT
-                    (AET_ACC_EVENT_TYPE_ID, AET_ACC_EVENT_TYPE_NAME, AET_ACTIVE, AET_INPUT_BY, AET_INPUT_TIME)
+                    (AET_ACC_EVENT_TYPE_ID, AET_ACC_EVENT_TYPE_NAME, AET_ACTIVE, AET_INPUT_BY, AET_INPUT_TIME, AET_SI_SYS_INST_ID)
                     VALUES
-                    (stn_accounting_event.EVENT_TYP, stn_accounting_event.EVENT_TYP_DESCR, stn_accounting_event.ACTIVE_FLAG, USER, CURRENT_DATE);
+                    (stn_accounting_event.EVENT_TYP, stn_accounting_event.EVENT_TYP_DESCR, stn_accounting_event.ACTIVE_FLAG, USER, CURRENT_DATE, stn_accounting_event.SYSTEM_INSTANCE);
         p_no_acc_event_updated := SQL%ROWCOUNT;
+        INSERT INTO event_type
+            (event_typ)
+            SELECT
+                ae.EVENT_TYP AS event_typ
+            FROM
+                ACCOUNTING_EVENT ae
+                INNER JOIN IDENTIFIED_RECORD idr ON ae.ROW_SID = idr.ROW_SID
+            WHERE
+                    ae.EVENT_STATUS = 'V'
+              and not exists (
+                                 select
+                                        null
+                                   from
+                                        stn.event_type et
+                                  where
+                                        et.event_typ = ae.EVENT_TYP
+                             );
         INSERT INTO HOPPER_ACCOUNTING_EVENT
             (LPG_ID, MESSAGE_ID, PROCESS_ID, FEED_TYP, EFFECTIVE_FROM, EFFECTIVE_TO, EVENT_TYP, EVENT_TYP_DESCR, BUSINESS_EVENT_TYP, BUSINESS_EVENT_TYP_DESCR, EVENT_SUBGRP, EVENT_SUBGRP_DESCR, EVENT_GRP, EVENT_GRP_DESCR, EVENT_CLASS, EVENT_CLASS_DESCR, EVENT_TYP_STS)
             SELECT
