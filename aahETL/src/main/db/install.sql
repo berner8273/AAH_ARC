@@ -20,4 +20,4 @@ conn ~sys_logon as sysdba
 @@roles/aah_load.sql
 @@users/aah_ssis.sql
 
-exit
+exit 
