@@ -75,6 +75,7 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'INSTRUMENT_TYPE'                , 'INSURANCE_POLICY' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'EVENT_CODE'                     , 'IN_POLCY' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'ACCOUNTING_EVENT_DEFAULT' , 'ACTIVE_FLAG'                    , 'A' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'ACCOUNTING_EVENT_DEFAULT' , 'SYSTEM_INSTANCE'                , 'Client Static' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'JOURNAL_LINE_DEFAULT'     , 'SRA_AE_SOURCE_SYSTEM'           , 'PRE_ACCOUNTED_FEED' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'JOURNAL_LINE_DEFAULT'     , 'SRA_AE_ITSC_INST_TYP_SCLSS_CD'  , 'INSURANCE_POLICY' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'JOURNAL_LINE_DEFAULT'     , 'SRA_SI_ACCOUNT_SYS_INST_CODE'   , 'Client Static' );
@@ -92,5 +93,11 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'JOURNAL_LINE_DEFAULT'     , 'SRA_AE_GL_INSTRUMENT_ID'        , '1' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'JOURNAL_LINE_DEFAULT'     , 'SRA_AE_INSTR_TYPE_MAP_CODE'     , 'T' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'JOURNAL_LINE_DEFAULT'     , 'SRA_AE_PBU_EXT_PARTY_CODE'      , '5' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'CE_DEFAULT'               , 'SYSTEM_INSTANCE'                , 'Client Static' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'CE_DEFAULT'               , 'SRAE_GL_PERSON_CODE'            , 'DEFAULT' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'CE_DEFAULT'               , 'SRAE_SOURCE_SYSTEM'             , 'DEFAULT' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'CE_DEFAULT'               , 'SRAE_INSTR_SUPER_CLASS'         , 'INSURANCE_POLICY' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'CE_DEFAULT'               , 'SRAE_INSTRUMENT_CODE'           , 'INSURANCE_POLICY' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'CE_DEFAULT'               , 'TAX_JURISDICTION'               , 'US' );
 
 commit;

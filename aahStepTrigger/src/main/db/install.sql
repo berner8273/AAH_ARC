@@ -22,7 +22,7 @@ define fdr_logon          = ~fdr_user/~fdr_password@~tns_alias
 conn ~stn_logon
 
 begin
-    for i in ( select * from all_views where owner = 'STN' ) loop
+    for i in ( select owner , view_name from all_views where owner = 'STN' ) loop
         execute immediate 'drop view ' || i.owner || '.' || i.view_name ;
     end loop;
 end;

@@ -1,0 +1,1 @@
+grant select on fdr.fr_posting_driver to stn;

@@ -30,6 +30,9 @@ define slr_logon    = ~slr_user/~slr_password@~tns_alias
 conn ~slr_logon
 
 @@grants/tables/slr/slr_entity_periods.sql
+@@grants/tables/slr/slr_eba_combinations.sql
+@@grants/tables/slr/slr_fak_combinations.sql
+@@grants/tables/slr/slr_eba_daily_balances.sql
 
 conn ~gui_logon
 
@@ -39,6 +42,9 @@ conn ~gui_logon
 @@grants/tables/gui/t_ui_user_departments.sql
 @@grants/tables/gui/t_ui_user_roles.sql
 @@grants/tables/gui/t_ui_user_entities.sql
+
+@@packages/gui/gui_pkg.hdr
+@@packages/gui/gui_pkg.bdy
 
 conn ~fdr_logon
 
@@ -65,12 +71,15 @@ conn ~fdr_logon
 @@data/fdr/fr_instrument_type.sql
 @@data/fdr/fr_instrument.sql
 @@grants/tables/fdr/fr_acc_event_type.sql
+@@grants/tables/fdr/fr_account_lookup.sql
 @@grants/tables/fdr/fr_fx_rate.sql
 @@grants/tables/fdr/fr_gaap.sql
 @@grants/tables/fdr/fr_general_codes.sql
 @@grants/tables/fdr/fr_general_code_types.sql
 @@grants/tables/fdr/fr_general_lookup.sql
+@@grants/tables/fdr/fr_gl_account.sql
 @@grants/tables/fdr/fr_party_legal.sql
+@@grants/tables/fdr/fr_posting_driver.sql
 @@grants/tables/fdr/fr_posting_schema.sql
 @@grants/tables/fdr/fr_stan_raw_acc_event.sql
 @@grants/tables/fdr/fr_stan_raw_general_codes.sql
@@ -139,11 +148,15 @@ conn ~stn_logon
 @@tables/stn/policy_premium_type.sql
 @@tables/stn/posting_accounting_basis.sql
 @@tables/stn/posting_accounting_basis_type.sql
+@@tables/stn/posting_amount_derivation_type.sql
+@@tables/stn/posting_amount_derivation.sql
 @@tables/stn/posting_financial_calc.sql
 @@tables/stn/posting_ledger.sql
 @@tables/stn/posting_method.sql
+@@tables/stn/posting_method_derivation_et.sql
 @@tables/stn/posting_method_derivation_ic.sql
 @@tables/stn/posting_method_derivation_le.sql
+@@tables/stn/posting_method_derivation_link.sql
 @@tables/stn/posting_method_derivation_mtm.sql
 @@tables/stn/posting_method_ledger.sql
 @@tables/stn/process_code_module.sql
@@ -179,18 +192,24 @@ conn ~stn_logon
 @@views/stn/ledger_default.sql
 @@views/stn/row_val_error_log_default.sql
 @@views/stn/set_val_error_log_default.sql
+@@views/stn/ce_default.sql
+@@views/stn/insurance_policy_reference.sql
 @@views/stn/validation_detail.sql
---@@views/stn/cession_event_posting.sql
+@@views/stn/vie_event_cd.sql
+@@views/stn/posting_account_derivation.sql
+@@views/stn/cession_event_posting.sql
+                          
 @@views/stn/gce_default.sql
 @@views/stn/user_default.sql
 @@views/stn/hopper_cession_event.sql
 @@views/stn/hopper_insurance_policy.sql
 @@views/stn/hopper_insurance_policy_tj.sql
 @@views/stn/insurance_policy_hierarchy.sql
-@@views/stn/insurance_policy_reference.sql
+                                          
 @@views/stn/pol_default.sql
 @@views/stn/accounting_event_default.sql
 @@views/stn/hopper_accounting_event.sql
+                                          
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
@@ -214,8 +233,10 @@ conn ~stn_logon
 @@ri_constraints/stn/legal_entity_ledger.sql
 @@ri_constraints/stn/legal_entity_link.sql
 @@ri_constraints/stn/posting_accounting_basis.sql
+@@ri_constraints/stn/posting_method_derivation_et.sql
 @@ri_constraints/stn/posting_method_derivation_ic.sql
 @@ri_constraints/stn/posting_method_derivation_le.sql
+@@ri_constraints/stn/posting_method_derivation_link.sql
 @@ri_constraints/stn/posting_method_derivation_mtm.sql
 @@ri_constraints/stn/posting_method_ledger.sql
 @@ri_constraints/stn/process_code_module.sql
@@ -251,9 +272,12 @@ conn ~stn_logon
 @@data/stn/event_type.sql
 @@data/stn/vie_event_type.sql
 @@data/stn/posting_accounting_basis.sql
+@@data/stn/posting_amount_derivation_type.sql
+@@data/stn/posting_amount_derivation.sql
 @@data/stn/posting_financial_calc.sql
 @@data/stn/posting_ledger.sql
 @@data/stn/posting_method.sql
+@@data/stn/posting_method_derivation_et.sql
 @@data/stn/posting_method_derivation_ic.sql
 @@data/stn/posting_method_derivation_le.sql
 @@data/stn/posting_method_derivation_mtm.sql
@@ -290,5 +314,7 @@ conn ~stn_logon
 @@packages/stn/pk_pol.bdy
 @@packages/stn/pk_jl.hdr
 @@packages/stn/pk_jl.bdy
+@@packages/stn/pk_cev.hdr
+@@packages/stn/pk_cev.bdy
 
 exit

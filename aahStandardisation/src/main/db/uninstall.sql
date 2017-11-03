@@ -60,6 +60,8 @@ drop package body stn.pk_acc_event;
 drop package      stn.pk_acc_event;
 drop package body stn.pk_jl;
 drop package      stn.pk_jl;
+drop package body stn.pk_cev;
+drop package      stn.pk_cev;
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -72,7 +74,10 @@ drop view  stn.gce_default;
 drop view  stn.user_default;
 drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
---drop view  stn.cession_event_posting;
+drop view  stn.posting_account_derivation;
+drop view  stn.ce_default;
+drop view  stn.cession_event_posting;
+drop view  stn.vie_event_cd;
 drop view  stn.hopper_gl_combo_edit_gc;
 drop view  stn.hopper_gl_combo_edit_gl;
 drop view  stn.hopper_tax_jurisdiction;
@@ -134,9 +139,13 @@ drop table stn.execution_type;
 drop table stn.policy_premium_type;
 drop table stn.cession_event;
 drop table stn.business_type;
+drop table stn.posting_amount_derivation;
+drop table stn.posting_amount_derivation_type;
 drop table stn.posting_method_ledger;
+drop table stn.posting_method_derivation_et;
 drop table stn.posting_method_derivation_ic;
 drop table stn.posting_method_derivation_le;
+drop table stn.posting_method_derivation_link;
 drop table stn.posting_method_derivation_mtm;
 drop table stn.posting_accounting_basis;
 drop table stn.posting_accounting_basis_type;
@@ -176,8 +185,8 @@ delete from fdr.fr_instr_type_superclass     where itsc_instr_type_super_clicode
 delete from fdr.fr_instr_insure_extend;
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
-delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT','JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' );
-delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT','JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' );
+delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' );
+delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' );
 delete from fdr.fr_fx_rate;
 delete from fdr.fr_party_business_lookup     where pbl_lookup_key                 != 'DEFAULT';
 delete from fdr.fr_party_business            where pbu_party_bus_client_code      != 'DEFAULT';
@@ -221,9 +230,11 @@ drop index fbi_fsrohs_message_id;
 drop index fbi_fsrpl_message_id;
 
 revoke select , insert , update          on fdr.fr_acc_event_type            from stn;
+revoke select                            on fdr.fr_account_lookup            from stn;
 revoke select ,                   delete on fdr.fr_fx_rate                   from stn;
 revoke select                            on fdr.fr_gaap                      from stn;
 revoke select ,          update          on fdr.fr_general_lookup            from stn;
+revoke select                            on fdr.fr_gl_account                from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_acc_event        from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_general_codes    from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_general_lookup   from stn;
@@ -231,6 +242,7 @@ revoke select                            on fdr.fr_internal_proc_entity_type fro
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_node    from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_struc   from stn;
 revoke select                            on fdr.fr_party_legal               from stn;
+revoke select                            on fdr.fr_posting_driver            from stn;
 revoke select , insert , update          on fdr.fr_posting_schema            from stn;
 revoke select , insert , update          on fdr.fr_general_code_types        from stn;
 revoke select ,          update          on fdr.fr_general_codes             from stn;
@@ -240,6 +252,9 @@ revoke select                            on fdr.is_group                     fro
 revoke          insert                   on fdr.fr_rate_type                 from stn;
 
 conn ~gui_logon
+
+drop package body gui.gui_pkg;
+drop package gui.gui_pkg;
 
 delete from gui.t_ui_user_departments;
 delete from gui.t_ui_user_roles              where user_id                        != 3;
@@ -257,5 +272,8 @@ revoke select                            on gui.t_ui_roles                   fro
 conn ~slr_logon
 
 revoke select                            on slr.slr_entity_periods           from stn;
+revoke select                            on slr.slr_eba_combinations         from stn;
+revoke select                            on slr.slr_fak_combinations         from stn;
+revoke select                            on slr.slr_eba_daily_balances       from stn;
 
 exit

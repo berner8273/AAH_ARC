@@ -1,0 +1,1 @@
+grant SELECT on stn.business_type to slr;

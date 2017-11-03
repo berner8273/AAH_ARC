@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
-whenever sqlerror exit failure
+--whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -30,7 +30,11 @@ delete from fdr.fr_gaap;
 delete from fdr.fr_posting_schema;
 delete from fdr.fr_lpg_config;
 delete from fdr.fr_account_lookup_param;
+delete from fdr.fr_account_lookup;
+delete from fdr.fr_posting_driver;
 delete from fdr.fr_financial_amount;
+delete from fdr.fr_acc_event_type where aet_input_by not in ( 'FDR Create' , 'SPS' );
+commit;
 
 conn ~slr_logon
 
@@ -44,6 +48,16 @@ delete from slr.slr_fak_definitions;
 delete from slr.slr_entity_grace_days;
 delete from slr.slr_ledgers;
 delete from slr.slr_entity_sets;
+delete from slr.slr_fak_segment_8;
+delete from slr.slr_fak_segment_7;
+delete from slr.slr_fak_segment_6;
+delete from slr.slr_fak_segment_5;
+delete from slr.slr_fak_segment_4;
+delete from slr.slr_fak_segment_3;
 commit;
+
+conn ~stn_logon
+revoke select on stn.business_type      from slr;
+revoke select on stn.insurance_policy   from slr;
 
 exit
