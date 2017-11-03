@@ -253,6 +253,9 @@ revoke          insert                   on fdr.fr_rate_type                 fro
 
 conn ~gui_logon
 
+drop package body gui.gui_pkg;
+drop package gui.gui_pkg;
+
 delete from gui.t_ui_user_departments;
 delete from gui.t_ui_user_roles              where user_id                        != 3;
 delete from gui.t_ui_user_entities;

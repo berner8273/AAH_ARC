@@ -43,6 +43,9 @@ conn ~gui_logon
 @@grants/tables/gui/t_ui_user_roles.sql
 @@grants/tables/gui/t_ui_user_entities.sql
 
+@@packages/gui/gui_pkg.hdr
+@@packages/gui/gui_pkg.bdy
+
 conn ~fdr_logon
 
 @@data/fdr/fr_address.sql
