@@ -173,7 +173,9 @@ conn ~fdr_logon
 drop package body fdr.pk_legal_entity;
 drop package      fdr.pk_legal_entity;
 
+delete from fdr.fr_db_upgrade_history        where dbuh_description                = 'Assured Guaranty';
 delete from fdr.fr_global_parameter          where lpg_id = 2;
+update fr_global_parameter set gp_ca_processing_cal_name = null;
 delete from fdr.fr_trade                     where t_fdr_tran_no             not in ( 'DEFAULT' );
 delete from fdr.fr_instrument                where i_instrument_id                != '1';
 delete from fdr.fr_instr_type_lookup         where itl_lookup_key                 != 'DEFAULT';
@@ -218,7 +220,6 @@ delete from fdr.is_groupuser                 where isgu_usr_ref                 
 delete from fdr.is_user                      where isusr_name                     != 'fdr_user';
 delete from fdr.is_group                     where isgrp_name                     = 'AG' ;
 delete from fdr.fr_address                   where ad_address_clicode             != 'DEFAULT';
-
 
 commit;
 

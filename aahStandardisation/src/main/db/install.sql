@@ -53,6 +53,7 @@ conn ~fdr_logon
 @@data/fdr/fr_calendar_week.sql
 @@data/fdr/fr_country.sql
 @@data/fdr/fr_currency.sql
+@@data/fdr/fr_db_upgrade_history.sql
 @@data/fdr/fr_rate_type.sql
 @@data/fdr/fr_party_type.sql
 @@data/fdr/fr_city.sql
