@@ -13,4 +13,5 @@ as
           fc_segment_6 as execution_typ,
           fc_segment_7 as business_typ,
           fc_segment_8 as policy_id
-     from slr.slr_fak_combinations;
+     from slr.slr_fak_combinations
+;
