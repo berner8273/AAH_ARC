@@ -1,0 +1,1 @@
+grant select on slr_entity_periods to RDR with grant option

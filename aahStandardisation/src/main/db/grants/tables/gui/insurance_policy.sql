@@ -1,0 +1,1 @@
+grant select,update,insert on insurance_policy to GUI

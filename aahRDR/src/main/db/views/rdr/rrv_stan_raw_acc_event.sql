@@ -72,5 +72,5 @@ select
 ,  srae_client_date4            
 ,  srae_client_date5            
 from fdr.fr_stan_raw_acc_event
-
+;
 
