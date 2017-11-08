@@ -26,6 +26,7 @@ define slr_logon    = ~slr_user/~slr_password@~tns_alias
 conn ~stn_logon
 @@grants/tables/stn/business_type.sql
 @@grants/tables/stn/insurance_policy.sql
+@@grants/tables/stn/execution_type.sql
 
 conn ~fdr_logon
 

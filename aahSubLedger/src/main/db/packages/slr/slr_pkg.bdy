@@ -24,7 +24,7 @@ create or replace PACKAGE BODY slr.slr_pkg AS
     gv_msg        VARCHAR2(1000);   -- General messsage field
     gs_stage      CHAR(3) := 'SLR';
 
-	-- For new way of posting
+    -- For new way of posting
     e_internal_processing_error EXCEPTION;
     e_lock_acquire_error EXCEPTION;
     e_fak_daily_balances_error EXCEPTION;
@@ -37,99 +37,119 @@ create or replace PACKAGE BODY slr.slr_pkg AS
 -- Description: Run the sub-ledger for a specified entity.
 -- Notes:
 -- -----------------------------------------------------------------------------------------------
-PROCEDURE pPROCESS_SLR
-(
-    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
-	p_rate_set IN slr_entities.ent_rate_set%TYPE
-)
-AS
+PROCEDURE pUpdateJLU AS 
+
+v_epg_id SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
+
+BEGIN
+
+  FOR i IN (SELECT DISTINCT ENT_PG.EPG_ID FROM SLR_ENTITY_PROC_GROUP ENT_PG)
+  LOOP
+    v_epg_id := i.epg_id;
+    
+    DBMS_OUTPUT.PUT_LINE('Running pUpdateJLU for EPG_ID = ' || v_epg_id);
+    SLR_UTILITIES_PKG.pUpdateJrnlLinesUnposted(v_epg_id);
+  END LOOP;
+
+END pUpdateJLU;
+
+PROCEDURE pPROCESS_SLR AS
 
     s_proc_name VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pPROCESS_SLR';
     lv_process_id NUMBER(30) := 0;
     lv_lock_handle VARCHAR2(100);
     lv_lock_result INTEGER;
     lvCount NUMBER;
-    lv_use_headers 	boolean;
+    lv_use_headers     boolean;
+    lv_START_TIME     PLS_INTEGER := 0;
 
-	lv_START_TIME 	PLS_INTEGER := 0;
+    v_epg_id SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
+    v_ent_rate_set slr_entities.ent_rate_set%TYPE;
 
 BEGIN
+
+  FOR i IN 
+      (
+        SELECT DISTINCT 
+             ENT.ENT_RATE_SET,
+             ENT_PG.EPG_ID
+        FROM SLR_ENTITIES ENT,
+             SLR_ENTITY_PROC_GROUP ENT_PG
+        WHERE ENT.ENT_ENTITY = ENT_PG.EPG_ENTITY
+      )
+  LOOP
+    v_ent_rate_set := i.ent_rate_set;
+    v_epg_id       := i.epg_id;
+    DBMS_OUTPUT.PUT_LINE
+      ('ENT_RATE_SET_Val = ' || v_ent_rate_set || ', EPG_ID = ' || v_epg_id);
+
     ----------------------------------------
     -- Set processId for whole processing
     ----------------------------------------
     SELECT SEQ_PROCESS_NUMBER.NEXTVAL INTO lv_process_id  FROM DUAL;
-
-    -- ----------------------------------------------------------------------
-    -- 01-JUN-2010    pUpdateJrnlLinesUnposted has to be called to copy data
-    --                from SLR_JRNL_HEADERS_UNPOSTED to SLR_JRNL_LINES_UNPOSTED.
-    --                Optimised Sub Ledger validation and posting processes ignore SLR_JRNL_HEADERS_UNPOSTED table.
-    --                All necessary data should be present in SLR_JRNL_LINES_UNPOSTED table.
-    -- ----------------------------------------------------------------------
-    SLR_UTILITIES_PKG.pUpdateJrnlLinesUnposted(p_entity_proc_group);
-    COMMIT;
 
     --------------------
     -- Lock request
     --------------------
     -- Lock is needed, because we can't handle more than one processing for the same entity group.
 
-    DBMS_LOCK.ALLOCATE_UNIQUE('MAH_PROCESS_SLR_' || p_entity_proc_group, lv_lock_handle);
+    DBMS_LOCK.ALLOCATE_UNIQUE('MAH_PROCESS_SLR_' || v_epg_id, lv_lock_handle);
 
     lv_lock_result := DBMS_LOCK.REQUEST(lv_lock_handle, DBMS_LOCK.X_MODE, 5);
     IF lv_lock_result != 0 THEN
-		 gv_msg := 'Can''t acquire lock for pProcessSlr for entity group ' || p_entity_proc_group ||
-	                '. Probably another processing for this entity group is running.';
+         gv_msg := 'Can''t acquire lock for pProcessSlr for entity group ' || v_epg_id ||
+                    '. Probably another processing for this entity group is running.';
 
-	    pr_error(slr_global_pkg.C_MAJERR, gv_msg, slr_global_pkg.C_SLRFUNC, s_proc_name, null, null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+        pr_error(slr_global_pkg.C_MAJERR, gv_msg, slr_global_pkg.C_SLRFUNC, s_proc_name, null, null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
         SLR_ADMIN_PKG.Error('ERROR in ' || s_proc_name || ': ' || gv_msg);
         RAISE e_lock_acquire_error;
     ELSE
         ----------------------
         -- Main processing
         ----------------------
-		lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-        pIMPORT_SLR_JRNLS(p_entity_proc_group, lv_process_id);
-		SLR_ADMIN_PKG.PerfInfo( 'Import JL function. Import journal function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+        lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+        pIMPORT_SLR_JRNLS(v_epg_id, lv_process_id);
+        SLR_ADMIN_PKG.PerfInfo( 'Import JL function. Import journal function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
 
-		----------------------------------------------------------------------
+        ----------------------------------------------------------------------
         -- Assign existing journals to current batch
-		-- Mark Jrnl Lines from previous runs as Unposted
-		----------------------------------------------------------------------
-		lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-        SLR_UTILITIES_PKG.pResetFailedJournals(p_entity_proc_group, lv_process_id, lv_use_headers);
-		SLR_ADMIN_PKG.PerfInfo( 'Reset Failed JL function. Reset Failed JL function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+        -- Mark Jrnl Lines from previous runs as Unposted
+        ----------------------------------------------------------------------
+        lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+        SLR_UTILITIES_PKG.pResetFailedJournals(v_epg_id, lv_process_id, lv_use_headers);
+        SLR_ADMIN_PKG.PerfInfo( 'Reset Failed JL function. Reset Failed JL function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
 
-		BEGIN
-		lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+        BEGIN
+        lv_START_TIME:=DBMS_UTILITY.GET_TIME();
         DBMS_STATS.GATHER_TABLE_STATS(ownname=>'SLR',tabname=>'SLR_JRNL_LINES_UNPOSTED',estimate_percent=>dbms_stats.auto_sample_size,degree=>8, granularity => 'ALL');
 
-		SLR_ADMIN_PKG.PerfInfo( 'Gather table statistics. Execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-		END;
+        SLR_ADMIN_PKG.PerfInfo( 'Gather table statistics. Execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+        END;
 
-	   ----------------------------------------------------------------------------------------
+       ----------------------------------------------------------------------------------------
         -- Check that there are actually some records in the unposted table before calling
         --  the core validate and post procedure. If there is no data then the core
         --  procedure will raise some messages saying that there is no data.
         ----------------------------------------------------------------------------------------
         SELECT COUNT(1) INTO lvCount FROM SLR_JRNL_LINES_UNPOSTED
         WHERE JLU_JRNL_STATUS = 'U'
-        AND JLU_EPG_ID = p_entity_proc_group
+        AND JLU_EPG_ID = v_epg_id
         AND ROWNUM <= 1;
 
         IF lvCount >= 1 THEN
             ----------------------
             -- Validate and Post
             ----------------------
-			lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-            SLR_VALIDATE_JOURNALS_PKG.pValidateJournals(p_epg_id => p_entity_proc_group, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => p_rate_set);
-			SLR_ADMIN_PKG.PerfInfo( 'Validate function. Validate function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-			lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-            SLR_POST_JOURNALS_PKG.pPostJournals(p_epg_id => p_entity_proc_group, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => p_rate_set);
-			SLR_ADMIN_PKG.PerfInfo( 'Post Journals. Post Journals function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+            lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+            SLR_VALIDATE_JOURNALS_PKG.pValidateJournals(p_epg_id => v_epg_id, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => v_ent_rate_set);
+            SLR_ADMIN_PKG.PerfInfo( 'Validate function. Validate function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+            lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+            SLR_POST_JOURNALS_PKG.pPostJournals(p_epg_id => v_epg_id, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => v_ent_rate_set);
+            SLR_ADMIN_PKG.PerfInfo( 'Post Journals. Post Journals function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
 
         ELSE
             -- Log a message - 0 indicates it is an informational message
-            pr_error(0, 'Sub-Ledger posting not performed for Entity Processing Group ' || p_entity_proc_group || '.  No journals to post.',
+            pr_error(0, 'Sub-Ledger posting not performed for Entity Processing Group ' || v_epg_id || '.  No journals to post.',
                                 0, s_proc_name, 'SLR_JRNL_LINES_UNPOSTED', null, 'Entity', 'SLR', 'PL/SQL', SQLCODE);
         END IF;
 
@@ -139,15 +159,19 @@ BEGIN
         lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
     END IF;
 
+END LOOP;
+
 EXCEPTION
 WHEN e_lock_acquire_error THEN
         -- error was logged before
         RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pPROCESS_SLR');
     WHEN OTHERS THEN
         lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
-        SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, '', 'Error in pPROCESS_SLR for entity group ' || p_entity_proc_group, lv_process_id, p_entity_proc_group);
-        SLR_ADMIN_PKG.Error('Error in pPROCESS_SLR for entity group ' || p_entity_proc_group);
+        SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, '', 'Error in pPROCESS_SLR for entity group ' || v_epg_id, lv_process_id, v_epg_id);
+        SLR_ADMIN_PKG.Error('Error in pPROCESS_SLR for entity group ' || v_epg_id);
         RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pPROCESS_SLR: ' || SQLERRM);
+
+
 
 END pPROCESS_SLR;
 
@@ -170,13 +194,13 @@ AS
     s_proc_name       VARCHAR2(50) := 'SLR_CLIENT_PROCEDURES_PKG.pIMPORT_SLR_ALL_JRNLS';
 
 BEGIN
-    	If p_process_id IS NULL THEN
-			SELECT   SEQ_PROCESS_NUMBER.NEXTVAL INTO p_process FROM  DUAL;
-		ELSE
-			p_process := p_process_id;
-		end if;
+        If p_process_id IS NULL THEN
+            SELECT   SEQ_PROCESS_NUMBER.NEXTVAL INTO p_process FROM  DUAL;
+        ELSE
+            p_process := p_process_id;
+        end if;
 
-		pIMPORT_SLR_JRNLS(p_entity_proc_group, p_process);
+        pIMPORT_SLR_JRNLS(p_entity_proc_group, p_process);
 
 EXCEPTION
     WHEN OTHERS THEN
@@ -232,9 +256,9 @@ AS
     lv_sql VARCHAR2(32000);
     lv_START_TIME PLS_INTEGER := 0;
     lvAuthOn            DATE;
-	TYPE cur_type IS REF CURSOR;
-	cValidateRows cur_type;
-	v_posting_date FR_ACCOUNTING_EVENT.AE_POSTING_DATE%TYPE;
+    TYPE cur_type IS REF CURSOR;
+    cValidateRows cur_type;
+    v_posting_date FR_ACCOUNTING_EVENT.AE_POSTING_DATE%TYPE;
 BEGIN
     SLR_ADMIN_PKG.InitLog(p_entity_proc_group, p_process_id);
     SLR_ADMIN_PKG.Debug('pIMPORT_SLR_JRNLS - begin');
@@ -606,18 +630,18 @@ BEGIN
             AE_TRANSLATION_DATE,
             AE_VALUE_DATE,
             LPG_ID,
-			AE_CLIENT_SPARE_ID13,
-			AE_CLIENT_SPARE_ID14,
-			AE_CLIENT_SPARE_ID15,
-			AE_CLIENT_SPARE_ID16,
-			AE_CLIENT_SPARE_ID17,
-			AE_CLIENT_SPARE_ID18,
-			AE_CLIENT_SPARE_ID19,
-			AE_CLIENT_SPARE_ID20,
-			AE_CLIENT_DATE2,
-			AE_CLIENT_DATE3,
-			AE_CLIENT_DATE4,
-			AE_CLIENT_DATE5
+            AE_CLIENT_SPARE_ID13,
+            AE_CLIENT_SPARE_ID14,
+            AE_CLIENT_SPARE_ID15,
+            AE_CLIENT_SPARE_ID16,
+            AE_CLIENT_SPARE_ID17,
+            AE_CLIENT_SPARE_ID18,
+            AE_CLIENT_SPARE_ID19,
+            AE_CLIENT_SPARE_ID20,
+            AE_CLIENT_DATE2,
+            AE_CLIENT_DATE3,
+            AE_CLIENT_DATE4,
+            AE_CLIENT_DATE5
         )
         SELECT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'IMPORT_INSERT_ARCH_SUBSELECT') || '
             AE_ACCEVENT_DATE,
@@ -720,18 +744,18 @@ BEGIN
             AE_TRANSLATION_DATE,
             AE_VALUE_DATE,
             LPG_ID,
-			AE_CLIENT_SPARE_ID13,
-			AE_CLIENT_SPARE_ID14,
-			AE_CLIENT_SPARE_ID15,
-			AE_CLIENT_SPARE_ID16,
-			AE_CLIENT_SPARE_ID17,
-			AE_CLIENT_SPARE_ID18,
-			AE_CLIENT_SPARE_ID19,
-			AE_CLIENT_SPARE_ID20,
-			AE_CLIENT_DATE2,
-			AE_CLIENT_DATE3,
-			AE_CLIENT_DATE4,
-			AE_CLIENT_DATE5
+            AE_CLIENT_SPARE_ID13,
+            AE_CLIENT_SPARE_ID14,
+            AE_CLIENT_SPARE_ID15,
+            AE_CLIENT_SPARE_ID16,
+            AE_CLIENT_SPARE_ID17,
+            AE_CLIENT_SPARE_ID18,
+            AE_CLIENT_SPARE_ID19,
+            AE_CLIENT_SPARE_ID20,
+            AE_CLIENT_DATE2,
+            AE_CLIENT_DATE3,
+            AE_CLIENT_DATE4,
+            AE_CLIENT_DATE5
         FROM FR_ACCOUNTING_EVENT
         WHERE AE_EPG_ID = ''' || p_entity_proc_group || '''
         AND ' || lv_date_condition
@@ -745,25 +769,25 @@ BEGIN
     SLR_ADMIN_PKG.Info('Rows copied to FR_ACCOUNTING_EVENT_IMP');
 
 
-	BEGIN
-		lv_sql :=  'SELECT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'SELECT_ACC_EVENT') || ' DISTINCT AE_POSTING_DATE FROM FR_ACCOUNTING_EVENT
+    BEGIN
+        lv_sql :=  'SELECT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'SELECT_ACC_EVENT') || ' DISTINCT AE_POSTING_DATE FROM FR_ACCOUNTING_EVENT
             WHERE AE_POSTING_DATE <= to_date(''' || lv_business_date || ''') AND AE_EPG_ID = ''' || p_entity_proc_group || ''' ';
 
-		OPEN cValidateRows FOR lv_sql;
-		LOOP
-			FETCH cValidateRows INTO v_posting_date;
-			EXIT WHEN cValidateRows%NOTFOUND;
+        OPEN cValidateRows FOR lv_sql;
+        LOOP
+            FETCH cValidateRows INTO v_posting_date;
+            EXIT WHEN cValidateRows%NOTFOUND;
         TRUNC_AE_SUBPART( SLR_UTILITIES_PKG.fSubpartitionName(p_entity_proc_group, v_posting_date) );
-		END LOOP;
-		CLOSE cValidateRows;
+        END LOOP;
+        CLOSE cValidateRows;
 
-	EXCEPTION
+    EXCEPTION
         WHEN OTHERS THEN
             SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, 'FR_ACCOUNTING_EVENT',
                 'Import finished but records from FR_ACCOUNTING_EVENT were not removed due to error.',
                 p_process_id,p_entity_proc_group);
             SLR_ADMIN_PKG.Error('Import finished but records from FR_ACCOUNTING_EVENT were not removed due to error.');
-	END;
+    END;
     SLR_ADMIN_PKG.Info('Imported rows removed from FR_ACCOUNTING_EVENT');
 
     EXECUTE IMMEDIATE 'ALTER SESSION DISABLE PARALLEL DML';
@@ -809,7 +833,7 @@ PROCEDURE pInsertFakEbaCombinations
 )
 IS
     s_proc_name VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pInsertFakEbaCombinations';
-    lv_START_TIME 	PLS_INTEGER := 0;
+    lv_START_TIME     PLS_INTEGER := 0;
     lv_sql VARCHAR2(32000);
 BEGIN
 
@@ -975,7 +999,7 @@ BEGIN
           WHERE  seg3.fs3_entity_set IN (SELECT  DISTINCT ent.ent_segment_3_set
                                            FROM  slr.slr_entities ent
                                                  INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-												       AND frlpg.lc_lpg_id = pLPG_ID);
+                                                       AND frlpg.lc_lpg_id = pLPG_ID);
 
     INSERT INTO slr_fak_segment_3 (
             fs3_entity_set,
@@ -1004,12 +1028,12 @@ BEGIN
                         ) seg3;   
 
     SELECT  COUNT(*)
-	  INTO  v_records_processed
-	  FROM  slr_fak_segment_3;
+      INTO  v_records_processed
+      FROM  slr_fak_segment_3;
 
-	p_no_processed_records := v_records_processed;
-	p_no_failed_records := 0;
-	
+    p_no_processed_records := v_records_processed;
+    p_no_failed_records := 0;
+    
 END pUPDATE_SLR_SEGMENT_3;
 
 
@@ -1026,7 +1050,7 @@ BEGIN
           WHERE  seg4.fs4_entity_set IN (SELECT  DISTINCT ent.ent_segment_4_set
                                            FROM  slr.slr_entities ent
                                                  INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-												       AND frlpg.lc_lpg_id = pLPG_ID);
+                                                       AND frlpg.lc_lpg_id = pLPG_ID);
 
     INSERT INTO slr_fak_segment_4 (
             fs4_entity_set,
@@ -1049,17 +1073,17 @@ BEGIN
             CROSS JOIN (SELECT  DISTINCT ent.ent_segment_4_set
                           FROM  slr.slr_entities ent
                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-								  AND frlpg.lc_lpg_id = pLPG_ID) seg4 
+                                  AND frlpg.lc_lpg_id = pLPG_ID) seg4 
             WHERE pl.pl_int_ext_flag in ('I','E') 
             AND PL.PL_PARTY_LEGAL_ID <> 'NVS'
      ;
 
     SELECT  COUNT(*)
-	  INTO  v_records_processed
-	  FROM  slr_fak_segment_4;
+      INTO  v_records_processed
+      FROM  slr_fak_segment_4;
 
-	p_no_processed_records := v_records_processed;
-	p_no_failed_records := 0;
+    p_no_processed_records := v_records_processed;
+    p_no_failed_records := 0;
 
 END pUPDATE_SLR_SEGMENT_4;
 
@@ -1075,7 +1099,7 @@ BEGIN
           WHERE  seg5.fs5_entity_set IN (SELECT  DISTINCT ent.ent_segment_5_set
                                            FROM  slr.slr_entities ent
                                                  INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-												       AND frlpg.lc_lpg_id = pLPG_ID);
+                                                       AND frlpg.lc_lpg_id = pLPG_ID);
 
     INSERT INTO slr_fak_segment_5 (
             fs5_entity_set,
@@ -1098,17 +1122,17 @@ BEGIN
             CROSS JOIN (SELECT  DISTINCT ent.ent_segment_5_set
                           FROM  slr.slr_entities ent
                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-								  AND frlpg.lc_lpg_id = pLPG_ID) seg5 
+                                  AND frlpg.lc_lpg_id = pLPG_ID) seg5 
             WHERE frgc.gc_gct_code_type_id = 'GL_CHARTFIELD'
      ;
 
     SELECT  COUNT(*)
-	  INTO  v_records_processed
-	  FROM  slr_fak_segment_5;
+      INTO  v_records_processed
+      FROM  slr_fak_segment_5;
 
-	p_no_processed_records := v_records_processed;
-	p_no_failed_records := 0;
-	
+    p_no_processed_records := v_records_processed;
+    p_no_failed_records := 0;
+    
 END pUPDATE_SLR_SEGMENT_5;
 
 PROCEDURE pUPDATE_SLR_SEGMENT_6(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
@@ -1122,7 +1146,7 @@ BEGIN
           WHERE  seg6.fs6_entity_set IN (SELECT  DISTINCT ent.ent_segment_6_set
                                            FROM  slr.slr_entities ent
                                                  INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-												       AND frlpg.lc_lpg_id = pLPG_ID);
+                                                       AND frlpg.lc_lpg_id = pLPG_ID);
 
     INSERT INTO slr_fak_segment_6 (
             fs6_entity_set,
@@ -1133,28 +1157,28 @@ BEGIN
             fs6_created_on,
             fs6_amended_by,
             fs6_amended_on)
-    SELECT  seg6.ent_segment_6_set,
-            ip.execution_typ,
-            ip.execution_typ,
+    SELECT DISTINCT 
+            seg6.ent_segment_6_set,
+            et.execution_typ,
+            et.execution_typ,
             'A',
             USER,
             TRUNC(SYSDATE),
             USER,
             TRUNC(SYSDATE)
-      FROM  stn.insurance_policy ip
+      FROM  stn.execution_type et
             CROSS JOIN (SELECT  DISTINCT ent.ent_segment_6_set
                           FROM  slr.slr_entities ent
                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-								  AND frlpg.lc_lpg_id = pLPG_ID) seg6 
-            WHERE ip.execution_typ in ('MTM','NON-MTM');
+                                  AND frlpg.lc_lpg_id = pLPG_ID) seg6;
 
     SELECT  COUNT(*)
-	  INTO  v_records_processed
-	  FROM  slr_fak_segment_6;
+      INTO  v_records_processed
+      FROM  slr_fak_segment_6;
 
-	p_no_processed_records := v_records_processed;
-	p_no_failed_records := 0;
-	
+    p_no_processed_records := v_records_processed;
+    p_no_failed_records := 0;
+    
 END pUPDATE_SLR_SEGMENT_6;
 
 PROCEDURE pUPDATE_SLR_SEGMENT_7(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
@@ -1168,7 +1192,7 @@ BEGIN
           WHERE  seg7.fs7_entity_set IN (SELECT  DISTINCT ent.ent_segment_7_set
                                            FROM  slr.slr_entities ent
                                                  INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-												       AND frlpg.lc_lpg_id = pLPG_ID);
+                                                       AND frlpg.lc_lpg_id = pLPG_ID);
 
     INSERT INTO slr_fak_segment_7 (
             fs7_entity_set,
@@ -1191,15 +1215,15 @@ BEGIN
             CROSS JOIN (SELECT  DISTINCT ent.ent_segment_7_set
                           FROM  slr.slr_entities ent
                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-								  AND frlpg.lc_lpg_id = pLPG_ID) seg7 ;
+                                  AND frlpg.lc_lpg_id = pLPG_ID) seg7 ;
 
     SELECT  COUNT(*)
-	  INTO  v_records_processed
-	  FROM  slr_fak_segment_7;
+      INTO  v_records_processed
+      FROM  slr_fak_segment_7;
 
-	p_no_processed_records := v_records_processed;
-	p_no_failed_records := 0;
-	
+    p_no_processed_records := v_records_processed;
+    p_no_failed_records := 0;
+    
 END pUPDATE_SLR_SEGMENT_7;
 
 
@@ -1214,7 +1238,7 @@ BEGIN
           WHERE  seg8.fs8_entity_set IN (SELECT  DISTINCT ent.ent_segment_8_set
                                            FROM  slr.slr_entities ent
                                                  INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-												       AND frlpg.lc_lpg_id = pLPG_ID);
+                                                       AND frlpg.lc_lpg_id = pLPG_ID);
 
     INSERT INTO slr_fak_segment_8 (
             fs8_entity_set,
@@ -1245,12 +1269,12 @@ BEGIN
             WHERE frinstr.i_it_instr_type_id = 'INSURANCE_POLICY';
 
     SELECT  COUNT(*)
-	  INTO  v_records_processed
-	  FROM  slr_fak_segment_8;
+      INTO  v_records_processed
+      FROM  slr_fak_segment_8;
 
-	p_no_processed_records := v_records_processed;
-	p_no_failed_records := 0;
-	
+    p_no_processed_records := v_records_processed;
+    p_no_failed_records := 0;
+    
 END pUPDATE_SLR_SEGMENT_8;
 
 -- -----------------------------------------------------------------------
@@ -1272,19 +1296,19 @@ v_records_processed NUMBER(18);
 BEGIN
 
     SELECT  DISTINCT ent.ent_currency_set
-	  INTO  lvEntitySet
+      INTO  lvEntitySet
       FROM  fdr.fr_lpg_config frlpg
             INNER JOIN  slr_entities ent ON frlpg.lc_grp_code = ent.ent_entity
      WHERE  frlpg.lc_lpg_id = pLPG_ID;
 
     SLR_FDR_PROCEDURES_PKG.PUPDATE_SLR_CURRENCIES(lvEntitySet);
-	
-	SELECT  COUNT(*)
-	  INTO  v_records_processed
-	  FROM  slr_entity_currencies;
+    
+    SELECT  COUNT(*)
+      INTO  v_records_processed
+      FROM  slr_entity_currencies;
 
-	o_records_processed := v_records_processed;
-	o_records_failed := 0;
+    o_records_processed := v_records_processed;
+    o_records_failed := 0;
 
 END pUPDATE_SLR_CURRENCIES;
 
@@ -1505,7 +1529,7 @@ PROCEDURE pREC_AET_JRNLS (p_epg_id IN VARCHAR2,
     e_epg_id_is_null      EXCEPTION;
     e_epg_not_exists      EXCEPTION;
     e_entity_not_in_epg   EXCEPTION;
-    e_wrong_dates      	  EXCEPTION;
+    e_wrong_dates            EXCEPTION;
     v_count               NUMBER(1);
 
 BEGIN
@@ -1820,13 +1844,13 @@ PROCEDURE pROLL_ENTITY_DATE(p_entity in VARCHAR2, p_business_date in DATE DEFAUL
     lvCurrYearFirstBusDate    DATE;
     lvCleardownYearEndDate    DATE;
     lvBusinessYear            NUMBER(4,0);
-	e_raise_exception         EXCEPTION;
+    e_raise_exception         EXCEPTION;
 
 BEGIN
 
-	BEGIN
-		IF p_business_date IS NULL THEN
-			SELECT GP_TODAYS_BUS_DATE
+    BEGIN
+        IF p_business_date IS NULL THEN
+            SELECT GP_TODAYS_BUS_DATE
             INTO   lvBusinessDate
             FROM   FR_GLOBAL_PARAMETER,
                    FR_LPG_CONFIG
@@ -2025,21 +2049,21 @@ BEGIN
                 ON pl_co_country_resid_id = co_country_id
                   INNER JOIN fr_calendar
                    ON co_ca_calendar_name = ca_calendar_name
-				  AND CASE
+                  AND CASE
                    WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'MON' THEN
-						( SELECT MAX(CAW_MONDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                        ( SELECT MAX(CAW_MONDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
                    WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'TUE' THEN
                         ( SELECT MAX(CAW_TUESDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
                    WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'WED' THEN
-						( SELECT MAX(CAW_WEDNESDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                        ( SELECT MAX(CAW_WEDNESDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
                    WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'THU' THEN
-						( SELECT MAX(CAW_THURSDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                        ( SELECT MAX(CAW_THURSDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
                    WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'FRI' THEN
-						( SELECT MAX(CAW_FRIDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                        ( SELECT MAX(CAW_FRIDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
                    WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'SAT' THEN
-						( SELECT MAX(CAW_SATURDAY)FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                        ( SELECT MAX(CAW_SATURDAY)FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
                    WHEN UPPER(to_char(ed_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH')) =  'SUN' THEN
-						( SELECT MAX(CAW_SUNDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
+                        ( SELECT MAX(CAW_SUNDAY) FROM FDR.FR_CALENDAR_WEEK WHERE CAW_CA_CALENDAR_NAME = co_ca_calendar_name)
                   END = 1
                        LEFT OUTER JOIN fr_holiday_date
                        ON  ca_calendar_name = hd_ca_calendar_name

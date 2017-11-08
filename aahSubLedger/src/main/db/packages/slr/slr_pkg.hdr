@@ -1,10 +1,6 @@
 create or replace PACKAGE slr.slr_pkg AS
 
-PROCEDURE pPROCESS_SLR
-(
-    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
-	p_rate_set IN slr_entities.ent_rate_set%TYPE
-);
+PROCEDURE pPROCESS_SLR;
 
 PROCEDURE pCHECK_JRNL_ERRORS(p_entity in VARCHAR2);
 
@@ -34,7 +30,7 @@ PROCEDURE pInsertFakEbaCombinations
     p_business_date SLR_ENTITIES.ENT_BUSINESS_DATE%TYPE -- IF NULL then AE is not filtered using date
 );
 
-
+PROCEDURE pUpdateJLU;
 
 ---------------------------------------------------------------------------------
 -- Static Data Loads

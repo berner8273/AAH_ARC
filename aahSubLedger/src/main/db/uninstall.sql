@@ -59,5 +59,6 @@ commit;
 conn ~stn_logon
 revoke select on stn.business_type      from slr;
 revoke select on stn.insurance_policy   from slr;
+revoke select on stn.execution_type   from slr;
 
 exit
