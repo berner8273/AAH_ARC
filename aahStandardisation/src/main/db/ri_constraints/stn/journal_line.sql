@@ -1,0 +1,1 @@
+alter table stn.journal_line add constraint fk_bt_jl foreign key ( business_typ ) references stn.business_type ( business_typ );
