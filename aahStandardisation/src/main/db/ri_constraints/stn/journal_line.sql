@@ -1,1 +1,2 @@
-alter table stn.journal_line add constraint fk_bt_jl foreign key ( business_typ ) references stn.business_type ( business_typ );
+alter table stn.journal_line add constraint fk_bt_jl  foreign key ( business_typ ) references stn.business_type       ( business_typ );
+alter table stn.journal_line add constraint fk_ppt_jl foreign key ( premium_typ )  references stn.policy_premium_type ( policy_premium_typ );
