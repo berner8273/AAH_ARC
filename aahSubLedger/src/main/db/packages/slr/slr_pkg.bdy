@@ -2308,7 +2308,6 @@ AS
     v_start_date date := trunc(sysdate-1500);
     v_end_date date := trunc(sysdate+1500);
     v_entity_set SLR_ENTITY_DAYS.ED_ENTITY_SET%type;
-    v_entity VARCHAR2(100);
 
        
    CURSOR entity_set_cur
@@ -2318,12 +2317,7 @@ AS
       ORDER BY ES_ENTITY_SET ASC
   ;
   
-   CURSOR entity_cur
-   IS  
-      SELECT ENT_ENTITY
-      FROM SLR.SLR_ENTITIES
-      ORDER BY ENT_ENTITY ASC
-   ;
+
 BEGIN
 
 /* BEGIN SLR DAY LOAD */
@@ -2334,7 +2328,7 @@ BEGIN
         FETCH entity_set_cur INTO v_entity_set;
         EXIT WHEN entity_set_cur%NOTFOUND;
 
-        SLR.SLR_UTILITIES_PKG.PUPDATE_SLR_ENTITY_DAYS(V_ENTITY_SET,V_START_DATE,V_END_DATE,'O','AAH');
+        SLR.SLR_PKG.pSLR_ENTITY_DAYS(V_ENTITY_SET,V_START_DATE,V_END_DATE,'O','AAH');
         
      END LOOP;
 
@@ -2342,20 +2336,176 @@ BEGIN
 
 /* BEGIN SLR DAY LOAD */
 
-     OPEN entity_cur;
-     
-     LOOP
-        FETCH entity_cur INTO v_entity;
-        EXIT WHEN entity_cur%NOTFOUND;
+        SLR.SLR_PKG.pSLR_ENTITY_PERIODS();
         
-        SLR_CALENDAR_PKG.pSetEntityPeriods(v_entity, 1, v_start_date, v_end_date, 'O');
-        
-     END LOOP;
-
-     CLOSE entity_cur;
-
 END pSLR_DAYS_PERIODS;
-    
+
+PROCEDURE pSLR_ENTITY_DAYS
+(
+    p_entity_set  in SLR_ENTITY_DAYS.ED_ENTITY_SET%type,
+    p_start_date  in date,
+    p_end_date    in date,
+    p_status      in SLR_ENTITY_DAYS.ED_STATUS%TYPE,
+    p_calendar_name in FR_HOLIDAY_DATE.HD_CA_CALENDAR_NAME%TYPE := 'DEFAULT'
+)
+AS
+    s_proc_name       VARCHAR2(80) := 'SLR_UTILITIES_PKG.pUPDATE_SLR_ENTITY_DAYS';
+
+BEGIN
+
+
+	INSERT INTO SLR_ENTITY_DAYS(
+								   ED_ENTITY_SET,
+                                   ED_DATE,
+                                   ED_STATUS,
+                                   ED_CREATED_BY,
+                                   ED_CREATED_ON,
+                                   ED_AMENDED_BY,
+                                   ED_AMENDED_ON
+                )
+	WITH days_range (cal_day)
+	AS (
+		SELECT p_end_date as cal_day FROM DUAL
+		UNION ALL
+		SELECT cal_day -1 FROM days_range
+		WHERE  cal_day > p_start_date
+	)
+	SELECT  p_entity_set,
+			cal_day,
+			case
+				when
+					nvl((SELECT HD_ACTIVE FROM FR_HOLIDAY_DATE WHERE HD_HOLIDAY_DATE = cal_day  AND HD_ACTIVE = 'A' AND HD_CA_CALENDAR_NAME = p_calendar_name) ,'N') = 'A' OR
+					nvl ( CASE RTRIM(UPPER(TO_CHAR(cal_day, 'DAY', 'NLS_DATE_LANGUAGE = ENGLISH')))
+								WHEN 'MONDAY'  THEN CAW_MONDAY
+								WHEN 'TUESDAY' THEN  CAW_TUESDAY
+								WHEN 'WEDNESDAY' THEN CAW_WEDNESDAY
+								WHEN 'THURSDAY' THEN CAW_THURSDAY
+								WHEN 'FRIDAY' THEN CAW_FRIDAY
+								WHEN 'SATURDAY' THEN CAW_SATURDAY
+								WHEN 'SUNDAY' THEN CAW_SUNDAY
+							  END , 1) = 0
+				then 'C'
+				else p_status
+			end as status,
+			user, trunc(sysdate),
+			user, trunc(sysdate)
+	FROM days_range
+	LEFT JOIN FR_CALENDAR_WEEK ON (CAW_CA_CALENDAR_NAME = p_calendar_name)
+	WHERE
+	NOT EXISTS (
+			SELECT 1 FROM slr_entity_days
+			WHERE ed_entity_set = p_entity_set
+			AND ed_date = cal_day);
+
+EXCEPTION
+    WHEN OTHERS THEN
+        gv_msg := 'Failed to set SLR entity days for entity set ['||p_entity_set||'] ';
+        pr_error(slr_global_pkg.C_MAJERR, gv_msg, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITY_DAYS', null, 'Entity Set', gs_stage, 'PL/SQL', SQLCODE);
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20001, gv_msg);
+
+END pSLR_ENTITY_DAYS;
+
+PROCEDURE pSLR_ENTITY_PERIODS AS
+
+BEGIN 
+
+INSERT INTO SLR_ENTITY_PERIODS (
+          EP_ENTITY,
+          EP_BUS_YEAR,
+          EP_BUS_PERIOD,
+          EP_PERIOD_TYPE,
+          EP_STATUS,
+          EP_BUS_PERIOD_START,                   
+          EP_BUS_PERIOD_END,                   
+          EP_BUS_PERIOD_END_ID,
+          EP_CAL_PERIOD_START,
+          EP_CAL_PERIOD_END,
+          EP_CREATED_BY,
+          EP_CREATED_ON,
+          EP_AMENDED_BY,
+          EP_AMENDED_ON
+          )
+with
+     minmax_days
+as (
+      select 
+          MIN(ED_DATE) as min_date
+        , MAX(ED_DATE) as max_date
+      from SLR_ENTITY_DAYS d
+    )
+
+  ,  base_years
+  as (
+             select 
+                    ((extract ( year from y.max_date )+1) - level) the_year
+               from
+                    minmax_days y
+         connect by
+                    level <= ((extract ( year from y.max_date )+1) - extract( year from y.min_date ))
+     )
+   , base_months
+  as (
+             select
+                    level the_month
+               from
+                    dual m
+         connect by
+                    level <= 12
+     )
+  , results as (
+select
+       s.ent_entity AS EP_ENTITY
+     , y.the_year AS EP_BUS_YEAR
+     , m.the_month AS EP_BUS_PERIOD
+     , CASE WHEN m.the_month = 12 THEN 2 ELSE 1 END AS EP_PERIOD_TYPE
+     , 'O' AS EP_STATUS
+     , to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy') as EP_BUS_PERIOD_START
+     , (add_months(to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy'),1)-1) as EP_BUS_PERIOD_END
+     , to_char((add_months(to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy'),1)-1),'YYYYMMDD')||50 AS EP_BUS_PERIOD_END_ID     
+     , to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy') as EP_CAL_PERIOD_START
+     , (add_months(to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy'),1)-1) as EP_CAL_PERIOD_END
+     , USER AS EP_CREATED_BY
+     , SYSDATE AS EP_CREATED_ON
+     , USER AS EP_AMENDED_BY
+     , SYSDATE AS EP_AMENDED_ON
+  from
+                  base_years  y
+       cross join base_months m
+       cross join slr.slr_entities s
+    )
+
+, results2 as 
+(
+
+select 
+          EP_ENTITY,
+          EP_BUS_YEAR,
+          EP_BUS_PERIOD,
+          EP_PERIOD_TYPE,
+          EP_STATUS,
+          EP_BUS_PERIOD_START,                   
+          EP_BUS_PERIOD_END,                   
+          EP_BUS_PERIOD_END_ID,
+          EP_CAL_PERIOD_START,
+          EP_CAL_PERIOD_END,
+          EP_CREATED_BY,
+          EP_CREATED_ON,
+          EP_AMENDED_BY,
+          EP_AMENDED_ON
+from results r
+  ,  minmax_days m
+where R.EP_BUS_PERIOD_END between m.min_date and m.max_date
+)
+
+SELECT *
+from results2
+WHERE (EP_ENTITY||EP_BUS_PERIOD_END_ID) NOT IN (SELECT DISTINCT (EP_ENTITY||EP_BUS_PERIOD_END_ID) FROM SLR.SLR_ENTITY_PERIODS)
+order by 1,2,3
+;
+
+ 
+END pSLR_ENTITY_PERIODS;    
     
 END SLR_PKG;
 /

@@ -32,6 +32,14 @@ PROCEDURE pInsertFakEbaCombinations
 
 PROCEDURE pUpdateJLU;
 
+PROCEDURE pSLR_ENTITY_DAYS      (p_entity_set  in SLR_ENTITY_DAYS.ED_ENTITY_SET%TYPE,
+                                            p_start_date  in date,
+                                            p_end_date    in date,
+                                            p_status      in SLR_ENTITY_DAYS.ED_STATUS%TYPE,
+                                            p_calendar_name in FR_HOLIDAY_DATE.HD_CA_CALENDAR_NAME%TYPE := 'DEFAULT');
+
+PROCEDURE pSLR_ENTITY_PERIODS;
+
 ---------------------------------------------------------------------------------
 -- Static Data Loads
 ---------------------------------------------------------------------------------
