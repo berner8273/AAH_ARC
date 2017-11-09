@@ -1,1 +1,1 @@
-grant SELECT on stn.execution_type to slr;
+grant select on stn.execution_type to slr;
