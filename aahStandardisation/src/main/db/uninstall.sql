@@ -168,6 +168,8 @@ drop table stn.accounting_event;
 drop table stn.gl_account_hierarchy;
 drop table stn.journal_line;
 
+revoke select , insert , update on stn.insurance_policy from gui;
+
 conn ~fdr_logon
 
 drop package body fdr.pk_legal_entity;

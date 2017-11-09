@@ -230,6 +230,7 @@ conn ~stn_logon
 @@ri_constraints/stn/insurance_policy.sql
 @@ri_constraints/stn/insurance_policy_fx_rate.sql
 @@ri_constraints/stn/insurance_policy_tax_jurisd.sql
+@@ri_constraints/stn/journal_line.sql
 @@ri_constraints/stn/legal_entity.sql
 @@ri_constraints/stn/legal_entity_ledger.sql
 @@ri_constraints/stn/legal_entity_link.sql
@@ -317,5 +318,7 @@ conn ~stn_logon
 @@packages/stn/pk_jl.bdy
 @@packages/stn/pk_cev.hdr
 @@packages/stn/pk_cev.bdy
+
+@@grants/tables/stn/insurance_policy.sql
 
 exit
