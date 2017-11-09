@@ -761,8 +761,8 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-le_id2'  and
-(jl.LE_ID = jl.AFFILIATE_LE_ID) OR (jl.LE_ID = jl.COUNTERPARTY_LE_ID) OR (jl.AFFILIATE_LE_ID = jl.COUNTERPARTY_LE_ID)
+                    vdl.VALIDATION_CD = 'jl-le_id2'
+and ( (jl.LE_ID = jl.AFFILIATE_LE_ID) OR (jl.LE_ID = jl.COUNTERPARTY_LE_ID) OR (jl.AFFILIATE_LE_ID = jl.COUNTERPARTY_LE_ID) )
             UNION ALL
             SELECT
                 rveld.CATEGORY_ID AS CATEGORY_ID,

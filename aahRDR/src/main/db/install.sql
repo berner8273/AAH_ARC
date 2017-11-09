@@ -37,11 +37,13 @@ conn ~slr_logon
 @@grants/tables/slr/slr_fak_combinations.sql
 @@grants/tables/slr/slr_eba_combinations.sql
 @@grants/tables/slr/slr_eba_daily_balances.sql
+@@grants/tables/slr/slr_entity_periods.sql
 
 conn ~fdr_logon
 
 @@grants/tables/fdr/fr_account_lookup.sql
 @@grants/tables/fdr/fr_posting_schema.sql
+@@grants/tables/fdr/fr_stan_raw_acc_event.sql
 
 conn ~rdr_logon
 
@@ -67,5 +69,7 @@ conn ~rdr_logon
 @@views/rdr/rrv_slr_fak_daily_balances_ag.sql
 @@views/rdr/rrv_slr_jrnl_lines_ag.sql
 @@views/rdr/rrv_tax_jurisdiction.sql
+@@views/rdr/rrv_stan_raw_acc_event.sql
+@@views/rdr/rrv_slr_entity_periods.sql
 
 exit
