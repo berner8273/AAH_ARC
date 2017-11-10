@@ -865,12 +865,12 @@ BEGIN
                 AE_ISO_CURRENCY_CODE,
                 AE_POSTING_SCHEMA,
                 AE_GAAP,
-                AE_DIMENSION_2,
-                AE_DIMENSION_4,
-                AE_DIMENSION_1,
-                AE_DIMENSION_11,
-                AE_DIMENSION_12,
-                AE_DIMENSION_7
+                NVL(AE_DIMENSION_2,''NVS'')    AE_DIMENSION_2,
+                NVL(AE_DIMENSION_4,''NVS'')    AE_DIMENSION_4,
+                NVL(AE_DIMENSION_1,''NVS'')    AE_DIMENSION_1,
+                NVL(AE_DIMENSION_11,''NVS'')   AE_DIMENSION_11,
+                NVL(AE_DIMENSION_12,''NVS'')   AE_DIMENSION_12,
+                NVL(AE_DIMENSION_7,''NVS'')    AE_DIMENSION_7
             FROM FR_ACCOUNTING_EVENT
             WHERE AE_EPG_ID = ''' || p_epg_id || '''
                 AND AE_POSTING_DATE <= :business_date___1
