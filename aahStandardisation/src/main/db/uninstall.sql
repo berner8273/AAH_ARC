@@ -136,6 +136,7 @@ drop table stn.insurance_policy_fx_rate;
 drop table stn.insurance_policy_tax_jurisd;
 drop table stn.insurance_policy;
 drop table stn.execution_type;
+drop table stn.journal_line;
 drop table stn.policy_premium_type;
 drop table stn.cession_event;
 drop table stn.business_type;
@@ -166,9 +167,6 @@ drop table stn.legal_entity_ledger;
 drop table stn.ledger;
 drop table stn.accounting_event;
 drop table stn.gl_account_hierarchy;
-drop table stn.journal_line;
-
-revoke select , insert , update on stn.insurance_policy from gui;
 
 conn ~fdr_logon
 
