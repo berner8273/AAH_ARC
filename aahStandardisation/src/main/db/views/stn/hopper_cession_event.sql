@@ -30,6 +30,7 @@ select
      , fsrae.srae_client_spare_id12      event_seq_id
      , fsrae.srae_client_spare_id13      policy_typ
      , fsrae.srae_client_spare_id14      correlation_uuid
+     , fsrae.srae_client_spare_id15      basis_cd
      , fsrae.srae_acc_event_type         aah_event_typ
      , fsrae.srae_iso_currency_code      transaction_ccy
      , fsrae.srae_client_amount1         transaction_amt
@@ -44,7 +45,6 @@ select
      , fsrae.srae_gl_person_code         srae_gl_person_code
      , fsrae.srae_source_system          srae_source_system
      , fsrae.srae_instrument_code        srae_instrument_code
-     , fsrae.srae_dimension_11           basis_cd
      , fsrae.srae_posting_date           posting_dt
      , fsrae.event_status                event_status
      , fsrae.message_id                  message_id
