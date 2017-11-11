@@ -43,7 +43,7 @@ and not exists (
              from
                   stn.identified_record idr
             where
-                  ce.row_sid = ce.row_sid
+                  idr.row_sid = ce.row_sid
        );
         p_no_identified_records := SQL%ROWCOUNT;
     END;
@@ -447,6 +447,7 @@ and not exists (
                   stn.hopper_cession_event hce
             where
                   hce.correlation_uuid = ce.CORRELATION_UUID
+              and ce.EVENT_STATUS = 'V'
            );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
