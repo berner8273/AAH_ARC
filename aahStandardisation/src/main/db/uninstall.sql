@@ -223,7 +223,6 @@ delete from fdr.fr_address                   where ad_address_clicode           
 
 commit;
 
-drop index fdr.fbi_fsrfr_message_id;
 drop index fdr.fbi_fsrga_message_id;
 drop index fdr.fbi_fsrb_message_id;
 drop index fdr.fbi_fsrgc_message_id;

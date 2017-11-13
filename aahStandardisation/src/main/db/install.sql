@@ -95,7 +95,6 @@ conn ~fdr_logon
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy
 @@indices/fdr/fr_stan_raw_book.sql
-@@indices/fdr/fr_stan_raw_fx_rate.sql
 @@indices/fdr/fr_stan_raw_general_codes.sql
 @@indices/fdr/fr_stan_raw_gl_account.sql
 @@indices/fdr/fr_stan_raw_org_hier_struc.sql
