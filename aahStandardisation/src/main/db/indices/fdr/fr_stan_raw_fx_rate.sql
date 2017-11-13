@@ -1,1 +1,1 @@
-create unique index fbi_fsrfr_message_id on fdr.fr_stan_raw_fx_rate ( to_number ( message_id ) );
+create unique index fbi_fsrfr_message_id on fdr.fr_stan_raw_fx_rate ( srf_fr_rty_rate_type_id , to_number ( message_id ) );

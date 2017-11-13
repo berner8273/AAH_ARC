@@ -10,7 +10,4 @@ select
        fdr.fr_general_lookup
  where
        lk_lkt_lookup_type_code in ('ACCOUNTING_BASIS_LEDGER')
- order by
-       accounting_basis_cd
-     , ledger_cd
      ;

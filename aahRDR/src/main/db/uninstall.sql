@@ -67,5 +67,6 @@ conn ~fdr_logon
 
 revoke select   on fdr.fr_account_lookup       from rdr;
 revoke select   on fdr.fr_posting_schema       from rdr;
+revoke select   on fdr.fr_stan_raw_acc_event   from rdr;
 
 exit

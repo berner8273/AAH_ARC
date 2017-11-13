@@ -38,6 +38,4 @@ select
      , glah.level_14_name         level_14_name
   from
        stn.gl_account_hierarchy glah
- order by
-       account_key
      ;

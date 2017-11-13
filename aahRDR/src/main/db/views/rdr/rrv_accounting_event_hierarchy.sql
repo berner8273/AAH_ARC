@@ -16,9 +16,4 @@ select
        fdr.fr_general_lookup fgl
  where
        lk_lkt_lookup_type_code in ('ACCOUNTING_EVENT')
- order by
-       event_class_cd
-     , event_group_cd
-     , event_sub_group_cd
-     , accounting_event_cd
      ;

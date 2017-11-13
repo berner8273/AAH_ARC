@@ -223,12 +223,12 @@ delete from fdr.fr_address                   where ad_address_clicode           
 
 commit;
 
-drop index fbi_fsrfr_message_id;
-drop index fbi_fsrga_message_id;
-drop index fbi_fsrb_message_id;
-drop index fbi_fsrgc_message_id;
-drop index fbi_fsrohs_message_id;
-drop index fbi_fsrpl_message_id;
+drop index fdr.fbi_fsrfr_message_id;
+drop index fdr.fbi_fsrga_message_id;
+drop index fdr.fbi_fsrb_message_id;
+drop index fdr.fbi_fsrgc_message_id;
+drop index fdr.fbi_fsrohs_message_id;
+drop index fdr.fbi_fsrpl_message_id;
 
 revoke select , insert , update          on fdr.fr_acc_event_type            from stn;
 revoke select                            on fdr.fr_account_lookup            from stn;

@@ -49,6 +49,281 @@ and not exists (
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated fx_rate.step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
     
+    PROCEDURE pr_fx_rate_chr
+        (
+            p_step_run_sid IN NUMBER,
+            p_lpg_id IN NUMBER,
+            p_no_updated_hopper_records OUT NUMBER
+        )
+    AS
+    BEGIN
+        UPDATE fdr.FR_STAN_RAW_FX_RATE fsrfr
+            SET
+                EVENT_STATUS = 'X',
+                PROCESS_ID = TO_CHAR(p_step_run_sid)
+            WHERE
+                    fsrfr.EVENT_STATUS != 'P'
+and fsrfr.LPG_ID        = p_lpg_id
+and exists (
+               select
+                      null
+                 from
+                           stn.fx_rate           fxr
+                      join stn.identified_record idr on fxr.row_sid = idr.row_sid
+                where
+                      fxr.rate_typ = fsrfr.srf_fr_rty_rate_type_id
+                  and fxr.rate_dt  = fsrfr.srf_fr_fxrate_date
+           )
+and exists (
+               select
+                      null
+                 from
+                           stn.step_run sr
+                      join stn.step     s  on sr.step_id   = s.step_id
+                      join stn.process  p  on s.process_id = p.process_id
+                where
+                      sr.step_run_sid = to_number ( fsrfr.PROCESS_ID )
+                  and p.process_name  = 'fx_rate-standardise'
+           );
+        p_no_updated_hopper_records := SQL%ROWCOUNT;
+    END;
+    
+    PROCEDURE pr_fx_rate_sval
+        (
+            p_step_run_sid IN NUMBER,
+            p_lpg_id IN NUMBER
+        )
+    AS
+        v_no_broken_feeds NUMBER(38, 9);
+    BEGIN
+        INSERT INTO STANDARDISATION_LOG
+            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
+            SELECT
+                sveld.CATEGORY_ID AS CATEGORY_ID,
+                sveld.ERROR_STATUS AS ERROR_STATUS,
+                sveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                fd.EFFECTIVE_DT AS ERROR_VALUE,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                sveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                p_lpg_id AS LPG_ID,
+                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                fd.FEED_SID AS ROW_IN_ERROR_KEY_ID,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                p_step_run_sid AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                FEED fd
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'fxr-rate_dt'
+and     exists (
+                   select
+                          null
+                     from
+                               stn.fx_rate           fxr
+                          join stn.identified_record idr on fxr.row_sid = idr.row_sid
+                    where
+                          fxr.feed_uuid  = fd.FEED_UUID
+                      and fxr.rate_dt   != fd.EFFECTIVE_DT
+               )
+and not exists (
+                   select
+                          null
+                     from
+                          stn.broken_feed bf
+                    where
+                          bf.feed_sid = fd.FEED_SID
+               );
+        v_no_broken_feeds := SQL%ROWCOUNT;
+        IF v_no_broken_feeds > 0 THEN
+            UPDATE FX_RATE fxr
+                SET
+                    EVENT_STATUS = 'X',
+                    STEP_RUN_SID = p_step_run_sid
+                WHERE
+                            exists (
+                   select
+                          null
+                     from
+                               standardisation_log sl
+                          join stn.feed            fd on sl.feed_sid = fd.feed_sid
+                    where
+                          fd.feed_uuid     = fxr.FEED_UUID
+                      and sl.rule_identity = 'fxr-rate_dt'
+               )
+and not exists (
+                   select
+                          null
+                     from
+                               stn.broken_feed bf
+                          join stn.feed        fd on bf.feed_sid = fd.feed_sid
+                    where
+                          fd.feed_uuid = fxr.FEED_UUID
+               );
+            INSERT INTO BROKEN_FEED
+                (FEED_SID, STEP_RUN_SID)
+                SELECT
+                    fd.FEED_SID AS FEED_SID,
+                    p_step_run_sid AS STEP_RUN_SID
+                FROM
+                    FEED fd
+                WHERE
+                            exists (
+                   select
+                          null
+                     from
+                          standardisation_log sl
+                    where
+                          sl.feed_sid      = fd.FEED_SID
+                      and sl.rule_identity = 'fxr-rate_dt'
+               )
+and not exists (
+                   select
+                          null
+                     from
+                          stn.broken_feed bf
+                    where
+                          bf.feed_sid = fd.FEED_SID
+               );
+            DELETE FROM
+                IDENTIFIED_RECORD idr
+            WHERE
+                exists (
+           select
+                  null
+             from
+                       stn.fx_rate     fxr
+                  join stn.feed        fd  on fxr.feed_uuid = fd.feed_uuid
+                  join stn.broken_feed bf  on fd.feed_sid   = bf.feed_sid
+            where
+                  fxr.row_sid = idr.ROW_SID
+       );
+        END IF;
+    END;
+    
+    PROCEDURE pr_fx_rate_rval
+    AS
+    BEGIN
+        INSERT INTO STANDARDISATION_LOG
+            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                fxr.TO_CCY AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                fxr.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                fxr.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                fxr.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                FX_RATE fxr
+                INNER JOIN IDENTIFIED_RECORD idr ON fxr.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON fxr.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON fxr.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN FXR_DEFAULT fxrd ON 1 = 1
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'fxr-from_ccy'
+and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_currency_lookup fcl
+                    where
+                          fcl.cul_currency_lookup_code = fxr.FROM_CCY
+                      and fcl.cul_sil_sys_inst_clicode = fxrd.SYSTEM_INSTANCE
+               )
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                fxr.TO_CCY AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                fxr.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                fxr.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                fxr.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                FX_RATE fxr
+                INNER JOIN IDENTIFIED_RECORD idr ON fxr.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON fxr.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON fxr.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN FXR_DEFAULT fxrd ON 1 = 1
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'fxr-to_ccy'
+and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_currency_lookup fcl
+                    where
+                          fcl.cul_currency_lookup_code = fxr.TO_CCY
+                      and fcl.cul_sil_sys_inst_clicode = fxrd.SYSTEM_INSTANCE
+               );
+    END;
+    
+    PROCEDURE pr_fx_rate_svs
+        (
+            p_no_validated_records OUT NUMBER
+        )
+    AS
+    BEGIN
+        UPDATE FX_RATE fxr
+            SET
+                EVENT_STATUS = 'E'
+            WHERE
+                exists (
+           select
+                  null
+             from
+                  stn.standardisation_log sl
+            where
+                  sl.row_in_error_key_id = fxr.ROW_SID
+       );
+        UPDATE FX_RATE fxr
+            SET
+                EVENT_STATUS = 'V'
+            WHERE
+                    not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = fxr.ROW_SID
+               )
+and     exists (
+                   select
+                          null
+                     from
+                          stn.identified_record idr
+                    where
+                          fxr.ROW_SID = idr.row_sid
+               );
+        p_no_validated_records := SQL%ROWCOUNT;
+    END;
+    
     PROCEDURE pr_fx_rate_pub
         (
             p_step_run_sid IN NUMBER,
@@ -198,84 +473,6 @@ and not exists (
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Created and published 1:1 FX rates', 'p_total_no_1_1_published', NULL, p_total_no_1_1_published, NULL);
     END;
     
-    PROCEDURE pr_fx_rate_rval
-    AS
-    BEGIN
-        INSERT INTO STANDARDISATION_LOG
-            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
-            SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                fxr.TO_CCY AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
-                fxr.LPG_ID AS LPG_ID,
-                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                fxr.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
-                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
-                fxr.STEP_RUN_SID AS STEP_RUN_SID,
-                fd.FEED_SID AS FEED_SID
-            FROM
-                FX_RATE fxr
-                INNER JOIN IDENTIFIED_RECORD idr ON fxr.ROW_SID = idr.ROW_SID
-                INNER JOIN FEED fd ON fxr.FEED_UUID = fd.FEED_UUID
-                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON fxr.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
-                INNER JOIN FXR_DEFAULT fxrd ON 1 = 1
-                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
-                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
-            WHERE
-                    vdl.VALIDATION_CD = 'fxr-from_ccy'
-and not exists (
-                   select
-                          null
-                     from
-                          fdr.fr_currency_lookup fcl
-                    where
-                          fcl.cul_currency_lookup_code = fxr.FROM_CCY
-                      and fcl.cul_sil_sys_inst_clicode = fxrd.SYSTEM_INSTANCE
-               )
-            UNION ALL
-            SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                fxr.TO_CCY AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
-                fxr.LPG_ID AS LPG_ID,
-                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                fxr.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
-                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
-                fxr.STEP_RUN_SID AS STEP_RUN_SID,
-                fd.FEED_SID AS FEED_SID
-            FROM
-                FX_RATE fxr
-                INNER JOIN IDENTIFIED_RECORD idr ON fxr.ROW_SID = idr.ROW_SID
-                INNER JOIN FEED fd ON fxr.FEED_UUID = fd.FEED_UUID
-                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON fxr.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
-                INNER JOIN FXR_DEFAULT fxrd ON 1 = 1
-                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
-                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
-            WHERE
-                    vdl.VALIDATION_CD = 'fxr-to_ccy'
-and not exists (
-                   select
-                          null
-                     from
-                          fdr.fr_currency_lookup fcl
-                    where
-                          fcl.cul_currency_lookup_code = fxr.TO_CCY
-                      and fcl.cul_sil_sys_inst_clicode = fxrd.SYSTEM_INSTANCE
-               );
-    END;
-    
     PROCEDURE pr_fx_rate_sps
         (
             p_no_processed_records OUT NUMBER
@@ -300,203 +497,6 @@ and not exists (
               and p.process_name = 'fx_rate-standardise'
        );
         p_no_processed_records := SQL%ROWCOUNT;
-    END;
-    
-    PROCEDURE pr_fx_rate_sval
-        (
-            p_step_run_sid IN NUMBER,
-            p_lpg_id IN NUMBER
-        )
-    AS
-        v_no_broken_feeds NUMBER(38, 9);
-    BEGIN
-        INSERT INTO STANDARDISATION_LOG
-            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
-            SELECT
-                sveld.CATEGORY_ID AS CATEGORY_ID,
-                sveld.ERROR_STATUS AS ERROR_STATUS,
-                sveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                fd.EFFECTIVE_DT AS ERROR_VALUE,
-                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
-                sveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
-                p_lpg_id AS LPG_ID,
-                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                fd.FEED_SID AS ROW_IN_ERROR_KEY_ID,
-                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
-                vdl.VALIDATION_CD AS RULE_IDENTITY,
-                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
-                p_step_run_sid AS STEP_RUN_SID,
-                fd.FEED_SID AS FEED_SID
-            FROM
-                FEED fd
-                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
-                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
-            WHERE
-                    vdl.VALIDATION_CD = 'fxr-rate_dt'
-and     exists (
-                   select
-                          null
-                     from
-                               stn.fx_rate           fxr
-                          join stn.identified_record idr on fxr.row_sid = idr.row_sid
-                    where
-                          fxr.feed_uuid  = fd.FEED_UUID
-                      and fxr.rate_dt   != fd.EFFECTIVE_DT
-               )
-and not exists (
-                   select
-                          null
-                     from
-                          stn.broken_feed bf
-                    where
-                          bf.feed_sid = fd.FEED_SID
-               );
-        v_no_broken_feeds := SQL%ROWCOUNT;
-        IF v_no_broken_feeds > 0 THEN
-            UPDATE FX_RATE fxr
-                SET
-                    EVENT_STATUS = 'X',
-                    STEP_RUN_SID = p_step_run_sid
-                WHERE
-                            exists (
-                   select
-                          null
-                     from
-                               standardisation_log sl
-                          join stn.feed            fd on sl.feed_sid = fd.feed_sid
-                    where
-                          fd.feed_uuid     = fxr.FEED_UUID
-                      and sl.rule_identity = 'fxr-rate_dt'
-               )
-and not exists (
-                   select
-                          null
-                     from
-                               stn.broken_feed bf
-                          join stn.feed        fd on bf.feed_sid = fd.feed_sid
-                    where
-                          fd.feed_uuid = fxr.FEED_UUID
-               );
-            INSERT INTO BROKEN_FEED
-                (FEED_SID, STEP_RUN_SID)
-                SELECT
-                    fd.FEED_SID AS FEED_SID,
-                    p_step_run_sid AS STEP_RUN_SID
-                FROM
-                    FEED fd
-                WHERE
-                            exists (
-                   select
-                          null
-                     from
-                          standardisation_log sl
-                    where
-                          sl.feed_sid      = fd.FEED_SID
-                      and sl.rule_identity = 'fxr-rate_dt'
-               )
-and not exists (
-                   select
-                          null
-                     from
-                          stn.broken_feed bf
-                    where
-                          bf.feed_sid = fd.FEED_SID
-               );
-            DELETE FROM
-                IDENTIFIED_RECORD idr
-            WHERE
-                exists (
-           select
-                  null
-             from
-                       stn.fx_rate     fxr
-                  join stn.feed        fd  on fxr.feed_uuid = fd.feed_uuid
-                  join stn.broken_feed bf  on fd.feed_sid   = bf.feed_sid
-            where
-                  fxr.row_sid = idr.ROW_SID
-       );
-        END IF;
-    END;
-    
-    PROCEDURE pr_fx_rate_svs
-        (
-            p_no_validated_records OUT NUMBER
-        )
-    AS
-    BEGIN
-        UPDATE FX_RATE fxr
-            SET
-                EVENT_STATUS = 'E'
-            WHERE
-                exists (
-           select
-                  null
-             from
-                  stn.standardisation_log sl
-            where
-                  sl.row_in_error_key_id = fxr.ROW_SID
-       );
-        UPDATE FX_RATE fxr
-            SET
-                EVENT_STATUS = 'V'
-            WHERE
-                    not exists (
-                   select
-                          null
-                     from
-                          stn.standardisation_log sl
-                    where
-                          sl.row_in_error_key_id = fxr.ROW_SID
-               )
-and     exists (
-                   select
-                          null
-                     from
-                          stn.identified_record idr
-                    where
-                          fxr.ROW_SID = idr.row_sid
-               );
-        p_no_validated_records := SQL%ROWCOUNT;
-    END;
-    
-    PROCEDURE pr_fx_rate_chr
-        (
-            p_step_run_sid IN NUMBER,
-            p_lpg_id IN NUMBER,
-            p_no_updated_hopper_records OUT NUMBER
-        )
-    AS
-    BEGIN
-        UPDATE fdr.FR_STAN_RAW_FX_RATE fsrfr
-            SET
-                EVENT_STATUS = 'X',
-                PROCESS_ID = TO_CHAR(p_step_run_sid)
-            WHERE
-                    fsrfr.EVENT_STATUS != 'P'
-and fsrfr.LPG_ID        = p_lpg_id
-and exists (
-               select
-                      null
-                 from
-                           stn.fx_rate           fxr
-                      join stn.identified_record idr on fxr.row_sid = idr.row_sid
-                where
-                      fxr.rate_typ = fsrfr.srf_fr_rty_rate_type_id
-                  and fxr.rate_dt  = fsrfr.srf_fr_fxrate_date
-           )
-and exists (
-               select
-                      null
-                 from
-                           stn.step_run sr
-                      join stn.step     s  on sr.step_id   = s.step_id
-                      join stn.process  p  on s.process_id = p.process_id
-                where
-                      sr.step_run_sid = to_number ( fsrfr.PROCESS_ID )
-                  and p.process_name  = 'fx_rate-standardise'
-           );
-        p_no_updated_hopper_records := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_fx_rate_prc

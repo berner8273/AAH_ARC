@@ -25,13 +25,13 @@ create table stn.journal_line
 ,   ultimate_parent_le_id  number(38)                                             not null
 ,   event_typ              varchar2(20 char)     default 'NVS'
 ,   transaction_ccy        varchar2(3 char)                                       not null
-,   transaction_amt        number(38)                                             not null
+,   transaction_amt        number(38,9)                                           not null
 ,   functional_ccy         varchar2(3 char)                                       not null
-,   functional_amt         number(38)                                             not null
+,   functional_amt         number(38,9)                                           not null
 ,   reporting_ccy          varchar2(3 char)                                       not null
-,   reporting_amt          number(38)                                             not null
+,   reporting_amt          number(38,9)                                           not null
 ,   execution_typ          varchar2(30 char)                                      not null
-,   lpg_id                 number(38)            default 1                        not null
+,   lpg_id                 number(38)            default 2                        not null
 ,   event_status           varchar2(1 char)      default 'U'                      not null
 ,   feed_uuid              raw(16)                                                not null
 ,   no_retries             number(38)            default 0                        not null
