@@ -37,15 +37,12 @@ select
      ,  srae_client_spare_id10       vie_cd
      ,  srae_client_spare_id11       business_event_type
      ,  srae_client_spare_id1        
-     ,  srae_client_spare_id4
-     ,  srae_dimension_1             
-     ,  srae_dimension_2                    
      ,  srae_il_instr_leg_id         
      ,  srae_posting_date            
      ,  srae_source_system           
      ,  srae_source_tran_no          
      ,  srae_value_date              
-     ,  srae_nostro_account          
+     ,  srae_nostro_account        account_lookup
      ,  srae_pos_neg_flag            
      ,  srae_input_by                
      ,  srae_input_time              

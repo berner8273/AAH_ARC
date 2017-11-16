@@ -2,26 +2,26 @@ create or replace view rdr.rrv_accounting_event
 as
 select
  ae_accevent_id            
-,ae_gl_account             
+,ae_gl_account    as sub_acccount         
 ,ae_acc_event_id           
 ,ae_aet_acc_event_type_id  
 ,ae_in_repository_ind      
-,ae_posting_date           
+,ae_posting_date    as effective_date       
 ,ae_accevent_date          
-,ae_amount                 
-,ae_iso_currency_code      
+,ae_amount            as transaction_amt     
+,ae_iso_currency_code as currency
 ,ae_ledger_period          
 ,ae_local_amount           
 ,ae_gl_account_alias       
 ,ae_local_currency_code    
-,ae_gl_entity              
+,ae_gl_entity        as business_unit      
 ,ae_epg_id                 
-,ae_gl_book                
+,ae_gl_book          as department
 ,ae_gl_profit_centre       
 ,ae_input_time             
 ,ae_gl_instr_super_class   
 ,ae_ledger_rec_status      
-,ae_value_date             
+,ae_value_date  		  as posting_period           
 ,ae_gl_instrument_id       
 ,ae_gl_party_business_id   
 ,ae_gl_person_id           
@@ -34,11 +34,9 @@ select
 ,ae_client_spare_id7 as reporting_ccy       
 ,ae_client_spare_id8 as reporting_amt       
 ,ae_client_spare_id9       
-,ae_client_spare_id10      
 ,ae_source_tran_no         
 ,ae_gl_narrative           
 ,ae_ledger_rec_status2     
-,ae_gl_transaction_id      
 ,ae_rep_schema_upd         
 ,ae_transaction_no         
 ,ae_rule_id                
@@ -46,8 +44,6 @@ select
 ,ae_sub_ledger_upd         
 ,ae_i_instrument_id        
 ,ae_fdr_tran_no            
-,ae_client_spare_id11      
-,ae_client_spare_id12      
 ,ae_il_instr_leg_id        
 ,ae_source_system          
 ,ae_journal_type           
@@ -56,29 +52,25 @@ select
 ,lpg_id                    
 ,ae_source_jrnl_id         
 ,ae_sub_event_id           
-,ae_posting_schema         
-,ae_gaap                   
+,ae_posting_schema as ledger
+,ae_gaap           as accounting_basis         
 ,ae_posting_code           
 ,ae_reverse_date           
 ,ae_dr_cr                  
 ,ae_base_rate              
 ,ae_local_rate             
-,ae_rate_date              
-,ae_dimension_1            
-,ae_dimension_2            
-,ae_dimension_3            
-,ae_dimension_4  as chartfield_1           
-,ae_dimension_5  as accident_yr            
-,ae_dimension_6  as underwriting_yr           
-,ae_dimension_7  as policy_id            
-,ae_dimension_8  as stream_id            
-,ae_dimension_9  as internal_counterparty            
-,ae_dimension_10 as tax_jurisdiction_cd           
-,ae_dimension_11 as policy_name          
-,ae_dimension_12 as business_typ           
-,ae_dimension_13 as execution_typ           
-,ae_dimension_14 as premium_typ           
-,ae_dimension_15 as line_of_business           
+,ae_dimension_1  as affiliate          
+,ae_dimension_2  as chartfield1          
+,ae_dimension_3  as execution_type          
+,ae_dimension_4  as business_type
+,ae_dimension_5  as policy_id            
+,ae_dimension_7  as tax_jurisdiction
+,ae_dimension_8  as premium_type     
+,ae_dimension_10 as stream
+,ae_dimension_12 as gross_stream_owner           
+,ae_dimension_13 as underwriting_year      
+,ae_dimension_14 as owner_entity     
+,ae_dimension_15 as accounting_event_type
 ,ae_gl_cost_centre         
 ,ae_ret_amort_flag         
 ,ae_gl_client1_org_unit_id 
@@ -101,14 +93,6 @@ select
 ,ae_ret_agv_or_arrears     
 ,ae_ret_ca_calendar_name   
 ,ae_ret_post_period        
-,ae_client_spare_id13      
-,ae_client_spare_id14      
-,ae_client_spare_id15      
-,ae_client_spare_id16      
-,ae_client_spare_id17      
-,ae_client_spare_id18      
-,ae_client_spare_id19      
-,ae_client_spare_id20      
 ,ae_client_date2           
 ,ae_client_date3           
 ,ae_client_date4           
