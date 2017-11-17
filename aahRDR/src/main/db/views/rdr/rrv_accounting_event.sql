@@ -2,38 +2,44 @@ create or replace view rdr.rrv_accounting_event
 as
 select
        ae_accevent_id
-     , ae_gl_account                as sub_acccount
+     , ae_gl_account                sub_acccount
      , ae_acc_event_id
      , ae_aet_acc_event_type_id
      , ae_in_repository_ind
-     , ae_posting_date              as effective_date
+     , ae_posting_date              effective_date
      , ae_accevent_date
-     , ae_amount                    as transaction_amt
-     , ae_iso_currency_code         as currency
+     , ae_amount                    transaction_amt
+     , ae_iso_currency_code         currency
      , ae_ledger_period
      , ae_local_amount
      , ae_gl_account_alias
      , ae_local_currency_code
-     , ae_gl_entity                 as business_unit
+     , ae_gl_entity                 business_unit
      , ae_epg_id
-     , ae_gl_book                   as department
+     , ae_gl_book                   department
      , ae_gl_profit_centre
      , ae_input_time
      , ae_gl_instr_super_class
      , ae_ledger_rec_status
-     , ae_value_date  		        as posting_period
+     , ae_value_date                posting_period
      , ae_gl_instrument_id
      , ae_gl_party_business_id
      , ae_gl_person_id
-     , ae_client_spare_id1          as event_type
-     , ae_client_spare_id2          as affiliate
-     , ae_client_spare_id3          as rule_id
-     , ae_client_spare_id4
-     , ae_client_spare_id5          as functionl_ccy
-     , ae_client_spare_id6          as functional_amt
-     , ae_client_spare_id7          as reporting_ccy
-     , ae_client_spare_id8          as reporting_amt
-     , ae_client_spare_id9
+     , ae_client_spare_id1
+     , ae_client_spare_id2
+     , ae_client_spare_id3          ultimate_parent_stream_id
+     , ae_client_spare_id4          event_typ
+     , ae_client_spare_id5          functionl_ccy
+     , ae_client_spare_id6          functional_amt
+     , ae_client_spare_id7          reporting_ccy
+     , ae_client_spare_id8          reporting_amt
+     , ae_client_spare_id9          is_mark_to_market
+     , ae_client_spare_id10         vie_cd
+     , ae_client_spare_id11         business_event_typ
+     , ae_client_spare_id12         event_seq_id
+     , ae_client_spare_id13         policy_typ
+     , ae_client_spare_id14         correlation_uuid
+     , ae_client_spare_id15         basis_cd
      , ae_source_tran_no
      , ae_gl_narrative
      , ae_ledger_rec_status2
@@ -52,25 +58,28 @@ select
      , lpg_id
      , ae_source_jrnl_id
      , ae_sub_event_id
-     , ae_posting_schema            as ledger
-     , ae_gaap                      as accounting_basis
+     , ae_posting_schema            ledger
+     , ae_gaap                      accounting_basis
      , ae_posting_code
      , ae_reverse_date
      , ae_dr_cr
      , ae_base_rate
      , ae_local_rate
-     , ae_dimension_1               as affiliate
-     , ae_dimension_2               as chartfield1
-     , ae_dimension_3               as execution_type
-     , ae_dimension_4               as business_type
-     , ae_dimension_5               as policy_id
-     , ae_dimension_7               as tax_jurisdiction
-     , ae_dimension_8               as premium_type
-     , ae_dimension_10              as stream
-     , ae_dimension_12              as gross_stream_owner
-     , ae_dimension_13              as underwriting_year
-     , ae_dimension_14              as owner_entity
-     , ae_dimension_15              as accounting_event_type
+     , ae_dimension_1               chartfield_1
+     , ae_dimension_2               dept_cd
+     , ae_dimension_3               counterparty_le_cd
+     , ae_dimension_4               affiliate_le_cd
+     , ae_dimension_5               accident_yr
+     , ae_dimension_6               underwriting_yr
+     , ae_dimension_7               policy_id
+     , ae_dimension_8               stream_id
+     , ae_dimension_9               tax_jurisdiction_cd
+     , ae_dimension_10              ledger_cd
+     , ae_dimension_11              execution_typ
+     , ae_dimension_12              business_typ
+     , ae_dimension_13              owner_le_id
+     , ae_dimension_14              premium_typ
+     , ae_dimension_15              journal_descr
      , ae_gl_cost_centre
      , ae_ret_amort_flag
      , ae_gl_client1_org_unit_id
