@@ -12,8 +12,8 @@ create table stn.cession
 ,   net_premium_pct          number ( 5 , 2 )                                                  not null
 ,   start_dt                 date                                                              not null
 ,   effective_dt             date                                                              not null
-,   stop_dt                  date                                                              not null
-,   termination_dt           date                                                              not null
+,   stop_dt                  date
+,   termination_dt           date
 ,   loss_pos                 varchar2 ( 1 char )
 ,   vie_status               varchar2 ( 10 char )
 ,   vie_effective_dt         date
