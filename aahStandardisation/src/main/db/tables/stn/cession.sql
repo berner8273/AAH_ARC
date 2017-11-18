@@ -27,10 +27,6 @@ create table stn.cession
 ,   step_run_sid             number ( 38 , 0 )     default 0                                   not null
 ,   constraint pk_c                      primary key ( row_sid )
 ,   constraint uk_c                      unique      ( stream_id , feed_uuid )
-,   constraint ck_gross_par_pct          check       ( gross_par_pct         between 0 and 100 )
-,   constraint ck_net_par_pct            check       ( net_par_pct           between 0 and 100 )
-,   constraint ck_gross_premium_pct      check       ( gross_premium_pct     between 0 and 100 )
-,   constraint ck_net_premium_pct        check       ( net_premium_pct       between 0 and 100 )
 ,   constraint ck_ceding_commission_pct  check       ( ceding_commission_pct between 0 and 100 )
 ,   constraint ck_start_dt               check       ( start_dt <= stop_dt )
 );

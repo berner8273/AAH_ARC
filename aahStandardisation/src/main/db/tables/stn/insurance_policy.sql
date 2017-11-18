@@ -30,7 +30,6 @@ create table stn.insurance_policy
 ,   constraint ck_is_credit_default_swap check       ( is_credit_default_swap in ( 'Y' , 'N' ) )
 ,   constraint ck_is_uncollectible       check       ( is_uncollectible       in ( 'Y' , 'N' ) )
 ,   constraint ck_policy_typ             check       ( policy_typ             in ( 'DIRECT' , 'ASSUMED' ) )
-,   constraint ck_close_dt               check       ( close_dt        <= expected_maturity_dt )
 ,   constraint ck_policy_accident_yr     check       ( policy_accident_yr     >= 0 )
 ,   constraint ck_policy_underwriting_yr check       ( policy_underwriting_yr >= 0 )
 );
