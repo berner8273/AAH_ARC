@@ -108,6 +108,7 @@ conn ~stn_logon
 @@tables/stn/business_type.sql
 @@tables/stn/cession.sql
 @@tables/stn/cession_event.sql
+@@tables/stn/cession_event_premium_type.sql
 @@tables/stn/cession_link.sql
 @@tables/stn/cession_link_type.sql
 @@tables/stn/cession_type.sql
@@ -138,6 +139,7 @@ conn ~stn_logon
 @@tables/stn/insurance_policy_fx_rate.sql
 @@tables/stn/insurance_policy_tax_jurisd.sql
 @@tables/stn/journal_line.sql
+@@tables/stn/journal_line_premium_type.sql
 @@tables/stn/ledger.sql
 @@tables/stn/elimination_legal_entity.sql
 @@tables/stn/legal_entity.sql
@@ -159,6 +161,7 @@ conn ~stn_logon
 @@tables/stn/posting_method_derivation_link.sql
 @@tables/stn/posting_method_derivation_mtm.sql
 @@tables/stn/posting_method_ledger.sql
+@@tables/stn/premium_type.sql
 @@tables/stn/process_code_module.sql
 @@tables/stn/standardisation_log.sql
 @@tables/stn/superseded_feed.sql
@@ -214,6 +217,7 @@ conn ~stn_logon
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
 @@ri_constraints/stn/cession_event.sql
+@@ri_constraints/stn/cession_event_premium_type.sql
 @@ri_constraints/stn/cession_link.sql
 @@ri_constraints/stn/code_module.sql
 @@ri_constraints/stn/db_tab_column.sql
@@ -230,9 +234,11 @@ conn ~stn_logon
 @@ri_constraints/stn/insurance_policy_fx_rate.sql
 @@ri_constraints/stn/insurance_policy_tax_jurisd.sql
 @@ri_constraints/stn/journal_line.sql
+@@ri_constraints/stn/journal_line_premium_type.sql
 @@ri_constraints/stn/legal_entity.sql
 @@ri_constraints/stn/legal_entity_ledger.sql
 @@ri_constraints/stn/legal_entity_link.sql
+@@ri_constraints/stn/policy_premium_type.sql
 @@ri_constraints/stn/posting_accounting_basis.sql
 @@ri_constraints/stn/posting_method_derivation_et.sql
 @@ri_constraints/stn/posting_method_derivation_ic.sql
@@ -267,6 +273,9 @@ conn ~stn_logon
 @@data/stn/legal_entity_type.sql
 @@data/stn/legal_entity_link_type.sql
 @@data/stn/posting_accounting_basis_type.sql
+@@data/stn/premium_type.sql
+@@data/stn/cession_event_premium_type.sql
+@@data/stn/journal_line_premium_type.sql
 @@data/stn/policy_premium_type.sql
 @@data/stn/execution_type.sql
 @@data/stn/vie_code.sql
