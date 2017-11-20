@@ -6,4 +6,5 @@ insert into stn.premium_type ( premium_typ , premium_typ_descr ) values ( 'F' , 
 insert into stn.premium_type ( premium_typ , premium_typ_descr ) values ( 'L' , 'Locked mixed' );
 insert into stn.premium_type ( premium_typ , premium_typ_descr ) values ( 'U' , 'Upfront' );
 insert into stn.premium_type ( premium_typ , premium_typ_descr ) values ( 'X' , 'Derive from the policy' );
+insert into stn.premium_type ( premium_typ , premium_typ_descr ) values ( 'N' , 'None' );
 commit;
