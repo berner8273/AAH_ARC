@@ -3,26 +3,26 @@ as
 with
      ce_data
   as (
-  select
-                   ipr.policy_id
-                 , ipr.stream_id
-                 , vie.vie_id
-                 , vie.vie_cd
-                 , ipr.le_cd
-                 , ipr.is_mark_to_market
-                 , ipr.policy_premium_typ
-                 , ipr.policy_accident_yr
-                 , ipr.policy_underwriting_yr
-                 , ipr.policy_typ
-                 , ipr.parent_stream_id
-                 , pipr.le_cd              parent_cession_le_cd
-                 , ipr.ultimate_parent_stream_id
-                 , ipr.execution_typ
-              from
-                        stn.insurance_policy_reference  ipr
-                   join stn.vie_event_cd                vec on ipr.stream_id = vec.stream_id
-                   join stn.vie_code                    vie on vec.vie_cd = vie.vie_cd
-              left join stn.insurance_policy_reference  pipr on ipr.parent_stream_id = pipr.stream_id
+         select
+                ipr.policy_id
+              , ipr.stream_id
+              , vie.vie_id
+              , vie.vie_cd
+              , ipr.le_cd
+              , ipr.is_mark_to_market
+              , ipr.policy_premium_typ
+              , ipr.policy_accident_yr
+              , ipr.policy_underwriting_yr
+              , ipr.policy_typ
+              , ipr.parent_stream_id
+              , pipr.le_cd              parent_cession_le_cd
+              , ipr.ultimate_parent_stream_id
+              , ipr.execution_typ
+           from
+                     stn.insurance_policy_reference  ipr
+                join stn.vie_event_cd                vec on ipr.stream_id = vec.stream_id
+                join stn.vie_code                    vie on vec.vie_cd = vie.vie_cd
+           left join stn.insurance_policy_reference  pipr on ipr.parent_stream_id = pipr.stream_id
      )
    , cev_data
   as (
@@ -163,7 +163,7 @@ with
                            join stn.event_type                   et      on cev.event_typ              = et.event_typ
                            join stn.posting_accounting_basis     abasis  on cev.basis_cd               = abasis.basis_cd
                            join stn.business_type                bt      on cev.business_typ           = bt.business_typ
-                           join stn.policy_premium_type          ppt     on ce_data.policy_premium_typ = ppt.policy_premium_typ
+                           join stn.policy_premium_type          ppt     on ce_data.policy_premium_typ = ppt.premium_typ
                       left join stn.posting_method_derivation_et psmdet  on et.event_typ_id            = psmdet.input_event_typ_id
                       left join stn.event_type                   etout   on psmdet.output_event_typ_id = etout.event_typ_id
                      where
