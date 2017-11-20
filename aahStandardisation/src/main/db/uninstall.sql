@@ -137,10 +137,6 @@ drop table stn.insurance_policy_tax_jurisd;
 drop table stn.insurance_policy;
 drop table stn.execution_type;
 drop table stn.journal_line;
-drop table stn.policy_premium_type;
-drop table stn.journal_line_premium_type;
-drop table stn.cession_event_premium_type;
-drop table stn.premium_type;
 drop table stn.cession_event;
 drop table stn.business_type;
 drop table stn.posting_amount_derivation;
@@ -170,6 +166,10 @@ drop table stn.legal_entity_ledger;
 drop table stn.ledger;
 drop table stn.accounting_event;
 drop table stn.gl_account_hierarchy;
+drop table stn.policy_premium_type;
+drop table stn.journal_line_premium_type;
+drop table stn.cession_event_premium_type;
+drop table stn.premium_type;
 
 conn ~fdr_logon
 
