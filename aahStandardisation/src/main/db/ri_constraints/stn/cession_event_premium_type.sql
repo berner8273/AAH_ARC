@@ -1,0 +1,1 @@
+alter table stn.cession_event_premium_type add constraint fk_ceptyp_ptyp foreign key ( premium_typ ) references stn.premium_type ( premium_typ );
