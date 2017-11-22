@@ -309,7 +309,7 @@ and     exists (
                 INNER JOIN LE_DEFAULT ON 1 = 1
                 INNER JOIN fdr.FR_INTERNAL_PROC_ENTITY_TYPE fipet ON 1 = 1
             WHERE
-                le.IS_LEDGER_ENTITY = 'Y' AND fipet.IPET_INTERNAL_PROC_ENTITY_CODE = 'OPERATING UNIT' AND le.EVENT_STATUS = 'V';
+                fipet.IPET_INTERNAL_PROC_ENTITY_CODE = 'OPERATING UNIT' AND le.EVENT_STATUS = 'V';
         p_total_no_fsrie_published := SQL%ROWCOUNT;
         INSERT INTO fdr.FR_STAN_RAW_ORG_HIER_NODE
             (LPG_ID, MESSAGE_ID, PROCESS_ID, SRHN_ACTIVE, SRHN_ON_ORG_NODE_CODE, SRHN_ON_PL_PARTY_LEGAL_CODE, SRHN_SI_SYS_INST_CODE, SRHN_ONT_ORG_NODE_TYPE_CODE)
@@ -350,7 +350,7 @@ and     exists (
                 INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
                 INNER JOIN LE_DEFAULT ON 1 = 1
             WHERE
-                le.IS_LEDGER_ENTITY = 'Y' AND le.EVENT_STATUS = 'V';
+                le.EVENT_STATUS = 'V';
         p_total_no_fsrb_published := SQL%ROWCOUNT;
         INSERT INTO HOPPER_LEGAL_ENTITY_ALIAS
             (LPG_ID, MESSAGE_ID, PROCESS_ID, EVENT_STATUS, ALIAS_LE_CD, ALIAS_LE_DESCR, LE_ALIAS_RULE_TYP, LE_ALIAS_STS, LE_ID, EFFECTIVE_FROM, EFFECTIVE_TO)
@@ -452,14 +452,19 @@ and     exists (
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
             END IF;
+            IF v_total_no_fsrpl_published <> v_total_no_fsrie_published THEN
+                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsrpl_published <> v_total_no_fsrie_published', NULL, NULL, NULL, NULL);
+                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+                raise pub_val_mismatch;
+            END IF;
             IF v_total_no_fsrpl_published <> v_total_no_fsrohn_published THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsrpl_published <> v_total_no_fsrohn_published', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
                 raise pub_val_mismatch;
             END IF;
             IF v_no_processed_records <> v_no_validated_records THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_no_validated_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
+                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 4' );
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
