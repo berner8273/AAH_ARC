@@ -741,44 +741,39 @@ and (
                 INNER JOIN POL_DEFAULT pold ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                        vdl.VALIDATION_CD = 'cs-le_id-slr_link'
-and     exists (
-                   select
-                          null
-                     from
-                               stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
-                    where
-                          pol.policy_id = cs.policy_id
-                      and pol.feed_uuid = cs.FEED_UUID
-               )
-and     exists (
-                   select
-                          null
-                     from
-                               fdr.fr_party_legal_lookup fpll
-                          join fdr.fr_party_legal        fpl  on (
-                                                                         fpll.pll_lookup_key           = fpl.pl_party_legal_clicode
-                                                                     and fpll.pll_sil_sys_inst_clicode = fpl.pl_si_sys_inst_id
-                                                                 )
-                          join fdr.fr_party_type         fpt  on fpl.pl_pt_party_type_id = fpt.pt_party_type_id
-                    where
-                          to_number ( fpl.pl_global_id ) = cs.LE_ID
-                      and fpll.pll_sil_sys_inst_clicode  = pold.SYSTEM_INSTANCE
-                      and fpt.pt_party_type_name         not in ( 'Ledger Entity' )
-               )
-and not exists (
-                   select
-                          null
-                     from
-                               fdr.fr_org_node_structure fons
-                          join fdr.fr_org_hierarchy_type foht on fons.ons_oht_org_hier_type_id = foht.oht_org_hier_type_id
-                          join fdr.fr_org_network        fon  on fons.ons_on_child_org_node_id = fon.on_org_node_id
-                          join fdr.fr_party_legal        fpl  on fon.on_pl_party_legal_id      = fpl.pl_party_legal_id
-                    where
-                          foht.oht_org_hier_client_code  = 'SLR_LINK'
-                      and to_number ( fpl.pl_global_id ) = cs.LE_ID
-               );
+                    vdl.VALIDATION_CD = 'cs-le_id-slr_link'
+and cs.LE_ID          not in ( 25 )
+and exists (
+               select
+                      null
+                 from
+                           stn.insurance_policy  pol
+                      join stn.identified_record idr on pol.row_sid = idr.row_sid
+                where
+                      pol.policy_id = cs.policy_id
+                  and pol.feed_uuid = cs.FEED_UUID
+           )
+and (
+           not exists (
+                          select
+                                 null
+                            from
+                                 stn.cession_hierarchy ch
+                           where
+                                 ch.feed_uuid       = cs.FEED_UUID
+                             and ch.child_stream_id = cs.stream_id
+                      )
+        or     exists (
+                          select
+                                 null
+                            from
+                                 stn.cession_hierarchy ch
+                           where
+                                 ch.feed_uuid       = cs.FEED_UUID
+                             and ch.child_stream_id = cs.stream_id
+                             and ch.ledger_entity_le_id is null
+                      )
+    );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Loaded records to stn.standardisation_log', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
     
@@ -1168,26 +1163,26 @@ and not exists (
                   select
                          null
                     from
-                         stn.insurance_policy_hierarchy ipril1
+                         stn.cession_hierarchy ch1
                    where
-                         ipril1.parent_stream_id = cl.parent_stream_id
-                     and ipril1.stream_id        = cl.child_stream_id
-                     and ipril1.feed_uuid        = cl.feed_uuid
+                         ch1.parent_stream_id = cl.parent_stream_id
+                     and ch1.child_stream_id  = cl.child_stream_id
+                     and ch1.feed_uuid        = cl.feed_uuid
                      and exists (
                                     select
                                            null
                                       from
-                                                stn.cession_link               cli
-                                           join stn.standardisation_log        sl     on cli.row_sid = sl.row_in_error_key_id
-                                           join stn.insurance_policy_hierarchy ipril2 on (
-                                                                                                 cli.parent_stream_id = ipril2.parent_stream_id
-                                                                                             and cli.child_stream_id  = ipril2.stream_id
-                                                                                             and cli.feed_uuid        = ipril2.feed_uuid
-                                                                                         )
+                                                stn.cession_link        cli
+                                           join stn.standardisation_log sl   on cli.row_sid = sl.row_in_error_key_id
+                                           join stn.cession_hierarchy   ch2  on (
+                                                                                        cli.parent_stream_id = ch2.parent_stream_id
+                                                                                    and cli.child_stream_id  = ch2.child_stream_id
+                                                                                    and cli.feed_uuid        = ch2.feed_uuid
+                                                                                )
                                      where
-                                           sl.table_in_error_name           = 'cession_link'
-                                       and ipril1.ultimate_parent_stream_id = ipril2.ultimate_parent_stream_id
-                                       and ipril1.feed_uuid                 = ipril2.feed_uuid
+                                           sl.table_in_error_name        = 'cession_link'
+                                       and ch1.ultimate_parent_stream_id = ch2.ultimate_parent_stream_id
+                                       and ch1.feed_uuid                 = ch2.feed_uuid
                                 ) 
               );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of cession link records set to error', 'sql%rowcount', NULL, sql%rowcount, NULL);
@@ -1259,9 +1254,12 @@ and not exists (
                 pol.IS_UNCOLLECTIBLE AS IS_UNCOLLECTIBLE,
                 pol.EARNINGS_CALC_METHOD AS EARNINGS_CALC_METHOD,
                 TO_CHAR(cs.STREAM_ID) AS STREAM_ID,
-                TO_CHAR(iph.ULTIMATE_PARENT_STREAM_ID) AS ULTIMATE_PARENT_STREAM_ID,
-                TO_CHAR(iph.PARENT_STREAM_ID) AS PARENT_STREAM_ID,
-                cession_le.PL_PARTY_LEGAL_CLICODE AS LE_CD,
+                TO_CHAR(ch.ultimate_parent_stream_id) AS ULTIMATE_PARENT_STREAM_ID,
+                TO_CHAR((CASE
+                    WHEN ch.parent_stream_id = cs.STREAM_ID THEN NULL
+                    ELSE ch.parent_stream_id
+                END)) AS PARENT_STREAM_ID,
+                ch.ledger_entity_le_cd AS LE_CD,
                 cs.CESSION_TYP AS CESSION_TYP,
                 cs.GROSS_PAR_PCT AS GROSS_PAR_PCT,
                 cs.NET_PAR_PCT AS NET_PAR_PCT,
@@ -1278,7 +1276,7 @@ and not exists (
                 cs.VIE_ACCT_DT AS VIE_ACCT_DT,
                 cs.ACCIDENT_YR AS ACCIDENT_YR,
                 cs.UNDERWRITING_YR AS UNDERWRITING_YR,
-                cession_le.PL_PARTY_LEGAL_CLICODE AS PORTFOLIO_CD,
+                ch.ledger_entity_le_cd AS PORTFOLIO_CD,
                 pold.BUY_OR_SELL AS BUY_OR_SELL,
                 cession_le.PL_PARTY_LEGAL_CLICODE AS POLICY_HOLDER_LE_CD,
                 pold.SYSTEM_INSTANCE AS SYSTEM_CD,
@@ -1289,26 +1287,26 @@ and not exists (
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 TO_CHAR(cs.STREAM_ID) AS FINANCIAL_INSTRUMENT_ID,
                 pol.POLICY_NM || ' - ' || TO_CHAR(cs.STREAM_ID) AS POLICY_NAME_STREAM_ID,
-                (
-select nvl(max(ft.t_fdr_ver_no),0) + 1
-  from
-       fdr.fr_trade ft
-  join 
-       fdr.fr_instr_insure_extend fiie
-    on fiie.iie_instrument_id       = ft.t_i_instrument_id
-  where
-       fiie.iie_cover_signing_party = pol.POLICY_ID
-   and ft.t_source_tran_no          = cs.STREAM_ID
-) AS POLICY_VERSION
+                NVL(pdtvn.t_fdr_ver_no, 0) + 1 AS POLICY_VERSION
             FROM
                 INSURANCE_POLICY pol
                 INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN CESSION cs ON pol.POLICY_ID = cs.POLICY_ID AND pol.FEED_UUID = cs.FEED_UUID
-                INNER JOIN INSURANCE_POLICY_HIERARCHY iph ON cs.STREAM_ID = iph.STREAM_ID AND cs.FEED_UUID = iph.FEED_UUID
+                INNER JOIN cession_hierarchy ch ON cs.STREAM_ID = ch.child_stream_id AND cs.FEED_UUID = ch.feed_uuid
                 INNER JOIN fdr.FR_PARTY_LEGAL underwriting_le ON pol.UNDERWRITING_LE_ID = to_number ( underwriting_le.PL_GLOBAL_ID )
                 LEFT OUTER JOIN fdr.FR_PARTY_LEGAL external_le ON pol.EXTERNAL_LE_ID = to_number ( external_le.PL_GLOBAL_ID )
                 INNER JOIN fdr.FR_PARTY_LEGAL cession_le ON cs.LE_ID = to_number ( cession_le.PL_GLOBAL_ID )
                 INNER JOIN POL_DEFAULT pold ON 1 = 1
+                LEFT OUTER JOIN (SELECT
+                    fiie.iie_cover_signing_party AS policy_id,
+                    to_number ( ft.t_source_tran_no ) AS stream_id,
+                    MAX(ft.t_fdr_ver_no) AS t_fdr_ver_no
+                FROM
+                    fdr.fr_trade ft
+                    INNER JOIN fdr.fr_instr_insure_extend fiie ON ft.t_i_instrument_id = fiie.iie_instrument_id
+                GROUP BY
+                    fiie.iie_cover_signing_party,
+                    to_number ( ft.t_source_tran_no )) pdtvn ON pol.POLICY_ID = pdtvn.policy_id AND cs.STREAM_ID = pdtvn.stream_id
             WHERE
                 pol.EVENT_STATUS = 'V' AND cs.EVENT_STATUS = 'V';
         p_total_no_fsrip_published := SQL%ROWCOUNT;
@@ -1597,6 +1595,7 @@ and exists (
         pr_policy_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
         IF v_no_identified_records > 0 THEN
+            stn.pk_cession_hier.pr_gen_cession_hierarchy;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
             pr_policy_chr(p_step_run_sid, p_lpg_id, v_no_updated_hpol_records, v_no_updated_fsrfr_records, v_no_updated_hpoltj_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed policy hopper records', 'v_no_updated_hpol_records', NULL, v_no_updated_hpol_records, NULL);
