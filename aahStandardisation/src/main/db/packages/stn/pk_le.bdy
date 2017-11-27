@@ -442,11 +442,12 @@ and     exists (
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
         IF v_no_identified_records > 0 THEN
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
-            pr_legal_entity_chr(p_step_run_sid, p_lpg_id, v_total_no_fsrpl_published, v_total_no_fsrpb_published, v_total_no_fsrie_updated, v_total_no_fsrohn_updated, v_total_no_fsrb_updated);
+            pr_legal_entity_chr(p_step_run_sid, p_lpg_id, v_total_no_fsrpl_updated, v_total_no_fsrpb_updated, v_total_no_fsrie_updated, v_total_no_fsrohn_updated, v_total_no_fsrb_updated);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed party legal hopper records', 'v_total_no_fsrpl_updated', NULL, v_total_no_fsrpl_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed party business hopper records', 'v_total_no_fsrpb_updated', NULL, v_total_no_fsrpb_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed internal entity hopper records', 'v_total_no_fsrie_updated', NULL, v_total_no_fsrie_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed org node records', 'v_total_no_fsrohn_updated', NULL, v_total_no_fsrohn_updated, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed book records', 'v_total_no_fsrb_updated', NULL, v_total_no_fsrb_updated, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate legal entity records' );
             pr_legal_entity_rval;
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations', NULL, NULL, NULL, NULL);
