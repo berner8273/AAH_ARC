@@ -116,50 +116,31 @@ and exists (
         INSERT INTO STANDARDISATION_LOG
             (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
             SELECT
-                SubQuery.CATEGORY_ID AS CATEGORY_ID,
-                SubQuery.ERROR_STATUS AS ERROR_STATUS,
-                SubQuery.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                SubQuery.error_value AS ERROR_VALUE,
-                SubQuery.event_text AS EVENT_TEXT,
-                SubQuery.EVENT_TYPE AS EVENT_TYPE,
-                SubQuery.field_in_error_name AS FIELD_IN_ERROR_NAME,
-                SubQuery.LPG_ID AS LPG_ID,
-                SubQuery.PROCESSING_STAGE AS PROCESSING_STAGE,
-                SubQuery.row_in_error_key_id AS ROW_IN_ERROR_KEY_ID,
-                SubQuery.table_in_error_name AS TABLE_IN_ERROR_NAME,
-                SubQuery.rule_identity AS RULE_IDENTITY,
-                SubQuery.CODE_MODULE_NM AS CODE_MODULE_NM,
-                SubQuery.STEP_RUN_SID AS STEP_RUN_SID,
-                SubQuery.FEED_SID AS FEED_SID
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                le.FUNCTIONAL_CCY AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                le.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                le.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                le.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
             FROM
-                (SELECT
-                    vdl.TABLE_NM AS table_in_error_name,
-                    le.ROW_SID AS row_in_error_key_id,
-                    le.FUNCTIONAL_CCY AS error_value,
-                    le.LPG_ID AS LPG_ID,
-                    vdl.COLUMN_NM AS field_in_error_name,
-                    rveld.EVENT_TYPE AS EVENT_TYPE,
-                    rveld.ERROR_STATUS AS ERROR_STATUS,
-                    rveld.CATEGORY_ID AS CATEGORY_ID,
-                    rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                    rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                    vdl.VALIDATION_CD AS rule_identity,
-                    FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE AS todays_business_dt,
-                    fd.SYSTEM_CD AS SYSTEM_CD,
-                    vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
-                    le.STEP_RUN_SID AS STEP_RUN_SID,
-                    vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                    fd.FEED_SID AS FEED_SID
-                FROM
-                    LEGAL_ENTITY le
-                    INNER JOIN IDENTIFIED_RECORD idr ON le.ROW_SID = idr.ROW_SID
-                    INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
-                    INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON le.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
-                    INNER JOIN LE_DEFAULT led ON 1 = 1
-                    INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
-                    INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
-                WHERE
-                        le.FUNCTIONAL_CCY is not null
+                LEGAL_ENTITY le
+                INNER JOIN IDENTIFIED_RECORD idr ON le.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON le.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN LE_DEFAULT led ON 1 = 1
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    le.FUNCTIONAL_CCY is not null
 and vdl.VALIDATION_CD = 'le-functional_ccy'
 and not exists (
                    select
@@ -169,7 +150,43 @@ and not exists (
                     where
                           fcl.cul_currency_lookup_code = le.FUNCTIONAL_CCY
                       and fcl.cul_sil_sys_inst_clicode = led.SYSTEM_INSTANCE
-               )) SubQuery;
+               )
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                le.FUNCTIONAL_CCY AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                le.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                le.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                le.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                LEGAL_ENTITY le
+                INNER JOIN IDENTIFIED_RECORD idr ON le.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON le.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN LE_DEFAULT led ON 1 = 1
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'le-id-change'
+and exists (
+               select
+                      null
+                 from
+                      fdr.fr_party_legal fpl
+                where
+                      to_number ( fpl.pl_global_id )  = le.LE_ID
+                  and fpl.pl_party_legal_clicode     != le.LE_CD
+           );
     END;
     
     PROCEDURE pr_legal_entity_svs

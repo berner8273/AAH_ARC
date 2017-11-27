@@ -11,8 +11,8 @@ create global temporary table stn.cession_hierarchy
 ,   parent_le_id                    number ( 38 , 0 )      not null
 ,   ceding_stream_id                number ( 38 , 0 )      not null
 ,   ultimate_parent_stream_id       number ( 38 , 0 )      not null
-,   ledger_entity_le_id             number ( 38 , 0 )
-,   ledger_entity_le_cd             varchar2 ( 20 char )
+,   ledger_entity_le_id             number ( 38 , 0 )      not null
+,   ledger_entity_le_cd             varchar2 ( 20 char )   not null
 ,   path_to_child_stream            varchar2 ( 2000 char ) not null
 ,   hierarchy_level                 number  ( 38 , 0 )     not null
 ,   constraint pk_chier primary key ( policy_id , child_stream_id )

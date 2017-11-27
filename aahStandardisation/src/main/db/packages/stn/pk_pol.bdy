@@ -1286,7 +1286,7 @@ and (
                 TO_CHAR(cs.ROW_SID) AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 TO_CHAR(cs.STREAM_ID) AS FINANCIAL_INSTRUMENT_ID,
-                pol.POLICY_NM || ' - ' || TO_CHAR(cs.STREAM_ID) AS POLICY_NAME_STREAM_ID,
+                pol.POLICY_ABBR_NM || ' - ' || TO_CHAR(cs.STREAM_ID) AS POLICY_NAME_STREAM_ID,
                 NVL(pdtvn.t_fdr_ver_no, 0) + 1 AS POLICY_VERSION
             FROM
                 INSURANCE_POLICY pol
@@ -1294,7 +1294,8 @@ and (
                 INNER JOIN CESSION cs ON pol.POLICY_ID = cs.POLICY_ID AND pol.FEED_UUID = cs.FEED_UUID
                 INNER JOIN cession_hierarchy ch ON cs.STREAM_ID = ch.child_stream_id AND cs.FEED_UUID = ch.feed_uuid
                 INNER JOIN fdr.FR_PARTY_LEGAL underwriting_le ON pol.UNDERWRITING_LE_ID = to_number ( underwriting_le.PL_GLOBAL_ID )
-                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL external_le ON pol.EXTERNAL_LE_ID = to_number ( external_le.PL_GLOBAL_ID )
+                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL external_le ON     pol.EXTERNAL_LE_ID    = to_number ( external_le.PL_GLOBAL_ID )
+and external_le.pl_active = 'A'
                 INNER JOIN fdr.FR_PARTY_LEGAL cession_le ON cs.LE_ID = to_number ( cession_le.PL_GLOBAL_ID )
                 INNER JOIN POL_DEFAULT pold ON 1 = 1
                 LEFT OUTER JOIN (SELECT
@@ -1308,7 +1309,7 @@ and (
                     fiie.iie_cover_signing_party,
                     to_number ( ft.t_source_tran_no )) pdtvn ON pol.POLICY_ID = pdtvn.policy_id AND cs.STREAM_ID = pdtvn.stream_id
             WHERE
-                pol.EVENT_STATUS = 'V' AND cs.EVENT_STATUS = 'V';
+                pol.EVENT_STATUS = 'V' AND cs.EVENT_STATUS = 'V' AND underwriting_le.PL_ACTIVE = 'A' AND cession_le.PL_ACTIVE = 'A';
         p_total_no_fsrip_published := SQL%ROWCOUNT;
         INSERT INTO HOPPER_INSURANCE_POLICY_TJ
             (POLICY_TAX, POLICY_ID_TAX_CD, POLICY_ID, TAX_JURISDICTION_CD, TAX_JURISDICTION_PCT, TAX_JURISDICTION_STS, MESSAGE_ID, PROCESS_ID, LPG_ID, VALID_FROM)
@@ -1606,6 +1607,9 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set policy status = "V"' );
             pr_policy_svs(p_step_run_sid, v_no_validated_cession_records, v_no_errored_cession_records, v_no_validated_fx_records);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting the Validated status', 'v_no_validated_cession_records', NULL, v_no_validated_cession_records, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting the Validated status', 'v_no_errored_cession_records', NULL, v_no_errored_cession_records, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting the Validated status', 'v_no_validated_fx_records', NULL, v_no_validated_fx_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish policy records' );
             pr_policy_pub(p_step_run_sid, v_total_no_fsrip_published, v_total_no_fsriptj_published, v_total_no_pol_tj_updated, v_total_no_fsrfr_published, v_total_no_frt_published, v_total_no_pol_fx_rate_deleted);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing insurance policy hopper records', 'v_total_no_fsrip_published', NULL, v_total_no_fsrip_published, NULL);
