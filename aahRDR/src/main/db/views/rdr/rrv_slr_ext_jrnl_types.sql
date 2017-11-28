@@ -18,3 +18,4 @@ as select
 , ejt_amended_by              
 , ejt_amended_on              
 from slr.slr_ext_jrnl_types
+;
