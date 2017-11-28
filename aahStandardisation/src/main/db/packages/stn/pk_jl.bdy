@@ -291,6 +291,7 @@ and not exists (
                     where
                           to_number ( fpl.pl_global_id ) = jl.LE_ID
                       and fpll.pll_sil_sys_inst_clicode  = jld.SRA_SI_PARTY_SYS_INST_CODE
+                      and fpt.pt_party_type_name         = 'Ledger Entity'
                )
             UNION ALL
             SELECT
@@ -761,14 +762,14 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-le_id2'
+                    vdl.VALIDATION_CD = 'jl-le_id-comparison'
 and ( (jl.LE_ID = jl.AFFILIATE_LE_ID) OR (jl.LE_ID = jl.COUNTERPARTY_LE_ID) OR (jl.AFFILIATE_LE_ID = jl.COUNTERPARTY_LE_ID) )
             UNION ALL
             SELECT
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
                 rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                'accounting date' AS error_value,
+                to_char ( jl.ACCOUNTING_DT , 'mm/dd/yyyy' ) AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
                 vdl.COLUMN_NM AS field_in_error_name,
@@ -796,6 +797,339 @@ and not exists (
                          slr.slr_entity_periods sep
                     where
 jl.ACCOUNTING_DT between sep.ep_bus_period_start and sep.ep_bus_period_end and sep.ep_status = 'O'
+               )
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                jl.FUNCTIONAL_CCY AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                jl.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                jl.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON jl.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+                INNER JOIN journal_line_default jld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-functional_ccy'
+and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_currency_lookup fcl
+                    where
+                          fcl.cul_currency_lookup_code = jl.FUNCTIONAL_CCY
+                      and fcl.cul_sil_sys_inst_clicode = jld.SRA_SI_STATIC_SYS_INST_CODE
+               )
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                jl.REPORTING_CCY AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                jl.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                jl.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON jl.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+                INNER JOIN journal_line_default jld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-reporting_ccy'
+and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_currency_lookup fcl
+                    where
+                          fcl.cul_currency_lookup_code = jl.REPORTING_CCY
+                      and fcl.cul_sil_sys_inst_clicode = jld.SRA_SI_STATIC_SYS_INST_CODE
+               )
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                jl.TRANSACTION_CCY AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                jl.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                jl.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON jl.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+                INNER JOIN journal_line_default jld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-transaction_ccy'
+and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_currency_lookup fcl
+                    where
+                          fcl.cul_currency_lookup_code = jl.TRANSACTION_CCY
+                      and fcl.cul_sil_sys_inst_clicode = jld.SRA_SI_STATIC_SYS_INST_CODE
+               )
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                (CASE
+                    WHEN vdl.COLUMN_NM = 'stream_id' THEN TO_CHAR(jl.STREAM_ID)
+                    WHEN vdl.COLUMN_NM = 'policy_id' THEN jl.POLICY_ID
+                END) AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                jl.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                jl.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER fgp ON jl.LPG_ID = fgp.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-policy-stream'
+and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_trade ft
+                    where
+                          to_number ( ft.t_source_tran_no ) = jl.STREAM_ID
+               )
+and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_instr_insure_extend fie
+                    where
+                         fie.iie_cover_signing_party = jl.POLICY_ID
+               );
+    END;
+    
+    PROCEDURE pr_journal_line_bval
+    AS
+    BEGIN
+        INSERT INTO STANDARDISATION_LOG
+            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
+            SELECT
+                sveld.CATEGORY_ID AS CATEGORY_ID,
+                sveld.ERROR_STATUS AS ERROR_STATUS,
+                sveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                TO_CHAR(jlsra.functional_amt) AS ERROR_VALUE,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                sveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                jl.LPG_ID AS LPG_ID,
+                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
+                INNER JOIN (SELECT
+                    jl.FEED_UUID AS FEED_UUID,
+                    jl.CORRELATION_ID AS CORRELATION_ID,
+                    jl.ACCOUNTING_DT AS ACCOUNTING_DT,
+                    jl.FUNCTIONAL_CCY AS FUNCTIONAL_CCY,
+                    SUM(jl.FUNCTIONAL_AMT) AS functional_amt
+                FROM
+                    journal_line jl
+                    INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                WHERE
+                    not exists (
+               select
+                      null
+                 from
+                      stn.standardisation_log sl
+                where
+                      sl.row_in_error_key_id = jl.ROW_SID
+           )
+                GROUP BY
+                    jl.FEED_UUID,
+                    jl.CORRELATION_ID,
+                    jl.ACCOUNTING_DT,
+                    jl.FUNCTIONAL_CCY
+                HAVING
+                    SUM(jl.FUNCTIONAL_AMT) <> 0) jlsra ON jl.FEED_UUID = jlsra.FEED_UUID AND jl.CORRELATION_ID = jlsra.CORRELATION_ID AND jl.ACCOUNTING_DT = jlsra.ACCOUNTING_DT AND jl.FUNCTIONAL_CCY = jlsra.FUNCTIONAL_CCY
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-functional_sum-rval-output'
+and not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = jl.ROW_SID
+               )
+            UNION ALL
+            SELECT
+                sveld.CATEGORY_ID AS CATEGORY_ID,
+                sveld.ERROR_STATUS AS ERROR_STATUS,
+                sveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                TO_CHAR(jlsra.reporting_amt) AS ERROR_VALUE,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                sveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                jl.LPG_ID AS LPG_ID,
+                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
+                INNER JOIN (SELECT
+                    jl.FEED_UUID AS FEED_UUID,
+                    jl.CORRELATION_ID AS CORRELATION_ID,
+                    jl.ACCOUNTING_DT AS ACCOUNTING_DT,
+                    jl.REPORTING_CCY AS REPORTING_CCY,
+                    SUM(jl.REPORTING_AMT) AS reporting_amt
+                FROM
+                    journal_line jl
+                    INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                WHERE
+                    not exists (
+               select
+                      null
+                 from
+                      stn.standardisation_log sl
+                where
+                      sl.row_in_error_key_id = jl.ROW_SID
+           )
+                GROUP BY
+                    jl.FEED_UUID,
+                    jl.CORRELATION_ID,
+                    jl.ACCOUNTING_DT,
+                    jl.REPORTING_CCY
+                HAVING
+                    SUM(jl.REPORTING_AMT) <> 0) jlsra ON jl.FEED_UUID = jlsra.FEED_UUID AND jl.CORRELATION_ID = jlsra.CORRELATION_ID AND jl.ACCOUNTING_DT = jlsra.ACCOUNTING_DT AND jl.REPORTING_CCY = jlsra.REPORTING_CCY
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-reporting_sum-rval-output'
+and not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = jl.ROW_SID
+               )
+            UNION ALL
+            SELECT
+                sveld.CATEGORY_ID AS CATEGORY_ID,
+                sveld.ERROR_STATUS AS ERROR_STATUS,
+                sveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                TO_CHAR(jlsra.transaction_amt) AS ERROR_VALUE,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                sveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                jl.LPG_ID AS LPG_ID,
+                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
+                INNER JOIN (SELECT
+                    jl.FEED_UUID AS FEED_UUID,
+                    jl.CORRELATION_ID AS CORRELATION_ID,
+                    jl.ACCOUNTING_DT AS ACCOUNTING_DT,
+                    jl.TRANSACTION_CCY AS TRANSACTION_CCY,
+                    SUM(jl.TRANSACTION_AMT) AS transaction_amt
+                FROM
+                    journal_line jl
+                    INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                WHERE
+                    not exists (
+               select
+                      null
+                 from
+                      stn.standardisation_log sl
+                where
+                      sl.row_in_error_key_id = jl.ROW_SID
+           )
+                GROUP BY
+                    jl.FEED_UUID,
+                    jl.CORRELATION_ID,
+                    jl.ACCOUNTING_DT,
+                    jl.TRANSACTION_CCY
+                HAVING
+                    SUM(jl.TRANSACTION_AMT) <> 0) jlsra ON jl.FEED_UUID = jlsra.FEED_UUID AND jl.CORRELATION_ID = jlsra.CORRELATION_ID AND jl.ACCOUNTING_DT = jlsra.ACCOUNTING_DT AND jl.TRANSACTION_CCY = jlsra.TRANSACTION_CCY
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-transaction_sum-rval-output'
+and not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = jl.ROW_SID
                );
     END;
     
@@ -971,11 +1305,14 @@ and     exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate journal line records' );
             pr_journal_line_rval;
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed journal line row level validations', NULL, NULL, NULL, NULL);
+            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Check rval output is balanced' );
+            pr_journal_line_bval;
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed checking that the passed records balance', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set journal line status = "V"' );
             pr_journal_line_svs(v_no_validated_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting validated status', 'v_no_validated_records', NULL, v_no_validated_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish journal line records' );
-            pr_journal_line_pub(p_no_processed_records);
+            pr_journal_line_pub(v_total_no_published);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing journal line hopper records', 'v_total_no_published', NULL, v_total_no_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish journal line log records' );
             pr_publish_log;
@@ -984,7 +1321,12 @@ and     exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
             IF v_no_processed_records <> v_no_validated_records THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_no_validated_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
+                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
+                raise pub_val_mismatch;
+            END IF;
+            IF v_total_no_published <> v_no_validated_records THEN
+                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_published <> v_no_validated_records', NULL, NULL, NULL, NULL);
+                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
