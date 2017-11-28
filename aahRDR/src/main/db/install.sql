@@ -71,5 +71,6 @@ conn ~rdr_logon
 @@views/rdr/rrv_tax_jurisdiction.sql
 @@views/rdr/rrv_stan_raw_acc_event.sql
 @@views/rdr/rrv_slr_entity_periods.sql
+@@views/rdr/rrv_slr_ext_jrnl_types.sql
 
 exit

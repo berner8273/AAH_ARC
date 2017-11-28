@@ -52,6 +52,7 @@ drop view rdr.rrv_slr_fak_combinations_ag;
 drop view rdr.rrv_slr_fak_daily_balances_ag;
 drop view rdr.rrv_slr_jrnl_lines_ag;
 drop view rdr.rrv_tax_jurisdiction;
+drop view rdr.rrv_slr_ext_jrnl_types;
 
 conn ~stn_logon
 
