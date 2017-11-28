@@ -1,3 +1,4 @@
+insert into stn.event_type ( event_typ ) values ( 'IN_POLCY' );
 insert into stn.event_type ( event_typ ) values ( 'CASH_OFFSET_CC' );
 insert into stn.event_type ( event_typ ) values ( 'CASH_OFFSET_LAEPAID' );
 insert into stn.event_type ( event_typ ) values ( 'CASH_OFFSET_LOSSPAID' );
