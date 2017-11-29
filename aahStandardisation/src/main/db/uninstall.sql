@@ -173,6 +173,11 @@ drop table stn.cession_event_premium_type;
 drop table stn.premium_type;
 drop table stn.cession_hierarchy;
 
+conn ~gui_logon
+
+delete from gui.ui_general_lookup;
+commit;
+
 conn ~fdr_logon
 
 drop package body fdr.pk_legal_entity;
