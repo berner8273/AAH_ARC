@@ -99,6 +99,7 @@ conn ~fdr_logon
 @@indices/fdr/fr_stan_raw_gl_account.sql
 @@indices/fdr/fr_stan_raw_org_hier_struc.sql
 @@indices/fdr/fr_stan_raw_party_legal.sql
+@@indices/fdr/fr_stan_raw_adjustment.sql
 
 conn ~stn_logon
 
@@ -109,6 +110,7 @@ conn ~stn_logon
 @@tables/stn/cession.sql
 @@tables/stn/cession_event.sql
 @@tables/stn/cession_event_premium_type.sql
+@@tables/stn/cession_hierarchy.sql
 @@tables/stn/cession_link.sql
 @@tables/stn/cession_link_type.sql
 @@tables/stn/cession_type.sql
@@ -207,7 +209,6 @@ conn ~stn_logon
 @@views/stn/hopper_cession_event.sql
 @@views/stn/hopper_insurance_policy.sql
 @@views/stn/hopper_insurance_policy_tj.sql
-@@views/stn/insurance_policy_hierarchy.sql
                                           
 @@views/stn/pol_default.sql
 @@views/stn/accounting_event_default.sql
@@ -320,6 +321,8 @@ conn ~stn_logon
 @@packages/stn/pk_feed_integrity.bdy
 @@packages/stn/pk_tj.hdr
 @@packages/stn/pk_tj.bdy
+@@packages/stn/pk_cession_hier.hdr
+@@packages/stn/pk_cession_hier.bdy
 @@packages/stn/pk_pol.hdr
 @@packages/stn/pk_pol.bdy
 @@packages/stn/pk_jl.hdr

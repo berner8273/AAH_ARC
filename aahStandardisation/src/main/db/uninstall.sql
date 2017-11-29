@@ -62,6 +62,8 @@ drop package body stn.pk_jl;
 drop package      stn.pk_jl;
 drop package body stn.pk_cev;
 drop package      stn.pk_cev;
+drop package body stn.pk_cession_hier;
+drop package      stn.pk_cession_hier;
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -86,7 +88,6 @@ drop view  stn.hopper_cession_event;
 drop view  stn.hopper_insurance_policy;
 drop view  stn.hopper_insurance_policy_tj;
 drop view  stn.insurance_policy_reference;
-drop view  stn.insurance_policy_hierarchy;
 drop view  stn.pol_default;
 drop view  stn.hopper_accounting_basis_ledger;
 drop view  stn.hopper_legal_entity_ledger;
@@ -170,6 +171,7 @@ drop table stn.policy_premium_type;
 drop table stn.journal_line_premium_type;
 drop table stn.cession_event_premium_type;
 drop table stn.premium_type;
+drop table stn.cession_hierarchy;
 
 conn ~fdr_logon
 
@@ -231,6 +233,7 @@ drop index fdr.fbi_fsrb_message_id;
 drop index fdr.fbi_fsrgc_message_id;
 drop index fdr.fbi_fsrohs_message_id;
 drop index fdr.fbi_fsrpl_message_id;
+drop index fdr.fbi_fsra_message_id;
 
 revoke select , insert , update          on fdr.fr_acc_event_type            from stn;
 revoke select                            on fdr.fr_account_lookup            from stn;
