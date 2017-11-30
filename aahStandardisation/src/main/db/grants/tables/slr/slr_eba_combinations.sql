@@ -1,1 +1,1 @@
-grant select on slr.slr_eba_combinations to stn;
+grant select on slr.slr_eba_combinations to stn with grant option;

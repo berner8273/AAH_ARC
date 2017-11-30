@@ -1,1 +1,1 @@
-grant select on slr.slr_eba_daily_balances to stn;
+grant select on slr.slr_eba_daily_balances to stn with grant option;

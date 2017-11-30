@@ -92,6 +92,10 @@ conn ~fdr_logon
 @@grants/tables/fdr/is_groupuser.sql
 @@grants/tables/fdr/is_group.sql
 @@grants/tables/fdr/fr_rate_type.sql
+@@grants/tables/fdr/fr_instr_insure_extend.sql
+@@grants/tables/fdr/fr_instrument.sql
+@@grants/tables/fdr/fr_trade.sql
+
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy
 @@indices/fdr/fr_stan_raw_book.sql
