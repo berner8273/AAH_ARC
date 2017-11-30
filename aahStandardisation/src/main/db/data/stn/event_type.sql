@@ -51,7 +51,7 @@ insert into stn.event_type ( event_typ ) values ( 'FX_WP_ACCRN' );
 insert into stn.event_type ( event_typ ) values ( 'FX_WP_ACCRN_AMORT' );
 insert into stn.event_type ( event_typ ) values ( 'FX_WP_CASH' );
 insert into stn.event_type ( event_typ ) values ( 'FX_WP_WRITEOFF_FUT' );
-insert into stn.event_type ( event_typ ) values ( 'HGAAP_UPR ' );
+insert into stn.event_type ( event_typ ) values ( 'HGAAP_UPR' );
 insert into stn.event_type ( event_typ ) values ( 'IBNR_RESERVES' );
 insert into stn.event_type ( event_typ ) values ( 'LAE_PAID' );
 insert into stn.event_type ( event_typ ) values ( 'LAE_PAID_CONTRA' );
