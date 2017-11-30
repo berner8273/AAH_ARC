@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_lookup_types
+create or replace view rdr.rrv_ag_lookup_types
 as select
    'business_type' as lookup_type,
     business_typ as lookup_code,

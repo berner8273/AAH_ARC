@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_program
+create or replace view rdr.rrv_ag_program
 as
 select
 gc_general_code_id   

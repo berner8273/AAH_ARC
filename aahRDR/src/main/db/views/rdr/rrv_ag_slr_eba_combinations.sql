@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_slr_eba_combinations_ag
+create or replace view rdr.rrv_ag_slr_eba_combinations
 as
    select ec_epg_id,
           ec_fak_id,

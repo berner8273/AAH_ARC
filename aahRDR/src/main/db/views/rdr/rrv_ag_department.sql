@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_department
+create or replace view rdr.rrv_ag_department
 as
 select
   bo_book_id dept_cd  

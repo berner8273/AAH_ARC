@@ -1,1 +1,1 @@
-grant select on stn.execution_type;
+grant select on stn.execution_type to RDR;

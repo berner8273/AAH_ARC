@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_account_lookup
+create or replace view rdr.rrv_ag_account_lookup
 as
 select 
   al_posting_code

@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_business_unit
+create or replace view rdr.rrv_ag_business_unit
 as
 select
  pl_party_legal_id          

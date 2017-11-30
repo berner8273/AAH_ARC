@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_slr_fak_daily_balances_ag
+create or replace view rdr.rrv_ag_slr_fak_daily_balances
 as
    select fdb_fak_id,
           fdb_balance_date,
@@ -32,7 +32,7 @@ as
           fdb_process_id,
           fdb_amended_on
      from slr.slr_fak_daily_balances db
-          join rdr.rrv_slr_fak_combinations_ag fc
+          join rdr.rrv_ag_slr_fak_combinations fc
              on db.fdb_fak_id = fc.fc_fak_id 
           join slr.slr_jrnl_lines jl on fc.fc_fak_id = jl.jl_fak_id
 ;

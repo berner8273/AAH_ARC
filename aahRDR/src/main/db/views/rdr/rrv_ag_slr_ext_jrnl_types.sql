@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_slr_ext_jrnl_types
+create or replace view rdr.rrv_ag_slr_ext_jrnl_types
 as select
   ejt_type                    
 , ejt_description             
