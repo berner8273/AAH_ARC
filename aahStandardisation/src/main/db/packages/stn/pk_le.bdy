@@ -1,4 +1,54 @@
 CREATE OR REPLACE PACKAGE BODY stn.PK_LE AS
+    PROCEDURE pr_legal_entity_idf
+        (
+            p_step_run_sid IN NUMBER,
+            p_lpg_id IN NUMBER,
+            p_no_identified_recs OUT NUMBER
+        )
+    AS
+    BEGIN
+        INSERT INTO IDENTIFIED_RECORD
+            (ROW_SID)
+            SELECT
+                le.ROW_SID AS ROW_SID
+            FROM
+                LEGAL_ENTITY le
+                INNER JOIN FEED ON le.FEED_UUID = feed.FEED_UUID
+            WHERE
+                    le.EVENT_STATUS = 'U'
+and le.LPG_ID       = p_lpg_id
+and not exists (
+                   select
+                          null
+                     from
+                          stn.broken_feed bf
+                    where
+                          bf.feed_sid = feed.FEED_SID
+               )
+and not exists (
+                  select
+                         null
+                    from
+                         stn.superseded_feed sf
+                   where
+                         sf.superseded_feed_sid = feed.FEED_SID
+              );
+        p_no_identified_recs := SQL%ROWCOUNT;
+        UPDATE LEGAL_ENTITY le
+            SET
+                STEP_RUN_SID = p_step_run_sid
+            WHERE
+                exists (
+           select
+                  null
+             from
+                  stn.identified_record idr
+            where
+                  le.row_sid = idr.row_sid
+       );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated legal_entity.step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
+    END;
+    
     PROCEDURE pr_legal_entity_chr
         (
             p_step_run_sid IN NUMBER,
@@ -60,54 +110,124 @@ and exists (
         p_total_no_fsrb_updated := SQL%ROWCOUNT;
     END;
     
-    PROCEDURE pr_legal_entity_idf
-        (
-            p_step_run_sid IN NUMBER,
-            p_lpg_id IN NUMBER,
-            p_no_identified_recs OUT NUMBER
-        )
+    PROCEDURE pr_legal_entity_rval
     AS
     BEGIN
-        INSERT INTO IDENTIFIED_RECORD
-            (ROW_SID)
+        INSERT INTO STANDARDISATION_LOG
+            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
             SELECT
-                le.ROW_SID AS ROW_SID
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                le.FUNCTIONAL_CCY AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                le.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                le.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                le.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
             FROM
                 LEGAL_ENTITY le
-                INNER JOIN FEED ON le.FEED_UUID = feed.FEED_UUID
+                INNER JOIN IDENTIFIED_RECORD idr ON le.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON le.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN LE_DEFAULT led ON 1 = 1
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    le.EVENT_STATUS = 'U'
-and le.LPG_ID       = p_lpg_id
+                    le.FUNCTIONAL_CCY is not null
+and vdl.VALIDATION_CD = 'le-functional_ccy'
 and not exists (
                    select
                           null
                      from
-                          stn.broken_feed bf
+                          fdr.fr_currency_lookup fcl
                     where
-                          bf.feed_sid = feed.FEED_SID
+                          fcl.cul_currency_lookup_code = le.FUNCTIONAL_CCY
+                      and fcl.cul_sil_sys_inst_clicode = led.SYSTEM_INSTANCE
                )
-and not exists (
-                  select
-                         null
-                    from
-                         stn.superseded_feed sf
-                   where
-                         sf.superseded_feed_sid = feed.FEED_SID
-              );
-        p_no_identified_recs := SQL%ROWCOUNT;
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                le.FUNCTIONAL_CCY AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                le.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                le.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                le.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                LEGAL_ENTITY le
+                INNER JOIN IDENTIFIED_RECORD idr ON le.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON le.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN LE_DEFAULT led ON 1 = 1
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'le-id-change'
+and exists (
+               select
+                      null
+                 from
+                      fdr.fr_party_legal fpl
+                where
+                      to_number ( fpl.pl_global_id )  = le.LE_ID
+                  and fpl.pl_party_legal_clicode     != le.LE_CD
+           );
+    END;
+    
+    PROCEDURE pr_legal_entity_svs
+        (
+            p_no_validated_records OUT NUMBER
+        )
+    AS
+    BEGIN
         UPDATE LEGAL_ENTITY le
             SET
-                STEP_RUN_SID = p_step_run_sid
+                EVENT_STATUS = 'E'
             WHERE
                 exists (
            select
                   null
              from
-                  stn.identified_record idr
+                  stn.standardisation_log sl
             where
-                  le.row_sid = idr.row_sid
+                  sl.row_in_error_key_id = le.ROW_SID
        );
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated legal_entity.step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        UPDATE LEGAL_ENTITY le
+            SET
+                EVENT_STATUS = 'V'
+            WHERE
+                    not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = le.ROW_SID
+               )
+and     exists (
+                   select
+                          null
+                     from
+                          stn.identified_record idr
+                    where
+                          le.ROW_SID = idr.row_sid
+               );
+        p_no_validated_records := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_legal_entity_pub
@@ -206,7 +326,7 @@ and not exists (
                 INNER JOIN LE_DEFAULT ON 1 = 1
                 INNER JOIN fdr.FR_INTERNAL_PROC_ENTITY_TYPE fipet ON 1 = 1
             WHERE
-                le.IS_LEDGER_ENTITY = 'Y' AND fipet.IPET_INTERNAL_PROC_ENTITY_CODE = 'OPERATING UNIT' AND le.EVENT_STATUS = 'V';
+                fipet.IPET_INTERNAL_PROC_ENTITY_CODE = 'OPERATING UNIT' AND le.EVENT_STATUS = 'V';
         p_total_no_fsrie_published := SQL%ROWCOUNT;
         INSERT INTO fdr.FR_STAN_RAW_ORG_HIER_NODE
             (LPG_ID, MESSAGE_ID, PROCESS_ID, SRHN_ACTIVE, SRHN_ON_ORG_NODE_CODE, SRHN_ON_PL_PARTY_LEGAL_CODE, SRHN_SI_SYS_INST_CODE, SRHN_ONT_ORG_NODE_TYPE_CODE)
@@ -230,7 +350,7 @@ and not exists (
             (LPG_ID, MESSAGE_ID, PROCESS_ID, SRB_BO_BOOK_CLICODE, SRB_BO_BOOK_NAME, SRB_BO_BANKING_OR_TRADING, SRB_SI_SOURCE_SYSTEM, SRB_BO_IPE_INTERNAL_ENTITY_CDE, SRB_BO_BS_BOOK_STATUS_CODE, SRB_BO_VALID_FROM, SRB_BO_ACTIVE, SRB_BO_PL_LEDGER_ENTITY_CODE)
             SELECT
                 le.LPG_ID AS LPG_ID,
-                TO_CHAR(le.ROW_SID) || '.' || TO_CHAR(le.STEP_RUN_SID) AS MESSAGE_ID,
+                TO_CHAR(le.ROW_SID) AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 le.LE_CD AS SRB_BO_BOOK_CLICODE,
                 le.LE_DESCR AS SRB_BO_BOOK_NAME,
@@ -247,7 +367,7 @@ and not exists (
                 INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
                 INNER JOIN LE_DEFAULT ON 1 = 1
             WHERE
-                le.IS_LEDGER_ENTITY = 'Y' AND le.EVENT_STATUS = 'V';
+                le.EVENT_STATUS = 'V';
         p_total_no_fsrb_published := SQL%ROWCOUNT;
         INSERT INTO HOPPER_LEGAL_ENTITY_ALIAS
             (LPG_ID, MESSAGE_ID, PROCESS_ID, EVENT_STATUS, ALIAS_LE_CD, ALIAS_LE_DESCR, LE_ALIAS_RULE_TYP, LE_ALIAS_STS, LE_ID, EFFECTIVE_FROM, EFFECTIVE_TO)
@@ -272,67 +392,6 @@ and not exists (
                 le.EVENT_STATUS = 'V' AND (le.RPT_CD IS NOT NULL OR le.RPT_DESCR IS NOT NULL);
     END;
     
-    PROCEDURE pr_legal_entity_rval
-    AS
-    BEGIN
-        INSERT INTO STANDARDISATION_LOG
-            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
-            SELECT
-                SubQuery.CATEGORY_ID AS CATEGORY_ID,
-                SubQuery.ERROR_STATUS AS ERROR_STATUS,
-                SubQuery.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                SubQuery.error_value AS ERROR_VALUE,
-                SubQuery.event_text AS EVENT_TEXT,
-                SubQuery.EVENT_TYPE AS EVENT_TYPE,
-                SubQuery.field_in_error_name AS FIELD_IN_ERROR_NAME,
-                SubQuery.LPG_ID AS LPG_ID,
-                SubQuery.PROCESSING_STAGE AS PROCESSING_STAGE,
-                SubQuery.row_in_error_key_id AS ROW_IN_ERROR_KEY_ID,
-                SubQuery.table_in_error_name AS TABLE_IN_ERROR_NAME,
-                SubQuery.rule_identity AS RULE_IDENTITY,
-                SubQuery.CODE_MODULE_NM AS CODE_MODULE_NM,
-                SubQuery.STEP_RUN_SID AS STEP_RUN_SID,
-                SubQuery.FEED_SID AS FEED_SID
-            FROM
-                (SELECT
-                    vdl.TABLE_NM AS table_in_error_name,
-                    le.ROW_SID AS row_in_error_key_id,
-                    le.FUNCTIONAL_CCY AS error_value,
-                    le.LPG_ID AS LPG_ID,
-                    vdl.COLUMN_NM AS field_in_error_name,
-                    rveld.EVENT_TYPE AS EVENT_TYPE,
-                    rveld.ERROR_STATUS AS ERROR_STATUS,
-                    rveld.CATEGORY_ID AS CATEGORY_ID,
-                    rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                    rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                    vdl.VALIDATION_CD AS rule_identity,
-                    FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE AS todays_business_dt,
-                    fd.SYSTEM_CD AS SYSTEM_CD,
-                    vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
-                    le.STEP_RUN_SID AS STEP_RUN_SID,
-                    vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                    fd.FEED_SID AS FEED_SID
-                FROM
-                    LEGAL_ENTITY le
-                    INNER JOIN IDENTIFIED_RECORD idr ON le.ROW_SID = idr.ROW_SID
-                    INNER JOIN FEED fd ON le.FEED_UUID = fd.FEED_UUID
-                    INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON le.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
-                    INNER JOIN LE_DEFAULT led ON 1 = 1
-                    INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
-                    INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
-                WHERE
-                        vdl.VALIDATION_CD = 'le-functional_ccy'
-and not exists (
-                   select
-                          null
-                     from
-                          fdr.fr_currency_lookup fcl
-                    where
-                          fcl.cul_currency_lookup_code = le.FUNCTIONAL_CCY
-                      and fcl.cul_sil_sys_inst_clicode = led.SYSTEM_INSTANCE
-               )) SubQuery;
-    END;
-    
     PROCEDURE pr_legal_entity_sps
         (
             p_no_processed_records OUT NUMBER
@@ -353,47 +412,6 @@ and not exists (
                   idr.row_sid = le.ROW_SID
        );
         p_no_processed_records := SQL%ROWCOUNT;
-    END;
-    
-    PROCEDURE pr_legal_entity_svs
-        (
-            p_no_validated_records OUT NUMBER
-        )
-    AS
-    BEGIN
-        UPDATE LEGAL_ENTITY le
-            SET
-                EVENT_STATUS = 'E'
-            WHERE
-                exists (
-           select
-                  null
-             from
-                  stn.standardisation_log sl
-            where
-                  sl.row_in_error_key_id = le.ROW_SID
-       );
-        UPDATE LEGAL_ENTITY le
-            SET
-                EVENT_STATUS = 'V'
-            WHERE
-                    not exists (
-                   select
-                          null
-                     from
-                          stn.standardisation_log sl
-                    where
-                          sl.row_in_error_key_id = le.ROW_SID
-               )
-and     exists (
-                   select
-                          null
-                     from
-                          stn.identified_record idr
-                    where
-                          le.ROW_SID = idr.row_sid
-               );
-        p_no_validated_records := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_legal_entity_prc
@@ -424,11 +442,12 @@ and     exists (
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
         IF v_no_identified_records > 0 THEN
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
-            pr_legal_entity_chr(p_step_run_sid, p_lpg_id, v_total_no_fsrpl_published, v_total_no_fsrpb_published, v_total_no_fsrie_updated, v_total_no_fsrohn_updated, v_total_no_fsrb_updated);
+            pr_legal_entity_chr(p_step_run_sid, p_lpg_id, v_total_no_fsrpl_updated, v_total_no_fsrpb_updated, v_total_no_fsrie_updated, v_total_no_fsrohn_updated, v_total_no_fsrb_updated);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed party legal hopper records', 'v_total_no_fsrpl_updated', NULL, v_total_no_fsrpl_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed party business hopper records', 'v_total_no_fsrpb_updated', NULL, v_total_no_fsrpb_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed internal entity hopper records', 'v_total_no_fsrie_updated', NULL, v_total_no_fsrie_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed org node records', 'v_total_no_fsrohn_updated', NULL, v_total_no_fsrohn_updated, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Cancelled unprocessed book records', 'v_total_no_fsrb_updated', NULL, v_total_no_fsrb_updated, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate legal entity records' );
             pr_legal_entity_rval;
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations', NULL, NULL, NULL, NULL);
@@ -451,14 +470,19 @@ and     exists (
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
             END IF;
+            IF v_total_no_fsrpl_published <> v_total_no_fsrie_published THEN
+                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsrpl_published <> v_total_no_fsrie_published', NULL, NULL, NULL, NULL);
+                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+                raise pub_val_mismatch;
+            END IF;
             IF v_total_no_fsrpl_published <> v_total_no_fsrohn_published THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsrpl_published <> v_total_no_fsrohn_published', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
                 raise pub_val_mismatch;
             END IF;
             IF v_no_processed_records <> v_no_validated_records THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_no_validated_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
+                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 4' );
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;

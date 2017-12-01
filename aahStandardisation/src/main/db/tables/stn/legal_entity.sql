@@ -16,11 +16,15 @@ create table stn.legal_entity
 ,   feed_uuid               raw ( 16 )                                                       not null
 ,   no_retries              number ( 38 , 0 )   default 0                                    not null
 ,   step_run_sid            number ( 38 , 0 )   default 0                                    not null
-,   constraint pk_le primary key ( row_sid )
-,   constraint uk_le_cd unique      ( le_cd, feed_uuid )
-,   constraint uk_le_id unique      ( le_id, feed_uuid )
-,   constraint ck_is_ledger_entity       check ( is_ledger_entity       in ('Y','N') )
-,   constraint ck_is_interco_elim_entity check ( is_interco_elim_entity in ('Y','N') )
-,   constraint ck_is_vie_consol_entity   check ( is_vie_consol_entity   in ('Y','N') )
-,   constraint ck_func_ccy_internal      check ( ( legal_entity_typ = 'INTERNAL' AND functional_ccy IS NOT NULL ) OR legal_entity_typ <> 'INTERNAL' )
+,   constraint pk_le                     primary key ( row_sid )
+,   constraint uk_le_cd                  unique      ( le_cd, feed_uuid )
+,   constraint uk_le_id                  unique      ( le_id, feed_uuid )
+,   constraint ck_is_ledger_entity       check       ( is_ledger_entity       in ( 'Y' , 'N' ) )
+,   constraint ck_is_interco_elim_entity check       ( is_interco_elim_entity in ( 'Y' , 'N' ) )
+,   constraint ck_is_vie_consol_entity   check       ( is_vie_consol_entity   in ( 'Y' , 'N' ) )
+,   constraint ck_func_ccy_internal      check       (
+                                                            ( legal_entity_typ  = 'INTERNAL' and functional_ccy is not null )
+                                                         or ( is_ledger_entity  = 'Y'        and functional_ccy is not null )
+                                                         or ( legal_entity_typ != 'INTERNAL' and is_ledger_entity = 'N'     )
+                                                     )
 );

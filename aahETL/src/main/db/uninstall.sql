@@ -17,7 +17,34 @@ define sys_logon    = ~sys_user/~sys_password@~tns_alias
 
 conn ~sys_logon as sysdba
 
-drop role aah_load;
-drop user aah_ssis;
+begin
+    for i in (
+                 select
+                        'drop user ' || username || ' cascade' drop_stmt
+                   from
+                        dba_users
+                  where
+                        trim ( lower ( username ) ) = trim ( lower ( 'aah_ssis' ) ) 
+             )
+    loop
+        execute immediate i.drop_stmt;
+    end loop;
+end;
+/
+
+begin
+    for i in (
+                 select
+                        'drop role ' || role drop_stmt
+                   from
+                        dba_roles
+                  where
+                        trim ( lower ( role ) ) = trim ( lower ( 'aah_load' ) ) 
+             )
+    loop
+        execute immediate i.drop_stmt;
+    end loop;
+end;
+/
 
 exit

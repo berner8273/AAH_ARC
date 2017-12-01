@@ -1,1 +1,1 @@
-grant select on slr.slr_entity_periods to stn;
+grant select on slr.slr_entity_periods to stn with grant option;

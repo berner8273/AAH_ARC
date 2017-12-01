@@ -33,7 +33,9 @@ delete from fdr.fr_account_lookup_param;
 delete from fdr.fr_account_lookup;
 delete from fdr.fr_posting_driver;
 delete from fdr.fr_financial_amount;
-delete from fdr.fr_acc_event_type where aet_input_by not in ( 'FDR Create' , 'SPS' );
+delete from fdr.fr_acc_event_type    where aet_input_by not in ( 'FDR Create' , 'SPS' );
+delete from fdr.fr_gl_account_lookup where gal_ga_lookup_key != '1';
+delete from fdr.fr_gl_account        where ga_account_code   != '1';
 commit;
 
 conn ~slr_logon

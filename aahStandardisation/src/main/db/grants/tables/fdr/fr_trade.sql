@@ -1,0 +1,1 @@
+grant select on fdr.fr_trade to stn with grant option;

@@ -1,1 +1,1 @@
-grant select on fdr.fr_posting_driver to stn;
+grant select on fdr.fr_posting_driver to stn with grant option;

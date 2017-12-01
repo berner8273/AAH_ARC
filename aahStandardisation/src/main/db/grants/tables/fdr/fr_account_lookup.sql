@@ -1,1 +1,1 @@
-grant select on fdr.fr_account_lookup to stn;
+grant select on fdr.fr_account_lookup to stn with grant option;
