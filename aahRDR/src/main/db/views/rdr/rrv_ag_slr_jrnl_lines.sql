@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_slr_jrnl_lines_ag
+create or replace view rdr.rrv_ag_slr_jrnl_lines
 as
 select
        jl_jrnl_hdr_id
