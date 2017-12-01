@@ -13,7 +13,4 @@ select
     on fpl.pl_global_id = fgl.lk_lookup_value2
  where
        lk_lkt_lookup_type_code in ('LEGAL_ENTITY_LEDGER')
- order by
-       ledger_cd
-     , le_cd
      ;
