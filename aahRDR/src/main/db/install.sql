@@ -50,29 +50,32 @@ conn ~fdr_logon
 
 conn ~rdr_logon
 
-@@views/rdr/rrv_account_lookup.sql
-@@views/rdr/rrv_accounting_basis_ledger.sql
-@@views/rdr/rrv_accounting_event.sql
-@@views/rdr/rrv_accounting_event_hierarchy.sql
-@@views/rdr/rrv_business_unit.sql
-@@views/rdr/rrv_combo_edit_rules.sql
-@@views/rdr/rrv_department.sql
-@@views/rdr/rrv_fx_rates.sql
-@@views/rdr/rrv_gl_account_hierarchy.sql
-@@views/rdr/rrv_gl_accounts.sql
-@@views/rdr/rrv_insurance_policy.sql
-@@views/rdr/rrv_insurance_policy_fx.sql
-@@views/rdr/rrv_ledger.sql
-@@views/rdr/rrv_legal_entity_ledger.sql
-@@views/rdr/rrv_posting_driver.sql
-@@views/rdr/rrv_program.sql
-@@views/rdr/rrv_slr_eba_combinations_ag.sql
-@@views/rdr/rrv_slr_fak_combinations_ag.sql
-@@views/rdr/rrv_slr_eba_daily_balances_ag.sql
-@@views/rdr/rrv_slr_fak_daily_balances_ag.sql
-@@views/rdr/rrv_slr_jrnl_lines_ag.sql
-@@views/rdr/rrv_tax_jurisdiction.sql
-@@views/rdr/rrv_stan_raw_acc_event.sql
-@@views/rdr/rrv_slr_entity_periods.sql
+@@views/rdr/rrv_ag_account_lookup.sql
+@@views/rdr/rrv_ag_accounting_basis_ledger.sql
+@@views/rdr/rrv_ag_accounting_event.sql
+@@views/rdr/rrv_ag_accounting_event_imp.sql
+@@views/rdr/rrv_ag_business_unit.sql
+@@views/rdr/rrv_ag_combo_edit_rules.sql
+@@views/rdr/rrv_ag_department.sql
+@@views/rdr/rrv_ag_event_hierarchy.sql
+@@views/rdr/rrv_ag_fx_rates.sql
+@@views/rdr/rrv_ag_gl_account_hierarchy.sql
+@@views/rdr/rrv_ag_gl_accounts.sql
+@@views/rdr/rrv_ag_insurance_policy.sql
+@@views/rdr/rrv_ag_insurance_policy_fx.sql
+@@views/rdr/rrv_ag_ledger.sql
+@@views/rdr/rrv_ag_legal_entity_ledger.sql
+@@views/rdr/rrv_ag_lookup_types.sql
+@@views/rdr/rrv_ag_posting_driver.sql
+@@views/rdr/rrv_ag_program.sql
+@@views/rdr/rrv_ag_slr_eba_combinations.sql
+@@views/rdr/rrv_ag_slr_eba_daily_balances.sql
+@@views/rdr/rrv_ag_slr_entity_periods.sql
+@@views/rdr/rrv_ag_slr_ext_jrnl_types.sql
+@@views/rdr/rrv_ag_slr_fak_combinations.sql
+@@views/rdr/rrv_ag_slr_fak_daily_balances.sql
+@@views/rdr/rrv_ag_slr_jrnl_lines.sql
+@@views/rdr/rrv_ag_stan_raw_acc_event.sql
+@@views/rdr/rrv_ag_tax_jurisdiction.sql
 
 exit
