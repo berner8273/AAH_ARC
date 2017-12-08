@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_slr_entity_periods
+create or replace view rdr.rrv_ag_slr_entity_periods
 as
 select
   ep_entity              

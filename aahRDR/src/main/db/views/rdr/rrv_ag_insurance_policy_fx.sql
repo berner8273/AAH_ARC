@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_insurance_policy_fx
+create or replace view rdr.rrv_ag_insurance_policy_fx
 as
 select
 fr_fxrate_date           

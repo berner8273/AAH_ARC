@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_insurance_policy
+create or replace view rdr.rrv_ag_insurance_policy
 as
 select
        fiie.iie_cover_signing_party                 policy_id

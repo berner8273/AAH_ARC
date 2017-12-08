@@ -31,6 +31,9 @@ define slr_logon    = ~slr_user/~slr_password@~tns_alias
 conn ~stn_logon
 
 @@grants/tables/stn/gl_account_hierarchy.sql
+@@grants/tables/stn/business_type.sql
+@@grants/tables/stn/execution_type.sql
+@@grants/tables/stn/premium_type.sql
 
 conn ~slr_logon
 

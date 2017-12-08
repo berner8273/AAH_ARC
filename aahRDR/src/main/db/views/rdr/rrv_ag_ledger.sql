@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_ledger
+create or replace view rdr.rrv_ag_ledger
 as
 select
 ps_posting_schema       as ledger_cd

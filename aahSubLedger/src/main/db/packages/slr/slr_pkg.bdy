@@ -923,10 +923,10 @@ BEGIN
             SELECT DISTINCT
                 AE_EPG_ID,
                 FC_FAK_ID,
-                AE_DIMENSION_8, 
-                AE_DIMENSION_9, 
-                AE_DIMENSION_14, 
-                AE_CLIENT_SPARE_ID4 
+                AE_DIMENSION_8,
+                NVL(AE_DIMENSION_9,''NVS'') AE_DIMENSION_9,
+                AE_DIMENSION_14,
+                AE_CLIENT_SPARE_ID4
             FROM FR_ACCOUNTING_EVENT
             JOIN SLR_FAK_COMBINATIONS
               ON AE_GL_ACCOUNT = FC_ACCOUNT 

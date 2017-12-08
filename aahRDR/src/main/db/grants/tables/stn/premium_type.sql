@@ -1,0 +1,1 @@
+grant select on stn.premium_type to RDR;

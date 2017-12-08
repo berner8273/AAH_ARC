@@ -30,32 +30,40 @@ define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
 conn ~rdr_logon
 
-drop view rdr.rrv_account_lookup;
-drop view rdr.rrv_accounting_basis_ledger;
-drop view rdr.rrv_accounting_event;
-drop view rdr.rrv_accounting_event_hierarchy;
-drop view rdr.rrv_business_unit;
-drop view rdr.rrv_combo_edit_rules;
-drop view rdr.rrv_department;
-drop view rdr.rrv_fx_rates;
-drop view rdr.rrv_gl_account_hierarchy;
-drop view rdr.rrv_gl_accounts;
-drop view rdr.rrv_insurance_policy;
-drop view rdr.rrv_insurance_policy_fx;
-drop view rdr.rrv_ledger;
-drop view rdr.rrv_legal_entity_ledger;
-drop view rdr.rrv_posting_driver;
-drop view rdr.rrv_program;
-drop view rdr.rrv_slr_eba_combinations_ag;
-drop view rdr.rrv_slr_eba_daily_balances_ag;
-drop view rdr.rrv_slr_fak_combinations_ag;
-drop view rdr.rrv_slr_fak_daily_balances_ag;
-drop view rdr.rrv_slr_jrnl_lines_ag;
-drop view rdr.rrv_tax_jurisdiction;
+drop view rdr.rrv_ag_account_lookup;
+drop view rdr.rrv_ag_accounting_basis_ledger;
+drop view rdr.rrv_ag_accounting_event;
+drop view rdr.rrv_ag_accounting_event_imp;
+drop view rdr.rrv_ag_business_unit;
+drop view rdr.rrv_ag_combo_edit_rules;
+drop view rdr.rrv_ag_department;
+drop view rdr.rrv_ag_event_hierarchy;
+drop view rdr.rrv_ag_fx_rates;
+drop view rdr.rrv_ag_gl_account_hierarchy;
+drop view rdr.rrv_ag_gl_accounts;
+drop view rdr.rrv_ag_insurance_policy;
+drop view rdr.rrv_ag_insurance_policy_fx;
+drop view rdr.rrv_ag_ledger;
+drop view rdr.rrv_ag_legal_entity_ledger;
+drop view rdr.rrv_ag_lookup_types;
+drop view rdr.rrv_ag_posting_driver;
+drop view rdr.rrv_ag_program;
+drop view rdr.rrv_ag_slr_eba_combinations;
+drop view rdr.rrv_ag_slr_eba_daily_balances;
+drop view rdr.rrv_ag_slr_entity_periods;
+drop view rdr.rrv_ag_slr_ext_jrnl_types;
+drop view rdr.rrv_ag_slr_fak_combinations;
+drop view rdr.rrv_ag_slr_fak_daily_balances;
+drop view rdr.rrv_ag_slr_jrnl_lines;
+drop view rdr.rrv_ag_stan_raw_acc_event;
+drop view rdr.rrv_ag_tax_jurisdiction;
 
 conn ~stn_logon
 
 revoke select   on stn.gl_account_hierarchy    from rdr;
+revoke select   on stn.business_type           from rdr;
+revoke select   on stn.execution_type          from rdr;
+revoke select   on stn.premium_type            from rdr;
 
 conn ~slr_logon
 

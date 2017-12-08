@@ -1,4 +1,4 @@
-create or replace view rdr.rrv_gl_accounts
+create or replace view rdr.rrv_ag_gl_accounts
 as
 select 
   ga_account_code             
