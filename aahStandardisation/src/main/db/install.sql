@@ -304,8 +304,8 @@ conn ~stn_logon
 @@data/stn/posting_method_ledger.sql
 @@data/stn/vie_posting_method_ledger.sql
 @@procedures/stn/pr_publish_log.sql
-@@packages/stn/pk_event_hier.hdr
-@@packages/stn/pk_event_hier.bdy
+@@packages/stn/pk_eh.hdr
+@@packages/stn/pk_eh.bdy
 @@packages/stn/pk_fxr.hdr
 @@packages/stn/pk_fxr.bdy
 @@packages/stn/pk_gce.hdr
