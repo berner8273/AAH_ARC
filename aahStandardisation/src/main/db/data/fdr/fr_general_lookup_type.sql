@@ -14,8 +14,13 @@ insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'POL_DEFAULT'              , 'Default values used in the insurance policy standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_BASIS_LEDGER'  , 'Accounting basis ledger relationships' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'LEGAL_ENTITY_LEDGER'      , 'Legal entity ledger relationships' );
-insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_EVENT_DEFAULT' , 'Default values used in the accounting event standardisation' );
-insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_EVENT'         , 'Accounting event hierarchy' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'EVENT_HIERARCHY_DEFAULT'  , 'Default values used in the event hierarchy standardisation' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'EVENT_TYPE'               , 'Event type' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'EVENT_SUBGROUP'           , 'Event type subgroup' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'EVENT_GROUP'              , 'Event type group' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'EVENT_CLASS'              , 'Event type class' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'EVENT_CATEGORY'           , 'Event type category' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'EVENT_HIERARCHY'          , 'Event hierarchy' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'LEGAL_ENTITY_ALIAS'       , 'Legal entity code and description aliases for RDR' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'JOURNAL_LINE_DEFAULT'     , 'Default values used in the journal line standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'CE_DEFAULT'               , 'Default values used in the cession event standardisation process' );
