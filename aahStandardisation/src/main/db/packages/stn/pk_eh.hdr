@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE stn.PK_EVENT_HIER AS
+CREATE OR REPLACE PACKAGE stn.PK_EH AS
     PROCEDURE pr_event_hier_prc
         (
             p_step_run_sid IN NUMBER,
@@ -6,5 +6,5 @@ CREATE OR REPLACE PACKAGE stn.PK_EVENT_HIER AS
             p_no_processed_records OUT NUMBER,
             p_no_failed_records OUT NUMBER
         );
-END PK_EVENT_HIER;
+END PK_EH;
 /

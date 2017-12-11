@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_EVENT_HIER AS
+CREATE OR REPLACE PACKAGE BODY stn.PK_EH AS
     PROCEDURE pr_event_hier_idf
         (
             p_step_run_sid IN NUMBER,
@@ -554,5 +554,5 @@ and exists (
             p_no_failed_records    := 0;
         END IF;
     END;
-END PK_EVENT_HIER;
+END PK_EH;
 /
