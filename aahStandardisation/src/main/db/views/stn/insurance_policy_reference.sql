@@ -1,5 +1,3 @@
-
-
 create or replace view stn.insurance_policy_reference
 as
 select
@@ -24,7 +22,8 @@ select
      , ft.t_source_tran_no                          stream_id
      , ft.t_client_text1                            ultimate_parent_stream_id
      , ft.t_client_text2                            parent_stream_id
-     , ft.t_bo_book_id                              le_cd
+     , ft.t_bo_book_id                              ledger_entity_cd
+     , ft.t_pbu_ext_party_bus_id                    le_cd
      , ft.t_ct_charge_type_id4                      cession_typ
      , ft.t_total_consid                            gross_par_pct
      , ft.t_clean_consid                            net_par_pct
@@ -46,7 +45,7 @@ select
      , ft.t_bo_book_id                              portfolio_cd
      , ft.t_buy_or_sell                             buy_or_sell
      , ft.t_si_source_sys_inst_id                   system_cd
-     , ft.t_bo_book_id                              policy_holder_le_cd
+     , ft.t_pbu_ext_party_bus_id                    policy_holder_le_cd
      , fi.i_it_instr_type_id                        instrument_type
      , ft.t_acc_event_type_code                     event_code
      , ft.t_client_text5                            financial_instrument_id

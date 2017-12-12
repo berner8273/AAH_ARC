@@ -15,7 +15,7 @@ select
      , fsrae.srae_dimension_10           ledger_cd
      , fsrae.srae_dimension_11           execution_typ
      , fsrae.srae_dimension_12           business_typ
-     , fsrae.srae_dimension_13           owner_le_id
+     , fsrae.srae_dimension_13           owner_le_cd
      , fsrae.srae_dimension_14           premium_typ
      , fsrae.srae_dimension_15           journal_descr
      , fsrae.srae_client_spare_id3       ultimate_parent_stream_id
@@ -31,6 +31,7 @@ select
      , fsrae.srae_client_spare_id13      policy_typ
      , fsrae.srae_client_spare_id14      correlation_uuid
      , fsrae.srae_client_spare_id15      basis_cd
+     , fsrae.srae_client_spare_id16      posting_indicator
      , fsrae.srae_acc_event_type         aah_event_typ
      , fsrae.srae_iso_currency_code      transaction_ccy
      , fsrae.srae_client_amount1         transaction_amt

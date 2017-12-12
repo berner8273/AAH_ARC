@@ -77,7 +77,9 @@ drop view  stn.user_default;
 drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
 drop view  stn.posting_account_derivation;
+drop view  stn.policy_tax;
 drop view  stn.ce_default;
+drop view  stn.cession_event_reversal;
 drop view  stn.cession_event_posting;
 drop view  stn.vie_event_cd;
 drop view  stn.hopper_gl_combo_edit_gc;
@@ -176,6 +178,7 @@ drop table stn.journal_line_premium_type;
 drop table stn.cession_event_premium_type;
 drop table stn.premium_type;
 drop table stn.cession_hierarchy;
+drop table stn.business_event;
 
 conn ~gui_logon
 
@@ -266,6 +269,7 @@ revoke select , insert , update          on fdr.is_user                      fro
 revoke select , insert , update          on fdr.is_groupuser                 from stn;
 revoke select                            on fdr.is_group                     from stn;
 revoke          insert                   on fdr.fr_rate_type                 from stn;
+revoke select                            on fdr.fr_accounting_event_imp      from stn;
 
 conn ~gui_logon
 
@@ -291,5 +295,6 @@ revoke select                            on slr.slr_entity_periods           fro
 revoke select                            on slr.slr_eba_combinations         from stn;
 revoke select                            on slr.slr_fak_combinations         from stn;
 revoke select                            on slr.slr_eba_daily_balances       from stn;
+revoke select                            on slr.slr_jrnl_lines               from stn;
 
 exit
