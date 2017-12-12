@@ -366,23 +366,25 @@ and exists (
         )
     AS
     BEGIN
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-transaction_ccy', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG
-            (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                pol.TRANSACTION_CCY AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                pol.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                pol.TRANSACTION_CCY AS ERROR_VALUE,
                 pol.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                pol.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
                 vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
                 pol.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
@@ -402,23 +404,27 @@ and not exists (
                     where
                           fcl.cul_currency_lookup_code = pol.TRANSACTION_CCY
                       and fcl.cul_sil_sys_inst_clicode = pold.SYSTEM_INSTANCE
-               )
-            UNION ALL
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : pol-transaction_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-underwriting_le_id', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                TO_CHAR(pol.UNDERWRITING_LE_ID) AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                pol.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                TO_CHAR(pol.UNDERWRITING_LE_ID) AS ERROR_VALUE,
                 pol.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                pol.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
                 vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
                 pol.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
@@ -443,23 +449,27 @@ and not exists (
                           to_number ( fpl.pl_global_id ) = pol.UNDERWRITING_LE_ID
                       and fpll.pll_sil_sys_inst_clicode  = pold.SYSTEM_INSTANCE
                       and fpl.pl_global_id is not null
-               )
-            UNION ALL
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : pol-underwriting_le_id', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : polfxr-to_ccy', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                polfxr.TO_CCY AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                polfxr.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                polfxr.TO_CCY AS ERROR_VALUE,
                 polfxr.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                polfxr.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
                 vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
                 polfxr.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY_FX_RATE polfxr
@@ -488,23 +498,27 @@ and not exists (
                     where
                           fcl.cul_currency_lookup_code = polfxr.TO_CCY
                       and fcl.cul_sil_sys_inst_clicode = pold.SYSTEM_INSTANCE
-               )
-            UNION ALL
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  polfxr-to_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : polfxr-from_ccy', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                polfxr.FROM_CCY AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                polfxr.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                polfxr.FROM_CCY AS ERROR_VALUE,
                 polfxr.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                polfxr.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
                 vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
                 polfxr.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY_FX_RATE polfxr
@@ -533,23 +547,27 @@ and not exists (
                     where
                           fcl.cul_currency_lookup_code = polfxr.FROM_CCY
                       and fcl.cul_sil_sys_inst_clicode = pold.SYSTEM_INSTANCE
-               )
-            UNION ALL
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  polfxr-from_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                TO_CHAR(cs.LE_ID) AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                cs.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                TO_CHAR(cs.LE_ID) AS ERROR_VALUE,
                 cs.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                cs.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
                 vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
                 cs.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION cs
@@ -582,23 +600,27 @@ and not exists (
                     where
                           to_number ( fpl.pl_global_id ) = cs.LE_ID
                       and fpll.pll_sil_sys_inst_clicode  = pold.SYSTEM_INSTANCE
-               )
-            UNION ALL
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-le_id', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-vie_acct_dt', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                'vie_acct_dt cannot be null' AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                cs.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                'vie_acct_dt cannot be null' AS ERROR_VALUE,
                 cs.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                cs.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
                 vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
                 cs.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION cs
@@ -623,23 +645,27 @@ and  exists (
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
             )
-
-            UNION ALL
+;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-vie_acct_dt', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-vie_eff_dt', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                'vie_effective_dt cannot be null' AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                cs.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                'vie_effective_dt cannot be null' AS ERROR_VALUE,
                 cs.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                cs.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
                 vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
                 cs.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION cs
@@ -664,23 +690,27 @@ and  exists (
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
             )
-
-            UNION ALL
+;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-vie_eff_dt', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cl-stream_policies', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                'Child stream''s policy ID = ''' || TO_CHAR(pcs.POLICY_ID) || ''' ; Parent stream''s policy ID = ''' || TO_CHAR(ccs.POLICY_ID) || '''' AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                cl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                'Child stream''s policy ID = ''' || TO_CHAR(pcs.POLICY_ID) || ''' ; Parent stream''s policy ID = ''' || TO_CHAR(ccs.POLICY_ID) || '''' AS ERROR_VALUE,
                 cl.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                cl.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
                 vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
                 cl.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_LINK cl
@@ -715,23 +745,27 @@ and (
                              ccs.POLICY_ID = pol.policy_id
                          and ccs.FEED_UUID = pol.feed_uuid
                   )
-    )
-            UNION ALL
+    );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cl-stream_policies', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id-slr_link', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                TO_CHAR(cs.LE_ID) AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                cs.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                TO_CHAR(cs.LE_ID) AS ERROR_VALUE,
                 cs.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
                 rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                cs.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
                 vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
                 cs.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION cs
@@ -742,39 +776,26 @@ and (
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
                     vdl.VALIDATION_CD = 'cs-le_id-slr_link'
-and cs.LE_ID          not in ( 25 )
-and exists (
-               select
-                      null
-                 from
-                           stn.insurance_policy  pol
-                      join stn.identified_record idr on pol.row_sid = idr.row_sid
-                where
-                      pol.policy_id = cs.policy_id
-                  and pol.feed_uuid = cs.FEED_UUID
-           )
-and (
-           not exists (
-                          select
-                                 null
-                            from
-                                 stn.cession_hierarchy ch
-                           where
-                                 ch.feed_uuid       = cs.FEED_UUID
-                             and ch.child_stream_id = cs.stream_id
-                      )
-        or     exists (
-                          select
-                                 null
-                            from
-                                 stn.cession_hierarchy ch
-                           where
-                                 ch.feed_uuid       = cs.FEED_UUID
-                             and ch.child_stream_id = cs.stream_id
-                             and ch.ledger_entity_le_id is null
-                      )
-    );
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Loaded records to stn.standardisation_log', 'sql%rowcount', NULL, sql%rowcount, NULL);
+and     exists (
+                   select
+                          null
+                     from
+                               stn.insurance_policy  pol
+                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                    where
+                          pol.policy_id = cs.policy_id
+                      and pol.feed_uuid = cs.FEED_UUID
+               )
+and not exists (
+                   select
+                          null
+                     from
+                          stn.cession_hierarchy ch
+                    where
+                          ch.feed_uuid       = cs.FEED_UUID
+                      and ch.child_stream_id = cs.stream_id
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-le_id-slr_link', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
     
     PROCEDURE pr_policy_svs
