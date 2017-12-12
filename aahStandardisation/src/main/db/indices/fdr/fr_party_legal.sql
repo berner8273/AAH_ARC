@@ -1,0 +1,1 @@
+create unique index fbi_pl_global_id on fdr.fr_party_legal ( to_number ( pl_global_id ) );

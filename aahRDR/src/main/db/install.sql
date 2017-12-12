@@ -68,11 +68,11 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_lookup_types.sql
 @@views/rdr/rrv_ag_posting_driver.sql
 @@views/rdr/rrv_ag_program.sql
+@@views/rdr/rrv_ag_slr_fak_combinations.sql
 @@views/rdr/rrv_ag_slr_eba_combinations.sql
 @@views/rdr/rrv_ag_slr_eba_daily_balances.sql
 @@views/rdr/rrv_ag_slr_entity_periods.sql
 @@views/rdr/rrv_ag_slr_ext_jrnl_types.sql
-@@views/rdr/rrv_ag_slr_fak_combinations.sql
 @@views/rdr/rrv_ag_slr_fak_daily_balances.sql
 @@views/rdr/rrv_ag_slr_jrnl_lines.sql
 @@views/rdr/rrv_ag_stan_raw_acc_event.sql

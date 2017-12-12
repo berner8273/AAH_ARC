@@ -106,11 +106,11 @@ conn ~fdr_logon
 @@indices/fdr/fr_stan_raw_org_hier_struc.sql
 @@indices/fdr/fr_stan_raw_party_legal.sql
 @@indices/fdr/fr_stan_raw_adjustment.sql
+@@indices/fdr/fr_party_legal.sql
 
 conn ~stn_logon
 
 @@tables/stn/accounting_basis_ledger.sql
-@@tables/stn/accounting_event.sql
 @@tables/stn/broken_feed.sql
 @@tables/stn/business_event.sql
 @@tables/stn/business_type.sql
@@ -126,6 +126,7 @@ conn ~stn_logon
 @@tables/stn/db_tab_column.sql
 @@tables/stn/db_table.sql
 @@tables/stn/department.sql
+@@tables/stn/event_hierarchy.sql
 @@tables/stn/event_type.sql
 @@tables/stn/execution_type.sql
 @@tables/stn/feed.sql
@@ -220,8 +221,12 @@ conn ~stn_logon
 @@views/stn/hopper_insurance_policy_tj.sql
                                           
 @@views/stn/pol_default.sql
-@@views/stn/accounting_event_default.sql
-@@views/stn/hopper_accounting_event.sql
+@@views/stn/event_hierarchy_default.sql
+@@views/stn/hopper_event_hierarchy.sql
+@@views/stn/hopper_event_category.sql
+@@views/stn/hopper_event_class.sql
+@@views/stn/hopper_event_group.sql
+@@views/stn/hopper_event_subgroup.sql
                                           
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
@@ -305,8 +310,8 @@ conn ~stn_logon
 @@data/stn/posting_method_ledger.sql
 @@data/stn/vie_posting_method_ledger.sql
 @@procedures/stn/pr_publish_log.sql
-@@packages/stn/pk_acc_event.hdr
-@@packages/stn/pk_acc_event.bdy
+@@packages/stn/pk_eh.hdr
+@@packages/stn/pk_eh.bdy
 @@packages/stn/pk_fxr.hdr
 @@packages/stn/pk_fxr.bdy
 @@packages/stn/pk_gce.hdr
