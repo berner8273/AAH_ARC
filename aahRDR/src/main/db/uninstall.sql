@@ -1,5 +1,5 @@
 -- -----------------------------------------------------------------------------------------
--- filename: uninstall.sql
+-- filename: uninstall;
 -- author  : andrew hall
 -- purpose : Script to uninstall the objects which involve reporting.
 --         :
