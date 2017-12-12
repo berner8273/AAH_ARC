@@ -923,10 +923,10 @@ BEGIN
             SELECT DISTINCT
                 AE_EPG_ID,
                 FC_FAK_ID,
-                AE_DIMENSION_8,
+                AE_DIMENSION_8, 
                 NVL(AE_DIMENSION_9,''NVS'') AE_DIMENSION_9,
-                AE_DIMENSION_14,
-                AE_CLIENT_SPARE_ID4
+                AE_DIMENSION_14, 
+                AE_CLIENT_SPARE_ID4 
             FROM FR_ACCOUNTING_EVENT
             JOIN SLR_FAK_COMBINATIONS
               ON AE_GL_ACCOUNT = FC_ACCOUNT 
@@ -1251,7 +1251,7 @@ BEGIN
             fs8_amended_on)
     SELECT  seg8.ent_segment_8_set,
             frinstr.i_instrument_id,
-            FREXT.IIE_COVER_NOTE_DESCRIPTION,
+            ft.t_client_text6,
             'A',
             USER,
             TRUNC(SYSDATE),
@@ -1264,8 +1264,8 @@ BEGIN
                           ON frlpg.lc_grp_code = ent.ent_entity
                           AND frlpg.lc_lpg_id = pLPG_ID
                         ) seg8 
-            INNER JOIN fdr.fr_instr_insure_extend frext
-                  ON frinstr.i_instrument_id = frext.iie_instrument_id
+            INNER JOIN fdr.fr_trade ft
+                  ON frinstr.i_instrument_id = ft.t_i_instrument_id
             WHERE frinstr.i_it_instr_type_id = 'INSURANCE_POLICY';
 
     SELECT  COUNT(*)
