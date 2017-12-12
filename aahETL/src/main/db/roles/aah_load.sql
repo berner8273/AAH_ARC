@@ -26,3 +26,4 @@ grant insert , select on stn.user_group                  to aah_load;
 grant insert , select on stn.journal_line                to aah_load;
 grant insert , select on stn.tax_jurisdiction            to aah_load;
 grant          select on stn.event_type                  to aah_load;
+grant insert , select on stn.event_hierarchy             to aah_load;

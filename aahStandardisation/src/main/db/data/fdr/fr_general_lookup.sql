@@ -74,8 +74,8 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'POLICY_HOLDER_ADDRESS'          , 'NVS' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'INSTRUMENT_TYPE'                , 'INSURANCE_POLICY' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'POL_DEFAULT'              , 'EVENT_CODE'                     , 'IN_POLCY' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'ACCOUNTING_EVENT_DEFAULT' , 'ACTIVE_FLAG'                    , 'A' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'ACCOUNTING_EVENT_DEFAULT' , 'SYSTEM_INSTANCE'                , 'Client Static' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_HIERARCHY_DEFAULT'  , 'ACTIVE_FLAG'                    , 'A' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_HIERARCHY_DEFAULT'  , 'SYSTEM_INSTANCE'                , 'Client Static' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'JOURNAL_LINE_DEFAULT'     , 'SRA_AE_JOURNAL_TYPE'            , 'PERC' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'JOURNAL_LINE_DEFAULT'     , 'SRA_AE_SOURCE_SYSTEM'           , 'PRE_ACCOUNTED_FEED' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'JOURNAL_LINE_DEFAULT'     , 'SRA_AE_ITSC_INST_TYP_SCLSS_CD'  , 'INSURANCE_POLICY' );
