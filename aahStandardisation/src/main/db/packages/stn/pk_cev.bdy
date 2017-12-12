@@ -43,16 +43,42 @@ and not exists (
              from
                   stn.identified_record idr
             where
-                  idr.row_sid = ce.row_sid
+                  ce.row_sid = idr.row_sid
        );
         p_no_identified_records := SQL%ROWCOUNT;
+        UPDATE CESSION_EVENT ce
+            SET
+                STEP_RUN_SID = p_step_run_sid,
+                EVENT_STATUS = 'X'
+            WHERE
+                    ce.EVENT_STATUS = 'U'
+and not exists (
+                   select
+                          null
+                     from
+                          stn.identified_record idr
+                    where
+                          ce.row_sid = idr.row_sid
+               )
+and not exists (
+                   select
+                          null
+                     from
+                               stn.broken_feed bf
+                          join stn.feed        fd on bf.feed_sid = fd.feed_sid
+                    where
+                          fd.feed_uuid = ce.feed_uuid
+               );
     END;
     
     PROCEDURE pr_cession_event_pub
+        (
+            p_step_run_sid IN NUMBER
+        )
     AS
     BEGIN
         INSERT INTO HOPPER_CESSION_EVENT
-            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_STREAM_ID, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_ID, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD)
+            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_STREAM_ID, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID)
             SELECT
                 cep.BUSINESS_UNIT AS BUSINESS_UNIT,
                 cep.AFFILIATE AS AFFILIATE_LE_CD,
@@ -61,7 +87,7 @@ and not exists (
                 cep.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
                 cep.POLICY_ID AS POLICY_ID,
                 cep.ULTIMATE_PARENT_STREAM_ID AS ULTIMATE_PARENT_STREAM_ID,
-                ce_default.TAX_JURISDICTION AS TAX_JURISDICTION_CD,
+                cep.TAX_JURISDICTION_CD AS TAX_JURISDICTION_CD,
                 cep.EVENT_TYP AS EVENT_TYP,
                 cep.TRANSACTION_CCY AS TRANSACTION_CCY,
                 NVL(cep.TRANSACTION_AMT, 0) AS TRANSACTION_AMT,
@@ -92,19 +118,80 @@ and not exists (
                 cep.BUSINESS_UNIT AS BOOK_CD,
                 cep.CORRELATION_UUID AS CORRELATION_UUID,
                 NULL AS CHARTFIELD_1,
-                cep.AFFILIATE AS COUNTERPARTY_LE_CD,
+                cep.COUNTERPARTY_LE_CD AS COUNTERPARTY_LE_CD,
                 cep.EXECUTION_TYP AS EXECUTION_TYP,
-                cep.BUSINESS_UNIT AS OWNER_LE_ID,
-                NULL AS JOURNAL_DESCR,
+                cep.OWNER_LE_CD AS OWNER_LE_CD,
+                cep.POLICY_ABBR_NM AS JOURNAL_DESCR,
                 cep.FUNCTIONAL_CCY AS FUNCTIONAL_CCY,
                 NVL(cep.FUNCTIONAL_AMT, 0) AS FUNCTIONAL_AMT,
                 cep.REPORTING_CCY AS REPORTING_CCY,
                 NVL(cep.REPORTING_AMT, 0) AS REPORTING_AMT,
                 cep.BUSINESS_EVENT_TYP AS BUSINESS_EVENT_TYP,
-                1 AS EVENT_SEQ_ID,
-                cep.BASIS_CD AS BASIS_CD
+                cep.EVENT_SEQ_ID AS EVENT_SEQ_ID,
+                cep.BASIS_CD AS BASIS_CD,
+                'ORIGINAL' AS POSTING_INDICATOR,
+                cep.ROW_SID AS MESSAGE_ID,
+                TO_CHAR(p_step_run_sid) AS PROCESS_ID
             FROM
                 CESSION_EVENT_POSTING cep
+                INNER JOIN CE_DEFAULT ON 1 = 1;
+        INSERT INTO HOPPER_CESSION_EVENT
+            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_STREAM_ID, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID)
+            SELECT
+                cer.BUSINESS_UNIT AS BUSINESS_UNIT,
+                cer.AFFILIATE AS AFFILIATE_LE_CD,
+                cer.ACCOUNTING_DT AS ACCOUNTING_DT,
+                cer.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
+                cer.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
+                cer.POLICY_ID AS POLICY_ID,
+                cer.ULTIMATE_PARENT_STREAM_ID AS ULTIMATE_PARENT_STREAM_ID,
+                cer.TAX_JURISDICTION_CD AS TAX_JURISDICTION_CD,
+                cer.EVENT_TYP AS EVENT_TYP,
+                cer.TRANSACTION_CCY AS TRANSACTION_CCY,
+                NVL(cer.TRANSACTION_AMT, 0) AS TRANSACTION_AMT,
+                cer.BUSINESS_TYP AS BUSINESS_TYP,
+                cer.POLICY_TYP AS POLICY_TYP,
+                cer.PREMIUM_TYP AS PREMIUM_TYP,
+                cer.SUB_EVENT AS SUB_EVENT,
+                cer.IS_MARK_TO_MARKET AS IS_MARK_TO_MARKET,
+                cer.VIE_CD AS VIE_CD,
+                cer.LPG_ID AS LPG_ID,
+                cer.BUSINESS_UNIT AS PARTY_BUSINESS_LE_CD,
+                ce_default.SYSTEM_INSTANCE AS PARTY_BUSINESS_SYSTEM_CD,
+                cer.EVENT_TYP AS AAH_EVENT_TYP,
+                ce_default.SYSTEM_INSTANCE AS SRAE_STATIC_SYS_INST_CODE,
+                ce_default.SYSTEM_INSTANCE AS SRAE_INSTR_SYS_INST_CODE,
+                (CASE
+                    WHEN cer.TRANSACTION_AMT > 0 THEN 'POS'
+                    ELSE 'NEG'
+                END) AS TRANSACTION_POS_NEG,
+                ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
+                cer.BUSINESS_UNIT AS DEPT_CD,
+                ce_default.SRAE_SOURCE_SYSTEM AS SRAE_SOURCE_SYSTEM,
+                ce_default.SRAE_INSTR_SUPER_CLASS AS SRAE_INSTR_SUPER_CLASS,
+                ce_default.SRAE_INSTRUMENT_CODE AS SRAE_INSTRUMENT_CODE,
+                cer.LEDGER_CD AS LEDGER_CD,
+                cer.STREAM_ID AS STREAM_ID,
+                cer.ACCOUNTING_DT AS POSTING_DT,
+                cer.BUSINESS_UNIT AS BOOK_CD,
+                cer.CORRELATION_UUID AS CORRELATION_UUID,
+                NULL AS CHARTFIELD_1,
+                cer.COUNTPARTY_LE_CD AS COUNTERPARTY_LE_CD,
+                cer.EXECUTION_TYP AS EXECUTION_TYP,
+                cer.OWNER_LE_CD AS OWNER_LE_CD,
+                cer.JOURNAL_DESCR AS JOURNAL_DESCR,
+                cer.FUNCTIONAL_CCY AS FUNCTIONAL_CCY,
+                NVL(cer.FUNCTIONAL_AMT, 0) AS FUNCTIONAL_AMT,
+                cer.REPORTING_CCY AS REPORTING_CCY,
+                NVL(cer.REPORTING_AMT, 0) AS REPORTING_AMT,
+                cer.BUSINESS_EVENT_TYP AS BUSINESS_EVENT_TYP,
+                cer.EVENT_SEQ_ID AS EVENT_SEQ_ID,
+                cer.BASIS_CD AS BASIS_CD,
+                'REVERSE_REPOST' AS POSTING_INDICATOR,
+                cer.ROW_SID AS MESSAGE_ID,
+                TO_CHAR(p_step_run_sid) AS PROCESS_ID
+            FROM
+                CESSION_EVENT_REVERSAL cer
                 INNER JOIN CE_DEFAULT ON 1 = 1;
     END;
     
@@ -324,41 +411,6 @@ and not exists (
                           fdr.fr_acc_event_type faet
                     where
                           faet.aet_acc_event_type_id = ce.EVENT_TYP
-               )
-            UNION ALL
-            SELECT
-                rveld.CATEGORY_ID AS CATEGORY_ID,
-                rveld.ERROR_STATUS AS ERROR_STATUS,
-                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
-                ce.BUSINESS_EVENT_TYP AS error_value,
-                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
-                rveld.EVENT_TYPE AS EVENT_TYPE,
-                vdl.COLUMN_NM AS field_in_error_name,
-                ce.LPG_ID AS LPG_ID,
-                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
-                ce.ROW_SID AS row_in_error_key_id,
-                vdl.TABLE_NM AS table_in_error_name,
-                vdl.VALIDATION_CD AS rule_identity,
-                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
-                ce.STEP_RUN_SID AS STEP_RUN_SID,
-                fd.FEED_SID AS FEED_SID
-            FROM
-                CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
-                INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
-                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
-                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
-                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
-            WHERE
-                    vdl.VALIDATION_CD = 'ce-business_event_typ'
-and not exists (
-                   select
-                          null
-                     from
-                          fdr.fr_general_lookup fgl
-                    where
-                          fgl.LK_LKT_LOOKUP_TYPE_CODE = 'ACCOUNTING_EVENT'
-                      and fgl.LK_LOOKUP_VALUE2        = ce.BUSINESS_EVENT_TYP
                );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Loaded records to stn.standardisation_log', 'sql%rowcount', NULL, sql%rowcount, NULL);
         INSERT INTO STANDARDISATION_LOG
@@ -414,8 +466,8 @@ and exists (
               stn.standardisation_log sl
          join 
               stn.cession_event ce2 on 
-            ( sl.row_in_error_key_id = ce.ROW_SID
-          and sl.step_run_sid = ce.STEP_RUN_SID )
+            ( sl.row_in_error_key_id = ce2.row_sid
+          and sl.step_run_sid = ce2.step_run_sid )
         where 
               ce.correlation_uuid = ce2.correlation_uuid
             )
@@ -509,7 +561,7 @@ and not exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set cession event status = "V"' );
             pr_cession_event_svs(p_step_run_sid, v_no_errored_records, v_no_validated_records);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish cession event records' );
-            pr_cession_event_pub;
+            pr_cession_event_pub(p_step_run_sid);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish log records' );
             pr_publish_log;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set cession event status = "P"' );
