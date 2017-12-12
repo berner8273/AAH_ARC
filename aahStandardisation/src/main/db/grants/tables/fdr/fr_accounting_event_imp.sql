@@ -1,0 +1,1 @@
+grant select on fdr.fr_accounting_event_imp to stn;
