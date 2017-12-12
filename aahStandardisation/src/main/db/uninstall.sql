@@ -56,8 +56,8 @@ drop package body stn.pk_tj;
 drop package      stn.pk_tj;
 drop package body stn.pk_pol;
 drop package      stn.pk_pol;
-drop package body stn.pk_acc_event;
-drop package      stn.pk_acc_event;
+drop package body stn.pk_eh;
+drop package      stn.pk_eh;
 drop package body stn.pk_jl;
 drop package      stn.pk_jl;
 drop package body stn.pk_cev;
@@ -77,7 +77,9 @@ drop view  stn.user_default;
 drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
 drop view  stn.posting_account_derivation;
+drop view  stn.policy_tax;
 drop view  stn.ce_default;
+drop view  stn.cession_event_reversal;
 drop view  stn.cession_event_posting;
 drop view  stn.vie_event_cd;
 drop view  stn.hopper_gl_combo_edit_gc;
@@ -94,8 +96,12 @@ drop view  stn.hopper_legal_entity_ledger;
 drop view  stn.hopper_journal_line;
 drop view  stn.journal_line_default;
 drop view  stn.ledger_default;
-drop view  stn.hopper_accounting_event;
-drop view  stn.accounting_event_default;
+drop view  stn.hopper_event_hierarchy;
+drop view  stn.hopper_event_class;
+drop view  stn.hopper_event_category;
+drop view  stn.hopper_event_group;
+drop view  stn.hopper_event_subgroup;
+drop view  stn.event_hierarchy_default;
 drop table stn.vie_posting_method_ledger;
 drop table stn.process_code_module;
 drop table stn.validation_column;
@@ -165,13 +171,14 @@ drop table stn.tax_jurisdiction;
 drop table stn.accounting_basis_ledger;
 drop table stn.legal_entity_ledger;
 drop table stn.ledger;
-drop table stn.accounting_event;
+drop table stn.event_hierarchy;
 drop table stn.gl_account_hierarchy;
 drop table stn.policy_premium_type;
 drop table stn.journal_line_premium_type;
 drop table stn.cession_event_premium_type;
 drop table stn.premium_type;
 drop table stn.cession_hierarchy;
+drop table stn.business_event;
 
 conn ~gui_logon
 
@@ -197,8 +204,8 @@ delete from fdr.fr_instr_type_superclass     where itsc_instr_type_super_clicode
 delete from fdr.fr_instr_insure_extend;
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
-delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' );
-delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'ACCOUNTING_EVENT_DEFAULT' , 'ACCOUNTING_EVENT' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' );
+delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE' );
+delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE' );
 delete from fdr.fr_fx_rate;
 delete from fdr.fr_party_business_lookup     where pbl_lookup_key                 != 'DEFAULT';
 delete from fdr.fr_party_business            where pbu_party_bus_client_code      != 'DEFAULT';
@@ -239,6 +246,7 @@ drop index fdr.fbi_fsrgc_message_id;
 drop index fdr.fbi_fsrohs_message_id;
 drop index fdr.fbi_fsrpl_message_id;
 drop index fdr.fbi_fsra_message_id;
+drop index fdr.fbi_pl_global_id;
 
 revoke select , insert , update          on fdr.fr_acc_event_type            from stn;
 revoke select                            on fdr.fr_account_lookup            from stn;
@@ -261,6 +269,7 @@ revoke select , insert , update          on fdr.is_user                      fro
 revoke select , insert , update          on fdr.is_groupuser                 from stn;
 revoke select                            on fdr.is_group                     from stn;
 revoke          insert                   on fdr.fr_rate_type                 from stn;
+revoke select                            on fdr.fr_accounting_event_imp      from stn;
 
 conn ~gui_logon
 
@@ -286,5 +295,6 @@ revoke select                            on slr.slr_entity_periods           fro
 revoke select                            on slr.slr_eba_combinations         from stn;
 revoke select                            on slr.slr_fak_combinations         from stn;
 revoke select                            on slr.slr_eba_daily_balances       from stn;
+revoke select                            on slr.slr_jrnl_lines               from stn;
 
 exit

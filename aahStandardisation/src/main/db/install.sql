@@ -33,6 +33,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_eba_combinations.sql
 @@grants/tables/slr/slr_fak_combinations.sql
 @@grants/tables/slr/slr_eba_daily_balances.sql
+@@grants/tables/slr/slr_jrnl_lines.sql
 
 conn ~gui_logon
 
@@ -95,6 +96,7 @@ conn ~fdr_logon
 @@grants/tables/fdr/fr_instr_insure_extend.sql
 @@grants/tables/fdr/fr_instrument.sql
 @@grants/tables/fdr/fr_trade.sql
+@@grants/tables/fdr/fr_accounting_event_imp.sql
 
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy
@@ -104,12 +106,13 @@ conn ~fdr_logon
 @@indices/fdr/fr_stan_raw_org_hier_struc.sql
 @@indices/fdr/fr_stan_raw_party_legal.sql
 @@indices/fdr/fr_stan_raw_adjustment.sql
+@@indices/fdr/fr_party_legal.sql
 
 conn ~stn_logon
 
 @@tables/stn/accounting_basis_ledger.sql
-@@tables/stn/accounting_event.sql
 @@tables/stn/broken_feed.sql
+@@tables/stn/business_event.sql
 @@tables/stn/business_type.sql
 @@tables/stn/cession.sql
 @@tables/stn/cession_event.sql
@@ -123,6 +126,7 @@ conn ~stn_logon
 @@tables/stn/db_tab_column.sql
 @@tables/stn/db_table.sql
 @@tables/stn/department.sql
+@@tables/stn/event_hierarchy.sql
 @@tables/stn/event_type.sql
 @@tables/stn/execution_type.sql
 @@tables/stn/feed.sql
@@ -206,8 +210,10 @@ conn ~stn_logon
 @@views/stn/validation_detail.sql
 @@views/stn/vie_event_cd.sql
 @@views/stn/posting_account_derivation.sql
+@@views/stn/policy_tax.sql
 @@views/stn/cession_event_posting.sql
-                          
+@@views/stn/cession_event_reversal.sql
+
 @@views/stn/gce_default.sql
 @@views/stn/user_default.sql
 @@views/stn/hopper_cession_event.sql
@@ -215,8 +221,12 @@ conn ~stn_logon
 @@views/stn/hopper_insurance_policy_tj.sql
                                           
 @@views/stn/pol_default.sql
-@@views/stn/accounting_event_default.sql
-@@views/stn/hopper_accounting_event.sql
+@@views/stn/event_hierarchy_default.sql
+@@views/stn/hopper_event_hierarchy.sql
+@@views/stn/hopper_event_category.sql
+@@views/stn/hopper_event_class.sql
+@@views/stn/hopper_event_group.sql
+@@views/stn/hopper_event_subgroup.sql
                                           
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
@@ -257,6 +267,7 @@ conn ~stn_logon
 @@ri_constraints/stn/validation.sql
 @@ri_constraints/stn/validation_column.sql
 @@ri_constraints/stn/vie_posting_method_ledger.sql
+@@data/stn/business_event.sql
 @@data/stn/business_type.sql
 @@data/stn/cession_link_type.sql
 @@data/stn/cession_type.sql
@@ -299,8 +310,8 @@ conn ~stn_logon
 @@data/stn/posting_method_ledger.sql
 @@data/stn/vie_posting_method_ledger.sql
 @@procedures/stn/pr_publish_log.sql
-@@packages/stn/pk_acc_event.hdr
-@@packages/stn/pk_acc_event.bdy
+@@packages/stn/pk_eh.hdr
+@@packages/stn/pk_eh.bdy
 @@packages/stn/pk_fxr.hdr
 @@packages/stn/pk_fxr.bdy
 @@packages/stn/pk_gce.hdr
