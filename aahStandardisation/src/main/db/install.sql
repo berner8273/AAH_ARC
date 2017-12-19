@@ -348,4 +348,33 @@ conn ~stn_logon
 
 @@grants/tables/stn/insurance_policy.sql
 
+/*
+ * Capture statistics across STN
+ */
+
+exec dbms_stats.gather_schema_stats ( ownname => 'STN' , cascade => true );
+
+/*
+ * Lie to the optimiser by shipping statistics at build time
+ */
+
+conn ~stn_logon
+
+exec dbms_stats.create_stat_table   ( ownname => user , stattab => 'INIT_STAT' );
+@@data/stn/init_stat.sql
+@@grants/tables/stn/init_stat.sql
+
+conn ~fdr_logon
+
+exec dbms_stats.gather_schema_stats ( ownname => 'FDR' , cascade => true );
+
+exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_INSURANCE_POLICY' , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
+exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_FX_RATE'          , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
+exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_GENERAL_CODES'    , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
+exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_GENERAL_LOOKUP'   , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
+
+/*
+ * Finish shipping statistics at build time
+ */
+
 exit

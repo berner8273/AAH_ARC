@@ -1,4 +1,10 @@
 CREATE OR REPLACE PACKAGE BODY stn.PK_JL AS
+    PROCEDURE pr_journal_line_istat
+    AS
+    BEGIN
+        dbms_stats.gather_table_stats ( ownname => user , tabname => 'JOURNAL_LINE' , cascade => true );
+    END;
+    
     PROCEDURE pr_journal_line_idf
         (
             p_step_run_sid IN NUMBER,
@@ -34,6 +40,7 @@ and not exists (
                          sf.superseded_feed_sid = feed.FEED_SID
               );
         p_no_identified_recs := SQL%ROWCOUNT;
+        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD' , cascade => true );
         UPDATE journal_line jl
             SET
                 STEP_RUN_SID = p_step_run_sid
@@ -1337,6 +1344,7 @@ and     exists (
         v_no_updated_hopper_records NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
     BEGIN
+        pr_journal_line_istat;
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify journal line records' );
         pr_journal_line_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);

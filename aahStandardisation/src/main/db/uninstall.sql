@@ -179,6 +179,7 @@ drop table stn.cession_event_premium_type;
 drop table stn.premium_type;
 drop table stn.cession_hierarchy;
 drop table stn.business_event;
+drop table stn.init_stat;
 
 conn ~gui_logon
 
