@@ -63,6 +63,7 @@ conn ~fdr_logon
 @@data/fdr/fr_internal_proc_entity.sql
 @@data/fdr/fr_general_lookup_type.sql
 @@data/fdr/fr_general_lookup.sql
+@@data/fdr/fr_general_codes.sql
 @@data/fdr/fr_general_code_types.sql
 @@data/fdr/fr_org_hierarchy_type.sql
 @@data/fdr/fr_org_node_type.sql
