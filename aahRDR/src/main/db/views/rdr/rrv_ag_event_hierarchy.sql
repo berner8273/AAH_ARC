@@ -148,6 +148,7 @@ with
      ) 
 select
        etyp.event_type
+     , faet.aet_acc_event_type_name   event_type_descr
      , etyp.event_subgrp
      , esgp.event_subgrp_descr
      , etyp.event_grp
@@ -159,9 +160,10 @@ select
      , etyp.is_cash_event
      , etyp.is_core_earning_event
   from
-                 event_type     etyp
-       left join event_category ecat on etyp.event_category = ecat.event_category
-       left join event_class    ecls on etyp.event_class    = ecls.event_class
-       left join event_grp      egrp on etyp.event_grp      = egrp.event_grp
-       left join event_subgrp   esgp on etyp.event_subgrp   = esgp.event_subgrp
+                 event_type            etyp
+       left join event_category        ecat on etyp.event_category = ecat.event_category
+       left join event_class           ecls on etyp.event_class    = ecls.event_class
+       left join event_grp             egrp on etyp.event_grp      = egrp.event_grp
+       left join event_subgrp          esgp on etyp.event_subgrp   = esgp.event_subgrp
+       left join fdr.fr_acc_event_type faet on etyp.event_type     = faet.aet_acc_event_type_id
      ;
