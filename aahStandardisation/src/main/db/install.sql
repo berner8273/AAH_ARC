@@ -117,6 +117,19 @@ conn ~stn_logon
 @@tables/stn/business_type.sql
 @@tables/stn/cession.sql
 @@tables/stn/cession_event.sql
+
+@@tables/stn/cev_data.sql
+@@tables/stn/cev_derived_plus_data.sql
+@@tables/stn/cev_gaap_fut_accts_data.sql
+@@tables/stn/cev_identified_record.sql
+@@tables/stn/cev_le_data.sql
+@@tables/stn/cev_mtm_data.sql
+@@tables/stn/cev_non_intercompany_data.sql
+@@tables/stn/cev_period_balances.sql
+@@tables/stn/cev_premium_typ_override.sql
+@@tables/stn/posting_method_derivation_gfa.sql
+@@tables/stn/posting_account_derivation.sql
+
 @@tables/stn/cession_event_premium_type.sql
 @@tables/stn/cession_hierarchy.sql
 @@tables/stn/cession_link.sql
@@ -305,6 +318,7 @@ conn ~stn_logon
 @@data/stn/posting_ledger.sql
 @@data/stn/posting_method.sql
 @@data/stn/posting_method_derivation_et.sql
+@@data/stn/posting_method_derivation_gfa.sql
 @@data/stn/posting_method_derivation_ic.sql
 @@data/stn/posting_method_derivation_le.sql
 @@data/stn/posting_method_derivation_mtm.sql
