@@ -7,6 +7,7 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_CEV AS
         )
     AS
     BEGIN
+        delete from stn.cev_identified_record;
         INSERT INTO CEV_IDENTIFIED_RECORD
             (ROW_SID)
             SELECT
@@ -103,118 +104,6 @@ and not exists (
              ;
         
         dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'POSTING_ACCOUNT_DERIVATION' );
-        merge into stn.cev_period_balances cevpb
-        using
-        (
-        with period_detail
-          as (
-                 select
-                        sedb.edb_balance_date         balance_date
-                      , sec.ec_attribute_1            stream_id
-                      , sfc.fc_entity                 business_unit
-                      , sfc.fc_account                sub_account
-                      , sfc.fc_ccy                    currency
-                      , sec.ec_attribute_3            premium_typ
-                      , sfc.fc_segment_2              basis_cd
-                      , sedb.edb_tran_ltd_balance     transaction_balance
-                      , sedb.edb_base_ltd_balance     reporting_balance
-                      , sedb.edb_local_ltd_balance    functional_balance
-                      , sedb.edb_period_month         period_month
-                      , sedb.edb_period_year          period_year
-                   from
-                             slr.slr_eba_daily_balances sedb
-                        join slr.slr_fak_combinations   sfc   on sedb.edb_fak_id = sfc.fc_fak_id
-                        join slr.slr_eba_combinations   sec   on sedb.edb_eba_id = sec.ec_eba_id
-                  where (
-                            select
-                                   max(sedb2.edb_balance_date) max_period_date
-                              from
-                                        slr.slr_eba_daily_balances   sedb2
-                                   join slr.slr_fak_combinations     sfc2   on sedb2.edb_fak_id = sfc2.fc_fak_id
-                                   join slr.slr_eba_combinations     sec2   on sedb2.edb_eba_id = sec2.ec_eba_id
-                             where sec2.ec_attribute_1          = sec.ec_attribute_1
-                               and sfc2.fc_entity               = sfc.fc_entity
-                               and sfc2.fc_account              = sfc.fc_account
-                               and sfc2.fc_ccy                  = sfc.fc_ccy
-                               and sec2.ec_attribute_3          = sec.ec_attribute_3
-                               and sfc2.fc_segment_2            = sfc.fc_segment_2
-                               and sedb2.edb_period_month       = sedb.edb_period_month
-                               and sedb2.edb_period_year        = sedb.edb_period_year
-                        ) = sedb.edb_balance_date
-            )
-                 select
-                        sum(pd.transaction_balance) transaction_balance
-                      , sum(pd.reporting_balance)   reporting_balance
-                      , sum(pd.functional_balance)  functional_balance
-                      , stream_id
-                      , business_unit
-                      , sub_account
-                      , currency
-                      , premium_typ
-                      , basis_cd
-                      , period_month
-                      , period_year
-                      , last_day(balance_date) end_of_period
-                   from
-                        period_detail pd
-                  group by
-                        stream_id
-                      , business_unit
-                      , sub_account
-                      , currency
-                      , premium_typ
-                      , basis_cd
-                      , period_month
-                      , period_year
-                      , last_day(balance_date)
-        ) cevpb_new
-        on (
-             cevpb.stream_id      = cevpb_new.stream_id
-         and cevpb.business_unit  = cevpb_new.business_unit
-         and cevpb.sub_account    = cevpb_new.sub_account
-         and cevpb.currency       = cevpb_new.currency
-         and cevpb.premium_typ    = cevpb_new.premium_typ
-         and cevpb.basis_cd       = cevpb_new.basis_cd
-         and cevpb.period_month   = cevpb_new.period_month
-         and cevpb.period_year    = cevpb_new.period_year
-           )
-        when matched then update
-        set
-             cevpb.transaction_balance = cevpb_new.transaction_balance
-           , cevpb.reporting_balance   = cevpb_new.reporting_balance
-           , cevpb.functional_balance  = cevpb_new.functional_balance
-        when not matched then insert
-           (
-               cevpb.transaction_balance
-             , cevpb.reporting_balance
-             , cevpb.functional_balance
-             , cevpb.stream_id
-             , cevpb.business_unit
-             , cevpb.sub_account
-             , cevpb.currency
-             , cevpb.premium_typ
-             , cevpb.basis_cd
-             , cevpb.period_month
-             , cevpb.period_year
-             , cevpb.end_of_period
-           )
-        values
-           (
-               cevpb_new.transaction_balance
-             , cevpb_new.reporting_balance
-             , cevpb_new.functional_balance
-             , cevpb_new.stream_id
-             , cevpb_new.business_unit
-             , cevpb_new.sub_account
-             , cevpb_new.currency
-             , cevpb_new.premium_typ
-             , cevpb_new.basis_cd
-             , cevpb_new.period_month
-             , cevpb_new.period_year
-             , cevpb_new.end_of_period
-           );
-        
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_PERIOD_BALANCES' );
         delete from stn.cev_data;
         
         insert into stn.cev_data
@@ -666,129 +555,201 @@ and not exists (
         delete from stn.cev_gaap_fut_accts_data;
         
         insert into stn.cev_gaap_fut_accts_data
-        (
-                 select distinct
-                        psm.psm_cd
-                      , cev_data.business_type_association_id
-                      , cev_data.intercompany_association_id
-                      , 0        derived_plus_association_id
-                      , cev_data.gaap_fut_accts_association_id
-                      , cev_data.correlation_uuid
-                      , ( min ( event_seq_id ) over ( partition by gaap_fut_accts_association_id order by event_seq_id ) )   event_seq_id
-                      , ( min ( row_sid ) over ( partition by gaap_fut_accts_association_id order by row_sid ) )   row_sid
-                      , pml.sub_event
-                      , cev_data.accounting_dt
-                      , cev_data.policy_id
-                      , cev_data.policy_abbr_nm
-                      , cev_data.stream_id
-                      , cev_data.parent_stream_id
-                      , abasis.basis_typ
-                      , abasis.basis_cd
-                      , pldgr.ledger_cd
-                      , coalesce
-                        (
-                            (
-                              select
-                                     etout.event_typ
-                                from
-                                     stn.event_type                   etout
-                                join stn.posting_method_derivation_et psmdet on etout.event_typ_id = psmdet.output_event_typ_id
-                                join stn.event_type                   etin   on psmdet.input_event_typ_id = etin.event_typ_id
-                               where cev_data.event_typ = etin.event_typ
-                            )
-                            , cev_data.event_typ
-                        ) event_typ
-                      , cev_data.business_event_typ
-                      , cev_data.is_mark_to_market
-                      , cev_data.vie_cd
-                      , case
-                            when (
-                                exists (select null
-                                            from cev_data cvd2
-                                            where cvd2.premium_typ = 'U'
-                                            and cvd2.correlation_uuid = cev_data.correlation_uuid
-                                            and cev_data.event_typ = 'WP_FUT_TO_CUR'
-                                        )
-                            and exists (select null
-                                            from cev_data cvd2
-                                            where cvd2.premium_typ = 'I'
-                                            and cvd2.correlation_uuid = cev_data.correlation_uuid
-                                            and cev_data.event_typ = 'WP_FUT_TO_CUR'
-                                        )
-                                 )
-                            then 'M'
-                            when (
-                                exists (select null
-                                            from cev_data cvd2
-                                            where cvd2.premium_typ = 'U'
-                                            and cvd2.correlation_uuid = cev_data.correlation_uuid
-                                            and cev_data.event_typ = 'CC_FUT_TO_CUR'
-                                        )
-                            and exists (select null
-                                            from cev_data cvd2
-                                            where cvd2.premium_typ = 'I'
-                                            and cvd2.correlation_uuid = cev_data.correlation_uuid
-                                            and cev_data.event_typ = 'CC_FUT_TO_CUR'
-                                        )
-                                 )
-                            then 'M'
-                        else cev_data.premium_typ
-                        end premium_typ
-                      , cev_data.policy_premium_typ
-                      , cev_data.policy_accident_yr
-                      , cev_data.policy_underwriting_yr
-                      , cev_data.ultimate_parent_stream_id
-                      , cev_data.execution_typ
-                      , cev_data.policy_typ
-                      , cev_data.business_typ
-                      , cev_data.generate_interco_accounting
-                      , cev_data.business_unit
-                      , cev_data.affiliate
-                      , cev_data.owner_le_cd
-                      , cev_data.counterparty_le_cd
-                      , fincalc.fin_calc_cd
-                      , cev_data.transaction_ccy
-                      , (
-                            select sum(cvd2.input_transaction_amt)
-                              from cev_data cvd2
-                             where cvd2.correlation_uuid = cev_data.correlation_uuid
-                               and cvd2.gaap_fut_accts_association_id = cev_data.gaap_fut_accts_association_id
-                               and cvd2.gaap_fut_accts_flag = 'Y'
-                        )        input_transaction_amt
-                      , 0  partner_transaction_amt
-                      , cev_data.functional_ccy
-                      , (
-                            select sum(cvd2.input_functional_amt)
-                              from cev_data cvd2
-                             where cvd2.correlation_uuid = cev_data.correlation_uuid
-                               and cvd2.gaap_fut_accts_association_id = cev_data.gaap_fut_accts_association_id
-                               and cvd2.gaap_fut_accts_flag = 'Y'
-                        )        input_functional_amt
-                      , 0 partner_functional_amt
-                      , cev_data.reporting_ccy
-                      , (
-                            select sum(cvd2.input_reporting_amt)
-                              from cev_data cvd2
-                             where cvd2.correlation_uuid = cev_data.correlation_uuid
-                               and cvd2.gaap_fut_accts_association_id = cev_data.gaap_fut_accts_association_id
-                               and cvd2.gaap_fut_accts_flag = 'Y'
-                        )        input_reporting_amt
-                      , 0 partner_reporting_amt
-                      , cev_data.lpg_id
-                   from
-                             stn.cev_data                      cev_data
-                        join stn.posting_method                psm      on psm.psm_cd = 'GAAP_FUT_ACCTS'
-                        join stn.posting_method_ledger         pml      on (
-                                                                                   psm.psm_id            = pml.psm_id
-                                                                               and cev_data.input_basis_id = pml.input_basis_id
-                                                                           )
-                        join stn.posting_ledger                pldgr    on pml.ledger_id       = pldgr.ledger_id
-                        join stn.posting_accounting_basis      abasis   on pml.output_basis_id = abasis.basis_id
-                        join stn.posting_financial_calc        fincalc  on pml.fin_calc_id     = fincalc.fin_calc_id
-                  where cev_data.gaap_fut_accts_flag = 'Y'
-                    and cev_data.derived_plus_flag   = 'N'
-                    and cev_data.le_flag             = 'N'
-                    )
+        with gfa_1 as
+               (          select
+                                psm.psm_cd
+                              , cev_data.business_type_association_id
+                              , cev_data.intercompany_association_id
+                              , 0        derived_plus_association_id
+                              , cev_data.gaap_fut_accts_association_id
+                              , cev_data.correlation_uuid
+                              , ( min ( event_seq_id ) over ( partition by gaap_fut_accts_association_id order by event_seq_id ) )   event_seq_id
+                              , ( min ( row_sid ) over ( partition by gaap_fut_accts_association_id order by row_sid ) )   row_sid
+                              , pml.sub_event
+                              , cev_data.accounting_dt
+                              , cev_data.policy_id
+                              , cev_data.policy_abbr_nm
+                              , cev_data.stream_id
+                              , cev_data.parent_stream_id
+                              , abasis.basis_typ
+                              , abasis.basis_cd
+                              , pldgr.ledger_cd
+                              , coalesce
+                                (
+                                    (
+                                      select
+                                             etout.event_typ
+                                        from
+                                             stn.event_type                   etout
+                                        join stn.posting_method_derivation_et psmdet on etout.event_typ_id = psmdet.output_event_typ_id
+                                        join stn.event_type                   etin   on psmdet.input_event_typ_id = etin.event_typ_id
+                                       where cev_data.event_typ = etin.event_typ
+                                    )
+                                    , cev_data.event_typ
+                                ) event_typ
+                              , cev_data.business_event_typ
+                              , cev_data.is_mark_to_market
+                              , cev_data.vie_cd
+                              , case
+                                    when (
+                                        exists (select null
+                                                    from stn.cev_data cvd2
+                                                    where cvd2.premium_typ = 'U'
+                                                    and cvd2.correlation_uuid = cev_data.correlation_uuid
+                                                    and cev_data.event_typ = 'WP_FUT_TO_CUR'
+                                                )
+                                    and exists (select null
+                                                    from stn.cev_data cvd2
+                                                    where cvd2.premium_typ = 'I'
+                                                    and cvd2.correlation_uuid = cev_data.correlation_uuid
+                                                    and cev_data.event_typ = 'WP_FUT_TO_CUR'
+                                                )
+                                         )
+                                    then 'M'
+                                    when (
+                                        exists (select null
+                                                    from stn.cev_data cvd2
+                                                    where cvd2.premium_typ = 'U'
+                                                    and cvd2.correlation_uuid = cev_data.correlation_uuid
+                                                    and cev_data.event_typ = 'CC_FUT_TO_CUR'
+                                                )
+                                    and exists (select null
+                                                    from stn.cev_data cvd2
+                                                    where cvd2.premium_typ = 'I'
+                                                    and cvd2.correlation_uuid = cev_data.correlation_uuid
+                                                    and cev_data.event_typ = 'CC_FUT_TO_CUR'
+                                                )
+                                         )
+                                    then 'M'
+                                else cev_data.premium_typ
+                                end premium_typ
+                              , cev_data.policy_premium_typ
+                              , cev_data.policy_accident_yr
+                              , cev_data.policy_underwriting_yr
+                              , cev_data.ultimate_parent_stream_id
+                              , cev_data.execution_typ
+                              , cev_data.policy_typ
+                              , cev_data.business_typ
+                              , cev_data.generate_interco_accounting
+                              , cev_data.business_unit
+                              , cev_data.affiliate
+                              , cev_data.owner_le_cd
+                              , cev_data.counterparty_le_cd
+                              , fincalc.fin_calc_cd
+                              , cev_data.transaction_ccy
+                              , cev_data.input_transaction_amt
+                              , 0  partner_transaction_amt
+                              , cev_data.functional_ccy
+                              , cev_data.input_functional_amt
+                              , 0 partner_functional_amt
+                              , cev_data.reporting_ccy
+                              , cev_data.input_reporting_amt
+                              , 0 partner_reporting_amt
+                              , cev_data.lpg_id
+                           from
+                                     stn.cev_data                      cev_data
+                                join stn.posting_method                psm      on psm.psm_cd = 'GAAP_FUT_ACCTS'
+                                join stn.posting_method_ledger         pml      on (
+                                                                                           psm.psm_id            = pml.psm_id
+                                                                                       and cev_data.input_basis_id = pml.input_basis_id
+                                                                                   )
+                                join stn.posting_ledger                pldgr    on pml.ledger_id       = pldgr.ledger_id
+                                join stn.posting_accounting_basis      abasis   on pml.output_basis_id = abasis.basis_id
+                                join stn.posting_financial_calc        fincalc  on pml.fin_calc_id     = fincalc.fin_calc_id
+                          where cev_data.gaap_fut_accts_flag = 'Y'
+                            and cev_data.derived_plus_flag   = 'N'
+                            and cev_data.le_flag             = 'N'
+               )
+               select psm_cd
+                    , business_type_association_id
+                    , intercompany_association_id
+                    , derived_plus_association_id
+                    , gaap_fut_accts_association_id
+                    , correlation_uuid
+                    , event_seq_id
+                    , row_sid
+                    , sub_event
+                    , accounting_dt
+                    , policy_id
+                    , policy_abbr_nm
+                    , stream_id
+                    , parent_stream_id
+                    , basis_typ
+                    , basis_cd
+                    , ledger_cd
+                    , event_typ
+                    , business_event_typ
+                    , is_mark_to_market
+                    , vie_cd
+                    , premium_typ
+                    , policy_premium_typ
+                    , policy_accident_yr
+                    , policy_underwriting_yr
+                    , ultimate_parent_stream_id
+                    , execution_typ
+                    , policy_typ
+                    , business_typ
+                    , generate_interco_accounting
+                    , business_unit
+                    , affiliate
+                    , owner_le_cd
+                    , counterparty_le_cd
+                    , fin_calc_cd
+                    , transaction_ccy
+                    , sum (input_transaction_amt) input_transaction_amt
+                    , partner_transaction_amt
+                    , functional_ccy
+                    , sum (input_functional_amt)  input_functional_amt
+                    , partner_functional_amt
+                    , reporting_ccy
+                    , sum (input_reporting_amt)   input_reporting_amt
+                    , partner_reporting_amt
+                    , lpg_id
+                 from
+                      gfa_1
+             group by
+                      psm_cd
+                    , business_type_association_id
+                    , intercompany_association_id
+                    , derived_plus_association_id
+                    , gaap_fut_accts_association_id
+                    , correlation_uuid
+                    , event_seq_id
+                    , row_sid
+                    , sub_event
+                    , accounting_dt
+                    , policy_id
+                    , policy_abbr_nm
+                    , stream_id
+                    , parent_stream_id
+                    , basis_typ
+                    , basis_cd
+                    , ledger_cd
+                    , event_typ
+                    , business_event_typ
+                    , is_mark_to_market
+                    , vie_cd
+                    , premium_typ
+                    , policy_premium_typ
+                    , policy_accident_yr
+                    , policy_underwriting_yr
+                    , ultimate_parent_stream_id
+                    , execution_typ
+                    , policy_typ
+                    , business_typ
+                    , generate_interco_accounting
+                    , business_unit
+                    , affiliate
+                    , owner_le_cd
+                    , counterparty_le_cd
+                    , fin_calc_cd
+                    , transaction_ccy
+                    , partner_transaction_amt
+                    , functional_ccy
+                    , partner_functional_amt
+                    , reporting_ccy
+                    , partner_reporting_amt
+                    , lpg_id
         ;
         
         dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_GAAP_FUT_ACCTS_DATA' );

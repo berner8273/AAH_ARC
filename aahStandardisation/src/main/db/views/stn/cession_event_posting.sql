@@ -8,7 +8,7 @@ select
   , sub_event
   , accounting_dt
   , policy_id
-  , policy_abbr_nm
+  , substrb(policy_abbr_nm,1,50)
   , stream_id
   , basis_cd
   , business_typ
