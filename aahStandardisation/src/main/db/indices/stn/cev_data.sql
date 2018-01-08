@@ -1,0 +1,1 @@
+create index i_cev_data on stn.cev_data ( correlation_uuid );

@@ -1,0 +1,1 @@
+create index i_cev_uuid on stn.cession_event ( correlation_uuid );
