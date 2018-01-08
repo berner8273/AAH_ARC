@@ -40,6 +40,96 @@ commit;
 
 conn ~slr_logon
 
+/*Begin removal of SLR QTD modifications*/
+
+--Replace with baseline package
+
+declare ddl clob;
+begin
+  ddl := dbms_metadata.get_ddl
+    (object_type => 'PACKAGE_SPEC'
+    ,name => 'SLR_POST_JOURNALS_PKG_BAK'
+    );
+  ddl := REPLACE(ddl, UPPER('SLR_POST_JOURNALS_PKG_BAK'), UPPER('SLR_POST_JOURNALS_PKG'));
+  ddl := REPLACE(ddl, LOWER('SLR_POST_JOURNALS_PKG_BAK'), LOWER('SLR_POST_JOURNALS_PKG'));
+  EXECUTE IMMEDIATE ddl;
+  ddl := dbms_metadata.get_ddl
+    (object_type => 'PACKAGE_BODY'
+    ,name => 'SLR_POST_JOURNALS_PKG_BAK');
+  ddl := REPLACE(ddl, UPPER('SLR_POST_JOURNALS_PKG_BAK'), UPPER('SLR_POST_JOURNALS_PKG'));
+  ddl := REPLACE(ddl, LOWER('SLR_POST_JOURNALS_PKG_BAK'), LOWER('SLR_POST_JOURNALS_PKG'));
+  EXECUTE IMMEDIATE ddl;
+end;
+/
+
+drop package body slr.slr_post_journals_pkg_bak;
+drop package      slr.slr_post_journals_pkg_bak;
+
+--Remove custom columns
+
+ALTER TABLE SLR.SLR_EBA_BALANCES_ROLLBACK 
+ DROP  (     
+  EDB_TRAN_QTD_BALANCE, 
+    EDB_BASE_QTD_BALANCE, 
+    EDB_LOCAL_QTD_BALANCE, 
+    EDB_PERIOD_QTR);
+
+ALTER TABLE SLR.SLR_EBA_DAILY_BALANCES
+ DROP  (     
+  EDB_TRAN_QTD_BALANCE, 
+    EDB_BASE_QTD_BALANCE, 
+    EDB_LOCAL_QTD_BALANCE, 
+    EDB_PERIOD_QTR);
+
+ALTER TABLE SLR.SLR_EBA_DAILY_BALANCES_ARC
+ DROP  (     
+  EDBA_TRAN_QTD_BALANCE, 
+    EDBA_BASE_QTD_BALANCE, 
+    EDBA_LOCAL_QTD_BALANCE);
+
+ALTER TABLE SLR.SLR_FAK_BALANCES_ROLLBACK
+ DROP  (
+  FDB_TRAN_QTD_BALANCE, 
+    FDB_BASE_QTD_BALANCE, 
+    FDB_LOCAL_QTD_BALANCE, 
+    FDB_PERIOD_QTR);
+
+ALTER TABLE SLR.SLR_FAK_DAILY_BALANCES
+ DROP  (     
+  FDB_TRAN_QTD_BALANCE, 
+    FDB_BASE_QTD_BALANCE, 
+    FDB_LOCAL_QTD_BALANCE, 
+    FDB_PERIOD_QTR);
+
+ALTER TABLE SLR.SLR_FAK_DAILY_BALANCES_ARC
+ DROP  (     
+  FDBA_TRAN_QTD_BALANCE, 
+    FDBA_BASE_QTD_BALANCE, 
+    FDBA_LOCAL_QTD_BALANCE);
+
+ALTER TABLE SLR.SLR_FAK_LAST_BALANCES
+ DROP  (     
+  FLB_TRAN_QTD_BALANCE, 
+    FLB_BASE_QTD_BALANCE, 
+    FLB_LOCAL_QTD_BALANCE, 
+    FLB_PERIOD_QTR);
+
+ALTER TABLE SLR.SLR_LAST_BALANCES
+ DROP  (     
+  LB_TRAN_QTD_BALANCE, 
+    LB_BASE_QTD_BALANCE, 
+    LB_LOCAL_QTD_BALANCE, 
+    LB_PERIOD_QTR);
+
+--Drop custom view
+drop view v_slr_journal_lines;
+
+--Restore baseline view and drop modified view
+drop view v_slr_jrnl_lines_unposted_jt;
+rename v_slr_jrnl_lines_unposted_bak to v_slr_jrnl_lines_unposted_jt;
+
+/*End removal of SLR QTD modifications*/
+
 drop package body slr.slr_pkg;
 drop package      slr.slr_pkg;
 
@@ -61,6 +151,6 @@ commit;
 conn ~stn_logon
 revoke select on stn.business_type      from slr;
 revoke select on stn.insurance_policy   from slr;
-revoke select on stn.execution_type   from slr;
+revoke select on stn.execution_type     from slr;
 
 exit

@@ -63,6 +63,7 @@ conn ~fdr_logon
 @@data/fdr/fr_internal_proc_entity.sql
 @@data/fdr/fr_general_lookup_type.sql
 @@data/fdr/fr_general_lookup.sql
+@@data/fdr/fr_general_codes.sql
 @@data/fdr/fr_general_code_types.sql
 @@data/fdr/fr_org_hierarchy_type.sql
 @@data/fdr/fr_org_node_type.sql
@@ -116,6 +117,18 @@ conn ~stn_logon
 @@tables/stn/business_type.sql
 @@tables/stn/cession.sql
 @@tables/stn/cession_event.sql
+
+@@tables/stn/cev_data.sql
+@@tables/stn/cev_derived_plus_data.sql
+@@tables/stn/cev_gaap_fut_accts_data.sql
+@@tables/stn/cev_identified_record.sql
+@@tables/stn/cev_le_data.sql
+@@tables/stn/cev_mtm_data.sql
+@@tables/stn/cev_non_intercompany_data.sql
+@@tables/stn/cev_premium_typ_override.sql
+@@tables/stn/posting_method_derivation_gfa.sql
+@@tables/stn/posting_account_derivation.sql
+
 @@tables/stn/cession_event_premium_type.sql
 @@tables/stn/cession_hierarchy.sql
 @@tables/stn/cession_link.sql
@@ -213,7 +226,7 @@ conn ~stn_logon
 @@views/stn/policy_tax.sql
 @@views/stn/cession_event_posting.sql
 @@views/stn/cession_event_reversal.sql
-
+@@views/stn/cev_period_balances.sql
 @@views/stn/gce_default.sql
 @@views/stn/user_default.sql
 @@views/stn/hopper_cession_event.sql
@@ -304,6 +317,7 @@ conn ~stn_logon
 @@data/stn/posting_ledger.sql
 @@data/stn/posting_method.sql
 @@data/stn/posting_method_derivation_et.sql
+@@data/stn/posting_method_derivation_gfa.sql
 @@data/stn/posting_method_derivation_ic.sql
 @@data/stn/posting_method_derivation_le.sql
 @@data/stn/posting_method_derivation_mtm.sql
@@ -346,5 +360,47 @@ conn ~stn_logon
 @@packages/stn/pk_cev.bdy
 
 @@grants/tables/stn/insurance_policy.sql
+
+@@indices/stn/cession_event.sql
+@@indices/stn/cev_data.sql
+
+/*
+ * Capture statistics across STN
+ */
+
+exec dbms_stats.gather_schema_stats ( ownname => 'STN' , cascade => true );
+
+/*
+ * Lie to the optimiser by shipping statistics at build time
+ */
+
+conn ~stn_logon
+
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DATA'                   , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DERIVED_PLUS_DATA'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_GAAP_FUT_ACCTS_DATA'    , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_IDENTIFIED_RECORD'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_LE_DATA'                , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_MTM_DATA'               , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_NON_INTERCOMPANY_DATA'  , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_PREMIUM_TYP_OVERRIDE'   , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'POSTING_ACCOUNT_DERIVATION' , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+
+exec dbms_stats.create_stat_table   ( ownname => user , stattab => 'INIT_STAT' );
+@@data/stn/init_stat.sql
+@@grants/tables/stn/init_stat.sql
+
+conn ~fdr_logon
+
+exec dbms_stats.gather_schema_stats ( ownname => 'FDR' , cascade => true );
+
+exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_INSURANCE_POLICY' , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
+exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_FX_RATE'          , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
+exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_GENERAL_CODES'    , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
+exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_GENERAL_LOOKUP'   , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
+
+/*
+ * Finish shipping statistics at build time
+ */
 
 exit
