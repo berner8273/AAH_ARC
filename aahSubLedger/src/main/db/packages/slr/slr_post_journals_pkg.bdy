@@ -1,5 +1,4 @@
-set define off;
-CREATE OR REPLACE EDITIONABLE PACKAGE BODY "SLR"."SLR_POST_JOURNALS_PKG" AS
+CREATE OR REPLACE PACKAGE BODY slr.slr_post_journals_pkg AS
 /******************************************************************************
 --
 --  Id: $Id: slr_post_journals_pkg.sql,v 1.10 2005/05/31 07:48:14 pfrench Exp $
