@@ -120,6 +120,38 @@ ALTER TABLE SLR.SLR_LAST_BALANCES
     LB_LOCAL_QTD_BALANCE NUMBER(38,3) NOT NULL, 
     LB_PERIOD_QTR NUMBER(1,0) NOT NULL);
 
+comment on column slr.slr_eba_balances_rollback.edb_tran_qtd_balance is 'Custom AG';
+comment on column slr.slr_eba_balances_rollback.edb_base_qtd_balance is 'Custom AG';
+comment on column slr.slr_eba_balances_rollback.edb_local_qtd_balance is 'Custom AG';
+comment on column slr.slr_eba_balances_rollback.edb_period_qtr is 'Custom AG';
+comment on column slr.slr_eba_daily_balances.edb_tran_qtd_balance is 'Custom AG';
+comment on column slr.slr_eba_daily_balances.edb_base_qtd_balance is 'Custom AG';
+comment on column slr.slr_eba_daily_balances.edb_local_qtd_balance is 'Custom AG';
+comment on column slr.slr_eba_daily_balances.edb_period_qtr is 'Custom AG';
+comment on column slr.slr_eba_daily_balances_arc.edba_tran_qtd_balance is 'Custom AG';
+comment on column slr.slr_eba_daily_balances_arc.edba_base_qtd_balance is 'Custom AG';
+comment on column slr.slr_eba_daily_balances_arc.edba_local_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_balances_rollback.fdb_tran_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_balances_rollback.fdb_base_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_balances_rollback.fdb_local_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_balances_rollback.fdb_period_qtr is 'Custom AG';
+comment on column slr.slr_fak_daily_balances.fdb_tran_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_daily_balances.fdb_base_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_daily_balances.fdb_local_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_daily_balances.fdb_period_qtr is 'Custom AG';
+comment on column slr.slr_fak_daily_balances_arc.fdba_tran_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_daily_balances_arc.fdba_base_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_daily_balances_arc.fdba_local_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_last_balances.flb_tran_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_last_balances.flb_base_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_last_balances.flb_local_qtd_balance is 'Custom AG';
+comment on column slr.slr_fak_last_balances.flb_period_qtr is 'Custom AG';
+comment on column slr.slr_last_balances.lb_tran_qtd_balance is 'Custom AG';
+comment on column slr.slr_last_balances.lb_base_qtd_balance is 'Custom AG';
+comment on column slr.slr_last_balances.lb_local_qtd_balance is 'Custom AG';
+comment on column slr.slr_last_balances.lb_period_qtr is 'Custom AG';
+commit;
+
 --Backup and replace with modified package
 
 declare ddl clob;
