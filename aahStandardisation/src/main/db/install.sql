@@ -63,8 +63,8 @@ conn ~fdr_logon
 @@data/fdr/fr_internal_proc_entity.sql
 @@data/fdr/fr_general_lookup_type.sql
 @@data/fdr/fr_general_lookup.sql
-@@data/fdr/fr_general_codes.sql
 @@data/fdr/fr_general_code_types.sql
+@@data/fdr/fr_general_codes.sql
 @@data/fdr/fr_org_hierarchy_type.sql
 @@data/fdr/fr_org_node_type.sql
 @@data/fdr/fr_global_parameter.sql
@@ -77,8 +77,8 @@ conn ~fdr_logon
 @@grants/tables/fdr/fr_account_lookup.sql
 @@grants/tables/fdr/fr_fx_rate.sql
 @@grants/tables/fdr/fr_gaap.sql
-@@grants/tables/fdr/fr_general_codes.sql
 @@grants/tables/fdr/fr_general_code_types.sql
+@@grants/tables/fdr/fr_general_codes.sql
 @@grants/tables/fdr/fr_general_lookup.sql
 @@grants/tables/fdr/fr_gl_account.sql
 @@grants/tables/fdr/fr_party_legal.sql
@@ -222,7 +222,6 @@ conn ~stn_logon
 @@views/stn/insurance_policy_reference.sql
 @@views/stn/validation_detail.sql
 @@views/stn/vie_event_cd.sql
-@@views/stn/posting_account_derivation.sql
 @@views/stn/policy_tax.sql
 @@views/stn/cession_event_posting.sql
 @@views/stn/cession_event_reversal.sql

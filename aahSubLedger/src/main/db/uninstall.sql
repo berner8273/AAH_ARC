@@ -128,6 +128,35 @@ drop view v_slr_journal_lines;
 drop view v_slr_jrnl_lines_unposted_jt;
 rename v_slr_jrnl_lines_unposted_bak to v_slr_jrnl_lines_unposted_jt;
 
+BEGIN
+  FOR cur_rec IN (SELECT owner,
+                         object_name,
+                         object_type,
+                         DECODE(object_type, 'PACKAGE', 1,
+                                             'PACKAGE BODY', 2,
+                                             'VIEW', 3, 4) AS recompile_order
+                  FROM   dba_objects
+                  WHERE  object_type IN ('PACKAGE', 'PACKAGE BODY', 'VIEW')
+                  AND    owner = 'SLR'
+                  ORDER BY 4)
+  LOOP
+    BEGIN
+      IF cur_rec.object_type in ('PACKAGE','VIEW') THEN
+        EXECUTE IMMEDIATE 'ALTER ' || cur_rec.object_type || 
+            ' "' || cur_rec.owner || '"."' || cur_rec.object_name || '" COMPILE';
+      ElSE
+        EXECUTE IMMEDIATE 'ALTER PACKAGE "' || cur_rec.owner || 
+            '"."' || cur_rec.object_name || '" COMPILE BODY';
+      END IF;
+    EXCEPTION
+      WHEN OTHERS THEN
+        DBMS_OUTPUT.put_line(cur_rec.object_type || ' : ' || cur_rec.owner || 
+                             ' : ' || cur_rec.object_name);
+    END;
+  END LOOP;
+END;
+/
+
 /*End removal of SLR QTD modifications*/
 
 drop package body slr.slr_pkg;

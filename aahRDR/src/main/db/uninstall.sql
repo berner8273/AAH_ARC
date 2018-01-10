@@ -28,6 +28,10 @@ define slr_user     = @slrUsername@
 define slr_password = @slrPassword@
 define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
+define gui_user     = @guiUsername@
+define gui_password = @guiPassword@
+define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
 conn ~rdr_logon
 
 drop view rdr.rrv_ag_account_lookup;
@@ -57,6 +61,7 @@ drop view rdr.rrv_ag_slr_fak_daily_balances;
 drop view rdr.rrv_ag_slr_jrnl_lines;
 drop view rdr.rrv_ag_stan_raw_acc_event;
 drop view rdr.rrv_ag_tax_jurisdiction;
+drop view rdr.rrv_ag_user_roles_and_tasks;
 
 conn ~stn_logon
 
@@ -76,5 +81,11 @@ conn ~fdr_logon
 revoke select   on fdr.fr_account_lookup       from rdr;
 revoke select   on fdr.fr_posting_schema       from rdr;
 revoke select   on fdr.fr_stan_raw_acc_event   from rdr;
+
+conn ~gui_logon
+
+revoke select   on gui.t_ui_role_tasks         from rdr;
+revoke select   on gui.t_ui_user_details       from rdr;
+revoke select   on gui.t_ui_user_roles         from rdr;
 
 exit

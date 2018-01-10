@@ -28,6 +28,10 @@ define slr_user     = @slrUsername@
 define slr_password = @slrPassword@
 define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
+define gui_user     = @guiUsername@
+define gui_password = @guiPassword@
+define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
 conn ~stn_logon
 
 @@grants/tables/stn/gl_account_hierarchy.sql
@@ -47,6 +51,12 @@ conn ~fdr_logon
 @@grants/tables/fdr/fr_account_lookup.sql
 @@grants/tables/fdr/fr_posting_schema.sql
 @@grants/tables/fdr/fr_stan_raw_acc_event.sql
+
+conn ~gui_logon
+
+@@grants/tables/gui/t_ui_role_tasks.sql
+@@grants/tables/gui/t_ui_user_details.sql
+@@grants/tables/gui/t_ui_user_roles.sql
 
 conn ~rdr_logon
 
@@ -77,5 +87,6 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_slr_jrnl_lines.sql
 @@views/rdr/rrv_ag_stan_raw_acc_event.sql
 @@views/rdr/rrv_ag_tax_jurisdiction.sql
+@@views/rdr/rrv_ag_user_roles_and_tasks.sql
 
 exit

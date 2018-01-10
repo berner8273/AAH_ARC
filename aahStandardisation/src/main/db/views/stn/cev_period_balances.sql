@@ -1,4 +1,4 @@
-create or replace view stn.cev_period_balances
+create or replace view stn.cev_period_balances as
 with period_detail
   as (
          select
