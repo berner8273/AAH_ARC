@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY slr.slr_pkg AS
+CREATE OR REPLACE PACKAGE BODY SLR.slr_pkg AS
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ create or replace PACKAGE BODY slr.slr_pkg AS
 -- Description: Run the sub-ledger for a specified entity.
 -- Notes:
 -- -----------------------------------------------------------------------------------------------
-PROCEDURE pUpdateJLU AS 
+PROCEDURE pUpdateJLU AS
 
 v_epg_id SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
 
@@ -46,7 +46,7 @@ BEGIN
   FOR i IN (SELECT DISTINCT ENT_PG.EPG_ID FROM SLR_ENTITY_PROC_GROUP ENT_PG)
   LOOP
     v_epg_id := i.epg_id;
-    
+
     DBMS_OUTPUT.PUT_LINE('Running pUpdateJLU for EPG_ID = ' || v_epg_id);
     SLR_UTILITIES_PKG.pUpdateJrnlLinesUnposted(v_epg_id);
   END LOOP;
@@ -68,9 +68,9 @@ PROCEDURE pPROCESS_SLR AS
 
 BEGIN
 
-  FOR i IN 
+  FOR i IN
       (
-        SELECT DISTINCT 
+        SELECT DISTINCT
              ENT.ENT_RATE_SET,
              ENT_PG.EPG_ID
         FROM SLR_ENTITIES ENT,
@@ -274,7 +274,7 @@ BEGIN
     SELECT SYSDATE INTO lvAuthOn FROM DUAL;
 
     pInsertFakEbaCombinations(p_entity_proc_group, p_process_id, lv_business_date);
-    
+
     lv_sql := '
         INSERT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'IMPORT_INSERT_UNPOSTED') || ' INTO SLR_JRNL_LINES_UNPOSTED
         (
@@ -435,23 +435,23 @@ BEGIN
             ON ENT_ENTITY = AE_GL_ENTITY
         JOIN SLR_FAK_COMBINATIONS
             ON NVL(AE_DIMENSION_11,''NVS'') = FC_SEGMENT_6
-            AND AE_GL_ACCOUNT = FC_ACCOUNT 
+            AND AE_GL_ACCOUNT = FC_ACCOUNT
             AND AE_ISO_CURRENCY_CODE = FC_CCY
-            AND AE_EPG_ID = FC_EPG_ID 
+            AND AE_EPG_ID = FC_EPG_ID
             AND AE_GL_ENTITY = FC_ENTITY
-            AND AE_POSTING_SCHEMA = FC_SEGMENT_1 
+            AND AE_POSTING_SCHEMA = FC_SEGMENT_1
             AND AE_GAAP = FC_SEGMENT_2
-            AND NVL(AE_DIMENSION_2,''NVS'') = FC_SEGMENT_3 
+            AND NVL(AE_DIMENSION_2,''NVS'') = FC_SEGMENT_3
             AND NVL(AE_DIMENSION_4,''NVS'') = FC_SEGMENT_4
             AND NVL(AE_DIMENSION_1,''NVS'') = FC_SEGMENT_5
-            AND NVL(AE_DIMENSION_12,''NVS'') = FC_SEGMENT_7 
+            AND NVL(AE_DIMENSION_12,''NVS'') = FC_SEGMENT_7
             AND NVL(AE_DIMENSION_7,''NVS'') = FC_SEGMENT_8
-            AND ''NVS'' = FC_SEGMENT_9 
+            AND ''NVS'' = FC_SEGMENT_9
             AND ''NVS'' = FC_SEGMENT_10
         JOIN SLR_EBA_COMBINATIONS
-            ON NVL(AE_DIMENSION_8,''NVS'') = EC_ATTRIBUTE_1 
+            ON NVL(AE_DIMENSION_8,''NVS'') = EC_ATTRIBUTE_1
             AND EC_FAK_ID = FC_FAK_ID
-            AND NVL(AE_DIMENSION_9,''NVS'') = EC_ATTRIBUTE_2 
+            AND NVL(AE_DIMENSION_9,''NVS'') = EC_ATTRIBUTE_2
             AND NVL(AE_DIMENSION_14,''NVS'') = EC_ATTRIBUTE_3
             AND NVL(AE_CLIENT_SPARE_ID4,''NVS'') = EC_ATTRIBUTE_4
             AND ''NVS'' = EC_ATTRIBUTE_5
@@ -463,7 +463,7 @@ BEGIN
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
 
     SLR_ADMIN_PKG.Debug('PARAM VALUES FOR p_process_id, lv_business_date, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date', p_process_id||'~'||lv_business_date||'~'||lv_user||'~'||lv_gp_todays_bus_date||'~'||lv_user||'~'||lv_gp_todays_bus_date||'~'||lv_business_date);
-    
+
     EXECUTE IMMEDIATE lv_sql USING p_process_id, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date;
 
     IF SQL%ROWCOUNT = 0 THEN
@@ -923,25 +923,25 @@ BEGIN
             SELECT DISTINCT
                 AE_EPG_ID,
                 FC_FAK_ID,
-                AE_DIMENSION_8, 
+                AE_DIMENSION_8,
                 NVL(AE_DIMENSION_9,''NVS'') AE_DIMENSION_9,
-                AE_DIMENSION_14, 
-                AE_CLIENT_SPARE_ID4 
+                AE_DIMENSION_14,
+                AE_CLIENT_SPARE_ID4
             FROM FR_ACCOUNTING_EVENT
             JOIN SLR_FAK_COMBINATIONS
-              ON AE_GL_ACCOUNT = FC_ACCOUNT 
+              ON AE_GL_ACCOUNT = FC_ACCOUNT
                 AND AE_ISO_CURRENCY_CODE = FC_CCY
-                AND AE_EPG_ID = FC_EPG_ID 
+                AND AE_EPG_ID = FC_EPG_ID
                 AND AE_GL_ENTITY = FC_ENTITY
-                AND AE_POSTING_SCHEMA = FC_SEGMENT_1 
+                AND AE_POSTING_SCHEMA = FC_SEGMENT_1
                 AND AE_GAAP = FC_SEGMENT_2
-                AND NVL(AE_DIMENSION_2,''NVS'') = FC_SEGMENT_3 
+                AND NVL(AE_DIMENSION_2,''NVS'') = FC_SEGMENT_3
                 AND NVL(AE_DIMENSION_4,''NVS'') = FC_SEGMENT_4
-                AND NVL(AE_DIMENSION_1,''NVS'') = FC_SEGMENT_5 
+                AND NVL(AE_DIMENSION_1,''NVS'') = FC_SEGMENT_5
                 AND NVL(AE_DIMENSION_11,''NVS'') = FC_SEGMENT_6
-                AND NVL(AE_DIMENSION_12,''NVS'') = FC_SEGMENT_7 
+                AND NVL(AE_DIMENSION_12,''NVS'') = FC_SEGMENT_7
                 AND NVL(AE_DIMENSION_7,''NVS'') = FC_SEGMENT_8
-                AND ''NVS'' = FC_SEGMENT_9 
+                AND ''NVS'' = FC_SEGMENT_9
                 AND ''NVS'' = FC_SEGMENT_10
             WHERE AE_EPG_ID = ''' || p_epg_id || '''
                 AND AE_POSTING_DATE <= :business_date___1
@@ -960,9 +960,9 @@ BEGIN
             AE_EPG_ID,
             FC_FAK_ID,
             SEQ_EBA_COMBO_ID.NEXTVAL,
-            NVL(AE_DIMENSION_8,''NVS''), 
-            NVL(AE_DIMENSION_9,''NVS''), 
-            NVL(AE_DIMENSION_14,''NVS''), 
+            NVL(AE_DIMENSION_8,''NVS''),
+            NVL(AE_DIMENSION_9,''NVS''),
+            NVL(AE_DIMENSION_14,''NVS''),
             NVL(AE_CLIENT_SPARE_ID4,''NVS''),
             ''NVS''
         FROM ROWS_TO_INSERT
@@ -994,7 +994,7 @@ s_proc_name         VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_SEGME
 v_records_processed NUMBER(18);
 
 BEGIN
-   
+
     DELETE FROM  slr_fak_segment_3 seg3
           WHERE  seg3.fs3_entity_set IN (SELECT  DISTINCT ent.ent_segment_3_set
                                            FROM  slr.slr_entities ent
@@ -1022,10 +1022,10 @@ BEGIN
             CROSS JOIN (
                     SELECT DISTINCT ent.ent_segment_3_set
                     FROM  slr.slr_entities ent
-                    INNER JOIN fdr.fr_lpg_config frlpg 
+                    INNER JOIN fdr.fr_lpg_config frlpg
                             ON frlpg.lc_grp_code = ent.ent_entity
                            AND frlpg.lc_lpg_id = pLPG_ID
-                        ) seg3;   
+                        ) seg3;
 
     SELECT  COUNT(*)
       INTO  v_records_processed
@@ -1033,7 +1033,7 @@ BEGIN
 
     p_no_processed_records := v_records_processed;
     p_no_failed_records := 0;
-    
+
 END pUPDATE_SLR_SEGMENT_3;
 
 
@@ -1045,7 +1045,7 @@ v_records_processed NUMBER(18);
 BEGIN
 
 
-   
+
     DELETE FROM  slr_fak_segment_4 seg4
           WHERE  seg4.fs4_entity_set IN (SELECT  DISTINCT ent.ent_segment_4_set
                                            FROM  slr.slr_entities ent
@@ -1073,8 +1073,8 @@ BEGIN
             CROSS JOIN (SELECT  DISTINCT ent.ent_segment_4_set
                           FROM  slr.slr_entities ent
                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-                                  AND frlpg.lc_lpg_id = pLPG_ID) seg4 
-            WHERE pl.pl_int_ext_flag in ('I','E') 
+                                  AND frlpg.lc_lpg_id = pLPG_ID) seg4
+            WHERE pl.pl_int_ext_flag in ('I','E')
             AND PL.PL_PARTY_LEGAL_ID <> 'NVS'
      ;
 
@@ -1122,7 +1122,7 @@ BEGIN
             CROSS JOIN (SELECT  DISTINCT ent.ent_segment_5_set
                           FROM  slr.slr_entities ent
                                 INNER JOIN fdr.fr_lpg_config frlpg ON frlpg.lc_grp_code = ent.ent_entity
-                                  AND frlpg.lc_lpg_id = pLPG_ID) seg5 
+                                  AND frlpg.lc_lpg_id = pLPG_ID) seg5
             WHERE frgc.gc_gct_code_type_id = 'GL_CHARTFIELD'
      ;
 
@@ -1132,7 +1132,7 @@ BEGIN
 
     p_no_processed_records := v_records_processed;
     p_no_failed_records := 0;
-    
+
 END pUPDATE_SLR_SEGMENT_5;
 
 PROCEDURE pUPDATE_SLR_SEGMENT_6(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
@@ -1141,7 +1141,7 @@ s_proc_name         VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pUPDATE_SLR_SEGME
 v_records_processed NUMBER(18);
 
 BEGIN
-   
+
     DELETE FROM  slr_fak_segment_6 seg6
           WHERE  seg6.fs6_entity_set IN (SELECT  DISTINCT ent.ent_segment_6_set
                                            FROM  slr.slr_entities ent
@@ -1157,7 +1157,7 @@ BEGIN
             fs6_created_on,
             fs6_amended_by,
             fs6_amended_on)
-    SELECT DISTINCT 
+    SELECT DISTINCT
             seg6.ent_segment_6_set,
             et.execution_typ,
             et.execution_typ,
@@ -1178,7 +1178,7 @@ BEGIN
 
     p_no_processed_records := v_records_processed;
     p_no_failed_records := 0;
-    
+
 END pUPDATE_SLR_SEGMENT_6;
 
 PROCEDURE pUPDATE_SLR_SEGMENT_7(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER) AS
@@ -1223,7 +1223,7 @@ BEGIN
 
     p_no_processed_records := v_records_processed;
     p_no_failed_records := 0;
-    
+
 END pUPDATE_SLR_SEGMENT_7;
 
 
@@ -1260,10 +1260,10 @@ BEGIN
       FROM  fdr.fr_instrument frinstr
             CROSS JOIN (SELECT  DISTINCT ent.ent_segment_8_set
                         FROM  slr.slr_entities ent
-                        INNER JOIN fdr.fr_lpg_config frlpg 
+                        INNER JOIN fdr.fr_lpg_config frlpg
                           ON frlpg.lc_grp_code = ent.ent_entity
                           AND frlpg.lc_lpg_id = pLPG_ID
-                        ) seg8 
+                        ) seg8
             INNER JOIN fdr.fr_trade ft
                   ON frinstr.i_instrument_id = ft.t_i_instrument_id
             WHERE frinstr.i_it_instr_type_id = 'INSURANCE_POLICY';
@@ -1274,7 +1274,7 @@ BEGIN
 
     p_no_processed_records := v_records_processed;
     p_no_failed_records := 0;
-    
+
 END pUPDATE_SLR_SEGMENT_8;
 
 -- -----------------------------------------------------------------------
@@ -1302,7 +1302,7 @@ BEGIN
      WHERE  frlpg.lc_lpg_id = pLPG_ID;
 
     SLR_FDR_PROCEDURES_PKG.PUPDATE_SLR_CURRENCIES(lvEntitySet);
-    
+
     SELECT  COUNT(*)
       INTO  v_records_processed
       FROM  slr_entity_currencies;
@@ -1388,7 +1388,7 @@ PROCEDURE pr_fx_rate
         p_no_processed_records := SQL%ROWCOUNT;
         p_no_failed_records := 0;
     end pr_fx_rate;
-    
+
 PROCEDURE pr_account
         (
             p_lpg_id IN NUMBER,
@@ -2309,27 +2309,27 @@ AS
     v_end_date date := trunc(sysdate+1500);
     v_entity_set SLR_ENTITY_DAYS.ED_ENTITY_SET%type;
 
-       
+
    CURSOR entity_set_cur
    IS
       SELECT ES_ENTITY_SET
       FROM SLR.SLR_ENTITY_SETS
       ORDER BY ES_ENTITY_SET ASC
   ;
-  
+
 
 BEGIN
 
 /* BEGIN SLR DAY LOAD */
 
      OPEN entity_set_cur;
-     
+
      LOOP
         FETCH entity_set_cur INTO v_entity_set;
         EXIT WHEN entity_set_cur%NOTFOUND;
 
         SLR.SLR_PKG.pSLR_ENTITY_DAYS(V_ENTITY_SET,V_START_DATE,V_END_DATE,'O','AAH');
-        
+
      END LOOP;
 
      CLOSE entity_set_cur;
@@ -2337,7 +2337,8 @@ BEGIN
 /* BEGIN SLR DAY LOAD */
 
         SLR.SLR_PKG.pSLR_ENTITY_PERIODS();
-        
+        SLR.SLR_PKG.pEVENT_CLASS_PERIODS();
+
 END pSLR_DAYS_PERIODS;
 
 PROCEDURE pSLR_ENTITY_DAYS
@@ -2408,7 +2409,7 @@ END pSLR_ENTITY_DAYS;
 
 PROCEDURE pSLR_ENTITY_PERIODS AS
 
-BEGIN 
+BEGIN
 
 INSERT INTO SLR_ENTITY_PERIODS (
           EP_ENTITY,
@@ -2416,8 +2417,8 @@ INSERT INTO SLR_ENTITY_PERIODS (
           EP_BUS_PERIOD,
           EP_PERIOD_TYPE,
           EP_STATUS,
-          EP_BUS_PERIOD_START,                   
-          EP_BUS_PERIOD_END,                   
+          EP_BUS_PERIOD_START,
+          EP_BUS_PERIOD_END,
           EP_BUS_PERIOD_END_ID,
           EP_CAL_PERIOD_START,
           EP_CAL_PERIOD_END,
@@ -2429,7 +2430,7 @@ INSERT INTO SLR_ENTITY_PERIODS (
 with
      minmax_days
 as (
-      select 
+      select
           MIN(ED_DATE) as min_date
         , MAX(ED_DATE) as max_date
       from SLR_ENTITY_DAYS d
@@ -2437,7 +2438,7 @@ as (
 
   ,  base_years
   as (
-             select 
+             select
                     ((extract ( year from y.max_date )+1) - level) the_year
                from
                     minmax_days y
@@ -2462,7 +2463,7 @@ select
      , 'O' AS EP_STATUS
      , to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy') as EP_BUS_PERIOD_START
      , (add_months(to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy'),1)-1) as EP_BUS_PERIOD_END
-     , to_char((add_months(to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy'),1)-1),'YYYYMMDD')||50 AS EP_BUS_PERIOD_END_ID     
+     , to_char((add_months(to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy'),1)-1),'YYYYMMDD')||50 AS EP_BUS_PERIOD_END_ID
      , to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy') as EP_CAL_PERIOD_START
      , (add_months(to_date(lpad(m.the_month,2,0)||y.the_year,'mmyyyy'),1)-1) as EP_CAL_PERIOD_END
      , USER AS EP_CREATED_BY
@@ -2475,17 +2476,17 @@ select
        cross join slr.slr_entities s
     )
 
-, results2 as 
+, results2 as
 (
 
-select 
+select
           EP_ENTITY,
           EP_BUS_YEAR,
           EP_BUS_PERIOD,
           EP_PERIOD_TYPE,
           EP_STATUS,
-          EP_BUS_PERIOD_START,                   
-          EP_BUS_PERIOD_END,                   
+          EP_BUS_PERIOD_START,
+          EP_BUS_PERIOD_END,
           EP_BUS_PERIOD_END_ID,
           EP_CAL_PERIOD_START,
           EP_CAL_PERIOD_END,
@@ -2504,8 +2505,68 @@ WHERE (EP_ENTITY||EP_BUS_PERIOD_END_ID) NOT IN (SELECT DISTINCT (EP_ENTITY||EP_B
 order by 1,2,3
 ;
 
- 
-END pSLR_ENTITY_PERIODS;    
-    
+
+END pSLR_ENTITY_PERIODS;
+
+PROCEDURE pEVENT_CLASS_PERIODS AS
+
+BEGIN
+        merge
+         into
+              fdr.fr_general_lookup gl
+        using (
+                  select distinct 
+                    'EVENT_CLASS_PERIOD'                           LK_LKT_LOOKUP_TYPE_CODE
+                    ,eg.event_group                                LK_MATCH_KEY1
+                    ,to_char(ep.ep_bus_year)                       LK_MATCH_KEY2
+                    ,to_char(ep.ep_bus_period)                     LK_MATCH_KEY3
+                    ,'O'                                           LK_LOOKUP_VALUE1
+                    ,to_char(ep.ep_bus_period_start,'DD-MON-YYYY') LK_LOOKUP_VALUE2
+                    ,to_char(ep.ep_bus_period_end,'DD-MON-YYYY')   LK_LOOKUP_VALUE3
+                    ,to_date('01/01/2000','mm/dd/yyyy')            LK_EFFECTIVE_FROM
+                    ,to_date('01/01/2099','mm/dd/yyyy')            LK_EFFECTIVE_TO
+                    from slr_entity_periods ep
+                    cross join (
+                        select distinct LK_MATCH_KEY1 as event_group 
+                        from fdr.fr_general_lookup where lk_lkt_lookup_type_code='EVENT_CLASS_PERIOD'
+                            and SYSDATE between LK_EFFECTIVE_FROM and LK_EFFECTIVE_TO  
+                            ) eg                                                                        
+              )
+              input
+           on (
+                      gl.LK_MATCH_KEY1           = input.LK_MATCH_KEY1
+                  and gl.LK_MATCH_KEY2           = input.LK_MATCH_KEY2
+                  and gl.LK_MATCH_KEY3           = input.LK_MATCH_KEY3
+                  and GL.LK_LKT_LOOKUP_TYPE_CODE = 'EVENT_CLASS_PERIOD'
+              )
+        when not
+              matched then insert
+                           (
+                              gl.LK_LKT_LOOKUP_TYPE_CODE,
+                              gl.LK_MATCH_KEY1,
+                              gl.LK_MATCH_KEY2,
+                              gl.LK_MATCH_KEY3,          
+                              gl.LK_LOOKUP_VALUE1,
+                              gl.LK_LOOKUP_VALUE2,
+                              gl.LK_LOOKUP_VALUE3,
+                              gl.LK_EFFECTIVE_FROM,
+                              gl.LK_EFFECTIVE_TO                           
+                           )
+                           values
+                           (
+                               input.LK_LKT_LOOKUP_TYPE_CODE
+                           ,   input.LK_MATCH_KEY1
+                           ,   input.LK_MATCH_KEY2
+                           ,   input.LK_MATCH_KEY3
+                           ,   input.LK_LOOKUP_VALUE1
+                           ,   input.LK_LOOKUP_VALUE2
+                           ,   input.LK_LOOKUP_VALUE3
+                           ,   input.LK_EFFECTIVE_FROM
+                           ,   input.LK_EFFECTIVE_TO
+                           );
+
+END;
+
+
 END SLR_PKG;
 /

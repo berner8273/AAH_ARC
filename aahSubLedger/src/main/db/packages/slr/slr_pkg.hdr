@@ -76,6 +76,7 @@ procedure pCustRunBalanceMovementProcess( pProcess     IN slr_process.p_process%
                                         );
 
 PROCEDURE pSLR_DAYS_PERIODS;
+PROCEDURE pEVENT_CLASS_PERIODS;
 
 END SLR_PKG;
 /
