@@ -40,6 +40,15 @@ commit;
 
 conn ~slr_logon
 
+revoke select on slr.slr_fak_bop_amounts      from slr;
+revoke select on slr.slr_eba_bop_amounts      from slr;
+
+drop table slr.slr_fak_bop_amounts;
+drop table slr.slr_fak_bop_amounts_tmp;
+drop table slr.slr_eba_bop_amounts;
+drop table slr.slr_eba_bop_amounts_tmp;
+
+
 /*Begin removal of SLR QTD modifications*/
 
 --Replace with baseline package

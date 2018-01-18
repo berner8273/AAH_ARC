@@ -1,0 +1,1 @@
+grant SELECT on slr.slr_fak_bop_amounts to rdr;
