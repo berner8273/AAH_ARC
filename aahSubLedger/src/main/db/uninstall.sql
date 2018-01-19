@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
---whenever sqlerror exit failure
+whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -39,9 +39,6 @@ delete from fdr.fr_gl_account        where ga_account_code   != '1';
 commit;
 
 conn ~slr_logon
-
-revoke select on slr.slr_fak_bop_amounts      from slr;
-revoke select on slr.slr_eba_bop_amounts      from slr;
 
 drop table slr.slr_fak_bop_amounts;
 drop table slr.slr_fak_bop_amounts_tmp;

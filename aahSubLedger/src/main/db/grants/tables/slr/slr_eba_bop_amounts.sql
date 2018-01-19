@@ -1,1 +1,0 @@
-grant SELECT on slr.slr_eba_bop_amounts to rdr;

@@ -47,9 +47,6 @@ conn ~slr_logon
 @@tables/slr/slr_eba_bop_amounts.sql
 @@tables/slr/slr_eba_bop_amounts_tmp.sql
 
-@@grants/tables/slr/slr_fak_bop_amounts.sql
-@@grants/tables/slr/slr_eba_bop_amounts.sql
-
 delete from slr.slr_entity_proc_group;
 commit;
 
