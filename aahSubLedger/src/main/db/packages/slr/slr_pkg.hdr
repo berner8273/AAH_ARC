@@ -76,6 +76,11 @@ procedure pCustRunBalanceMovementProcess( pProcess     IN slr_process.p_process%
                                         );
 
 PROCEDURE pSLR_DAYS_PERIODS;
+PROCEDURE pEVENT_CLASS_PERIODS;
+PROCEDURE pGENERATE_ALL_BOP_VALUES;
+PROCEDURE pGENERATE_EBA_BOP_VALUES;
+PROCEDURE pGENERATE_FAK_BOP_VALUES;
+
 
 END SLR_PKG;
 /

@@ -42,6 +42,11 @@ delete from fdr.fr_account_lookup_param;
 
 conn ~slr_logon
 
+@@tables/slr/slr_fak_bop_amounts.sql
+@@tables/slr/slr_fak_bop_amounts_tmp.sql
+@@tables/slr/slr_eba_bop_amounts.sql
+@@tables/slr/slr_eba_bop_amounts_tmp.sql
+
 delete from slr.slr_entity_proc_group;
 commit;
 
