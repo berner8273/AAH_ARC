@@ -161,6 +161,8 @@ BEGIN
 
 END LOOP;
 
+pGENERATE_ALL_BOP_VALUES();
+
 EXCEPTION
 WHEN e_lock_acquire_error THEN
         -- error was logged before
