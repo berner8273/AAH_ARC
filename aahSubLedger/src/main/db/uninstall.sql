@@ -40,11 +40,32 @@ commit;
 
 conn ~slr_logon
 
+/*drop table slr.slr_fak_bop_amounts_tmp;
 drop table slr.slr_fak_bop_amounts;
-drop table slr.slr_fak_bop_amounts_tmp;
-drop table slr.slr_eba_bop_amounts;
 drop table slr.slr_eba_bop_amounts_tmp;
+drop table slr.slr_eba_bop_amounts;
+*/
 
+begin
+    for i in (
+                 select
+                        'drop table ' || lower ( owner ) || '.' || lower ( table_name ) drop_stmt
+                   from
+                        all_tables
+                  where
+                        lower ( owner )      = 'slr'
+                    and lower ( table_name ) in (
+                                                   'slr_fak_bop_amounts'
+                                                 , 'slr_fak_bop_amounts_tmp'
+                                                 , 'slr_eba_bop_amounts'
+                                                 , 'slr_eba_bop_amounts_tmp'
+                                                )
+             )
+    loop
+        execute immediate i.drop_stmt;
+    end loop;
+end;
+/
 
 /*Begin removal of SLR QTD modifications*/
 
