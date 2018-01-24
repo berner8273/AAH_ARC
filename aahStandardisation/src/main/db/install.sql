@@ -403,4 +403,7 @@ exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_G
  * Finish shipping statistics at build time
  */
 
+/* Increment fdr.sqfr_trade sequence */
+select fdr.sqfr_trade.nextval from dual;
+
 exit
