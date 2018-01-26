@@ -79,6 +79,13 @@ function printCompletionMessage
 
     echo "Return code = ${return_code}";
     echo "$(($C_DURATION / 60)) minutes and $(($C_DURATION % 60)) seconds elapsed.";
+
+    echo "*StartStep log contents"
+    printDivider
+    more "${C_PATH_TO_LOG_FILE}"
+
+
+
 }
 
 setupEnvironment
