@@ -1,0 +1,17 @@
+CREATE OR REPLACE FORCE VIEW RDR.RRV_AG_FDR_ORG_NODE_STRUCTURE AS 
+SELECT
+  ONS_ON_CHILD_ORG_NODE_ID   
+  ,ONS_ON_PARENT_ORG_NODE_ID  
+  ,ONS_OHT_ORG_HIER_TYPE_ID   
+  ,ONS_OWNERSHIP_PERCENT      
+  ,ONS_ACTIVE                 
+  ,ONS_INPUT_BY               
+  ,ONS_AUTH_BY                
+  ,ONS_AUTH_STATUS            
+  ,ONS_INPUT_TIME             
+  ,ONS_VALID_FROM             
+  ,ONS_VALID_TO               
+  ,ONS_DELETE_TIME            
+FROM
+   FDR.FR_ORG_NODE_STRUCTURE ;
+   
