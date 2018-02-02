@@ -24,7 +24,7 @@ begin
                    from
                         dba_users
                   where
-                        trim ( lower ( username ) ) = trim ( lower ( 'aah_ssis' ) ) 
+                        trim ( lower ( username ) ) in ( trim ( lower ( 'aah_ssis' ) ) , trim ( lower ( 'aah_read' ) ) )
              )
     loop
         execute immediate i.drop_stmt;
@@ -39,7 +39,7 @@ begin
                    from
                         dba_roles
                   where
-                        trim ( lower ( role ) ) = trim ( lower ( 'aah_load' ) ) 
+                        trim ( lower ( role ) ) in ( trim ( lower ( 'aah_load' ) ) , trim ( lower ( 'aah_read_only' ) ) )
              )
     loop
         execute immediate i.drop_stmt;
