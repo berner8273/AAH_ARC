@@ -185,7 +185,6 @@ drop table stn.gl_account_hierarchy;
 drop table stn.policy_premium_type;
 drop table stn.journal_line_premium_type;
 drop table stn.cession_event_premium_type;
-drop table stn.premium_type;
 drop table stn.cession_hierarchy;
 drop table stn.business_event;
 drop table stn.init_stat;

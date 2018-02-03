@@ -1,0 +1,1 @@
+grant select on stn.policy_premium_type to rdr;

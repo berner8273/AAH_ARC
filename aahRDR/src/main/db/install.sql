@@ -37,7 +37,8 @@ conn ~stn_logon
 @@grants/tables/stn/gl_account_hierarchy.sql
 @@grants/tables/stn/business_type.sql
 @@grants/tables/stn/execution_type.sql
-@@grants/tables/stn/premium_type.sql
+@@grants/tables/stn/cession_event_premium_type.sql
+@@grants/tables/stn/policy_premium_type.sql
 
 conn ~slr_logon
 
