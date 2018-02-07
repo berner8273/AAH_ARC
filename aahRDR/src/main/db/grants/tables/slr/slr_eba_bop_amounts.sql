@@ -1,1 +1,1 @@
-grant select on slr.slr_eba_bop_amounts to rdr;
+grant select on slr.slr_eba_bop_amounts to rdr with grant option;
