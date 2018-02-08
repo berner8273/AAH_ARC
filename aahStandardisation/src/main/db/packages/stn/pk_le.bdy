@@ -156,7 +156,7 @@ and not exists (
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
                 rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
-                le.FUNCTIONAL_CCY AS error_value,
+                TO_CHAR(le.LE_ID) AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
                 vdl.COLUMN_NM AS field_in_error_name,

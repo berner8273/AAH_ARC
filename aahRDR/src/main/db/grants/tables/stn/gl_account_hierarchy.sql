@@ -1,1 +1,1 @@
-grant select on stn.gl_account_hierarchy to rdr;
+grant select on stn.gl_account_hierarchy to rdr with grant option;
