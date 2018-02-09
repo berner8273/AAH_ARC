@@ -58,7 +58,7 @@ select
      , max ( case when fgl.lk_match_key1 = 'HOPPER_STATUS'           
                   then fgl.lk_lookup_value1                          
              end )                                                   hopper_status
-     , max ( sysdate )                                               effective_from
+		 , max ( to_date(to_char(sysdate,'mm/dd/yyyy'),'mm/dd/yyyy')  )  effective_from
      , to_date ( max ( case when fgl.lk_match_key1 = 'EFFECTIVE_TO'
                             then fgl.lk_lookup_value1
                        end ) ,'YYYY-MM-DD')                          effective_to
