@@ -2528,7 +2528,7 @@ BEGIN
                     from slr_entity_periods ep
                     cross join (
                         select distinct LK_MATCH_KEY1 as event_group 
-                        from fdr.fr_general_lookup where lk_lkt_lookup_type_code='EVENT_CLASS_PERIOD_DEFAULT'
+                        from fdr.fr_general_lookup where lk_lkt_lookup_type_code='EVENT_CLASS'
                             and SYSDATE between LK_EFFECTIVE_FROM and LK_EFFECTIVE_TO  
                             ) eg                                                                        
               )
