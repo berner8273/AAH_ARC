@@ -1,19 +1,16 @@
 create or replace view rdr.rrv_ag_accounting_event
 as
 select
-       ae_accevent_id
-     , ae_gl_account                sub_acccount
+       ae_gl_account                sub_acccount
      , ae_acc_event_id
      , ae_aet_acc_event_type_id
      , ae_in_repository_ind
      , ae_posting_date              effective_date
      , ae_accevent_date
-     , ae_amount                    transaction_amt
-     , ae_iso_currency_code         currency
+     , ae_amount                    transactional_amt
+     , ae_iso_currency_code         transactional_ccy
      , ae_ledger_period
-     , ae_local_amount
      , ae_gl_account_alias
-     , ae_local_currency_code
      , ae_gl_entity                 business_unit
      , ae_epg_id
      , ae_gl_book                   department
@@ -28,16 +25,16 @@ select
      , ae_client_spare_id1
      , ae_client_spare_id2
      , ae_client_spare_id3          ultimate_parent_stream_id
-     , ae_client_spare_id4          event_typ
+     , ae_client_spare_id4          event_type
      , ae_client_spare_id5          functionl_ccy
      , ae_client_spare_id6          functional_amt
      , ae_client_spare_id7          reporting_ccy
      , ae_client_spare_id8          reporting_amt
      , ae_client_spare_id9          is_mark_to_market
      , ae_client_spare_id10         vie_cd
-     , ae_client_spare_id11         business_event_typ
+     , ae_client_spare_id11         business_event_type
      , ae_client_spare_id12         event_seq_id
-     , ae_client_spare_id13         policy_typ
+     , ae_client_spare_id13         policy_type
      , ae_client_spare_id14         correlation_uuid
      , ae_client_spare_id15         basis_cd
      , ae_source_tran_no
@@ -54,7 +51,6 @@ select
      , ae_source_system
      , ae_journal_type
      , ae_gl_ledger_id
-     , ae_base_currency_code
      , lpg_id
      , ae_source_jrnl_id
      , ae_sub_event_id
@@ -63,8 +59,6 @@ select
      , ae_posting_code
      , ae_reverse_date
      , ae_dr_cr
-     , ae_base_rate
-     , ae_local_rate
      , ae_dimension_1               chartfield_1
      , ae_dimension_2               dept_cd
      , ae_dimension_3               counterparty_le_cd
@@ -75,10 +69,10 @@ select
      , ae_dimension_8               stream_id
      , ae_dimension_9               tax_jurisdiction_cd
      , ae_dimension_10              ledger_cd
-     , ae_dimension_11              execution_typ
-     , ae_dimension_12              business_typ
-     , ae_dimension_13              owner_le_id
-     , ae_dimension_14              premium_typ
+     , ae_dimension_11              execution_type
+     , ae_dimension_12              business_type
+     , ae_dimension_13              owner_le_cd
+     , ae_dimension_14              premium_type
      , ae_dimension_15              journal_descr
      , ae_gl_cost_centre
      , ae_ret_amort_flag
@@ -96,7 +90,6 @@ select
      , ae_gl_rights_subcateg_id
      , ae_translation_date
      , ae_ret_recog_type_id
-     , ae_base_amount
      , ae_number_of_periods
      , ae_calc_period
      , ae_ret_agv_or_arrears
