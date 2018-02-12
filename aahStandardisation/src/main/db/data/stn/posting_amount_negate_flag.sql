@@ -1,0 +1,25 @@
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'MOVEMENT' )      , 'A'  , 1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'MOVEMENT' )      , 'D'  , 1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'MOVEMENT' )      , 'C'  , 1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'MOVEMENT' )      , 'CA' , 1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'MOVEMENT' )      , 'AA' , 1 , 1 );
+
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED' )       , 'A'  , -1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED' )       , 'D'  , -1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED' )       , 'C'  , 1  , -1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED' )       , 'CA' , 1  , -1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED' )       , 'AA' , -1 , 1 );
+
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED_PLUS' )  , 'A'  , -1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED_PLUS' )  , 'D'  , -1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED_PLUS' )  , 'C'  , 1  , -1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED_PLUS' )  , 'CA' , 1  , -1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'DERIVED_PLUS' )  , 'AA' , -1 , 1 );
+
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'APTITUDE' )      , 'A'  , 1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'APTITUDE' )      , 'D'  , 1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'APTITUDE' )      , 'C'  , 1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'APTITUDE' )      , 'CA' , 1 , 1 );
+insert into stn.posting_amount_negate_flag ( amount_typ_id , business_typ , negate_flag_in , negate_flag_out ) values ( ( select amount_typ_id from stn.posting_amount_derivation_type where amount_typ_descr = 'APTITUDE' )      , 'AA' , 1 , 1 );
+
+commit;

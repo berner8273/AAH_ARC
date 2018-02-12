@@ -1,0 +1,2 @@
+alter table stn.posting_amount_negate_flag add constraint fk_padt_panf  foreign key ( amount_typ_id ) references stn.posting_amount_derivation_type ( amount_typ_id );
+alter table stn.posting_amount_negate_flag add constraint fk_bt_panf    foreign key ( business_typ )  references stn.business_type                  ( business_typ );
