@@ -65,10 +65,11 @@ drop view rdr.rrv_ag_user_roles_and_tasks;
 
 conn ~stn_logon
 
-revoke select   on stn.gl_account_hierarchy    from rdr;
-revoke select   on stn.business_type           from rdr;
-revoke select   on stn.execution_type          from rdr;
-revoke select   on stn.premium_type            from rdr;
+revoke select   on stn.gl_account_hierarchy       from rdr;
+revoke select   on stn.business_type              from rdr;
+revoke select   on stn.execution_type             from rdr;
+revoke select   on stn.cession_event_premium_type from rdr;
+revoke select   on stn.policy_premium_type        from rdr;
 
 conn ~slr_logon
 
