@@ -18,7 +18,7 @@ select
      , fsrae.srae_dimension_13           owner_le_cd
      , fsrae.srae_dimension_14           premium_typ
      , fsrae.srae_dimension_15           journal_descr
-     , fsrae.srae_client_spare_id3       ultimate_parent_stream_id
+     , fsrae.srae_client_spare_id3       ultimate_parent_le_cd
      , fsrae.srae_client_spare_id4       event_typ
      , fsrae.srae_client_spare_id5       functional_ccy
      , fsrae.srae_client_spare_id6       functional_amt
@@ -47,6 +47,7 @@ select
      , fsrae.srae_source_system          srae_source_system
      , fsrae.srae_instrument_code        srae_instrument_code
      , fsrae.srae_posting_date           posting_dt
+     , fsrae.srae_client_date1           effective_dt
      , fsrae.event_status                event_status
      , fsrae.message_id                  message_id
      , fsrae.process_id                  process_id

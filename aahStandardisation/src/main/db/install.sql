@@ -129,7 +129,7 @@ conn ~stn_logon
 @@tables/stn/cev_premium_typ_override.sql
 @@tables/stn/posting_method_derivation_gfa.sql
 @@tables/stn/posting_account_derivation.sql
-
+@@tables/stn/posting_amount_negate_flag.sql
 @@tables/stn/cession_event_premium_type.sql
 @@tables/stn/cession_hierarchy.sql
 @@tables/stn/cession_link.sql
@@ -226,12 +226,12 @@ conn ~stn_logon
 @@views/stn/cession_event_posting.sql
 @@views/stn/cession_event_reversal.sql
 @@views/stn/cev_period_balances.sql
+@@views/stn/period_status.sql
 @@views/stn/gce_default.sql
 @@views/stn/user_default.sql
 @@views/stn/hopper_cession_event.sql
 @@views/stn/hopper_insurance_policy.sql
 @@views/stn/hopper_insurance_policy_tj.sql
-                                          
 @@views/stn/pol_default.sql
 @@views/stn/event_hierarchy_default.sql
 @@views/stn/hopper_event_hierarchy.sql
@@ -239,7 +239,6 @@ conn ~stn_logon
 @@views/stn/hopper_event_class.sql
 @@views/stn/hopper_event_group.sql
 @@views/stn/hopper_event_subgroup.sql
-                                          
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
@@ -264,6 +263,7 @@ conn ~stn_logon
 @@ri_constraints/stn/legal_entity_ledger.sql
 @@ri_constraints/stn/legal_entity_link.sql
 @@ri_constraints/stn/posting_accounting_basis.sql
+@@ri_constraints/stn/posting_amount_negate_flag.sql
 @@ri_constraints/stn/posting_method_derivation_et.sql
 @@ri_constraints/stn/posting_method_derivation_ic.sql
 @@ri_constraints/stn/posting_method_derivation_le.sql
@@ -308,6 +308,7 @@ conn ~stn_logon
 @@data/stn/posting_accounting_basis.sql
 @@data/stn/posting_amount_derivation_type.sql
 @@data/stn/posting_amount_derivation.sql
+@@data/stn/posting_amount_negate_flag.sql
 @@data/stn/posting_financial_calc.sql
 @@data/stn/posting_ledger.sql
 @@data/stn/posting_method.sql

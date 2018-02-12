@@ -21,11 +21,14 @@ create global temporary table stn.cev_le_data
 ,  business_event_typ             varchar2 ( 50 char )
 ,  is_mark_to_market              varchar2 ( 20 char )
 ,  vie_cd                         number ( 1 )
+,  vie_effective_dt               date
+,  vie_acct_dt                    date
 ,  premium_typ                    varchar2 ( 1 char )
 ,  policy_premium_typ             varchar2 ( 80 char )
 ,  policy_accident_yr             varchar2 ( 80 char )
 ,  policy_underwriting_yr         number ( 28 , 8 )
 ,  ultimate_parent_stream_id      varchar2 ( 80 char )
+,  ultimate_parent_le_cd          varchar2 ( 80 char )
 ,  execution_typ                  varchar2 ( 80 char )
 ,  policy_typ                     varchar2 ( 80 char )
 ,  business_typ                   varchar2 ( 2 char )

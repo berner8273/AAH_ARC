@@ -16,6 +16,7 @@ create global temporary table stn.cev_non_intercompany_data
 ,  policy_accident_yr         varchar2 ( 80 char ) 
 ,  policy_underwriting_yr     number ( 28 , 8 ) 
 ,  ultimate_parent_stream_id  varchar2 ( 80 char ) 
+,  ultimate_parent_le_cd      varchar2 ( 80 char )
 ,  execution_typ              varchar2 ( 80 char ) 
 ,  policy_typ                 varchar2 ( 80 char ) 
 ,  event_typ                  varchar2 ( 30 char ) 
@@ -25,7 +26,9 @@ create global temporary table stn.cev_non_intercompany_data
 ,  owner_le_cd                varchar2 ( 20 char ) 
 ,  counterparty_le_cd         varchar2 ( 20 char ) 
 ,  ledger_cd                  varchar2 ( 20 char ) 
-,  vie_cd                     number ( 1 ) 
+,  vie_cd                     number ( 1 )
+,  vie_effective_dt           date
+,  vie_acct_dt                date
 ,  is_mark_to_market          varchar2 ( 20 char ) 
 ,  tax_jurisdiction_cd        varchar2 ( 80 char ) 
 ,  transaction_ccy            varchar2 ( 3 char ) 
