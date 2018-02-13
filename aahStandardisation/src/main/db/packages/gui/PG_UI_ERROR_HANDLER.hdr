@@ -1,0 +1,94 @@
+CREATE OR REPLACE PACKAGE GUI."PG_UI_ERROR_HANDLER" AS
+
+-----------------------------------------------------------------------
+-- $Revision: 1.1 $
+-- $Date: 2007/09/18 10:56:50 $
+--
+-- Contents:        Header file for Error Handler Package
+-- Developer:       Darryl Charman (DAC)
+-- Project:         FDR GUI
+-- Created:         21st July 2004
+-- Language:        PL/SQL
+-- Notes:
+-- Known problems:  None
+-- Portability:     Oracle v9 and above.
+--
+-- Update History (most recent first):
+-- ===================================
+-- dd/mm/yyyy       Description
+-- ----------       -----------
+-- 10/09/2004       Added procedure check_resubmitted_errors to check for successful resubmissions
+-- 30/07/2004       Unit Tested
+-- 30/07/2004       Added ability to pass in multiple comma-delimited values in a parameter
+-- 21/07/2004       Package Header Created
+--
+--
+-----------------------------------------------------------------------
+
+PROCEDURE update_status(
+        error_list      IN  VARCHAR2,
+        new_status      IN  CHAR,
+        owner           IN  VARCHAR2,
+        success         OUT CHAR
+);
+
+PROCEDURE update_status_cause(
+        error_text_list    IN  VARCHAR2,
+        error_value_list   IN  VARCHAR2,
+        error_date         IN  VARCHAR2,
+        new_status         IN  CHAR,
+        owner              IN  VARCHAR2,
+        success            OUT CHAR
+);
+
+PROCEDURE update_status_trans(
+        tran_id_list    IN  VARCHAR2,
+        error_date      IN  VARCHAR2,
+        new_status      IN  CHAR,
+        owner           IN  VARCHAR2,
+        success         OUT CHAR
+);
+
+PROCEDURE update_status_log_management(
+        error_text_list    IN  VARCHAR2,
+        error_value_list   IN  VARCHAR2,
+        error_table_list   IN  VARCHAR2,
+        error_client_key_no_list  IN  VARCHAR2,
+        new_status         IN  CHAR,
+        owner              IN  VARCHAR2,
+        success            OUT CHAR
+);
+
+PROCEDURE resubmit_transaction(
+        tran_id_list          IN  VARCHAR2,
+        table_in_error_list   IN  VARCHAR2,
+        error_date            IN  VARCHAR2,
+        owner                 IN  VARCHAR2,
+        success               OUT CHAR
+);
+
+PROCEDURE check_resubmitted_errors(lpg IN NUMBER := 1);
+
+PROCEDURE check_source_table(
+    event_id             IN NUMBER,
+    table_in_error_name  IN VARCHAR2,
+    row_in_error_key_id  IN NUMBER,
+    owner     IN VARCHAR2,
+	lpg IN NUMBER,
+    rec_status           OUT VARCHAR2
+);
+
+PROCEDURE check_for_new_errors(
+          row_in_error_key_id  IN NUMBER,
+          table_in_error_name  IN VARCHAR2,
+          event_id             IN NUMBER,
+		  owner     		   IN VARCHAR2,
+          new_errors_count     OUT NUMBER
+);
+
+PROCEDURE archive(lpg IN NUMBER := 1);
+
+PROCEDURE autoresubmit_transactions(lpg IN NUMBER := 1, increment_retries IN CHAR := 'N');
+
+END PG_UI_ERROR_HANDLER;
+/

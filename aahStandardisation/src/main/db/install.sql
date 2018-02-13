@@ -33,6 +33,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_eba_combinations.sql
 @@grants/tables/slr/slr_fak_combinations.sql
 @@grants/tables/slr/slr_eba_daily_balances.sql
+@@grants/tables/slr/slr_eba_bop_amounts.sql
 @@grants/tables/slr/slr_jrnl_lines.sql
 
 conn ~gui_logon
@@ -128,7 +129,7 @@ conn ~stn_logon
 @@tables/stn/cev_premium_typ_override.sql
 @@tables/stn/posting_method_derivation_gfa.sql
 @@tables/stn/posting_account_derivation.sql
-
+@@tables/stn/posting_amount_negate_flag.sql
 @@tables/stn/cession_event_premium_type.sql
 @@tables/stn/cession_hierarchy.sql
 @@tables/stn/cession_link.sql
@@ -184,7 +185,6 @@ conn ~stn_logon
 @@tables/stn/posting_method_derivation_link.sql
 @@tables/stn/posting_method_derivation_mtm.sql
 @@tables/stn/posting_method_ledger.sql
-@@tables/stn/premium_type.sql
 @@tables/stn/process_code_module.sql
 @@tables/stn/standardisation_log.sql
 @@tables/stn/superseded_feed.sql
@@ -226,12 +226,12 @@ conn ~stn_logon
 @@views/stn/cession_event_posting.sql
 @@views/stn/cession_event_reversal.sql
 @@views/stn/cev_period_balances.sql
+@@views/stn/period_status.sql
 @@views/stn/gce_default.sql
 @@views/stn/user_default.sql
 @@views/stn/hopper_cession_event.sql
 @@views/stn/hopper_insurance_policy.sql
 @@views/stn/hopper_insurance_policy_tj.sql
-                                          
 @@views/stn/pol_default.sql
 @@views/stn/event_hierarchy_default.sql
 @@views/stn/hopper_event_hierarchy.sql
@@ -239,12 +239,10 @@ conn ~stn_logon
 @@views/stn/hopper_event_class.sql
 @@views/stn/hopper_event_group.sql
 @@views/stn/hopper_event_subgroup.sql
-                                          
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
 @@ri_constraints/stn/cession_event.sql
-@@ri_constraints/stn/cession_event_premium_type.sql
 @@ri_constraints/stn/cession_link.sql
 @@ri_constraints/stn/code_module.sql
 @@ri_constraints/stn/db_tab_column.sql
@@ -261,12 +259,11 @@ conn ~stn_logon
 @@ri_constraints/stn/insurance_policy_fx_rate.sql
 @@ri_constraints/stn/insurance_policy_tax_jurisd.sql
 @@ri_constraints/stn/journal_line.sql
-@@ri_constraints/stn/journal_line_premium_type.sql
 @@ri_constraints/stn/legal_entity.sql
 @@ri_constraints/stn/legal_entity_ledger.sql
 @@ri_constraints/stn/legal_entity_link.sql
-@@ri_constraints/stn/policy_premium_type.sql
 @@ri_constraints/stn/posting_accounting_basis.sql
+@@ri_constraints/stn/posting_amount_negate_flag.sql
 @@ri_constraints/stn/posting_method_derivation_et.sql
 @@ri_constraints/stn/posting_method_derivation_ic.sql
 @@ri_constraints/stn/posting_method_derivation_le.sql
@@ -301,7 +298,6 @@ conn ~stn_logon
 @@data/stn/legal_entity_type.sql
 @@data/stn/legal_entity_link_type.sql
 @@data/stn/posting_accounting_basis_type.sql
-@@data/stn/premium_type.sql
 @@data/stn/cession_event_premium_type.sql
 @@data/stn/journal_line_premium_type.sql
 @@data/stn/policy_premium_type.sql
@@ -312,6 +308,7 @@ conn ~stn_logon
 @@data/stn/posting_accounting_basis.sql
 @@data/stn/posting_amount_derivation_type.sql
 @@data/stn/posting_amount_derivation.sql
+@@data/stn/posting_amount_negate_flag.sql
 @@data/stn/posting_financial_calc.sql
 @@data/stn/posting_ledger.sql
 @@data/stn/posting_method.sql

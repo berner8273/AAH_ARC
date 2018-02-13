@@ -17,6 +17,7 @@ select
   , policy_accident_yr
   , policy_underwriting_yr
   , ultimate_parent_stream_id
+  , ultimate_parent_le_cd
   , execution_typ
   , policy_typ
   , event_typ

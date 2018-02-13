@@ -1,0 +1,1 @@
+grant select on slr.slr_eba_bop_amounts to stn with grant option;

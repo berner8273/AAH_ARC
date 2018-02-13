@@ -37,6 +37,6 @@ create table stn.journal_line
 ,   no_retries             number(38)            default 0                        not null
 ,   step_run_sid           number(38)            default 0                        not null
 ,   constraint pk_jl      primary key ( row_sid )
-,   constraint uk_jl      unique      ( accounting_dt , le_id , acct_cd , ledger_cd , stream_id , business_typ , tax_jurisdiction_cd , premium_typ , event_typ , accident_yr )
+,   constraint uk_jl      unique      ( accounting_dt , le_id , acct_cd , ledger_cd , stream_id , dept_cd , accident_yr , tax_jurisdiction_cd , business_typ , premium_typ , event_typ )
 ,   constraint ck_acct_cd check       ( length ( acct_cd ) = 8 or length ( acct_cd ) = 11 )
 );

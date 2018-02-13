@@ -1858,6 +1858,78 @@ and not exists (
         dbms_stats.gather_table_stats ( ownname => user , tabname => 'CESSION_EVENT' , cascade => true );
     END;
     
+    PROCEDURE pr_cession_event_csr
+        (
+            p_step_run_sid IN NUMBER,
+            p_no_superseeded_records OUT NUMBER
+        )
+    AS
+    BEGIN
+        UPDATE CESSION_EVENT ce
+            SET
+                EVENT_STATUS = 'X'
+            WHERE
+                exists (
+        select
+               null
+          from 
+               stn.cession_event ce3
+          join 
+               stn.feed          fd3 on ce3.feed_uuid = fd3.feed_uuid
+         where
+               ce.ROW_SID = ce3.row_sid
+           and (
+               trunc( ce3.accounting_dt , 'MONTH' )
+             , ce3.stream_id
+             , ce3.basis_cd
+             , ce3.premium_typ
+             , ce3.event_typ
+             , ce3.business_typ
+             , fd3.loaded_ts
+               )
+                not in
+                 (
+                   select
+                          trunc( ce2.accounting_dt , 'MONTH' )
+                        , ce2.stream_id
+                        , ce2.basis_cd
+                        , ce2.premium_typ
+                        , ce2.event_typ
+                        , ce2.business_typ
+                        , max(fd2.loaded_ts)
+                     from 
+                          stn.cession_event ce2
+                     join
+                          stn.feed          fd2 on ce2.feed_uuid = fd2.feed_uuid
+                 group by
+                          trunc( ce2.accounting_dt , 'MONTH' )
+                        , ce2.stream_id
+                        , ce2.basis_cd
+                        , ce2.premium_typ
+                        , ce2.event_typ
+                        , ce2.business_typ
+                 )
+        );
+        p_no_superseeded_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of superseeded records cancelled', 'sql%rowcount', NULL, sql%rowcount, NULL);
+    END;
+    
+    PROCEDURE pr_cession_event_cur
+        (
+            p_step_run_sid IN NUMBER,
+            p_no_unprocessed_records OUT NUMBER
+        )
+    AS
+    BEGIN
+        UPDATE CESSION_EVENT ce
+            SET
+                EVENT_STATUS = 'X'
+            WHERE
+                ce.EVENT_STATUS = 'V';
+        p_no_unprocessed_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of unprocessed records cancelled', 'sql%rowcount', NULL, sql%rowcount, NULL);
+    END;
+    
     PROCEDURE pr_cession_event_prc
         (
             p_step_run_sid IN NUMBER,
@@ -1871,6 +1943,8 @@ and not exists (
         v_no_validated_records NUMBER(38, 9) DEFAULT 0;
         v_no_errored_records NUMBER(38, 9) DEFAULT 0;
         v_no_processed_records NUMBER(38, 9) DEFAULT 0;
+        v_no_superseeded_records NUMBER(38, 9) DEFAULT 0;
+        v_no_unprocessed_records NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
     BEGIN
         pr_cession_event_istat;
@@ -1883,6 +1957,10 @@ and not exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set cession event status = "V"' );
             pr_cession_event_svs(p_step_run_sid, v_no_errored_records, v_no_validated_records);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting validation status', NULL, NULL, NULL, NULL);
+            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel superseeded records' );
+            pr_cession_event_csr(p_step_run_sid, v_no_superseeded_records);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancelling superseeded records', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish log records' );
             pr_publish_log;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish cession event records' );
@@ -1890,7 +1968,10 @@ and not exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set cession event status = "P"' );
             pr_cession_event_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
-            IF v_no_validated_records <> v_no_processed_records THEN
+            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed valid records' );
+            pr_cession_event_cur(p_step_run_sid, v_no_unprocessed_records);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancelling unprocessed records', NULL, NULL, NULL, NULL);
+            IF v_no_validated_records <> (v_no_processed_records + v_no_superseeded_records + v_no_unprocessed_records) THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_validated_records != v_no_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
