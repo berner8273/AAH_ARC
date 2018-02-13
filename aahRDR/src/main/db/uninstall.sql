@@ -62,6 +62,11 @@ drop view rdr.rrv_ag_slr_jrnl_lines;
 drop view rdr.rrv_ag_stan_raw_acc_event;
 drop view rdr.rrv_ag_tax_jurisdiction;
 drop view rdr.rrv_ag_user_roles_and_tasks;
+drop view rdr/rrv_ag_org_hierarchy_type.sql
+drop view rdr/rrv_ag_org_network.sql
+drop view rdr/rrv_ag_org_node_structure.sql
+drop view rdr/rrv_ag_org_hier_levels.sql
+
 
 conn ~stn_logon
 

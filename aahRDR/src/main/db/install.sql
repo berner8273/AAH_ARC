@@ -92,9 +92,9 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_stan_raw_acc_event.sql
 @@views/rdr/rrv_ag_tax_jurisdiction.sql
 @@views/rdr/rrv_ag_user_roles_and_tasks.sql
-@@views/rdr/rrv_ag_fdr_org_hierarchy_type.sql
-@@views/rdr/rrv_ag_fdr_org_network.sql
-@@views/rdr/rrv_ag_fdr_org_node_structure.sql
+@@views/rdr/rrv_ag_org_hierarchy_type.sql
+@@views/rdr/rrv_ag_org_network.sql
+@@views/rdr/rrv_ag_org_node_structure.sql
 @@views/rdr/rrv_ag_org_hier_levels.sql
 
 
