@@ -1,1 +1,1 @@
-grant select on fdr.fr_posting_schema to rdr;
+grant select on fdr.fr_posting_schema to rdr with grant option;

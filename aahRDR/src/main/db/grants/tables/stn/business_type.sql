@@ -1,1 +1,1 @@
-grant select on stn.business_type to RDR;
+grant select on stn.business_type to rdr with grant option;
