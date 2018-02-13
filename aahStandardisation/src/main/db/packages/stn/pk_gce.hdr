@@ -7,4 +7,3 @@ CREATE OR REPLACE PACKAGE stn.PK_GCE AS
             p_no_failed_records OUT NUMBER
         );
 END PK_GCE;
-/

@@ -1,2 +1,0 @@
-alter table stn.policy_premium_type add constraint fk_ptyp_pptyp   foreign key ( premium_typ )               references stn.premium_type ( premium_typ );
-alter table stn.policy_premium_type add constraint fk_ptyp_cepptyp foreign key ( cession_event_premium_typ ) references stn.premium_type ( premium_typ );

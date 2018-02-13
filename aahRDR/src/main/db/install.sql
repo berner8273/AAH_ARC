@@ -71,6 +71,7 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_combo_edit_rules.sql
 @@views/rdr/rrv_ag_department.sql
 @@views/rdr/rrv_ag_event_hierarchy.sql
+@@views/rdr/rrv_ag_event_class_period.sql
 @@views/rdr/rrv_ag_fx_rates.sql
 @@views/rdr/rrv_ag_gl_account_hierarchy.sql
 @@views/rdr/rrv_ag_gl_accounts.sql
@@ -91,5 +92,10 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_stan_raw_acc_event.sql
 @@views/rdr/rrv_ag_tax_jurisdiction.sql
 @@views/rdr/rrv_ag_user_roles_and_tasks.sql
+@@views/rdr/rrv_ag_fdr_org_hierarchy_type.sql
+@@views/rdr/rrv_ag_fdr_org_network.sql
+@@views/rdr/rrv_ag_fdr_org_node_structure.sql
+@@views/rdr/rrv_ag_org_hier_levels.sql
+
 
 exit
