@@ -9,3 +9,4 @@ INSERT INTO gui.ui_section ("USEC_ID","USEC_NAME","USEC_TECHNICAL_NAME","USEC_TY
   VALUES (4,'General Lookup','general.lookup','U',1,2);
 INSERT INTO gui.ui_section ("USEC_ID","USEC_NAME","USEC_TECHNICAL_NAME","USEC_TYPE","USEC_ORDER","USEC_USC_ID")
   VALUES (5,'General Lookup Audit History','general.lookup.audit.list','S',2,2);
+commit;
