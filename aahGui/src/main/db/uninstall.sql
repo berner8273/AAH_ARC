@@ -18,6 +18,13 @@ define gui_logon    = ~gui_user/~gui_password@~tns_alias
 
 conn ~gui_logon
 
+delete from gui.ui_general_lookup;
+delete from gui.ui_input_field_value;
+delete from gui.ui_field;
+delete from gui.ui_section;
+delete from gui.ui_screen;
+delete from gui.ui_component;
+delete from gui.ui_gen_lookup_type_properties;
 delete from gui.t_ui_jrnl_line_meta;
 delete from gui.t_ui_role_tasks         where role_id in ( 'role.subledger.administrator' , 'role.reference.data.user' , 'role.reference.data.approver' , 'role.subledger.user' , 'role.subledger.manager' , 'role.subledger.viewer' , 'role.subledger.configurator' );
 delete from gui.t_ui_roles              where role_id in ( 'role.subledger.administrator' , 'role.reference.data.user' , 'role.reference.data.approver' , 'role.subledger.user' , 'role.subledger.manager' , 'role.subledger.viewer' , 'role.subledger.configurator' );

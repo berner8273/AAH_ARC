@@ -21,5 +21,11 @@ conn ~gui_logon
 @@data/gui/t_ui_jrnl_line_meta.sql
 @@data/gui/t_ui_roles.sql
 @@data/gui/t_ui_role_tasks.sql
-
+@@data/gui/ui_gen_lookup_type_properties.sql
+@@data/gui/ui_component.sql
+@@data/gui/ui_screen.sql
+@@data/gui/ui_section.sql
+@@data/gui/ui_field.sql
+@@data/gui/ui_input_field_value.sql
+@@data/gui/ui_general_lookup.sql
 exit

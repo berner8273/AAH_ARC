@@ -65,7 +65,7 @@ commit;
 /*Begin SLR QTD modifications*/
 
 --Backup and replace with modified view
-rename v_slr_jrnl_lines_unposted_jt to v_slr_jrnl_lines_unposted_bak;
+@@views/slr/v_slr_jrnl_lines_unposted_bak.sql
 @@views/slr/v_slr_jrnl_lines_unposted_jt.sql
 
 --Create custom view
