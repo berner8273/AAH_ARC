@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
---whenever sqlerror exit failure
+whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -27,7 +27,52 @@ define slr_user     = @slrUsername@
 define slr_password = @slrPassword@
 define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
+define sys_user     = @sysUsername@
+define sys_password = @sysPassword@
+define sys_logon    = ~sys_user/~sys_password@~tns_alias
+
+conn ~sys_logon as sysdba
+
+begin
+    for i in (
+                 select
+                        'alter system kill session ''' || vs.sid || ',' || vs.serial# || '''' kill_stmt
+                   from
+                        v$session vs
+                  where exists
+                               (
+                                 select null
+                                   from v$lock vl
+                                  where lower(type) = 'to'
+                                    and id1 in ( select object_id
+                                                   from dba_objects
+                                                  where lower(object_name) in ( 'cev_data'
+                                                                              , 'cev_identified_record'
+                                                                              , 'cev_premium_typ_override'
+                                                                              , 'cev_mtm_data'
+                                                                              , 'cev_gaap_fut_accts_data'
+                                                                              , 'cev_derived_plus_data'
+                                                                              , 'cev_le_data'
+                                                                              , 'cev_non_intercompany_data' )
+                                               )
+                                    and vs.sid = vl.sid
+                               )
+             )
+    loop
+        execute immediate i.kill_stmt;
+    end loop;
+end;
+/
 conn ~stn_logon
+
+truncate table stn.cev_data;
+truncate table stn.cev_identified_record;
+truncate table stn.cev_premium_typ_override;
+truncate table stn.cev_mtm_data;
+truncate table stn.cev_gaap_fut_accts_data;
+truncate table stn.cev_derived_plus_data;
+truncate table stn.cev_le_data;
+truncate table stn.cev_non_intercompany_data;
 
 drop procedure stn.pr_publish_log;
 drop package body stn.pk_dept;
