@@ -21,6 +21,15 @@ conn ~gui_logon
 @@data/gui/t_ui_jrnl_line_meta.sql
 @@data/gui/t_ui_roles.sql
 @@data/gui/t_ui_role_tasks.sql
+
+delete from gui.ui_general_lookup;
+delete from gui.ui_input_field_value;
+delete from gui.ui_field;
+delete from gui.ui_section;
+delete from gui.ui_screen;
+delete from gui.ui_component;
+delete from gui.ui_gen_lookup_type_properties;
+
 @@data/gui/ui_gen_lookup_type_properties.sql
 @@data/gui/ui_component.sql
 @@data/gui/ui_screen.sql
@@ -28,4 +37,5 @@ conn ~gui_logon
 @@data/gui/ui_field.sql
 @@data/gui/ui_input_field_value.sql
 @@data/gui/ui_general_lookup.sql
+
 exit
