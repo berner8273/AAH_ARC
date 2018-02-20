@@ -44,8 +44,9 @@ drop table slr.slr_fak_bop_amounts;
 drop table slr.slr_fak_bop_amounts_tmp;
 drop table slr.slr_eba_bop_amounts;
 drop table slr.slr_eba_bop_amounts_tmp;
+commit;
 
-
+conn ~slr_logon
 /*Begin removal of SLR QTD modifications*/
 
 --Replace with baseline package
@@ -187,5 +188,8 @@ conn ~stn_logon
 revoke select on stn.business_type      from slr;
 revoke select on stn.insurance_policy   from slr;
 revoke select on stn.execution_type     from slr;
+
+conn ~fdr_logon
+revoke select , insert , update on fdr.fr_general_lookup  from slr;
 
 exit

@@ -1,4 +1,4 @@
-CREATE OR REPLACE package GUI.gui_pkg
+CREATE OR REPLACE package gui.gui_pkg
     as
         procedure pk_auto_resub
             (

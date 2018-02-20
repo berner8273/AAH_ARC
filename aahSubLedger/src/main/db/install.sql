@@ -39,6 +39,7 @@ delete from fdr.fr_account_lookup_param;
 @@data/fdr/fr_account_lookup.sql
 @@data/fdr/fr_acc_event_type.sql
 @@data/fdr/fr_gl_account.sql
+@@grants/tables/fdr/fr_general_lookup.sql
 
 conn ~slr_logon
 
@@ -64,7 +65,7 @@ commit;
 /*Begin SLR QTD modifications*/
 
 --Backup and replace with modified view
-rename v_slr_jrnl_lines_unposted_jt to v_slr_jrnl_lines_unposted_bak;
+@@views/slr/v_slr_jrnl_lines_unposted_bak.sql
 @@views/slr/v_slr_jrnl_lines_unposted_jt.sql
 
 --Create custom view

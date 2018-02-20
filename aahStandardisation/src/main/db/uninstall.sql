@@ -27,7 +27,52 @@ define slr_user     = @slrUsername@
 define slr_password = @slrPassword@
 define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
+define sys_user     = @sysUsername@
+define sys_password = @sysPassword@
+define sys_logon    = ~sys_user/~sys_password@~tns_alias
+
+conn ~sys_logon as sysdba
+
+begin
+    for i in (
+                 select
+                        'alter system kill session ''' || vs.sid || ',' || vs.serial# || '''' kill_stmt
+                   from
+                        v$session vs
+                  where exists
+                               (
+                                 select null
+                                   from v$lock vl
+                                  where lower(type) = 'to'
+                                    and id1 in ( select object_id
+                                                   from dba_objects
+                                                  where lower(object_name) in ( 'cev_data'
+                                                                              , 'cev_identified_record'
+                                                                              , 'cev_premium_typ_override'
+                                                                              , 'cev_mtm_data'
+                                                                              , 'cev_gaap_fut_accts_data'
+                                                                              , 'cev_derived_plus_data'
+                                                                              , 'cev_le_data'
+                                                                              , 'cev_non_intercompany_data' )
+                                               )
+                                    and vs.sid = vl.sid
+                               )
+             )
+    loop
+        execute immediate i.kill_stmt;
+    end loop;
+end;
+/
 conn ~stn_logon
+
+truncate table stn.cev_data;
+truncate table stn.cev_identified_record;
+truncate table stn.cev_premium_typ_override;
+truncate table stn.cev_mtm_data;
+truncate table stn.cev_gaap_fut_accts_data;
+truncate table stn.cev_derived_plus_data;
+truncate table stn.cev_le_data;
+truncate table stn.cev_non_intercompany_data;
 
 drop procedure stn.pr_publish_log;
 drop package body stn.pk_dept;
@@ -216,8 +261,8 @@ delete from fdr.fr_instr_type_superclass     where itsc_instr_type_super_clicode
 delete from fdr.fr_instr_insure_extend;
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
-delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE' );
-delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE' );
+delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE','EVENT_CLASS_PERIOD');
+delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE', 'EVENT_CLASS_PERIOD');
 delete from fdr.fr_fx_rate;
 delete from fdr.fr_party_business_lookup     where pbl_lookup_key                 != 'DEFAULT';
 delete from fdr.fr_party_business            where pbu_party_bus_client_code      != 'DEFAULT';

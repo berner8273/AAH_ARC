@@ -1,1 +1,1 @@
-grant select on fdr.fr_org_hier_levels to RDR with grant option
+grant select on fdr.fr_org_hier_levels to rdr with grant option;

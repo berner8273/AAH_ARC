@@ -1,4 +1,4 @@
-create view stn.period_status
+create or replace view stn.period_status
 as
 select
        fgl.lk_match_key2 bus_year
