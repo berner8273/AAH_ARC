@@ -159,44 +159,10 @@ and not exists (
                  stn.gce_default                gced  on 1 = 1
            where fsrgc.event_status      = 'U'
              and fsrgc.process_id        = gcea.STEP_RUN_SID
-             and fsrgc.srgc_client_text1 = gced.ATTRIBUTE_TYP1
-             and fsrgc.srgc_client_code  = fpl.PL_GLOBAL_ID
        )
-and exists (
-           select
-                  null
-             from
-                 fdr.fr_stan_raw_general_codes  fsrgc
-             join
-                 stn.gl_combo_edit_process      gcep  on gcea.PRC_CD = gcep.PRC_CD
-                                                     and gcea.FEED_UUID = gcep.FEED_UUID
-             join
-                 stn.identified_record          idr   on gcep.row_sid = idr.row_sid
-             join
-                 stn.gce_default                gced  on 1 = 1
-           where fsrgc.event_status      = 'U'
-             and fsrgc.process_id        = gcea.STEP_RUN_SID
-             and fsrgc.srgc_client_text1 = gced.ATTRIBUTE_TYP3
-             and fsrgc.srgc_client_code  = gcea.LEDGER_CD
-       );
+;
         p_no_gcea_processed_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gcea', 'p_no_gcea_processed_records', NULL, p_no_gcea_processed_records, NULL);
-        UPDATE GL_COMBO_EDIT_PROCESS gcep
-            SET
-                EVENT_STATUS = 'P'
-            WHERE
-                exists (
-           select
-                  null
-             from
-                       fdr.fr_stan_raw_general_lookup fsrgl
-                  join stn.identified_record   idr   on to_number ( fsrgl.message_id ) = idr.row_sid
-            where
-                  idr.row_sid = gcep.ROW_SID
-              and fsrgl.SRLK_LKT_LOOKUP_TYPE_CODE = 'COMBO_RULESET'
-       );
-        p_no_gcep_processed_records := SQL%ROWCOUNT;
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gcep', 'p_no_gcep_processed_records', NULL, p_no_gcep_processed_records, NULL);
         UPDATE GL_COMBO_EDIT_RULE gcer
             SET
                 EVENT_STATUS = 'P'
@@ -469,196 +435,53 @@ and not exists (
         )
     AS
     BEGIN
-        INSERT INTO HOPPER_GL_COMBO_EDIT_GL
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_RULE_TYP, COMBO_RULE_OR_SET, COMBO_ATTR_OR_RULE, COMBO_CONDITION, COMBO_CONDITION_TYP, COMBO_SET_CD, COMBO_ACTION, COMBO_EDIT_STS, EVENT_STATUS, EFFECTIVE_FROM, EFFECTIVE_TO)
-            SELECT
-                gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                GCE_DEFAULT.LKT_CODE1 AS COMBO_RULE_TYP,
-                GCE_DEFAULT.RULE_SET AS COMBO_RULE_OR_SET,
-                gcep.PRC_CD AS COMBO_ATTR_OR_RULE,
-                NULL AS COMBO_CONDITION,
-                NULL AS COMBO_CONDITION_TYP,
-                NULL AS COMBO_SET_CD,
-                GCE_DEFAULT.ACTION AS COMBO_ACTION,
-                GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
-                GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
-                GCE_DEFAULT.EFFECTIVE_FROM AS EFFECTIVE_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS EFFECTIVE_TO
-            FROM
-                GL_COMBO_EDIT_PROCESS gcep
-                INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
-                INNER JOIN GCE_DEFAULT ON 1 = 1
-            WHERE
-                gcep.EVENT_STATUS = 'V';
-        p_no_fsrgl_combo_ruleset_pub := SQL%ROWCOUNT;
-        INSERT INTO HOPPER_GL_COMBO_EDIT_GL
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_RULE_TYP, COMBO_RULE_OR_SET, COMBO_ATTR_OR_RULE, COMBO_CONDITION, COMBO_CONDITION_TYP, COMBO_SET_CD, COMBO_ACTION, COMBO_EDIT_STS, EVENT_STATUS, EFFECTIVE_FROM, EFFECTIVE_TO)
-            SELECT
-                gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                GCE_DEFAULT.LKT_CODE2 AS COMBO_RULE_TYP,
-                gcep.PRC_CD AS COMBO_RULE_OR_SET,
-                'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE1 AS COMBO_ATTR_OR_RULE,
-                'IN' AS COMBO_CONDITION,
-                'SET' AS COMBO_CONDITION_TYP,
-                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE1 AS COMBO_SET_CD,
-                GCE_DEFAULT.ACTION AS COMBO_ACTION,
-                GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
-                GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
-                GCE_DEFAULT.EFFECTIVE_FROM AS EFFECTIVE_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS EFFECTIVE_TO
-            FROM
-                GL_COMBO_EDIT_PROCESS gcep
-                INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
-                INNER JOIN GCE_DEFAULT ON 1 = 1
-            WHERE
-                gcep.EVENT_STATUS = 'V';
-        p_no_fsrgl_combo_appl_1_pub := SQL%ROWCOUNT;
-        INSERT INTO HOPPER_GL_COMBO_EDIT_GL
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_RULE_TYP, COMBO_RULE_OR_SET, COMBO_ATTR_OR_RULE, COMBO_CONDITION, COMBO_CONDITION_TYP, COMBO_SET_CD, COMBO_ACTION, COMBO_EDIT_STS, EVENT_STATUS, EFFECTIVE_FROM, EFFECTIVE_TO)
-            SELECT
-                gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                GCE_DEFAULT.LKT_CODE2 AS COMBO_RULE_TYP,
-                gcep.PRC_CD AS COMBO_RULE_OR_SET,
-                'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE2 AS COMBO_ATTR_OR_RULE,
-                'IN' AS COMBO_CONDITION,
-                'SET' AS COMBO_CONDITION_TYP,
-                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE2 AS COMBO_SET_CD,
-                GCE_DEFAULT.ACTION AS COMBO_ACTION,
-                GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
-                GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
-                GCE_DEFAULT.EFFECTIVE_FROM AS EFFECTIVE_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS EFFECTIVE_TO
-            FROM
-                GL_COMBO_EDIT_PROCESS gcep
-                INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
-                INNER JOIN GCE_DEFAULT ON 1 = 1
-            WHERE
-                gcep.EVENT_STATUS = 'V';
-        p_no_fsrgl_combo_appl_2_pub := SQL%ROWCOUNT;
-        INSERT INTO HOPPER_GL_COMBO_EDIT_GL
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_RULE_TYP, COMBO_RULE_OR_SET, COMBO_ATTR_OR_RULE, COMBO_CONDITION, COMBO_CONDITION_TYP, COMBO_SET_CD, COMBO_ACTION, COMBO_EDIT_STS, EVENT_STATUS, EFFECTIVE_FROM, EFFECTIVE_TO)
-            SELECT
-                gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                GCE_DEFAULT.LKT_CODE2 AS COMBO_RULE_TYP,
-                gcep.PRC_CD AS COMBO_RULE_OR_SET,
-                'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE3 AS COMBO_ATTR_OR_RULE,
-                'IN' AS COMBO_CONDITION,
-                'SET' AS COMBO_CONDITION_TYP,
-                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE3 AS COMBO_SET_CD,
-                GCE_DEFAULT.ACTION AS COMBO_ACTION,
-                GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
-                GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
-                GCE_DEFAULT.EFFECTIVE_FROM AS EFFECTIVE_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS EFFECTIVE_TO
-            FROM
-                GL_COMBO_EDIT_PROCESS gcep
-                INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
-                INNER JOIN GCE_DEFAULT ON 1 = 1
-            WHERE
-                gcep.EVENT_STATUS = 'V';
-        p_no_fsrgl_combo_appl_3_pub := SQL%ROWCOUNT;
-        INSERT INTO HOPPER_GL_COMBO_EDIT_GL
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_RULE_TYP, COMBO_RULE_OR_SET, COMBO_ATTR_OR_RULE, COMBO_CONDITION, COMBO_CONDITION_TYP, COMBO_SET_CD, COMBO_ACTION, COMBO_EDIT_STS, EVENT_STATUS, EFFECTIVE_FROM, EFFECTIVE_TO)
-            SELECT
-                gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                GCE_DEFAULT.LKT_CODE3 AS COMBO_RULE_TYP,
-                gcep.PRC_CD AS COMBO_RULE_OR_SET,
-                (CASE
-                    WHEN gcer.DEPT_CD IS NOT NULL THEN 'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE4
-                    WHEN gcer.PRODUCT_CD IS NOT NULL THEN 'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE5
-                    ELSE 'ci_attribute_' || GCE_DEFAULT.ATTRIBUTE6
-                END) AS COMBO_ATTR_OR_RULE,
-                (CASE
-                    WHEN gcer.DEPT_CD = '%' THEN 'IN'
-                    WHEN gcer.DEPT_CD <> '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT IN'
-                    WHEN gcer.PRODUCT_CD = '%' THEN 'IN'
-                    WHEN gcer.PRODUCT_CD <> '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT IN'
-                    WHEN gcer.AFFILIATE_LE_CD = '%' THEN 'IN'
-                    WHEN gcer.AFFILIATE_LE_CD <> '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT IN'
-                    ELSE NULL
-                END) AS COMBO_CONDITION,
-                (CASE
-                    WHEN gcer.DEPT_CD = '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT NULL'
-                    WHEN gcer.DEPT_CD = '%' AND gcep.PRC_TYP = 'INVALID' THEN 'NULL'
-                    WHEN gcer.DEPT_CD <> '%' THEN 'SET'
-                    WHEN gcer.PRODUCT_CD = '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT NULL'
-                    WHEN gcer.PRODUCT_CD = '%' AND gcep.PRC_TYP = 'INVALID' THEN 'NULL'
-                    WHEN gcer.PRODUCT_CD <> '%' THEN 'SET'
-                    WHEN gcer.AFFILIATE_LE_CD = '%' AND gcep.PRC_TYP = 'VALID' THEN 'NOT NULL'
-                    WHEN gcer.AFFILIATE_LE_CD = '%' AND gcep.PRC_TYP = 'INVALID' THEN 'NULL'
-                    WHEN gcer.AFFILIATE_LE_CD <> '%' THEN 'SET'
-                    ELSE NULL
-                END) AS COMBO_CONDITION_TYP,
-                (CASE
-                    WHEN gcer.DEPT_CD = '%' THEN NULL
-                    WHEN gcer.DEPT_CD <> '%' THEN 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE4
-                    WHEN gcer.PRODUCT_CD = '%' THEN NULL
-                    WHEN gcer.PRODUCT_CD <> '%' THEN 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE5
-                    WHEN gcer.AFFILIATE_LE_CD = '%' THEN NULL
-                    WHEN gcer.AFFILIATE_LE_CD <> '%' THEN 'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE6
-                END) AS COMBO_SET_CD,
-                GCE_DEFAULT.ACTION AS COMBO_ACTION,
-                GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
-                GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
-                GCE_DEFAULT.EFFECTIVE_FROM AS EFFECTIVE_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS EFFECTIVE_TO
-            FROM
-                GL_COMBO_EDIT_PROCESS gcep
-                INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
-                INNER JOIN GCE_DEFAULT ON 1 = 1
-                INNER JOIN (SELECT DISTINCT
-                    gcer.EVENT_STATUS AS EVENT_STATUS,
-                    gcer.FEED_UUID AS FEED_UUID,
-                    gcer.DEPT_CD AS DEPT_CD,
-                    gcer.PRODUCT_CD AS PRODUCT_CD,
-                    gcer.AFFILIATE_LE_CD AS AFFILIATE_LE_CD,
-                    gcer.LPG_ID AS LPG_ID,
-                    gcer.NO_RETRIES AS NO_RETRIES,
-                    gcer.PRC_CD AS PRC_CD,
-                    gcer.STEP_RUN_SID AS STEP_RUN_SID
-                FROM
-                    GL_COMBO_EDIT_RULE gcer) gcer ON gcep.PRC_CD = gcer.PRC_CD AND gcep.FEED_UUID = gcer.FEED_UUID
-            WHERE
-                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V';
-        p_no_fsrgl_combo_check_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
             (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
             SELECT
                 gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.2' AS MESSAGE_ID,
+                TO_CHAR(ce_p.ROW_SID) || TO_CHAR(gcep.ROW_SID) || '.1' AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE2 AS COMBO_SET_CD,
-                gcer.ACCT_CD AS COMBO_SET_VALUE,
+                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE1 AS COMBO_SET_CD,
+                ce_r.ACCT_CD AS COMBO_SET_VALUE,
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
                 GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
                 GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
                 GCE_DEFAULT.ATTRIBUTE_TYP2 AS COMBO_VALUE_TYPE
             FROM
-                GL_COMBO_EDIT_PROCESS gcep
-                INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
+                GL_COMBO_EDIT_RULE gcep
+                INNER JOIN GL_COMBO_EDIT_PROCESS ce_p ON gcep.PRC_CD = ce_p.PRC_CD
+                INNER JOIN IDENTIFIED_RECORD idr ON ce_p.ROW_SID = idr.ROW_SID
                 INNER JOIN GCE_DEFAULT ON 1 = 1
-                INNER JOIN GL_COMBO_EDIT_RULE gcer ON gcep.PRC_CD = gcer.PRC_CD AND gcep.FEED_UUID = gcer.FEED_UUID
+                INNER JOIN (SELECT DISTINCT
+                    gcea.EVENT_STATUS AS EVENT_STATUS,
+                    gcea.FEED_UUID AS FEED_UUID,
+                    gcea.ACCT_CD AS ACCT_CD,
+                    gcea.LPG_ID AS LPG_ID,
+                    gcea.NO_RETRIES AS NO_RETRIES,
+                    gcea.PRC_CD AS PRC_CD,
+                    gcea.STEP_RUN_SID AS STEP_RUN_SID,
+                    MIN(gcea.ROW_SID) AS ROW_SID
+                FROM
+                    GL_COMBO_EDIT_RULE gcea
+                GROUP BY
+                    gcea.PRC_CD,
+                    gcea.ACCT_CD,
+                    gcea.LPG_ID,
+                    gcea.EVENT_STATUS,
+                    gcea.FEED_UUID,
+                    gcea.NO_RETRIES,
+                    gcea.STEP_RUN_SID) ce_r ON gcep.PRC_CD = ce_r.PRC_CD AND gcep.FEED_UUID = ce_r.FEED_UUID AND ce_r.ACCT_CD = gcep.ACCT_CD
             WHERE
-                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V';
+                gcep.EVENT_STATUS = 'V' AND ce_r.EVENT_STATUS = 'V';
         p_no_fsrgc_acct_pub := SQL%ROWCOUNT;
         INSERT INTO HOPPER_GL_COMBO_EDIT_GC
             (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
             SELECT
                 gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcea.ROW_SID) || '.1' AS MESSAGE_ID,
+                TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcea.ROW_SID) || '.2' AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE1 AS COMBO_SET_CD,
+                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE2 AS COMBO_SET_CD,
                 gcea.LE_ID AS COMBO_SET_VALUE,
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
@@ -672,7 +495,7 @@ and not exists (
                 INNER JOIN (SELECT DISTINCT
                     gcea.EVENT_STATUS AS EVENT_STATUS,
                     gcea.FEED_UUID AS FEED_UUID,
-                    fpl.PL_GLOBAL_ID AS LE_ID,
+                    trunc(fpl.PL_GLOBAL_ID) AS LE_ID,
                     gcea.LPG_ID AS LPG_ID,
                     gcea.NO_RETRIES AS NO_RETRIES,
                     gcea.PRC_CD AS PRC_CD,
@@ -680,7 +503,7 @@ and not exists (
                     MIN(gcea.ROW_SID) AS ROW_SID
                 FROM
                     GL_COMBO_EDIT_ASSIGNMENT gcea
-                    INNER JOIN fdr.FR_PARTY_LEGAL fpl ON gcea.LE_CD = fpl.PL_PARTY_LEGAL_CLICODE
+                    INNER JOIN fdr.FR_PARTY_LEGAL fpl ON gcea.LE_CD = fpl.PL_PARTY_LEGAL_CLICODE AND gcea.LE_CD LIKE 'CA%'
                 GROUP BY
                     gcea.PRC_CD,
                     fpl.PL_GLOBAL_ID,
@@ -698,7 +521,7 @@ and not exists (
                 gcep.LPG_ID AS LPG_ID,
                 TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcea.ROW_SID) || '.3' AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE3 AS COMBO_SET_CD,
+                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE2 AS COMBO_SET_CD,
                 gcea.LEDGER_CD AS COMBO_SET_VALUE,
                 GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
                 GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
@@ -729,125 +552,8 @@ and not exists (
                     gcea.NO_RETRIES,
                     gcea.STEP_RUN_SID) gcea ON gcep.PRC_CD = gcea.PRC_CD AND gcep.FEED_UUID = gcea.FEED_UUID
             WHERE
-                gcep.EVENT_STATUS = 'V' AND gcea.EVENT_STATUS = 'V';
+                gcep.EVENT_STATUS = 'V' AND gcea.EVENT_STATUS = 'V' AND gcep.PRC_CD IN('CLOSED', 'NON_GAAP');
         p_no_fsrgc_ledger_pub := SQL%ROWCOUNT;
-        INSERT INTO HOPPER_GL_COMBO_EDIT_GC
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
-            SELECT
-                gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.6' AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE6 AS COMBO_SET_CD,
-                gcer.AFFILIATE_LE_CD AS COMBO_SET_VALUE,
-                GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
-                GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
-                GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
-                GCE_DEFAULT.ATTRIBUTE_TYP6 AS COMBO_VALUE_TYPE
-            FROM
-                GL_COMBO_EDIT_PROCESS gcep
-                INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
-                INNER JOIN GCE_DEFAULT ON 1 = 1
-                INNER JOIN (SELECT DISTINCT
-                    gcer.EVENT_STATUS AS EVENT_STATUS,
-                    gcer.FEED_UUID AS FEED_UUID,
-                    gcer.AFFILIATE_LE_CD AS AFFILIATE_LE_CD,
-                    gcer.LPG_ID AS LPG_ID,
-                    gcer.NO_RETRIES AS NO_RETRIES,
-                    gcer.PRC_CD AS PRC_CD,
-                    gcer.STEP_RUN_SID AS STEP_RUN_SID,
-                    MIN(gcer.ROW_SID) AS ROW_SID
-                FROM
-                    GL_COMBO_EDIT_RULE gcer
-                GROUP BY
-                    gcer.PRC_CD,
-                    gcer.AFFILIATE_LE_CD,
-                    gcer.LPG_ID,
-                    gcer.EVENT_STATUS,
-                    gcer.FEED_UUID,
-                    gcer.NO_RETRIES,
-                    gcer.STEP_RUN_SID) gcer ON gcep.PRC_CD = gcer.PRC_CD AND gcep.FEED_UUID = gcer.FEED_UUID
-            WHERE
-                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.AFFILIATE_LE_CD <> '%';
-        p_no_fsrgc_affiliate_pub := SQL%ROWCOUNT;
-        INSERT INTO HOPPER_GL_COMBO_EDIT_GC
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
-            SELECT
-                gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.4' AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE4 AS COMBO_SET_CD,
-                gcer.DEPT_CD AS COMBO_SET_VALUE,
-                GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
-                GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
-                GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
-                GCE_DEFAULT.ATTRIBUTE_TYP4 AS COMBO_VALUE_TYPE
-            FROM
-                GL_COMBO_EDIT_PROCESS gcep
-                INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
-                INNER JOIN GCE_DEFAULT ON 1 = 1
-                INNER JOIN (SELECT DISTINCT
-                    gcer.EVENT_STATUS AS EVENT_STATUS,
-                    gcer.FEED_UUID AS FEED_UUID,
-                    gcer.DEPT_CD AS DEPT_CD,
-                    gcer.LPG_ID AS LPG_ID,
-                    gcer.NO_RETRIES AS NO_RETRIES,
-                    gcer.PRC_CD AS PRC_CD,
-                    gcer.STEP_RUN_SID AS STEP_RUN_SID,
-                    MIN(gcer.ROW_SID) AS ROW_SID
-                FROM
-                    GL_COMBO_EDIT_RULE gcer
-                GROUP BY
-                    gcer.PRC_CD,
-                    gcer.DEPT_CD,
-                    gcer.LPG_ID,
-                    gcer.EVENT_STATUS,
-                    gcer.FEED_UUID,
-                    gcer.NO_RETRIES,
-                    gcer.STEP_RUN_SID) gcer ON gcep.PRC_CD = gcer.PRC_CD AND gcep.FEED_UUID = gcer.FEED_UUID
-            WHERE
-                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.DEPT_CD <> '%';
-        p_no_fsrgc_department_pub := SQL%ROWCOUNT;
-        INSERT INTO HOPPER_GL_COMBO_EDIT_GC
-            (LPG_ID, MESSAGE_ID, PROCESS_ID, COMBO_SET_CD, COMBO_SET_VALUE, COMBO_EDIT_STS, EVENT_STATUS, VALID_FROM, VALID_TO, COMBO_VALUE_TYPE)
-            SELECT
-                gcep.LPG_ID AS LPG_ID,
-                TO_CHAR(gcep.ROW_SID) || TO_CHAR(gcer.ROW_SID) || '.5' AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                'COMBO_' || gcep.PRC_CD || '_' || GCE_DEFAULT.ATTRIBUTE5 AS COMBO_SET_CD,
-                gcer.PRODUCT_CD AS COMBO_SET_VALUE,
-                GCE_DEFAULT.ACTIVE_FLAG AS COMBO_EDIT_STS,
-                GCE_DEFAULT.HOPPER_STATUS AS EVENT_STATUS,
-                GCE_DEFAULT.EFFECTIVE_FROM AS VALID_FROM,
-                GCE_DEFAULT.EFFECTIVE_TO AS VALID_TO,
-                GCE_DEFAULT.ATTRIBUTE_TYP5 AS COMBO_VALUE_TYPE
-            FROM
-                GL_COMBO_EDIT_PROCESS gcep
-                INNER JOIN IDENTIFIED_RECORD idr ON gcep.ROW_SID = idr.ROW_SID
-                INNER JOIN GCE_DEFAULT ON 1 = 1
-                INNER JOIN (SELECT DISTINCT
-                    gcer.EVENT_STATUS AS EVENT_STATUS,
-                    gcer.FEED_UUID AS FEED_UUID,
-                    gcer.PRODUCT_CD AS PRODUCT_CD,
-                    gcer.LPG_ID AS LPG_ID,
-                    gcer.NO_RETRIES AS NO_RETRIES,
-                    gcer.PRC_CD AS PRC_CD,
-                    gcer.STEP_RUN_SID AS STEP_RUN_SID,
-                    MIN(gcer.ROW_SID) AS ROW_SID
-                FROM
-                    GL_COMBO_EDIT_RULE gcer
-                GROUP BY
-                    gcer.PRC_CD,
-                    gcer.PRODUCT_CD,
-                    gcer.LPG_ID,
-                    gcer.EVENT_STATUS,
-                    gcer.FEED_UUID,
-                    gcer.NO_RETRIES,
-                    gcer.STEP_RUN_SID) gcer ON gcep.PRC_CD = gcer.PRC_CD AND gcep.FEED_UUID = gcer.FEED_UUID
-            WHERE
-                gcep.EVENT_STATUS = 'V' AND gcer.EVENT_STATUS = 'V' AND gcer.PRODUCT_CD <> '%';
-        p_no_fsrgc_product_pub := SQL%ROWCOUNT;
         INSERT INTO fdr.FR_GENERAL_CODE_TYPES
             (GCT_CODE_TYPE_ID, GCT_CODE_TYPE_NAME, GCT_CLIENT_CODE_TYPE, GCT_ACTIVE, GCT_INPUT_BY, GCT_INPUT_TIME, GCT_VALID_FROM, GCT_VALID_TO)
             SELECT
@@ -876,7 +582,6 @@ and not exists (
         WHERE
             fgct.GCT_CODE_TYPE_ID = fsrgc2.SRGC_GCT_CODE_TYPE_ID
         and fsrgc2.SRGC_GCT_CODE_TYPE_ID like 'COMBO%');
-        p_no_fgct_inserted := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_gl_combo_edit_prc
