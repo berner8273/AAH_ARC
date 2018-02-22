@@ -163,6 +163,25 @@ and not exists (
 ;
         p_no_gcea_processed_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gcea', 'p_no_gcea_processed_records', NULL, p_no_gcea_processed_records, NULL);
+        UPDATE GL_COMBO_EDIT_PROCESS gcep
+            SET
+                EVENT_STATUS = 'P'
+            WHERE
+                        exists (
+                   select
+                  null
+             from
+                 stn.gl_combo_edit_process   gcep
+             join
+                 (select distinct gcep.PRC_CD,gcep.FEED_UUID from stn.gl_combo_edit_assignment) da
+                 on da.prc_cd = gcep.PRC_CD and gcep.FEED_UUID = da.feed_uuid
+             join
+                 stn.identified_record          idr   on gcep.ROW_SID = idr.row_sid                                                    
+              where gcep.EVENT_STATUS='V'                                 
+        )
+and gcep.EVENT_STATUS='V';
+        p_no_gcep_processed_records := SQL%ROWCOUNT;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gcep', 'p_no_gcep_processed_records', NULL, p_no_gcea_processed_records, NULL);
         UPDATE GL_COMBO_EDIT_RULE gcer
             SET
                 EVENT_STATUS = 'P'
