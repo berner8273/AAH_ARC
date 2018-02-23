@@ -1,11 +1,4 @@
----
---- PL/SQL Package 'PK_POL' 
---- Generator tool: Aptitude Studio
---- Generator gender: Oracle 
---- Generation time: 2/8/2018 2:15:34 PM
----
-
-CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_POL AS
     PROCEDURE pr_policy_istat
     AS
     BEGIN
@@ -15,7 +8,7 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
         dbms_stats.gather_table_stats ( ownname => user , tabname => 'INSURANCE_POLICY_FX_RATE'    , cascade => true );
         dbms_stats.gather_table_stats ( ownname => user , tabname => 'INSURANCE_POLICY_TAX_JURISD' , cascade => true );
     END;
-    
+
     PROCEDURE pr_policy_idf
         (
             p_step_run_sid IN NUMBER,
@@ -175,11 +168,11 @@ and not exists (
                     where
                           pol.row_sid = idr.row_sid
                )
-and not exists (               
+and not exists (
                     select null from fdr.fr_log
                         where lo_table_in_error_name = 'insurance_policy'
                     and lo_error_status='R' and lo_row_in_error_key_id = pol.row_sid
-                )                                   
+                )
 and not exists (
                    select
                           null
@@ -282,7 +275,7 @@ and exists (
            );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated insurance_policy_tax_jurisdiction.step_run_sid [discard]', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_policy_chr
         (
             p_step_run_sid IN NUMBER,
@@ -382,7 +375,7 @@ and exists (
            );
         p_no_updated_hpoltj_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_policy_rval
         (
             p_step_run_sid IN NUMBER
@@ -820,7 +813,7 @@ and not exists (
                );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-le_id-slr_link', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_policy_svs
         (
             p_step_run_sid IN NUMBER,
@@ -1227,7 +1220,7 @@ and not exists (
                                            sl.table_in_error_name        = 'cession_link'
                                        and ch1.ultimate_parent_stream_id = ch2.ultimate_parent_stream_id
                                        and ch1.feed_uuid                 = ch2.feed_uuid
-                                ) 
+                                )
               );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of cession link records set to error', 'sql%rowcount', NULL, sql%rowcount, NULL);
         UPDATE INSURANCE_POLICY pol
@@ -1429,7 +1422,7 @@ and not exists ( select null
                   where sl.row_in_error_key_id = fxr.ROW_SID
                     and sl.table_in_error_name = 'insurance_policy_fx_rate' );
     END;
-    
+
     PROCEDURE pr_policy_pub
         (
             p_step_run_sid IN NUMBER,
@@ -1631,9 +1624,9 @@ and exists
    (
      select
            null
-     from 
+     from
            stn.insurance_policy_tax_jurisd iptj
-     where 
+     where
             iptj.policy_id            = FR_GENERAL_CODES.GC_CLIENT_TEXT1
         and iptj.event_status         = 'V'
    )
@@ -1641,9 +1634,9 @@ and not exists
    (
      select
            null
-     from 
+     from
            stn.insurance_policy_tax_jurisd iptj
-     where 
+     where
             iptj.policy_id            = FR_GENERAL_CODES.GC_CLIENT_TEXT1
         and iptj.tax_jurisdiction_cd  = FR_GENERAL_CODES.GC_CLIENT_TEXT2
         and iptj.event_status         = 'V'
@@ -1722,7 +1715,7 @@ and exists
       join stn.insurance_policy ip
            on ip.policy_id    = ipfr.policy_id
           and ip.step_run_sid = ipfr.step_run_sid
-     where 
+     where
             '/POL/' || ipfr.policy_id  = FR_FX_RATE.FR_RTY_RATE_TYPE_ID
         and ipfr.event_status          = 'V'
    )
@@ -1735,7 +1728,7 @@ and not exists
       join stn.insurance_policy ip
            on ip.policy_id    = ipfr.policy_id
           and ip.step_run_sid = ipfr.step_run_sid
-     where 
+     where
             ip.CLOSE_DT                = FR_FX_RATE.FR_FXRATE_DATE
         and ipfr.from_ccy              = FR_FX_RATE.FR_CU_CURRENCY_NUMER_ID
         and ipfr.to_ccy                = FR_FX_RATE.FR_CU_CURRENCY_DENOM_ID
@@ -1744,7 +1737,7 @@ and not exists
    );
         p_total_no_pol_fx_rate_deleted := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_policy_sps
         (
             p_no_fsrip_processed_records OUT NUMBER,
@@ -1778,7 +1771,7 @@ and not exists
             SET
                 EVENT_STATUS = 'P'
             WHERE
-                exists (                
+                exists (
            select
                   null
              from
@@ -1788,7 +1781,7 @@ and not exists
                                                                    csil.policy_id = pol.policy_id
                                                                and csil.feed_uuid = pol.feed_uuid
                                                            )
-                
+
                    WHERE
                 exists (
            select
@@ -1796,7 +1789,7 @@ and not exists
              from
                   fdr.fr_log f
                   where F.LO_ROW_IN_ERROR_KEY_ID = POL.ROW_SID
-            and F.LO_TABLE_IN_ERROR_NAME = 'insurance_policy' and F.LO_ERROR_STATUS = 'R' 
+            and F.LO_TABLE_IN_ERROR_NAME = 'insurance_policy' and F.LO_ERROR_STATUS = 'R'
 ));
         UPDATE INSURANCE_POLICY_TAX_JURISD poltjd
             SET
@@ -1877,7 +1870,7 @@ and exists (
            );
         p_no_cl_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_policy_prc
         (
             p_step_run_sid IN NUMBER,
@@ -1943,7 +1936,7 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_fsrfr_processed_records', NULL, v_no_fsrfr_processed_records, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_ip_processed_records', NULL, v_no_ip_processed_records, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_cl_processed_records', NULL, v_no_cl_processed_records, NULL);
-            IF v_no_validated_cession_records <> v_total_no_fsrip_published THEN
+            IF v_no_validated_cession_records <> (v_total_no_fsrip_published + v_total_no_resub_published) THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_validated_cession_records != v_total_no_fsrip_published', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
@@ -1977,4 +1970,3 @@ and exists (
     END;
 END PK_POL;
 /
-
