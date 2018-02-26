@@ -26,15 +26,15 @@ as
         , fdb_local_qtd_balance         fdb_func_qtd_balance
         , fdb_local_ytd_balance         fdb_func_ytd_balance
         , fdb_local_ltd_balance         fdb_func_ltd_balance
-        , cast (null as number(38,3))   fdb_tran_bop_mtd_balance
-        , cast (null as number(38,3))   fdb_tran_bop_qtd_balance
-        , cast (null as number(38,3))   fdb_tran_bop_ytd_balance
-        , cast (null as number(38,3))   fdb_rpt_bop_mtd_balance
-        , cast (null as number(38,3))   fdb_rpt_bop_qtd_balance
-        , cast (null as number(38,3))   fdb_rpt_bop_ytd_balance
-        , cast (null as number(38,3))   fdb_func_bop_mtd_balance
-        , cast (null as number(38,3))   fdb_func_bop_qtd_balance
-        , cast (null as number(38,3))   fdb_func_bop_ytd_balance
+        , fdb_tran_bop_mtd_balance      fdb_tran_bop_mtd_balance
+        , fdb_tran_bop_qtd_balance      fdb_tran_bop_qtd_balance
+        , fdb_tran_bop_ytd_balance      fdb_tran_bop_ytd_balance
+        , fdb_rpt_bop_mtd_balance       fdb_rpt_bop_mtd_balance
+        , fdb_rpt_bop_qtd_balance       fdb_rpt_bop_qtd_balance
+        , fdb_rpt_bop_ytd_balance       fdb_rpt_bop_ytd_balance
+        , fdb_func_bop_mtd_balance      fdb_func_bop_mtd_balance
+        , fdb_func_bop_qtd_balance      fdb_func_bop_qtd_balance
+        , fdb_func_bop_ytd_balance      fdb_func_bop_ytd_balance
         , fdb_entity
         , fdb_epg_id
         , fdb_period_month
