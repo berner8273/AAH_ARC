@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY slr.slr_pkg AS
+CREATE OR REPLACE PACKAGE BODY SLR.slr_pkg AS
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
@@ -2517,11 +2517,11 @@ BEGIN
          into
               fdr.fr_general_lookup gl
         using (
-                  select distinct 
+                  select distinct
                     'EVENT_CLASS_PERIOD'                           LK_LKT_LOOKUP_TYPE_CODE
                     ,eg.event_group                                LK_MATCH_KEY1
                     ,to_char(ep.ep_bus_year)                       LK_MATCH_KEY2
-                    ,to_char(ep.ep_bus_period)                     LK_MATCH_KEY3
+                    ,decode(length(ep.ep_bus_period),1,'0'||ep.ep_bus_period,ep.ep_bus_period) LK_MATCH_KEY3
                     ,'O'                                           LK_LOOKUP_VALUE1
                     ,to_char(ep.ep_bus_period_start,'DD-MON-YYYY') LK_LOOKUP_VALUE2
                     ,to_char(ep.ep_bus_period_end,'DD-MON-YYYY')   LK_LOOKUP_VALUE3
@@ -2529,10 +2529,10 @@ BEGIN
                     ,to_date('01/01/2099','mm/dd/yyyy')            LK_EFFECTIVE_TO
                     from slr_entity_periods ep
                     cross join (
-                        select distinct LK_MATCH_KEY1 as event_group 
+                        select distinct LK_MATCH_KEY1 as event_group
                         from fdr.fr_general_lookup where lk_lkt_lookup_type_code='EVENT_CLASS'
-                            and SYSDATE between LK_EFFECTIVE_FROM and LK_EFFECTIVE_TO  
-                            ) eg                                                                        
+                            and SYSDATE between LK_EFFECTIVE_FROM and LK_EFFECTIVE_TO
+                            ) eg
               )
               input
            on (
@@ -2547,12 +2547,12 @@ BEGIN
                               gl.LK_LKT_LOOKUP_TYPE_CODE,
                               gl.LK_MATCH_KEY1,
                               gl.LK_MATCH_KEY2,
-                              gl.LK_MATCH_KEY3,          
+                              gl.LK_MATCH_KEY3,
                               gl.LK_LOOKUP_VALUE1,
                               gl.LK_LOOKUP_VALUE2,
                               gl.LK_LOOKUP_VALUE3,
                               gl.LK_EFFECTIVE_FROM,
-                              gl.LK_EFFECTIVE_TO                           
+                              gl.LK_EFFECTIVE_TO
                            )
                            values
                            (
@@ -2578,9 +2578,10 @@ END pGENERATE_ALL_BOP_VALUES;
 
 PROCEDURE pGENERATE_EBA_BOP_VALUES AS
   BEGIN
+/*  
     dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_EBA_DAILY_BALANCES' , cascade => true);
     dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_EBA_BOP_AMOUNTS' , cascade => true);
-
+*/
     EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP';
     INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP
      (     EDB_FAK_ID
@@ -2913,8 +2914,10 @@ END pGENERATE_EBA_BOP_VALUES;
 
 PROCEDURE pGENERATE_FAK_BOP_VALUES AS
   BEGIN
+  /*
     dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_FAK_DAILY_BALANCES' , cascade => true);
     dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_FAK_BOP_AMOUNTS' , cascade => true);
+*/
 
     EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP';
     INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP
