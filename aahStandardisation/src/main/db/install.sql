@@ -188,8 +188,6 @@ conn ~stn_logon
 @@tables/stn/standardisation_log.sql
 @@tables/stn/superseded_feed.sql
 @@tables/stn/supersession_method.sql
-@@tables/stn/user_detail.sql
-@@tables/stn/user_group.sql
 @@tables/stn/validation.sql
 @@tables/stn/validation_column.sql
 @@tables/stn/validation_level.sql
@@ -227,7 +225,6 @@ conn ~stn_logon
 @@views/stn/cev_period_balances.sql
 @@views/stn/period_status.sql
 @@views/stn/gce_default.sql
-@@views/stn/user_default.sql
 @@views/stn/hopper_cession_event.sql
 @@views/stn/hopper_insurance_policy.sql
 @@views/stn/hopper_insurance_policy_tj.sql
@@ -271,7 +268,6 @@ conn ~stn_logon
 @@ri_constraints/stn/posting_method_ledger.sql
 @@ri_constraints/stn/process_code_module.sql
 @@ri_constraints/stn/superseded_feed.sql
-@@ri_constraints/stn/user_group.sql
 @@ri_constraints/stn/validation.sql
 @@ri_constraints/stn/validation_column.sql
 @@ri_constraints/stn/vie_posting_method_ledger.sql
@@ -339,8 +335,6 @@ conn ~stn_logon
 @@packages/stn/pk_lel.bdy
 @@packages/stn/pk_le_hier.hdr
 @@packages/stn/pk_le_hier.bdy
-@@packages/stn/pk_user.hdr
-@@packages/stn/pk_user.bdy
 @@packages/stn/pk_feed_integrity.hdr
 @@packages/stn/pk_feed_integrity.bdy
 @@packages/stn/pk_tj.hdr

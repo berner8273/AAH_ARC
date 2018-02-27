@@ -13,8 +13,6 @@ insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'cession_link' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'gl_combo_edit_assignment' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'gl_combo_edit_process' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'gl_combo_edit_rule' );
-insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'user_detail' );
-insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'user_group' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'tax_jurisdiction' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'ledger' );
 insert into stn.db_table ( db_nm , table_nm ) values ( 'stn' , 'accounting_basis_ledger' );
