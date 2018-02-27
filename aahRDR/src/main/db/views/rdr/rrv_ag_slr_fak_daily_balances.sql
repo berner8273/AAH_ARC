@@ -42,11 +42,13 @@ as
         , db.fdb_period_ltd
         , db.fdb_process_id
         , db.fdb_amended_on
-     from slr.slr_fak_daily_balances db
-          join rdr.rrv_ag_slr_fak_combinations fc
-             on db.fdb_fak_id = fc.fc_fak_id 
-     left join slr.slr_fak_bop_amounts fak_bop
-             on db.fdb_fak_id = fak_bop.fdb_fak_id
-            and db.fdb_balance_date = fak_bop.fdb_balance_date
-            and db.fdb_balance_type = fak_bop.fdb_balance_type
+     from
+          slr.slr_fak_daily_balances           db
+     join rdr.rrv_ag_slr_fak_combinations      fc
+          on db.fdb_fak_id = fc.fc_fak_id 
+         and db.fdb_epg_id = fc.fc_epg_id
+left join slr.slr_fak_bop_amounts              fak_bop
+          on db.fdb_fak_id       = fak_bop.fdb_fak_id
+         and db.fdb_balance_date = fak_bop.fdb_balance_date
+         and db.fdb_balance_type = fak_bop.fdb_balance_type
 ;

@@ -41,14 +41,17 @@ as
         , db.edb_period_ltd
         , db.edb_process_id
         , db.edb_amended_on
-     from slr.slr_eba_daily_balances db
-          join rdr.rrv_ag_slr_eba_combinations ec
-             on db.edb_eba_id = ec.ec_eba_id
-          join rdr.rrv_ag_slr_fak_combinations fc
-             on ec.ec_fak_id = fc.fc_fak_id
-    left join slr.slr_eba_bop_amounts eba_bop
-             on db.edb_fak_id = eba_bop.edb_fak_id
-            and db.edb_eba_id = eba_bop.edb_eba_id
-            and db.edb_balance_date = eba_bop.edb_balance_date
-            and db.edb_balance_type = eba_bop.edb_balance_type
+     from
+          slr.slr_eba_daily_balances         db
+     join rdr.rrv_ag_slr_eba_combinations    ec
+          on db.edb_eba_id = ec.ec_eba_id
+         and db.edb_epg_id = ec.ec_epg_id
+     join rdr.rrv_ag_slr_fak_combinations    fc
+          on ec.ec_fak_id = fc.fc_fak_id
+         and ec.ec_epg_id = fc.fc_epg_id
+left join slr.slr_eba_bop_amounts            eba_bop
+          on db.edb_fak_id       = eba_bop.edb_fak_id
+         and db.edb_eba_id       = eba_bop.edb_eba_id
+         and db.edb_balance_date = eba_bop.edb_balance_date
+         and db.edb_balance_type = eba_bop.edb_balance_type
 ;
