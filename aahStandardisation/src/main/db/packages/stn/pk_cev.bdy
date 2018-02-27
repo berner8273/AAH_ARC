@@ -1451,7 +1451,7 @@ and exists    (
             SELECT
                 cep.BUSINESS_UNIT AS BUSINESS_UNIT,
                 cep.AFFILIATE AS AFFILIATE_LE_CD,
-                cep.ACCOUNTING_DT AS ACCOUNTING_DT,
+                trunc(cep.ACCOUNTING_DT) AS ACCOUNTING_DT,
                 cep.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
                 cep.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
                 cep.POLICY_ID AS POLICY_ID,
@@ -1483,7 +1483,7 @@ and exists    (
                 ce_default.SRAE_INSTRUMENT_CODE AS SRAE_INSTRUMENT_CODE,
                 cep.LEDGER_CD AS LEDGER_CD,
                 cep.STREAM_ID AS STREAM_ID,
-                gp.GP_TODAYS_BUS_DATE AS POSTING_DT,
+                trunc(gp.GP_TODAYS_BUS_DATE) AS POSTING_DT,
                 cep.BUSINESS_UNIT AS BOOK_CD,
                 cep.CORRELATION_UUID AS CORRELATION_UUID,
                 NULL AS CHARTFIELD_1,
@@ -1501,7 +1501,7 @@ and exists    (
                 'ORIGINAL' AS POSTING_INDICATOR,
                 cep.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                LEAST(gp.GP_TODAYS_BUS_DATE, cep.ACCOUNTING_DT) AS EFFECTIVE_DT
+                trunc(LEAST(gp.GP_TODAYS_BUS_DATE, cep.ACCOUNTING_DT)) AS EFFECTIVE_DT
             FROM
                 CESSION_EVENT_POSTING cep
                 INNER JOIN CE_DEFAULT ON 1 = 1
@@ -1511,7 +1511,7 @@ and exists    (
             SELECT
                 cer.BUSINESS_UNIT AS BUSINESS_UNIT,
                 cer.AFFILIATE AS AFFILIATE_LE_CD,
-                cer.ACCOUNTING_DT AS ACCOUNTING_DT,
+                trunc(cer.ACCOUNTING_DT) AS ACCOUNTING_DT,
                 cer.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
                 cer.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
                 cer.POLICY_ID AS POLICY_ID,
@@ -1543,7 +1543,7 @@ and exists    (
                 ce_default.SRAE_INSTRUMENT_CODE AS SRAE_INSTRUMENT_CODE,
                 cer.LEDGER_CD AS LEDGER_CD,
                 cer.STREAM_ID AS STREAM_ID,
-                gp.GP_TODAYS_BUS_DATE AS POSTING_DT,
+                trunc(gp.GP_TODAYS_BUS_DATE) AS POSTING_DT,
                 cer.BUSINESS_UNIT AS BOOK_CD,
                 cer.CORRELATION_UUID AS CORRELATION_UUID,
                 NULL AS CHARTFIELD_1,
@@ -1561,7 +1561,7 @@ and exists    (
                 'REVERSE_REPOST' AS POSTING_INDICATOR,
                 cer.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                LEAST(gp.GP_TODAYS_BUS_DATE, cer.ACCOUNTING_DT) AS EFFECTIVE_DT
+                trunc(LEAST(gp.GP_TODAYS_BUS_DATE, cer.ACCOUNTING_DT)) AS EFFECTIVE_DT
             FROM
                 CESSION_EVENT_REVERSAL cer
                 INNER JOIN CE_DEFAULT ON 1 = 1

@@ -11,6 +11,7 @@ as
         , fc.execution_typ
         , fc.business_typ
         , fc.chartfield_1
+        , fc.policy_id
         , db.fdb_tran_daily_movement
         , db.fdb_tran_mtd_balance
         , db.fdb_tran_qtd_balance

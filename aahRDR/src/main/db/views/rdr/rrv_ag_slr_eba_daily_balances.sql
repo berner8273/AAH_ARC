@@ -3,13 +3,20 @@ as
    select
           db.edb_fak_id
         , db.edb_eba_id
-        , fc.ledger_cd
-        , fc.policy_id
-        , ec.stream_id
-        , fc.affiliate_le_id
-        , ec.tax_jurisdiction_cd
         , db.edb_balance_date
         , db.edb_balance_type
+        , fc.ledger_cd
+        , fc.basis_cd
+        , fc.dept_cd
+        , fc.affiliate_le_id
+        , fc.execution_typ
+        , fc.business_typ
+        , fc.chartfield_1
+        , fc.policy_id
+        , ec.stream_id
+        , ec.tax_jurisdiction_cd
+        , ec.premium_typ
+        , ec.event_type
         , db.edb_tran_daily_movement
         , db.edb_tran_mtd_balance
         , db.edb_tran_qtd_balance

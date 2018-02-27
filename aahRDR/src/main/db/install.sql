@@ -45,6 +45,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_fak_combinations.sql
 @@grants/tables/slr/slr_eba_combinations.sql
 @@grants/tables/slr/slr_eba_daily_balances.sql
+@@grants/tables/slr/slr_fak_daily_balances.sql
 @@grants/tables/slr/slr_eba_bop_amounts.sql
 @@grants/tables/slr/slr_fak_bop_amounts.sql
 @@grants/tables/slr/slr_entity_periods.sql

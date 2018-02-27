@@ -80,6 +80,7 @@ conn ~slr_logon
 
 revoke select   on slr.slr_fak_combinations    from rdr;
 revoke select   on slr.slr_eba_combinations    from rdr;
+revoke select   on slr.slr_fak_daily_balances  from rdr;
 revoke select   on slr.slr_eba_daily_balances  from rdr;
 revoke select   on slr.slr_eba_bop_amounts     from rdr;
 revoke select   on slr.slr_fak_bop_amounts     from rdr;
