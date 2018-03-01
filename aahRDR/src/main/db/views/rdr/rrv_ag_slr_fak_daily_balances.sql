@@ -4,6 +4,9 @@ as
           db.fdb_fak_id
         , db.fdb_balance_date
         , db.fdb_balance_type
+        , fc.fc_entity
+        , fc.fc_account
+        , fc.fc_ccy
         , fc.ledger_cd
         , fc.basis_cd
         , fc.dept_cd
