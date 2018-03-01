@@ -12,29 +12,29 @@ as
         , fc.basis_cd
         , fc.dept_cd
         , fc.affiliate_le_id
-        , fc.execution_typ
-        , fc.business_typ
+        , fc.execution_typ									execution_type
+        , fc.business_typ										business_type
         , fc.chartfield_1
         , fc.policy_id
         , ec.stream_id
         , ec.tax_jurisdiction_cd
-        , ec.premium_typ
+        , ec.premium_typ										premium_type
         , ec.event_type
         , db.edb_tran_daily_movement
         , db.edb_tran_mtd_balance
         , db.edb_tran_qtd_balance
         , db.edb_tran_ytd_balance
-        , db.edb_tran_ltd_balance
+        , db.edb_tran_ltd_balance							edb_tran_itd_balance
         , db.edb_base_daily_movement          edb_rpt_daily_movement
         , db.edb_base_mtd_balance             edb_rpt_mtd_balance
         , db.edb_base_qtd_balance             edb_rpt_qtd_balance
         , db.edb_base_ytd_balance             edb_rpt_ytd_balance
-        , db.edb_base_ltd_balance             edb_rpt_ltd_balance
+        , db.edb_base_ltd_balance             edb_rpt_itd_balance
         , db.edb_local_daily_movement         edb_func_daily_movement
         , db.edb_local_mtd_balance            edb_func_mtd_balance
         , db.edb_local_qtd_balance            edb_func_qtd_balance
         , db.edb_local_ytd_balance            edb_func_ytd_balance
-        , db.edb_local_ltd_balance            edb_func_ltd_balance
+        , db.edb_local_ltd_balance            edb_func_itd_balance
         , eba_bop.edb_tran_bop_mtd_balance    edb_tran_bop_mtd_balance
         , eba_bop.edb_tran_bop_qtd_balance    edb_tran_bop_qtd_balance
         , eba_bop.edb_tran_bop_ytd_balance    edb_tran_bop_ytd_balance
@@ -48,7 +48,7 @@ as
         , db.edb_epg_id
         , db.edb_period_month
         , db.edb_period_year
-        , db.edb_period_ltd
+        , db.edb_period_ltd										edb_period_itd
         , db.edb_process_id
         , db.edb_amended_on
      from

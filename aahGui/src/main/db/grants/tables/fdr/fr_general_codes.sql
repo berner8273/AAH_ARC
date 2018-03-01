@@ -1,0 +1,1 @@
+grant select on fdr.fr_general_codes to GUI with grant option;

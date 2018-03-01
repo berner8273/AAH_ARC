@@ -11,25 +11,25 @@ as
         , fc.basis_cd
         , fc.dept_cd
         , fc.affiliate_le_id
-        , fc.execution_typ
-        , fc.business_typ
+        , fc.execution_typ										execution_type
+        , fc.business_typ											business_type
         , fc.chartfield_1
         , fc.policy_id
         , db.fdb_tran_daily_movement
         , db.fdb_tran_mtd_balance
         , db.fdb_tran_qtd_balance
         , db.fdb_tran_ytd_balance
-        , db.fdb_tran_ltd_balance
+        , db.fdb_tran_ltd_balance							fdb_tran_itd_balance
         , db.fdb_base_daily_movement          fdb_rpt_daily_movement
         , db.fdb_base_mtd_balance             fdb_rpt_mtd_balance
         , db.fdb_base_qtd_balance             fdb_rpt_qtd_balance
         , db.fdb_base_ytd_balance             fdb_rpt_ytd_balance
-        , db.fdb_base_ltd_balance             fdb_rpt_ltd_balance
+        , db.fdb_base_ltd_balance             fdb_rpt_itd_balance
         , db.fdb_local_daily_movement         fdb_func_daily_movement
         , db.fdb_local_mtd_balance            fdb_func_mtd_balance
         , db.fdb_local_qtd_balance            fdb_func_qtd_balance
         , db.fdb_local_ytd_balance            fdb_func_ytd_balance
-        , db.fdb_local_ltd_balance            fdb_func_ltd_balance
+        , db.fdb_local_ltd_balance            fdb_func_itd_balance
         , fak_bop.fdb_tran_bop_mtd_balance    fdb_tran_bop_mtd_balance
         , fak_bop.fdb_tran_bop_qtd_balance    fdb_tran_bop_qtd_balance
         , fak_bop.fdb_tran_bop_ytd_balance    fdb_tran_bop_ytd_balance
@@ -43,7 +43,7 @@ as
         , db.fdb_epg_id
         , db.fdb_period_month
         , db.fdb_period_year
-        , db.fdb_period_ltd
+        , db.fdb_period_ltd										fdb_period_itd
         , db.fdb_process_id
         , db.fdb_amended_on
      from
