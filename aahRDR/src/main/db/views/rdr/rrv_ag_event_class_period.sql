@@ -1,11 +1,11 @@
---create or replace view rdr.rrv_ag_event_class_period
---as
+create or replace view rdr.rrv_ag_event_class_period
+as
 select
-       fgl.lk_match_key1                              event_class
-     , fgl.lk_match_key2                              business_year
-     , lpad(lk_match_key3,2,'0')                      business_month
-     , fgl.lk_match_key2||lpad(lk_match_key3,2,'0')   period
-     , fgl.lk_lookup_value1                           closed_status
+       fgl.lk_match_key1                                    event_class
+     , fgl.lk_match_key2                                    business_year
+     , lpad( lk_match_key3 , 2 , '0' )                      business_month
+     , fgl.lk_match_key2 || lpad(lk_match_key3,2,'0')       period
+     , fgl.lk_lookup_value1                                 closed_status
   from
        fdr.fr_general_lookup fgl
  where
@@ -13,11 +13,11 @@ select
    and fgl.lk_lookup_value1        = 'C'
 union
 select
-       fgl.lk_match_key1                              event_class
-     , fgl.lk_match_key2                              business_year
-     , lpad(lk_match_key3,2,'0')                      business_month
-     , fgl.lk_match_key2||lpad(lk_match_key3,2,'0')   period
-     , fgl.lk_lookup_value1                           closed_status
+       fgl.lk_match_key1                                    event_class
+     , fgl.lk_match_key2                                    business_year
+     , lpad( lk_match_key3 , 2 , '0' )                      business_month
+     , fgl.lk_match_key2 || lpad( lk_match_key3 , 2 , '0' ) period
+     , fgl.lk_lookup_value1                                 closed_status
   from
        fdr.fr_general_lookup fgl
   join ( select
