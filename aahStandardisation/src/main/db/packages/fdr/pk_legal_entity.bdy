@@ -304,12 +304,12 @@ as
                                                     then tujlm.column_screen_label
                                                end )                                        fd_segment_1_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_1'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_1_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_1'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_1_gui_type
@@ -317,12 +317,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       fd_segment_2_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_2'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_2_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_2'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_2_gui_type
@@ -330,12 +330,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       fd_segment_3_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_3'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_3_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_3'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_3_gui_type
@@ -343,12 +343,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       fd_segment_4_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_4'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_4_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_4'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_4_gui_type
@@ -356,12 +356,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       fd_segment_5_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_5'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_5_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_5'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_5_gui_type
@@ -369,12 +369,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       fd_segment_6_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_6'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_6_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_6'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_6_gui_type
@@ -382,12 +382,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       fd_segment_7_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_7'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_7_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_7'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_7_gui_type
@@ -395,12 +395,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       fd_segment_8_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_8'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_8_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_8'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_8_gui_type
@@ -408,12 +408,12 @@ as
                                                      then tujlm.column_screen_label
                                                end )                                        fd_segment_9_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_9'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_9_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_9'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_9_gui_type
@@ -421,12 +421,12 @@ as
                                                      then tujlm.column_screen_label
                                                end )                                        fd_segment_10_name
                                        , max ( case when tujlm.column_name = 'SEGMENT_10'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_10_type
                                        , max ( case when tujlm.column_name = 'SEGMENT_10'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        fd_segment_10_gui_type
@@ -512,12 +512,12 @@ as
                                                     then tujlm.column_screen_label
                                                end )                                        ed_attribute_1_name
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_1'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_1_type
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_1'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_1_gui_type
@@ -525,12 +525,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       ed_attribute_2_name
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_2'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_2_type
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_2'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_2_gui_type
@@ -538,12 +538,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       ed_attribute_3_name
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_3'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_3_type
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_3'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_3_gui_type
@@ -551,12 +551,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       ed_attribute_4_name
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_4'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_4_type
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_4'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_4_gui_type
@@ -564,12 +564,12 @@ as
                                                      then tujlm.column_screen_label
                                                 end )                                       ed_attribute_5_name
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_5'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_5_type
                                        , max ( case when tujlm.column_name = 'ATTRIBUTE_5'
-                                                     and tujlm.column_nullable = 'N'
+                                                     and tujlm.column_nullable = 'Y'
                                                     then 'O'
                                                     else 'M'
                                                end )                                        ed_attribute_5_gui_type
