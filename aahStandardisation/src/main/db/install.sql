@@ -117,7 +117,7 @@ conn ~stn_logon
 @@tables/stn/business_type.sql
 @@tables/stn/cession.sql
 @@tables/stn/cession_event.sql
-
+@@tables/stn/cev_valid.sql
 @@tables/stn/cev_data.sql
 @@tables/stn/cev_derived_plus_data.sql
 @@tables/stn/cev_gaap_fut_accts_data.sql
@@ -128,6 +128,7 @@ conn ~stn_logon
 @@tables/stn/cev_premium_typ_override.sql
 @@tables/stn/posting_method_derivation_gfa.sql
 @@tables/stn/posting_account_derivation.sql
+@@tables/stn/vie_posting_account_derivation.sql
 @@tables/stn/posting_amount_negate_flag.sql
 @@tables/stn/cession_event_premium_type.sql
 @@tables/stn/cession_hierarchy.sql
@@ -221,7 +222,8 @@ conn ~stn_logon
 @@views/stn/vie_event_cd.sql
 @@views/stn/policy_tax.sql
 @@views/stn/cession_event_posting.sql
-@@views/stn/cession_event_reversal.sql
+@@views/stn/cession_event_reversal_curr.sql
+@@views/stn/cession_event_reversal_hist.sql
 @@views/stn/cev_period_balances.sql
 @@views/stn/period_status.sql
 @@views/stn/gce_default.sql
@@ -352,6 +354,7 @@ conn ~stn_logon
 
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
+@@indices/stn/cev_valid.sql
 
 /*
  * Capture statistics across STN
@@ -365,15 +368,16 @@ exec dbms_stats.gather_schema_stats ( ownname => 'STN' , cascade => true );
 
 conn ~stn_logon
 
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DATA'                   , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DERIVED_PLUS_DATA'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_GAAP_FUT_ACCTS_DATA'    , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_IDENTIFIED_RECORD'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_LE_DATA'                , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_MTM_DATA'               , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_NON_INTERCOMPANY_DATA'  , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_PREMIUM_TYP_OVERRIDE'   , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'POSTING_ACCOUNT_DERIVATION' , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DATA'                       , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DERIVED_PLUS_DATA'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_GAAP_FUT_ACCTS_DATA'        , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_IDENTIFIED_RECORD'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_LE_DATA'                    , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_MTM_DATA'                   , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_NON_INTERCOMPANY_DATA'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_PREMIUM_TYP_OVERRIDE'       , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'POSTING_ACCOUNT_DERIVATION'     , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'VIE_POSTING_ACCOUNT_DERIVATION' , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
 
 exec dbms_stats.create_stat_table   ( ownname => user , stattab => 'INIT_STAT' );
 @@data/stn/init_stat.sql

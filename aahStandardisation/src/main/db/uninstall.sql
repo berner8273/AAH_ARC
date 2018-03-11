@@ -46,7 +46,8 @@ begin
                                   where lower(type) = 'to'
                                     and id1 in ( select object_id
                                                    from dba_objects
-                                                  where lower(object_name) in ( 'cev_data'
+                                                  where lower(object_name) in ( 'cev_valid'
+                                                                              , 'cev_data'
                                                                               , 'cev_identified_record'
                                                                               , 'cev_premium_typ_override'
                                                                               , 'cev_mtm_data'
@@ -65,6 +66,7 @@ end;
 /
 conn ~stn_logon
 
+truncate table stn.cev_valid;
 truncate table stn.cev_data;
 truncate table stn.cev_identified_record;
 truncate table stn.cev_premium_typ_override;
@@ -120,7 +122,8 @@ drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
 drop view  stn.policy_tax;
 drop view  stn.ce_default;
-drop view  stn.cession_event_reversal;
+drop view  stn.cession_event_reversal_hist;
+drop view  stn.cession_event_reversal_curr;
 drop view  stn.cession_event_posting;
 drop view  stn.vie_event_cd;
 drop view  stn.cev_period_balances;
@@ -203,6 +206,7 @@ drop table stn.posting_accounting_basis_type;
 drop table stn.posting_financial_calc;
 drop table stn.posting_ledger;
 drop table stn.posting_method;
+drop table stn.cev_valid;
 drop table stn.cev_data;
 drop table stn.cev_derived_plus_data;
 drop table stn.cev_gaap_fut_accts_data;
@@ -213,6 +217,7 @@ drop table stn.cev_non_intercompany_data;
 drop table stn.cev_premium_typ_override;
 drop table stn.posting_method_derivation_gfa;
 drop table stn.posting_account_derivation;
+drop table stn.vie_posting_account_derivation;
 drop table stn.vie_event_type;
 drop table stn.event_type;
 drop table stn.vie_legal_entity;
