@@ -7,7 +7,9 @@ as
         , db.edb_balance_type
         , fc.fc_entity
         , fc.fc_account
-        , fc.fc_ccy
+        , fc.fc_ccy                           tran_ccy
+        , ent.ent_base_ccy                    rpt_ccy
+        , ent.ent_local_ccy                   func_ccy
         , fc.ledger_cd
         , fc.basis_cd
         , fc.dept_cd
@@ -21,19 +23,19 @@ as
         , ec.premium_typ                      premium_type
         , ec.event_type
         , db.edb_tran_daily_movement
-        , db.edb_tran_mtd_balance
-        , db.edb_tran_qtd_balance
-        , db.edb_tran_ytd_balance
+        , db.edb_tran_mtd_balance             edb_tran_mtd_activity
+        , db.edb_tran_qtd_balance             edb_tran_qtd_activity
+        , db.edb_tran_ytd_balance             edb_tran_ytd_activity
         , db.edb_tran_ltd_balance             edb_tran_itd_balance
         , db.edb_base_daily_movement          edb_rpt_daily_movement
-        , db.edb_base_mtd_balance             edb_rpt_mtd_balance
-        , db.edb_base_qtd_balance             edb_rpt_qtd_balance
-        , db.edb_base_ytd_balance             edb_rpt_ytd_balance
+        , db.edb_base_mtd_balance             edb_rpt_mtd_activity
+        , db.edb_base_qtd_balance             edb_rpt_qtd_activity
+        , db.edb_base_ytd_balance             edb_rpt_ytd_activity
         , db.edb_base_ltd_balance             edb_rpt_itd_balance
         , db.edb_local_daily_movement         edb_func_daily_movement
-        , db.edb_local_mtd_balance            edb_func_mtd_balance
-        , db.edb_local_qtd_balance            edb_func_qtd_balance
-        , db.edb_local_ytd_balance            edb_func_ytd_balance
+        , db.edb_local_mtd_balance            edb_func_mtd_activity
+        , db.edb_local_qtd_balance            edb_func_qtd_activity
+        , db.edb_local_ytd_balance            edb_func_ytd_activity
         , db.edb_local_ltd_balance            edb_func_itd_balance
         , eba_bop.edb_tran_bop_mtd_balance    edb_tran_bop_mtd_balance
         , eba_bop.edb_tran_bop_qtd_balance    edb_tran_bop_qtd_balance
@@ -63,4 +65,6 @@ left join slr.slr_eba_bop_amounts            eba_bop
          and db.edb_eba_id       = eba_bop.edb_eba_id
          and db.edb_balance_date = eba_bop.edb_balance_date
          and db.edb_balance_type = eba_bop.edb_balance_type
+     join slr.slr_entities                     ent
+          on fc.fc_entity = ent.ent_entity
 ;
