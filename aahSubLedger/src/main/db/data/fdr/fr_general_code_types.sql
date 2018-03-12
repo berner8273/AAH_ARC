@@ -1,0 +1,2 @@
+insert into fdr.fr_general_code_types (gct_code_type_id,gct_code_type_name,gct_client_code_type,gct_active,gct_input_by,gct_auth_by,gct_auth_status,gct_input_time,gct_valid_from,gct_valid_to,gct_delete_time) VALUES ('GL','GL Interface','GL','A',user,sysdate,'A',sysdate,TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'),NULL);
+commit;

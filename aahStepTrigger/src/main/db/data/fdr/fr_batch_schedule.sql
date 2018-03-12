@@ -33,8 +33,13 @@ insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_orde
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'journal_line-standardise'           , 2 , 'STN' , 1 , 'STN' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'maha02_adjustment_load'             , 2 , 'FDR' , 1 , 'FDR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'roll_date'                          , 1 , 'FDR' , 1 , 'FDR' , 'R' , 'aah' );
+<<<<<<< HEAD
+insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'autosubmit_transactions-utilities'  , 1 , 'GUI' , 1 , 'GUI' , 'R' , 'aah' );
+insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'check_resubmitted_errors-utilities' , 1 , 'GUI' , 1 , 'GUI' , 'R' , 'aah' );
+=======
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'autoresubmit_transactions'          , 1 , 'GUI' , 1 , 'GUI' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'check_resubmitted_errors'           , 1 , 'GUI' , 1 , 'GUI' , 'R' , 'aah' );
+>>>>>>> 6bd094c3e376a6cc27f75d5ff9ac4bef2fc9c531
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pSLR_DAYS_PERIODS-subledger'        , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pUPDATE_SLR_CURRENCIES-subledger'   , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pUPDATE_SLR_SEGMENT_3-subledger'    , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
@@ -45,4 +50,5 @@ insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_orde
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pUPDATE_SLR_SEGMENT_8-subledger'    , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pPROCESS_SLR-subledger'             , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pUpdateJLU-subledger'               , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
+insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pPROCESS_GLINT-subledger'           , 2 , 'RDR' , 1 , 'RDR' , 'R' , 'aah' );
 commit;

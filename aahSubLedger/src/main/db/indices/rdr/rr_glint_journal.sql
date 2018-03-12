@@ -1,0 +1,1 @@
+create index xif1gl_interface_journal on rdr.rr_glint_journal (rgj_rgbc_id   asc);

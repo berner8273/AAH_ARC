@@ -49,6 +49,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_eba_bop_amounts.sql
 @@grants/tables/slr/slr_fak_bop_amounts.sql
 @@grants/tables/slr/slr_entity_periods.sql
+@@grants/tables/slr/slr_entities.sql
 
 conn ~fdr_logon
 
