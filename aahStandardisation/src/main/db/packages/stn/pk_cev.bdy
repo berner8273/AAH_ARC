@@ -72,7 +72,7 @@ and exists    (
         )
     AS
     BEGIN
-        delete from stn.posting_account_derivation;
+        execute immediate 'truncate table stn.posting_account_derivation';
         
         insert into stn.posting_account_derivation
         select distinct
@@ -97,7 +97,93 @@ and exists    (
              ;
         
         dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'POSTING_ACCOUNT_DERIVATION' );
-        delete from stn.cev_data;
+        execute immediate 'truncate table stn.vie_posting_account_derivation';
+        
+        insert into stn.vie_posting_account_derivation
+        select distinct
+               fpd.pd_posting_schema     posting_schema
+             , fpd.pd_aet_event_type     event_typ
+             , fpd.pd_sub_event          sub_event
+             , fal.al_lookup_1           business_typ
+             , fal.al_lookup_2           is_mark_to_market
+             , fal.al_lookup_3           business_unit
+             , fal.al_ccy                currency
+             , fal.al_account            sub_account
+          from
+               fdr.fr_posting_driver              fpd
+          join fdr.fr_account_lookup              fal   on fpd.pd_posting_code    = fal.al_posting_code
+          join fdr.fr_gl_account                  fgl   on fal.al_account         = fgl.ga_account_code
+          join stn.event_type                     et    on fpd.pd_aet_event_type  = et.event_typ
+          join stn.posting_amount_derivation      pad   on et.event_typ_id        = pad.event_typ_id
+          join stn.posting_amount_derivation_type padt  on pad.amount_typ_id      = padt.amount_typ_id
+         where
+               fgl.ga_account_type     = 'B'
+           and exists ( select
+                               null
+                          from
+                               stn.event_type      et
+                          join stn.vie_event_type  vet   on et.event_typ_id = vet.event_typ_id
+                         where et.event_typ = fpd.pd_aet_event_type )
+             ;
+        
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'VIE_POSTING_ACCOUNT_DERIVATION' );
+        execute immediate 'truncate table stn.cev_valid';
+        
+        insert into stn.cev_valid
+        (   row_sid
+        ,   correlation_uuid
+        ,   event_id
+        ,   accounting_dt
+        ,   stream_id
+        ,   basis_cd
+        ,   premium_typ
+        ,   business_typ
+        ,   event_typ
+        ,   business_event_typ
+        ,   source_event_ts
+        ,   transaction_ccy
+        ,   transaction_amt
+        ,   functional_ccy
+        ,   functional_amt
+        ,   reporting_ccy
+        ,   reporting_amt
+        ,   lpg_id
+        ,   event_status
+        ,   feed_uuid
+        ,   no_retries
+        ,   step_run_sid )
+        select
+            cev.row_sid
+        ,   cev.correlation_uuid
+        ,   cev.event_id
+        ,   cev.accounting_dt
+        ,   cev.stream_id
+        ,   cev.basis_cd
+        ,   cev.premium_typ
+        ,   cev.business_typ
+        ,   cev.event_typ
+        ,   cev.business_event_typ
+        ,   cev.source_event_ts
+        ,   cev.transaction_ccy
+        ,   cev.transaction_amt
+        ,   cev.functional_ccy
+        ,   cev.functional_amt
+        ,   cev.reporting_ccy
+        ,   cev.reporting_amt
+        ,   cev.lpg_id
+        ,   cev.event_status
+        ,   cev.feed_uuid
+        ,   cev.no_retries
+        ,   cev.step_run_sid
+          from
+               stn.cession_event                cev
+          join stn.cev_identified_record        idr     on cev.row_sid = idr.row_sid
+         where
+               cev.event_status = 'V'
+        ;
+        
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_VALID' );
+        execute immediate 'truncate table stn.cev_data';
         
         insert into stn.cev_data
         with
@@ -145,7 +231,7 @@ and exists    (
                   , cev.business_typ
                   , cev.basis_cd
             from
-                    stn.cession_event cev
+                    stn.cev_valid cev
             group by
                     cev.feed_uuid
                   , cev.correlation_uuid
@@ -155,7 +241,7 @@ and exists    (
                   , cev.business_typ
                   , cev.basis_cd
              )
-                 select
+                 select /*+ parallel(16)*/
                         gaap_fut_accts_flag
                       , derived_plus_flag
                       , le_flag
@@ -366,8 +452,7 @@ and exists    (
                                  , cev.reporting_ccy
                                  , cev.lpg_id
                               from
-                                        stn.cession_event                cev
-                                   join stn.cev_identified_record        idr     on cev.row_sid                = idr.row_sid
+                                        stn.cev_valid                    cev
                                    join                                  ce_data on cev.stream_id              = ce_data.stream_id
                                    join stn.event_type                   et      on cev.event_typ              = et.event_typ
                                    join stn.posting_accounting_basis     abasis  on cev.basis_cd               = abasis.basis_cd
@@ -388,7 +473,7 @@ and exists    (
                             left join stn.posting_method_derivation_gfa  gfa    on et.event_typ_id      = gfa.event_typ_in
                                                                                and exists (
                                                                                             select null
-                                                                                              from stn.cession_event cev2
+                                                                                              from stn.cev_valid     cev2
                                                                                               join stn.event_type    et2
                                                                                                 on cev2.event_typ = et2.event_typ
                                                                                               join stn.posting_method_derivation_gfa gfa2
@@ -408,14 +493,11 @@ and exists    (
                                                                                      then ce_data.parent_cession_le_cd
                                                                                     else null
                                                                                     end  ) = pmdl.le_cd
-        
-                             where
-                                        cev.event_status = 'V'
                         )
               ;
         
         dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_DATA' );
-        delete from stn.cev_premium_typ_override;
+        execute immediate 'truncate table stn.cev_premium_typ_override';
         
         insert into stn.cev_premium_typ_override
                 select distinct
@@ -436,10 +518,10 @@ and exists    (
         ;
         
         dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_PREMIUM_TYP_OVERRIDE' );
-        delete from stn.cev_mtm_data;
+        execute immediate 'truncate table stn.cev_mtm_data';
         
         insert into stn.cev_mtm_data
-                 select
+                 select /*+ parallel(16)*/
                         psm.psm_cd
                       , cev_data.business_type_association_id
                       , cev_data.intercompany_association_id
@@ -560,7 +642,7 @@ and exists    (
         ;
         
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_MTM_DATA' );
-        delete from stn.cev_gaap_fut_accts_data;
+        execute immediate 'truncate table stn.cev_gaap_fut_accts_data';
         
         insert into stn.cev_gaap_fut_accts_data
         with gfa_1 as
@@ -770,11 +852,11 @@ and exists    (
         ;
         
         dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_GAAP_FUT_ACCTS_DATA' );
-        delete from stn.cev_derived_plus_data;
+        execute immediate 'truncate table stn.cev_derived_plus_data';
         
         insert into stn.cev_derived_plus_data
         (
-                 select
+                 select /*+ parallel(16)*/
                         psm.psm_cd
                       , cev_data.business_type_association_id
                       , cev_data.intercompany_association_id
@@ -937,7 +1019,7 @@ and exists    (
         ;
         
         dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_DERIVED_PLUS_DATA' );
-        delete from stn.cev_le_data;
+        execute immediate 'truncate table stn.cev_le_data';
         
         insert into stn.cev_le_data
         (
@@ -1006,7 +1088,7 @@ and exists    (
         ;
         
         dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_LE_DATA' );
-        delete from stn.cev_non_intercompany_data;
+        execute immediate 'truncate table stn.cev_non_intercompany_data';
         
         insert into stn.cev_non_intercompany_data
         with amount_derivation
@@ -1451,7 +1533,7 @@ and exists    (
             SELECT
                 cep.BUSINESS_UNIT AS BUSINESS_UNIT,
                 cep.AFFILIATE AS AFFILIATE_LE_CD,
-                cep.ACCOUNTING_DT AS ACCOUNTING_DT,
+                trunc(cep.ACCOUNTING_DT) AS ACCOUNTING_DT,
                 cep.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
                 cep.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
                 cep.POLICY_ID AS POLICY_ID,
@@ -1483,7 +1565,7 @@ and exists    (
                 ce_default.SRAE_INSTRUMENT_CODE AS SRAE_INSTRUMENT_CODE,
                 cep.LEDGER_CD AS LEDGER_CD,
                 cep.STREAM_ID AS STREAM_ID,
-                gp.GP_TODAYS_BUS_DATE AS POSTING_DT,
+                trunc(gp.GP_TODAYS_BUS_DATE) AS POSTING_DT,
                 cep.BUSINESS_UNIT AS BOOK_CD,
                 cep.CORRELATION_UUID AS CORRELATION_UUID,
                 NULL AS CHARTFIELD_1,
@@ -1501,39 +1583,41 @@ and exists    (
                 'ORIGINAL' AS POSTING_INDICATOR,
                 cep.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                LEAST(gp.GP_TODAYS_BUS_DATE, cep.ACCOUNTING_DT) AS EFFECTIVE_DT
+                trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cep.ACCOUNTING_DT )) AS EFFECTIVE_DT
             FROM
                 CESSION_EVENT_POSTING cep
                 INNER JOIN CE_DEFAULT ON 1 = 1
-                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cep.LPG_ID = gp.LPG_ID;
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cep.LPG_ID = gp.LPG_ID
+            WHERE
+                (cep.TRANSACTION_AMT <> 0 OR cep.FUNCTIONAL_AMT <> 0 OR cep.REPORTING_AMT <> 0);
         INSERT INTO HOPPER_CESSION_EVENT
             (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT)
             SELECT
-                cer.BUSINESS_UNIT AS BUSINESS_UNIT,
-                cer.AFFILIATE AS AFFILIATE_LE_CD,
-                cer.ACCOUNTING_DT AS ACCOUNTING_DT,
-                cer.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
-                cer.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
-                cer.POLICY_ID AS POLICY_ID,
-                cer.ULTIMATE_PARENT_LE_CD AS ULTIMATE_PARENT_LE_CD,
-                cer.TAX_JURISDICTION_CD AS TAX_JURISDICTION_CD,
-                cer.EVENT_TYP AS EVENT_TYP,
-                cer.TRANSACTION_CCY AS TRANSACTION_CCY,
-                NVL(cer.TRANSACTION_AMT, 0) AS TRANSACTION_AMT,
-                cer.BUSINESS_TYP AS BUSINESS_TYP,
-                cer.POLICY_TYP AS POLICY_TYP,
-                cer.PREMIUM_TYP AS PREMIUM_TYP,
-                cer.SUB_EVENT AS SUB_EVENT,
-                cer.IS_MARK_TO_MARKET AS IS_MARK_TO_MARKET,
-                cer.VIE_CD AS VIE_CD,
-                cer.LPG_ID AS LPG_ID,
-                cer.BUSINESS_UNIT AS PARTY_BUSINESS_LE_CD,
+                cerhist.BUSINESS_UNIT AS BUSINESS_UNIT,
+                cerhist.AFFILIATE AS AFFILIATE_LE_CD,
+                trunc(cerhist.ACCOUNTING_DT) AS ACCOUNTING_DT,
+                cerhist.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
+                cerhist.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
+                cerhist.POLICY_ID AS POLICY_ID,
+                cerhist.ULTIMATE_PARENT_LE_CD AS ULTIMATE_PARENT_LE_CD,
+                cerhist.TAX_JURISDICTION_CD AS TAX_JURISDICTION_CD,
+                cerhist.EVENT_TYP AS EVENT_TYP,
+                cerhist.TRANSACTION_CCY AS TRANSACTION_CCY,
+                NVL(cerhist.TRANSACTION_AMT, 0) AS TRANSACTION_AMT,
+                cerhist.BUSINESS_TYP AS BUSINESS_TYP,
+                cerhist.POLICY_TYP AS POLICY_TYP,
+                cerhist.PREMIUM_TYP AS PREMIUM_TYP,
+                cerhist.SUB_EVENT AS SUB_EVENT,
+                cerhist.IS_MARK_TO_MARKET AS IS_MARK_TO_MARKET,
+                cerhist.VIE_CD AS VIE_CD,
+                cerhist.LPG_ID AS LPG_ID,
+                cerhist.BUSINESS_UNIT AS PARTY_BUSINESS_LE_CD,
                 ce_default.SYSTEM_INSTANCE AS PARTY_BUSINESS_SYSTEM_CD,
-                cer.EVENT_TYP AS AAH_EVENT_TYP,
+                cerhist.EVENT_TYP AS AAH_EVENT_TYP,
                 ce_default.SYSTEM_INSTANCE AS SRAE_STATIC_SYS_INST_CODE,
                 ce_default.SYSTEM_INSTANCE AS SRAE_INSTR_SYS_INST_CODE,
                 (CASE
-                    WHEN cer.TRANSACTION_AMT > 0 THEN 'POS'
+                    WHEN cerhist.TRANSACTION_AMT > 0 THEN 'POS'
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
@@ -1541,31 +1625,105 @@ and exists    (
                 ce_default.SRAE_SOURCE_SYSTEM AS SRAE_SOURCE_SYSTEM,
                 ce_default.SRAE_INSTR_SUPER_CLASS AS SRAE_INSTR_SUPER_CLASS,
                 ce_default.SRAE_INSTRUMENT_CODE AS SRAE_INSTRUMENT_CODE,
-                cer.LEDGER_CD AS LEDGER_CD,
-                cer.STREAM_ID AS STREAM_ID,
-                gp.GP_TODAYS_BUS_DATE AS POSTING_DT,
-                cer.BUSINESS_UNIT AS BOOK_CD,
-                cer.CORRELATION_UUID AS CORRELATION_UUID,
+                cerhist.LEDGER_CD AS LEDGER_CD,
+                cerhist.STREAM_ID AS STREAM_ID,
+                trunc(gp.GP_TODAYS_BUS_DATE) AS POSTING_DT,
+                cerhist.BUSINESS_UNIT AS BOOK_CD,
+                cerhist.CORRELATION_UUID AS CORRELATION_UUID,
                 NULL AS CHARTFIELD_1,
-                cer.COUNTPARTY_LE_CD AS COUNTERPARTY_LE_CD,
-                cer.EXECUTION_TYP AS EXECUTION_TYP,
-                cer.OWNER_LE_CD AS OWNER_LE_CD,
-                cer.JOURNAL_DESCR AS JOURNAL_DESCR,
-                cer.FUNCTIONAL_CCY AS FUNCTIONAL_CCY,
-                NVL(cer.FUNCTIONAL_AMT, 0) AS FUNCTIONAL_AMT,
-                cer.REPORTING_CCY AS REPORTING_CCY,
-                NVL(cer.REPORTING_AMT, 0) AS REPORTING_AMT,
-                cer.BUSINESS_EVENT_TYP AS BUSINESS_EVENT_TYP,
-                cer.EVENT_SEQ_ID AS EVENT_SEQ_ID,
-                cer.BASIS_CD AS BASIS_CD,
+                cerhist.COUNTERPARTY_LE_CD AS COUNTERPARTY_LE_CD,
+                cerhist.EXECUTION_TYP AS EXECUTION_TYP,
+                cerhist.OWNER_LE_CD AS OWNER_LE_CD,
+                cerhist.JOURNAL_DESCR AS JOURNAL_DESCR,
+                cerhist.FUNCTIONAL_CCY AS FUNCTIONAL_CCY,
+                NVL(cerhist.FUNCTIONAL_AMT, 0) AS FUNCTIONAL_AMT,
+                cerhist.REPORTING_CCY AS REPORTING_CCY,
+                NVL(cerhist.REPORTING_AMT, 0) AS REPORTING_AMT,
+                cerhist.BUSINESS_EVENT_TYP AS BUSINESS_EVENT_TYP,
+                cerhist.EVENT_SEQ_ID AS EVENT_SEQ_ID,
+                cerhist.BASIS_CD AS BASIS_CD,
                 'REVERSE_REPOST' AS POSTING_INDICATOR,
-                cer.ROW_SID AS MESSAGE_ID,
+                cerhist.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                LEAST(gp.GP_TODAYS_BUS_DATE, cer.ACCOUNTING_DT) AS EFFECTIVE_DT
+                trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cerhist.ACCOUNTING_DT )) AS EFFECTIVE_DT
             FROM
-                CESSION_EVENT_REVERSAL cer
+                CESSION_EVENT_REVERSAL_HIST cerhist
                 INNER JOIN CE_DEFAULT ON 1 = 1
-                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cer.LPG_ID = gp.LPG_ID;
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cerhist.LPG_ID = gp.LPG_ID
+            WHERE
+                (cerhist.TRANSACTION_AMT <> 0 OR cerhist.FUNCTIONAL_AMT <> 0 OR cerhist.REPORTING_AMT <> 0);
+        INSERT INTO HOPPER_CESSION_EVENT
+            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT)
+            SELECT
+                cercurr.BUSINESS_UNIT AS BUSINESS_UNIT,
+                cercurr.AFFILIATE AS AFFILIATE_LE_CD,
+                trunc(cercurr.ACCOUNTING_DT) AS ACCOUNTING_DT,
+                cercurr.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
+                cercurr.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
+                cercurr.POLICY_ID AS POLICY_ID,
+                cercurr.ULTIMATE_PARENT_LE_CD AS ULTIMATE_PARENT_LE_CD,
+                cercurr.TAX_JURISDICTION_CD AS TAX_JURISDICTION_CD,
+                cercurr.EVENT_TYP AS EVENT_TYP,
+                cercurr.TRANSACTION_CCY AS TRANSACTION_CCY,
+                NVL(cercurr.TRANSACTION_AMT, 0) AS TRANSACTION_AMT,
+                cercurr.BUSINESS_TYP AS BUSINESS_TYP,
+                cercurr.POLICY_TYP AS POLICY_TYP,
+                cercurr.PREMIUM_TYP AS PREMIUM_TYP,
+                cercurr.SUB_EVENT AS SUB_EVENT,
+                cercurr.IS_MARK_TO_MARKET AS IS_MARK_TO_MARKET,
+                cercurr.VIE_CD AS VIE_CD,
+                cercurr.LPG_ID AS LPG_ID,
+                cercurr.BUSINESS_UNIT AS PARTY_BUSINESS_LE_CD,
+                ce_default.SYSTEM_INSTANCE AS PARTY_BUSINESS_SYSTEM_CD,
+                cercurr.EVENT_TYP AS AAH_EVENT_TYP,
+                ce_default.SYSTEM_INSTANCE AS SRAE_STATIC_SYS_INST_CODE,
+                ce_default.SYSTEM_INSTANCE AS SRAE_INSTR_SYS_INST_CODE,
+                (CASE
+                    WHEN cercurr.TRANSACTION_AMT > 0 THEN 'POS'
+                    ELSE 'NEG'
+                END) AS TRANSACTION_POS_NEG,
+                ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
+                NULL AS DEPT_CD,
+                ce_default.SRAE_SOURCE_SYSTEM AS SRAE_SOURCE_SYSTEM,
+                ce_default.SRAE_INSTR_SUPER_CLASS AS SRAE_INSTR_SUPER_CLASS,
+                ce_default.SRAE_INSTRUMENT_CODE AS SRAE_INSTRUMENT_CODE,
+                cercurr.LEDGER_CD AS LEDGER_CD,
+                cercurr.STREAM_ID AS STREAM_ID,
+                trunc(gp.GP_TODAYS_BUS_DATE) AS POSTING_DT,
+                cercurr.BUSINESS_UNIT AS BOOK_CD,
+                cercurr.CORRELATION_UUID AS CORRELATION_UUID,
+                NULL AS CHARTFIELD_1,
+                cercurr.COUNTERPARTY_LE_CD AS COUNTERPARTY_LE_CD,
+                cercurr.EXECUTION_TYP AS EXECUTION_TYP,
+                cercurr.OWNER_LE_CD AS OWNER_LE_CD,
+                cercurr.JOURNAL_DESCR AS JOURNAL_DESCR,
+                cercurr.FUNCTIONAL_CCY AS FUNCTIONAL_CCY,
+                NVL(cercurr.FUNCTIONAL_AMT, 0) AS FUNCTIONAL_AMT,
+                cercurr.REPORTING_CCY AS REPORTING_CCY,
+                NVL(cercurr.REPORTING_AMT, 0) AS REPORTING_AMT,
+                cercurr.BUSINESS_EVENT_TYP AS BUSINESS_EVENT_TYP,
+                cercurr.EVENT_SEQ_ID AS EVENT_SEQ_ID,
+                cercurr.BASIS_CD AS BASIS_CD,
+                'REVERSE_REPOST' AS POSTING_INDICATOR,
+                cercurr.ROW_SID AS MESSAGE_ID,
+                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
+                trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cercurr.ACCOUNTING_DT )) AS EFFECTIVE_DT
+            FROM
+                CESSION_EVENT_REVERSAL_CURR cercurr
+                INNER JOIN CE_DEFAULT ON 1 = 1
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cercurr.LPG_ID = gp.LPG_ID
+            WHERE
+                (cercurr.TRANSACTION_AMT <> 0 OR cercurr.FUNCTIONAL_AMT <> 0 OR cercurr.REPORTING_AMT <> 0);
+        execute immediate 'truncate table stn.posting_account_derivation';
+        execute immediate 'truncate table stn.vie_posting_account_derivation';
+        execute immediate 'truncate table stn.cev_valid';
+        execute immediate 'truncate table stn.cev_data';
+        execute immediate 'truncate table stn.cev_premium_typ_override';
+        execute immediate 'truncate table stn.cev_mtm_data';
+        execute immediate 'truncate table stn.cev_gaap_fut_accts_data';
+        execute immediate 'truncate table stn.cev_derived_plus_data';
+        execute immediate 'truncate table stn.cev_le_data';
+        execute immediate 'truncate table stn.cev_non_intercompany_data';
     END;
     
     PROCEDURE pr_cession_event_rval

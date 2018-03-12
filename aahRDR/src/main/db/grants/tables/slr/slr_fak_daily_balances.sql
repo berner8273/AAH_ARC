@@ -1,0 +1,1 @@
+grant select on slr.slr_fak_daily_balances to rdr with grant option;
