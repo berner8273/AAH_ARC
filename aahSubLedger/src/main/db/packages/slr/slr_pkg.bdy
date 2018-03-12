@@ -1252,8 +1252,8 @@ BEGIN
             fs8_amended_by,
             fs8_amended_on)
     SELECT  seg8.ent_segment_8_set,
-            frinstr.i_instrument_id,
-            ft.t_client_text6,
+            ext.iie_cover_signing_party,
+            ext.IIE_COVER_NOTE_DESCRIPTION,
             'A',
             USER,
             TRUNC(SYSDATE),
@@ -1268,6 +1268,8 @@ BEGIN
                         ) seg8
             INNER JOIN fdr.fr_trade ft
                   ON frinstr.i_instrument_id = ft.t_i_instrument_id
+            INNER JOIN fdr.fr_instr_insure_extend ext
+                  ON FRINSTR.I_INSTRUMENT_ID = ext.IIE_INSTRUMENT_ID
             WHERE frinstr.i_it_instr_type_id = 'INSURANCE_POLICY';
 
     SELECT  COUNT(*)
