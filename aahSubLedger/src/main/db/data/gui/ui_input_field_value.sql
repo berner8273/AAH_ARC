@@ -1,0 +1,17 @@
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('N','No','No.','YesOrNo');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('Y','Yes','Yes.','YesOrNo');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RDR','RDR','Reporting Data Repository.','GLINTSchema');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('DEFAULT','Default','Default.','GLINTSourceObject');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RR_GLINT_BATCH_CONTROL','Batch Control','GLINT Batch Control.','GLINTSourceObject');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RR_GLINT_JOURNAL','GL Journal','GL Journal.','GLINTSourceObject');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RCV_GLINT_JOURNAL','Journal','SLR Journal.','GLINTSourceObject');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RCV_GLINT_JOURNAL_LINE','Journal Line','SLR Journal Line.','GLINTSourceObject');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RR_GLINT_JOURNAL_LINE','GL Journal Line','GL Journal Line.','GLINTTargetObject');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RGBC_ACCOUNTING_DATE','Accounting Date','RR_GLINT_BATCH_CONTROL','GLINTSourceAttribute');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RGBC_HASH_DEBIT_TOTAL','Hash Debit Total','RR_GLINT_BATCH_CONTROL','GLINTSourceAttribute');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RGBC_HASH_CREDIT_TOTAL','Hash Credit Total','RR_GLINT_BATCH_CONTROL','GLINTSourceAttribute');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RGBC_LINE_COUNT','Line Count','RR_GLINT_BATCH_CONTROL','GLINTSourceAttribute');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RGBC_PROCESS_TYPE','Process Type','RR_GLINT_BATCH_CONTROL','GLINTSourceAttribute');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RGBC_LOAD_NAME','Load Name','RR_GLINT_BATCH_CONTROL','GLINTSourceAttribute');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE") VALUES ('RGBC_LOAD_TYPE','Load Type','RR_GLINT_BATCH_CONTROL','GLINTSourceAttribute');
+commit;

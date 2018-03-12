@@ -1,0 +1,1 @@
+create index xif1gl_interface_batch_control on rdr.rr_glint_batch_control (rgbc_rgic_id   asc);

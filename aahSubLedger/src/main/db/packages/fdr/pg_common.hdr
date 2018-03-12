@@ -1,0 +1,60 @@
+Create or Replace Package fdr.pg_common
+/* Package for Common Routines. */
+AuthID Current_User
+As
+
+/* Global Constants. */
+gcErrorTechnology_PLSQL     Constant fdr.fr_log.lo_error_technology%TYPE := 'PLSQL';
+gcErrorEventType_Info       Constant fdr.fr_log.lo_event_type_id%TYPE := 0;
+gcErrorEventType_Error      Constant fdr.fr_log.lo_event_type_id%TYPE := 2;
+gcErrorCategory_Tech        Constant fdr.fr_log.lo_category_id%TYPE := 0;
+gcActiveInactive_Active     Constant Char(1) := 'A';
+gcActiveInactive_Inactive   Constant Char(1) := 'I';
+gcStatusFlag_Unprocessed    Constant Char(1) := 'U';
+gcStatusFlag_Manual         Constant Char(1) := 'M';
+gcStatusFlag_Start          Constant Char(1) := 'S';
+gcStatusFlag_Error          Constant Char(1) := 'E';
+gcStatusFlag_Processed      Constant Char(1) := 'P';
+gcStatusFlag_Resubmitted    Constant Char(1) := 'R';
+gcYesOrNo_No                Constant Char(1) := 'N';
+gcYesOrNo_Yes               Constant Char(1) := 'Y';
+gcDataType_Varchar          Constant all_tab_columns.data_type%TYPE := 'VARCHAR2';
+gcDataType_Char             Constant all_tab_columns.data_type%TYPE := 'CHAR';
+gcDataType_Date             Constant all_tab_columns.data_type%TYPE := 'DATE';
+gcDataType_Timestamp        Constant all_tab_columns.data_type%TYPE := 'TIMESTAMP';
+gcDataType_Number           Constant all_tab_columns.data_type%TYPE := 'NUMBER';
+gcDefault_NULL              Constant Char(4) := 'NULL';
+gcDefault_Default           Constant Char(7) := 'DEFAULT';
+gcDefault_Source            Constant Char(13) := 'Client Static';
+gcTrueOrFalse_True          Constant Pls_Integer := 1;
+gcTrueOrFalse_False         Constant Pls_Integer := 0;
+gcString_NoValue            Constant Varchar2(3) := 'NVS';
+gcString_NotDefined         Constant Varchar2(3) := 'ND~';
+gcMaxSize_Timestamp         Constant Pls_Integer := 32;
+gcMaxSize_Date              Constant Pls_Integer := 18;
+gcMaxSize_DBMSOutputLine    Constant Pls_Integer := $If sys.dbms_db_version.ver_le_11 $Then 2000 $Else 32767 $End;
+gcDateFormat                Varchar2(20)  := 'YYYYMMDD';
+gcSchema_STN                Constant all_objects.owner%TYPE := 'STN';
+gcSchema_FDR                Constant all_objects.owner%TYPE := 'FDR';
+gcSchema_SLR                Constant all_objects.owner%TYPE := 'SLR';
+gcSchema_RDR                Constant all_objects.owner%TYPE := 'RDR';
+
+/* Global Variables. */
+gDebug_Log        Boolean := False;
+gDebug_DBMSOutput Boolean := False;
+gRowCount         Pls_Integer;
+
+/* Public Procedure to log debug messages. */
+Procedure pLogDebug(
+  pinMessage in Varchar2);
+Procedure pLogDebug(
+  pinMessage in Clob);
+
+/* Public Procedure to execute dynamic SQL. */
+Procedure pExecuteSQL(
+  pinSQL in Varchar2);
+Procedure pExecuteSQL(
+  pinSQL in Clob);
+
+end pg_common;
+/
