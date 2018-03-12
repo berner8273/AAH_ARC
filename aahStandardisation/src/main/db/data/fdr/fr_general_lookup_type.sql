@@ -25,4 +25,8 @@ insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'JOURNAL_LINE_DEFAULT'     , 'Default values used in the journal line standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'CE_DEFAULT'               , 'Default values used in the cession event standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'EVENT_CLASS_PERIOD'       , 'Period Close by Event Class' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_EVENT_DEFAULT' , 'Default values used in the accounting event standardisation process' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'GL_MAPPING_SET_1'         , 'GL Mapping set 1' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'CODE_BLOCK_BUSINESS_NAMES', 'Business descriptions for the Code Block' );
+
 commit;
