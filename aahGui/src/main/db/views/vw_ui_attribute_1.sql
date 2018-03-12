@@ -1,4 +1,4 @@
-create or replace force view gui.vw_ui_attribute_1
+create or replace view gui.vw_ui_attribute_1
 (
    fdr_code,
    fdr_description,
@@ -8,7 +8,7 @@ create or replace force view gui.vw_ui_attribute_1
    entity
 )
 as
-select t_source_tran_no  as fdr_code,
+select distinct t_source_tran_no  as fdr_code,
        t_source_tran_no  as fdr_description,
        t_source_tran_no  as lookup_key,
       'Client Static'    as source_system_id,

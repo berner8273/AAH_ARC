@@ -1,4 +1,4 @@
-create or replace force view gui.vw_ui_segment_6_val_to_lkp
+create or replace view gui.vw_ui_segment_6_val_to_lkp
 (
    fdr_lookup_key,
    description

@@ -2522,6 +2522,7 @@ BEGIN
                     ,eg.event_group                                LK_MATCH_KEY1
                     ,to_char(ep.ep_bus_year)                       LK_MATCH_KEY2
                     ,decode(length(ep.ep_bus_period),1,'0'||ep.ep_bus_period,ep.ep_bus_period) LK_MATCH_KEY3
+                    ,to_char(ep.ep_bus_year)||'-'||decode(length(ep.ep_bus_period),1,'0'||ep.ep_bus_period,ep.ep_bus_period) LK_MATCH_KEY4
                     ,'O'                                           LK_LOOKUP_VALUE1
                     ,to_char(ep.ep_bus_period_start,'DD-MON-YYYY') LK_LOOKUP_VALUE2
                     ,to_char(ep.ep_bus_period_end,'DD-MON-YYYY')   LK_LOOKUP_VALUE3
@@ -2548,6 +2549,7 @@ BEGIN
                               gl.LK_MATCH_KEY1,
                               gl.LK_MATCH_KEY2,
                               gl.LK_MATCH_KEY3,
+                              gl.LK_MATCH_KEY4,
                               gl.LK_LOOKUP_VALUE1,
                               gl.LK_LOOKUP_VALUE2,
                               gl.LK_LOOKUP_VALUE3,
@@ -2560,6 +2562,7 @@ BEGIN
                            ,   input.LK_MATCH_KEY1
                            ,   input.LK_MATCH_KEY2
                            ,   input.LK_MATCH_KEY3
+                           ,   input.LK_MATCH_KEY4
                            ,   input.LK_LOOKUP_VALUE1
                            ,   input.LK_LOOKUP_VALUE2
                            ,   input.LK_LOOKUP_VALUE3

@@ -1,4 +1,4 @@
-create or replace force view gui.vw_ui_segment_3_rel_value
+create or replace view gui.vw_ui_segment_3_rel_value
 (
    fdr_code,
    lookup_value

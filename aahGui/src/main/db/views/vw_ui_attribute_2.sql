@@ -1,4 +1,4 @@
-create or replace force view gui.vw_ui_attribute_2
+create or replace view gui.vw_ui_attribute_2
 (
    fdr_code,
    fdr_description,
