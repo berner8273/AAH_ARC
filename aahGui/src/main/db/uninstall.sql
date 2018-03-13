@@ -30,4 +30,39 @@ delete from gui.t_ui_role_tasks         where role_id in ( 'role.subledger.admin
 delete from gui.t_ui_roles              where role_id in ( 'role.subledger.administrator' , 'role.reference.data.user' , 'role.reference.data.approver' , 'role.subledger.user' , 'role.subledger.manager' , 'role.subledger.viewer' , 'role.subledger.configurator' );
 commit;
 
+
+drop view vw_ui_attribute_1;
+drop view vw_ui_attribute_1_val_to_lkp;
+drop view vw_ui_attribute_2;
+drop view vw_ui_attribute_2_val_to_lkp;
+drop view vw_ui_attribute_3;
+drop view vw_ui_attribute_3_val_to_lkp;
+drop view vw_ui_attribute_4;
+drop view vw_ui_attribute_4_val_to_lkp;
+drop view vw_ui_segment_1_rel_value;
+drop view vw_ui_segment_1_val_to_lkp;
+drop view vw_ui_segment_2_rel_value;
+drop view vw_ui_segment_2_val_to_lkp;
+drop view vw_ui_segment_3_rel_value;
+drop view vw_ui_segment_3_val_to_lkp;
+drop view vw_ui_segment_4_rel_value;
+drop view vw_ui_segment_4_val_to_lkp;
+drop view vw_ui_segment_5_rel_value;
+drop view vw_ui_segment_5_val_to_lkp;
+drop view vw_ui_segment_6_rel_value;
+drop view vw_ui_segment_6_val_to_lkp;
+drop view vw_ui_segment_7_rel_value;
+drop view vw_ui_segment_7_val_to_lkp;
+drop view vw_ui_segment_8_rel_value;
+drop view vw_ui_segment_8_val_to_lkp;
+drop view vw_ui_segment_1;
+drop view vw_ui_segment_2;
+drop view vw_ui_segment_3;
+drop view vw_ui_segment_4;
+drop view vw_ui_segment_5;
+drop view vw_ui_segment_6;
+drop view vw_ui_segment_7;
+drop view vw_ui_segment_8;
+commit;
+
 exit
