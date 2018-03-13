@@ -1,0 +1,1 @@
+create sequence rdr.sqrr_glint_journal_line increment by 1 start with 1;
