@@ -1,1 +1,1 @@
-grant select on stn.business_type to GUI with grant option;
+grant select on stn.business_type to gui with grant option;

@@ -1,1 +1,1 @@
-grant select on stn.journal_line_premium_type to GUI with grant option;
+grant select on stn.journal_line_premium_type to gui with grant option;
