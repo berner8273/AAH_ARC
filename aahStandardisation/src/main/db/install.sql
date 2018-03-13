@@ -351,6 +351,10 @@ conn ~stn_logon
 @@packages/stn/pk_cev.bdy
 
 @@grants/tables/stn/insurance_policy.sql
+@@grants/tables/stn/accounting_basis_ledger.sql
+@@grants/tables/stn/business_type.sql
+@@grants/tables/stn/execution_type.sql
+@@grants/tables/stn/journal_line_premium_type.sql
 
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
