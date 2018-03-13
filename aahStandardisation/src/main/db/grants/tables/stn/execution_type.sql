@@ -1,0 +1,1 @@
+grant select on stn.execution_type to gui with grant option;

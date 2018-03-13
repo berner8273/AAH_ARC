@@ -1,0 +1,1 @@
+grant select on fdr.fr_party_type to gui with grant option;
