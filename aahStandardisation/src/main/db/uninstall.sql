@@ -46,7 +46,8 @@ begin
                                   where lower(type) = 'to'
                                     and id1 in ( select object_id
                                                    from dba_objects
-                                                  where lower(object_name) in ( 'cev_data'
+                                                  where lower(object_name) in ( 'cev_valid'
+                                                                              , 'cev_data'
                                                                               , 'cev_identified_record'
                                                                               , 'cev_premium_typ_override'
                                                                               , 'cev_mtm_data'
@@ -65,6 +66,7 @@ end;
 /
 conn ~stn_logon
 
+truncate table stn.cev_valid;
 truncate table stn.cev_data;
 truncate table stn.cev_identified_record;
 truncate table stn.cev_premium_typ_override;
@@ -95,8 +97,6 @@ drop package body stn.pk_le_hier;
 drop package      stn.pk_le_hier;
 drop package body stn.pk_gce;
 drop package      stn.pk_gce;
-drop package body stn.pk_user;
-drop package      stn.pk_user;
 drop package body stn.pk_tj;
 drop package      stn.pk_tj;
 drop package body stn.pk_pol;
@@ -118,12 +118,12 @@ drop view  stn.dept_default;
 drop view  stn.le_default;
 drop view  stn.hopper_legal_entity_alias;
 drop view  stn.gce_default;
-drop view  stn.user_default;
 drop view  stn.validation_detail;
 drop view  stn.hopper_gl_chartfield;
 drop view  stn.policy_tax;
 drop view  stn.ce_default;
-drop view  stn.cession_event_reversal;
+drop view  stn.cession_event_reversal_hist;
+drop view  stn.cession_event_reversal_curr;
 drop view  stn.cession_event_posting;
 drop view  stn.vie_event_cd;
 drop view  stn.cev_period_balances;
@@ -206,6 +206,7 @@ drop table stn.posting_accounting_basis_type;
 drop table stn.posting_financial_calc;
 drop table stn.posting_ledger;
 drop table stn.posting_method;
+drop table stn.cev_valid;
 drop table stn.cev_data;
 drop table stn.cev_derived_plus_data;
 drop table stn.cev_gaap_fut_accts_data;
@@ -216,14 +217,13 @@ drop table stn.cev_non_intercompany_data;
 drop table stn.cev_premium_typ_override;
 drop table stn.posting_method_derivation_gfa;
 drop table stn.posting_account_derivation;
+drop table stn.vie_posting_account_derivation;
 drop table stn.vie_event_type;
 drop table stn.event_type;
 drop table stn.vie_legal_entity;
 drop table stn.gl_combo_edit_assignment;
 drop table stn.gl_combo_edit_rule;
 drop table stn.gl_combo_edit_process;
-drop table stn.user_group;
-drop table stn.user_detail;
 drop table stn.tax_jurisdiction;
 drop table stn.accounting_basis_ledger;
 drop table stn.legal_entity_ledger;
@@ -272,8 +272,8 @@ delete from fdr.fr_instr_type_superclass     where itsc_instr_type_super_clicode
 delete from fdr.fr_instr_insure_extend;
 delete from fdr.fr_book_lookup               where bol_lookup_key    != 'DEFAULT';
 delete from fdr.fr_book                      where bo_book_clicode   != 'DEFAULT';
-delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE','EVENT_CLASS_PERIOD');
-delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'USER_DEFAULT' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE', 'EVENT_CLASS_PERIOD');
+delete from fdr.fr_general_lookup            where lk_lkt_lookup_type_code in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE' , 'EVENT_CLASS_PERIOD' );
+delete from fdr.fr_general_lookup_type       where lkt_lookup_type_code    in ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ROW_VAL_ERR_LOG_DEFAULTS' , 'FXR_DEFAULT' , 'GLA_DEFAULT' , 'DEPT_DEFAULT' , 'LE_DEFAULT' , 'GCE_DEFAULT' , 'COMBO_RULESET' , 'COMBO_CHECK' , 'COMBO_APPLICABLE' , 'TAX_JURISDICTION_DEFAULT' , 'POL_DEFAULT' , 'LEDGER_DEFAULT' , 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_HIERARCHY_DEFAULT' , 'EVENT_HIERARCHY' , 'EVENT_CLASS' , 'EVENT_SUBGROUP' , 'EVENT_GROUP' , 'EVENT_CATEGORY' , 'JOURNAL_LINE_DEFAULT' , 'LEGAL_ENTITY_ALIAS' , 'CE_DEFAULT' , 'EVENT_TYPE' , 'EVENT_CLASS_PERIOD' );
 delete from fdr.fr_fx_rate;
 delete from fdr.fr_party_business_lookup     where pbl_lookup_key                 != 'DEFAULT';
 delete from fdr.fr_party_business            where pbu_party_bus_client_code      != 'DEFAULT';
