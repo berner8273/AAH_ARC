@@ -1,1 +1,0 @@
-grant select on stn.accounting_basis_ledger to gui with grant option;
