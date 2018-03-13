@@ -236,6 +236,17 @@ drop table stn.cession_event_premium_type;
 drop table stn.cession_hierarchy;
 drop table stn.business_event;
 drop table stn.init_stat;
+revoke select, insert,		update                on stn.insurance_policy      		   from gui;
+revoke select, 						update                on stn.cession				        		 from gui;
+revoke select, 						update                on stn.cession_link	        		   from gui;
+revoke select, 						update	              on stn.insurance_policy_fx_rate    from gui;
+revoke select, 						update		            on stn.insurance_policy_tax_jurisd from gui;
+revoke select 																	on stn.accounting_basis_ledger		 from gui;
+revoke select 																	on stn.business_type				  		 from gui;
+revoke select 																	on stn.execution_type				  		 from gui;
+revoke select 																	on stn.journal_line_premium_type	 from gui;
+
+
 
 conn ~gui_logon
 
@@ -327,7 +338,6 @@ revoke select , insert , update          on fdr.is_groupuser                 fro
 revoke select                            on fdr.is_group                     from stn;
 revoke          insert                   on fdr.fr_rate_type                 from stn;
 revoke select                            on fdr.fr_accounting_event_imp      from stn;
-
 revoke select 													 on fdr.fr_acc_event_type            from gui;
 revoke select  													 on fdr.fr_general_codes             from gui;
 revoke select 													 on fdr.fr_general_lookup            from gui;
