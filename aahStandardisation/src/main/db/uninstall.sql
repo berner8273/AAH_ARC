@@ -328,6 +328,12 @@ revoke select                            on fdr.is_group                     fro
 revoke          insert                   on fdr.fr_rate_type                 from stn;
 revoke select                            on fdr.fr_accounting_event_imp      from stn;
 
+revoke select 													 on fdr.fr_acc_event_type            from gui;
+revoke select  													 on fdr.fr_general_codes             from gui;
+revoke select 													 on fdr.fr_general_lookup            from gui;
+revoke select    												 on fdr.fr_instr_insure_extend       from gui;
+revoke select    												 on fdr.fr_party_type				         from gui;
+
 conn ~gui_logon
 
 drop package body gui.gui_pkg;

@@ -1,1 +1,0 @@
-grant select on fdr.fr_general_lookup to GUI with grant option;

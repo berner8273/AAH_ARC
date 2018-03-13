@@ -98,6 +98,7 @@ conn ~fdr_logon
 @@grants/tables/fdr/fr_instrument.sql
 @@grants/tables/fdr/fr_trade.sql
 @@grants/tables/fdr/fr_accounting_event_imp.sql
+@@grants/tables/fdr/fr_party_type.sql
 
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy

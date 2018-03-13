@@ -1,1 +1,0 @@
-grant select on fdr.fr_acc_event_type to GUI with grant option;
