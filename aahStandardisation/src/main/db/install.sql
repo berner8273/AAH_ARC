@@ -351,21 +351,15 @@ conn ~stn_logon
 @@packages/stn/pk_cev.hdr
 @@packages/stn/pk_cev.bdy
 @@grants/tables/stn/insurance_policy.sql
-<<<<<<< HEAD
-=======
 @@grants/tables/stn/cession.sql
 @@grants/tables/stn/cession_link.sql
 @@grants/tables/stn/insurance_policy_fx_rate.sql
 @@grants/tables/stn/insurance_policy_tax_jurisd.sql
->>>>>>> de725a1563d85d13ca7bfd1c6a2507bcf9e62ad6
 @@grants/tables/stn/accounting_basis_ledger.sql
 @@grants/tables/stn/business_type.sql
 @@grants/tables/stn/execution_type.sql
 @@grants/tables/stn/journal_line_premium_type.sql
-<<<<<<< HEAD
-=======
 
->>>>>>> de725a1563d85d13ca7bfd1c6a2507bcf9e62ad6
 
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
