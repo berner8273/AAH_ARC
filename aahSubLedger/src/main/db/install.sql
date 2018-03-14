@@ -23,6 +23,14 @@ define slr_user     = @slrUsername@
 define slr_password = @slrPassword@
 define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
+define rdr_user     = @rdrUsername@
+define rdr_password = @rdrPassword@
+define rdr_logon    = ~rdr_user/~rdr_password@~tns_alias
+
+define gui_user     = @guiUsername@
+define gui_password = @guiPassword@
+define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
 conn ~stn_logon
 @@grants/tables/stn/business_type.sql
 @@grants/tables/stn/insurance_policy.sql
@@ -223,8 +231,6 @@ conn ~fdr_logon
 @@packages/fdr/pg_common.hdr
 @@packages/fdr/pg_common.bdy
 @@grants/packages/fdr/pg_common.sql
-@@data/fdr/fr_general_lookup_type.sql
-@@data/fdr/fr_general_lookup.sql
 @@data/fdr/fr_general_code_types.sql
 @@data/fdr/fr_general_codes.sql
 

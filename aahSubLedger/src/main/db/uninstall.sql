@@ -23,6 +23,14 @@ define slr_user     = @slrUsername@
 define slr_password = @slrPassword@
 define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
+define rdr_user     = @rdrUsername@
+define rdr_password = @rdrPassword@
+define rdr_logon    = ~rdr_user/~rdr_password@~tns_alias
+
+define gui_user     = @guiUsername@
+define gui_password = @guiPassword@
+define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
 conn ~fdr_logon
 
 delete from fdr.fr_entity_schema;
@@ -236,8 +244,6 @@ commit;
 conn ~fdr_logon
 delete from       fdr.fr_general_codes where gc_gct_code_type_id = 'GL';
 delete from       fdr.fr_general_code_types where gct_code_type_id = 'GL';
-delete from       fdr.fr_general_lookup where lk_lkt_lookup_type_code IN ('GL_MAPPING_SET_1');
-delete from       fdr.fr_general_lookup_type where lkt_lookup_type_code IN ('GL_MAPPING_SET_1');
 revoke execute on fdr.pg_common from STN;
 revoke execute on fdr.pg_common from SLR;
 revoke execute on fdr.pg_common from RDR;
