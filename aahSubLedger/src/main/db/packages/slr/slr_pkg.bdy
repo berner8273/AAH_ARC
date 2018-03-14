@@ -1251,7 +1251,7 @@ BEGIN
             fs8_created_on,
             fs8_amended_by,
             fs8_amended_on)
-    SELECT  seg8.ent_segment_8_set,
+    SELECT  distinct seg8.ent_segment_8_set,
             ext.iie_cover_signing_party,
             ext.IIE_COVER_NOTE_DESCRIPTION,
             'A',
