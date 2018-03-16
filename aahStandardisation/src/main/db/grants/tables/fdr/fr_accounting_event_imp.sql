@@ -1,1 +1,1 @@
-grant select on fdr.fr_accounting_event_imp to stn;
+grant select on fdr.fr_accounting_event_imp to stn with grant option;
