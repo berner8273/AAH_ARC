@@ -34,6 +34,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_fak_combinations.sql
 @@grants/tables/slr/slr_eba_daily_balances.sql
 @@grants/tables/slr/slr_jrnl_lines.sql
+@@grants/tables/slr/slr_jrnl_headers.sql
 
 conn ~gui_logon
 

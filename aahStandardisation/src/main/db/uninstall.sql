@@ -327,11 +327,11 @@ revoke select , insert , update          on fdr.is_groupuser                 fro
 revoke select                            on fdr.is_group                     from stn;
 revoke          insert                   on fdr.fr_rate_type                 from stn;
 revoke select                            on fdr.fr_accounting_event_imp      from stn;
-revoke select 													 on fdr.fr_acc_event_type            from gui;
-revoke select  													 on fdr.fr_general_codes             from gui;
-revoke select 													 on fdr.fr_general_lookup            from gui;
-revoke select    												 on fdr.fr_instr_insure_extend       from gui;
-revoke select    												 on fdr.fr_party_type				         from gui;
+revoke select                            on fdr.fr_acc_event_type            from gui;
+revoke select                            on fdr.fr_general_codes             from gui;
+revoke select                            on fdr.fr_general_lookup            from gui;
+revoke select                            on fdr.fr_instr_insure_extend       from gui;
+revoke select                            on fdr.fr_party_type                from gui;
 
 conn ~gui_logon
 
@@ -358,5 +358,6 @@ revoke select                            on slr.slr_eba_combinations         fro
 revoke select                            on slr.slr_fak_combinations         from stn;
 revoke select                            on slr.slr_eba_daily_balances       from stn;
 revoke select                            on slr.slr_jrnl_lines               from stn;
+revoke select                            on slr.slr_jrnl_headers             from rdr;
 
 exit
