@@ -21,8 +21,6 @@ grant insert , select on stn.insurance_policy_fx_rate    to aah_load;
 grant insert , select on stn.cession                     to aah_load;
 grant insert , select on stn.cession_link                to aah_load;
 grant insert , select on stn.cession_event               to aah_load;
-grant insert , select on stn.user_detail                 to aah_load;
-grant insert , select on stn.user_group                  to aah_load;
 grant insert , select on stn.journal_line                to aah_load;
 grant insert , select on stn.tax_jurisdiction            to aah_load;
 grant          select on stn.event_type                  to aah_load;

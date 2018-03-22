@@ -34,6 +34,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_fak_combinations.sql
 @@grants/tables/slr/slr_eba_daily_balances.sql
 @@grants/tables/slr/slr_jrnl_lines.sql
+@@grants/tables/slr/slr_jrnl_headers.sql
 
 conn ~gui_logon
 
@@ -98,6 +99,7 @@ conn ~fdr_logon
 @@grants/tables/fdr/fr_instrument.sql
 @@grants/tables/fdr/fr_trade.sql
 @@grants/tables/fdr/fr_accounting_event_imp.sql
+@@grants/tables/fdr/fr_party_type.sql
 
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy
@@ -349,8 +351,16 @@ conn ~stn_logon
 @@packages/stn/pk_jl.bdy
 @@packages/stn/pk_cev.hdr
 @@packages/stn/pk_cev.bdy
-
 @@grants/tables/stn/insurance_policy.sql
+@@grants/tables/stn/cession.sql
+@@grants/tables/stn/cession_link.sql
+@@grants/tables/stn/insurance_policy_fx_rate.sql
+@@grants/tables/stn/insurance_policy_tax_jurisd.sql
+@@grants/tables/stn/accounting_basis_ledger.sql
+@@grants/tables/stn/business_type.sql
+@@grants/tables/stn/execution_type.sql
+@@grants/tables/stn/journal_line_premium_type.sql
+
 
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql

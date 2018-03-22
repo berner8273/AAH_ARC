@@ -9,7 +9,6 @@ insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'COMBO_CHECK'              , 'Rules determining valid combo edit combinations' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'COMBO_APPLICABLE'         , 'Rules determining data checked by combo edit process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'COMBO_RULESET'            , 'Rules used by combo edit process' );
-insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'USER_DEFAULT'             , 'Default values used in the user standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'TAX_JURISDICTION_DEFAULT' , 'Default values used in the tax jurisdiction standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'POL_DEFAULT'              , 'Default values used in the insurance policy standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_BASIS_LEDGER'  , 'Accounting basis ledger relationships' );
@@ -25,8 +24,7 @@ insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'JOURNAL_LINE_DEFAULT'     , 'Default values used in the journal line standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'CE_DEFAULT'               , 'Default values used in the cession event standardisation process' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'EVENT_CLASS_PERIOD'       , 'Period Close by Event Class' );
-insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'ACCOUNTING_EVENT_DEFAULT' , 'Default values used in the accounting event standardisation process' );
-insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'GL_MAPPING_SET_1'         , 'GL Mapping set 1' );
 insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'CODE_BLOCK_BUSINESS_NAMES', 'Business descriptions for the Code Block' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'GL_MAPPING_SET_1'		 ,'GLINT Mapping Set 1' );
 
 commit;

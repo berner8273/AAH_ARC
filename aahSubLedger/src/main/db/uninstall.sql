@@ -23,6 +23,14 @@ define slr_user     = @slrUsername@
 define slr_password = @slrPassword@
 define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
+define rdr_user     = @rdrUsername@
+define rdr_password = @rdrPassword@
+define rdr_logon    = ~rdr_user/~rdr_password@~tns_alias
+
+define gui_user     = @guiUsername@
+define gui_password = @guiPassword@
+define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
 conn ~fdr_logon
 
 delete from fdr.fr_entity_schema;
@@ -191,5 +199,57 @@ revoke select on stn.execution_type     from slr;
 
 conn ~fdr_logon
 revoke select , insert , update on fdr.fr_general_lookup  from slr;
+
+-- -----------------------------------------------------------------------------------------
+-- purpose : Begin GLINT uninstall
+-- -----------------------------------------------------------------------------------------
+conn ~gui_logon
+delete from gui.ui_field where uf_id between 10000 and 10050;
+delete from gui.ui_input_field_value where uif_category_code in ('Status','YesOrNo','GLINTSchema','GLINTSourceObject','GLINTTargetObject') or (uif_category_code = 'GLINTSourceAttribute' and uif_description = 'RR_GLINT_BATCH_CONTROL');
+delete from gui.ui_input_field_value where (uif_description like 'RCV_JOURNAL%' or uif_description like 'Custom%') and uif_category_code like 'GLINT%';
+delete from gui.ui_component where uc_id in (1000,50000);
+commit;
+
+conn ~slr_logon
+update slr.slr_ext_jrnl_types set ejt_client_flag1 = NULL where ejt_client_flag1 = 0;
+commit;
+
+conn ~rdr_logon
+drop package body rdr.pgc_glint;
+drop package      rdr.pgc_glint;
+revoke execute on rdr.pg_glint from gui;
+revoke execute on rdr.pg_glint from fdr;
+drop package body rdr.pg_glint;
+drop package      rdr.pg_glint;
+drop view         rdr.rcv_glint_journal;
+drop view         rdr.rcv_glint_journal_line;
+drop index        rdr.xif1gl_interface_journal_line;
+drop table        rdr.rr_glint_journal_line;
+drop index        rdr.xif2gl_interface_journal_mappi;
+drop index        rdr.xif1gl_interface_journal_mappi;
+drop table        rdr.rr_glint_journal_mapping;
+drop index        rdr.xif1gl_interface_journal;
+drop table        rdr.rr_glint_journal;
+drop index        rdr.xif1gl_interface_batch_control;
+drop table        rdr.rr_glint_batch_control;
+drop table        rdr.rr_interface_control;
+drop table        rdr.rr_glint_temp_journal;
+drop index        rdr.xie1gl_previous_flag;
+drop table        rdr.rr_glint_temp_journal_line;
+drop sequence     rdr.sqrr_glint_journal_line;
+drop sequence     rdr.sqrr_interface_control;
+drop sequence     rdr.sqrr_glint_batch_control;
+commit;
+
+conn ~fdr_logon
+delete from       fdr.fr_general_codes where gc_gct_code_type_id = 'GL';
+delete from       fdr.fr_general_code_types where gct_code_type_id = 'GL';
+revoke execute on fdr.pg_common from STN;
+revoke execute on fdr.pg_common from SLR;
+revoke execute on fdr.pg_common from RDR;
+revoke execute on fdr.pg_common from GUI;
+drop package body fdr.pg_common;
+drop package      fdr.pg_common;
+commit;
 
 exit

@@ -23,6 +23,14 @@ define slr_user     = @slrUsername@
 define slr_password = @slrPassword@
 define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
+define rdr_user     = @rdrUsername@
+define rdr_password = @rdrPassword@
+define rdr_logon    = ~rdr_user/~rdr_password@~tns_alias
+
+define gui_user     = @guiUsername@
+define gui_password = @guiPassword@
+define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
 conn ~stn_logon
 @@grants/tables/stn/business_type.sql
 @@grants/tables/stn/insurance_policy.sql
@@ -213,5 +221,54 @@ BEGIN
   END LOOP;
 END;
 /
+
+-- -----------------------------------------------------------------------------------------
+-- purpose : Begin GLINT installation
+-- -----------------------------------------------------------------------------------------
+
+conn ~fdr_logon
+
+@@packages/fdr/pg_common.hdr
+@@packages/fdr/pg_common.bdy
+@@grants/packages/fdr/pg_common.sql
+@@data/fdr/fr_general_code_types.sql
+@@data/fdr/fr_general_codes.sql
+
+conn ~rdr_logon
+@@sequences/rdr/sqrr_glint_batch_control.sql
+@@sequences/rdr/sqrr_interface_control.sql
+@@sequences/rdr/sqrr_glint_journal_line.sql
+@@tables/rdr/rr_glint_temp_journal_line.sql
+@@indices/rdr/rr_glint_temp_journal_line.sql
+@@tables/rdr/rr_glint_temp_journal.sql
+@@tables/rdr/rr_interface_control.sql
+@@tables/rdr/rr_glint_batch_control.sql
+@@indices/rdr/rr_glint_batch_control.sql
+@@tables/rdr/rr_glint_journal.sql
+@@indices/rdr/rr_glint_journal.sql
+@@tables/rdr/rr_glint_journal_mapping.sql
+@@indices/rdr/rr_glint_journal_mapping.sql
+@@tables/rdr/rr_glint_journal_line.sql
+@@indices/rdr/rr_glint_journal_line.sql
+@@views/rdr/rcv_glint_journal_line.sql
+@@views/rdr/rcv_glint_journal.sql
+@@packages/rdr/pg_glint.hdr
+@@packages/rdr/pg_glint.bdy
+@@grants/packages/rdr/pg_glint.sql
+@@packages/rdr/pgc_glint.hdr
+@@packages/rdr/pgc_glint.bdy
+
+conn ~slr_logon
+
+update slr.slr_ext_jrnl_types set ejt_client_flag1 = 0 where ejt_client_flag1 is null;
+commit;
+
+conn ~gui_logon
+
+@@data/gui/ui_component.sql
+@@data/gui/ui_input_field_value.sql
+@@data/gui/ui_field.sql
+
+
 
 exit
