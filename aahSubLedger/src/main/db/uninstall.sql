@@ -45,6 +45,11 @@ delete from fdr.fr_acc_event_type    where aet_input_by not in ( 'FDR Create' , 
 delete from fdr.fr_gl_account_lookup where gal_ga_lookup_key != '1';
 delete from fdr.fr_gl_account        where ga_account_code   != '1';
 commit;
+update fdr.fr_acc_event_type
+set aet_active = 'A'
+where aet_input_by = 'SPS';
+commit;
+
 
 conn ~slr_logon
 
