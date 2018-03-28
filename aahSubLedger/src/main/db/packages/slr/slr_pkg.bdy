@@ -1253,7 +1253,7 @@ BEGIN
             fs8_amended_on)
     SELECT  distinct seg8.ent_segment_8_set,
             ext.iie_cover_signing_party,
-            ext.IIE_COVER_NOTE_DESCRIPTION,
+            substrb(ext.IIE_COVER_NOTE_DESCRIPTION,0,100) as IIE_COVER_NOTE_DESCRIPTION,
             'A',
             USER,
             TRUNC(SYSDATE),
