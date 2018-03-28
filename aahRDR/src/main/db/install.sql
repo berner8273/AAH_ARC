@@ -50,6 +50,10 @@ conn ~slr_logon
 @@grants/tables/slr/slr_fak_bop_amounts.sql
 @@grants/tables/slr/slr_entity_periods.sql
 @@grants/tables/slr/slr_entities.sql
+@@grants/tables/slr/slr_jrnl_headers.sql
+@@grants/tables/slr/slr_jrnl_headers_unposted.sql
+
+
 
 conn ~fdr_logon
 
@@ -99,6 +103,9 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_org_network.sql
 @@views/rdr/rrv_ag_org_node_structure.sql
 @@views/rdr/rrv_ag_org_hier_levels.sql
+@@views/rdr/rrv_ag_slr_jrnl_headers.sql
+@@views/rdr/rrv_ag_slr_jrnl_headers_unposted.sql
+
 
 
 exit

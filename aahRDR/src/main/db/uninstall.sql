@@ -66,6 +66,8 @@ drop view rdr/rrv_ag_org_hierarchy_type;
 drop view rdr/rrv_ag_org_network;
 drop view rdr/rrv_ag_org_node_structure;
 drop view rdr/rrv_ag_org_hier_levels;
+drop view rdr/rrv_ag_slr_jrnl_headers;
+drop view rdr/rrv_ag_slr_jrnl_headers_unposted;
 
 
 conn ~stn_logon
@@ -78,13 +80,15 @@ revoke select   on stn.policy_premium_type        from rdr;
 
 conn ~slr_logon
 
-revoke select   on slr.slr_fak_combinations    from rdr;
-revoke select   on slr.slr_eba_combinations    from rdr;
-revoke select   on slr.slr_fak_daily_balances  from rdr;
-revoke select   on slr.slr_eba_daily_balances  from rdr;
-revoke select   on slr.slr_eba_bop_amounts     from rdr;
-revoke select   on slr.slr_fak_bop_amounts     from rdr;
-revoke select   on slr.slr_entities            from rdr;
+revoke select   on slr.slr_fak_combinations    	 from rdr;
+revoke select   on slr.slr_eba_combinations    	 from rdr;
+revoke select   on slr.slr_fak_daily_balances  	 from rdr;
+revoke select   on slr.slr_eba_daily_balances  	 from rdr;
+revoke select   on slr.slr_eba_bop_amounts     	 from rdr;
+revoke select   on slr.slr_fak_bop_amounts     	 from rdr;
+revoke select   on slr.slr_entities            	 from rdr;
+revoke select   on slr.slr_jrnl_headers          from rdr;
+revoke select   on slr.slr_jrnl_headers_unposted from rdr;
 
 conn ~fdr_logon
 
