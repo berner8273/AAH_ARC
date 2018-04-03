@@ -2540,10 +2540,15 @@ BEGIN
               input
            on (
                       gl.LK_MATCH_KEY1           = input.LK_MATCH_KEY1
-                  and gl.LK_MATCH_KEY2           = input.LK_MATCH_KEY2
-                  and gl.LK_MATCH_KEY3           = input.LK_MATCH_KEY3
+                  and gl.LK_LOOKUP_VALUE2        = input.LK_LOOKUP_VALUE2
+                  and gl.LK_LOOKUP_VALUE3        = input.LK_LOOKUP_VALUE3
                   and GL.LK_LKT_LOOKUP_TYPE_CODE = 'EVENT_CLASS_PERIOD'
               )
+        when
+              matched then update set
+                             gl.LK_MATCH_KEY2 = input.LK_MATCH_KEY2
+                           , gl.LK_MATCH_KEY3 = input.LK_MATCH_KEY3
+                           , gl.LK_MATCH_KEY4 = input.LK_MATCH_KEY4
         when not
               matched then insert
                            (
@@ -2570,7 +2575,8 @@ BEGIN
                            ,   input.LK_LOOKUP_VALUE3
                            ,   input.LK_EFFECTIVE_FROM
                            ,   input.LK_EFFECTIVE_TO
-                           );
+                           )
+                           ;
 END pEVENT_CLASS_PERIODS;
 
 PROCEDURE pGENERATE_ALL_BOP_VALUES AS
