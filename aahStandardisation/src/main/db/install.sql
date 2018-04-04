@@ -360,6 +360,7 @@ conn ~stn_logon
 @@grants/tables/stn/business_type.sql
 @@grants/tables/stn/execution_type.sql
 @@grants/tables/stn/journal_line_premium_type.sql
+@@grants/tables/stn/journal_line.sql
 
 
 @@indices/stn/cession_event.sql

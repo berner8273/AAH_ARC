@@ -3,6 +3,7 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'CATEGORY_ID'                    , '1' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ERROR_TECHNOLOGY'               , 'PROCEDURE' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'PROCESSING_STAGE'               , 'STANDARDISATION' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'SET_VAL_ERR_LOG_DEFAULTS' , 'ERROR_TECHNOLOGY_RESUBMIT'       , 'APTITUDE' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'ROW_VAL_ERR_LOG_DEFAULTS' , 'EVENT_TYPE'                     , '1' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'ROW_VAL_ERR_LOG_DEFAULTS' , 'ERROR_STATUS'                   , 'E' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'ROW_VAL_ERR_LOG_DEFAULTS' , 'CATEGORY_ID'                    , '1' );

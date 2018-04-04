@@ -1,0 +1,1 @@
+grant insert, update on stn.journal_line to gui;
