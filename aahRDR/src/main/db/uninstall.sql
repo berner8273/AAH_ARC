@@ -62,12 +62,12 @@ drop view rdr.rrv_ag_slr_jrnl_lines;
 drop view rdr.rrv_ag_stan_raw_acc_event;
 drop view rdr.rrv_ag_tax_jurisdiction;
 drop view rdr.rrv_ag_user_roles_and_tasks;
-drop view rdr/rrv_ag_org_hierarchy_type;
-drop view rdr/rrv_ag_org_network;
-drop view rdr/rrv_ag_org_node_structure;
-drop view rdr/rrv_ag_org_hier_levels;
-drop view rdr/rrv_ag_slr_jrnl_headers;
-drop view rdr/rrv_ag_slr_jrnl_headers_unposted;
+drop view rdr.rrv_ag_org_hierarchy_type;
+drop view rdr.rrv_ag_org_network;
+drop view rdr.rrv_ag_org_node_structure;
+drop view rdr.rrv_ag_org_hier_levels;
+drop view rdr.rrv_ag_slr_jrnl_headers;
+drop view rdr.rrv_ag_slr_jrnl_headers_unposted;
 
 
 conn ~stn_logon
