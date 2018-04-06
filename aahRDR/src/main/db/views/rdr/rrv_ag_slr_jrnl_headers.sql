@@ -50,7 +50,7 @@ as
           jh_amended_by,
           jh_amended_on,
           jh_bus_posting_date
-     from slr_jrnl_headers
+     from slr.slr_jrnl_headers
    union all
    select jhu_jrnl_id as jh_jrnl_id,
           jhu_jrnl_type as jh_jrnl_type,
@@ -76,5 +76,5 @@ as
           jhu_amended_by as jh_amended_by,
           jhu_amended_on as jh_amended_on,
           null as jh_bus_posting_date
-     from slr_jrnl_headers_unposted
+     from slr.slr_jrnl_headers_unposted
 ;
