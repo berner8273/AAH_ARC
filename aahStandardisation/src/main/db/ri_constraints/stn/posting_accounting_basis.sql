@@ -1,1 +1,2 @@
-alter table stn.posting_accounting_basis add constraint fk_pbt_abasis foreign key ( basis_typ ) references stn.posting_accounting_basis_type ( basis_typ );
+alter table stn.posting_accounting_basis add constraint fk_pbt_abasis  foreign key ( basis_typ )               references stn.posting_accounting_basis_type ( basis_typ );
+alter table stn.posting_accounting_basis add constraint fk_pbct_abasis foreign key ( basis_consolidation_typ ) references stn.posting_accounting_basis_type ( basis_typ );

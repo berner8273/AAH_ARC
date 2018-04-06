@@ -1,6 +1,6 @@
-create global temporary table stn.cev_non_intercompany_data
+create global temporary table stn.cev_intercompany_data
 (
-   posting_type                 varchar2 ( 20 char )
+   posting_type                 varchar2 ( 50 char )
 ,  business_type_association_id number
 ,  intercompany_association_id  number
 ,  correlation_uuid             raw ( 16 )

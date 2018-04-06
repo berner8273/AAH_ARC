@@ -49,5 +49,5 @@ create global temporary table stn.cev_gaap_fut_accts_data
 ,  partner_reporting_amt          number
 ,  lpg_id                         number ( 38 )      
 )
-on commit preserve rows
+on commit delete rows
 ;
