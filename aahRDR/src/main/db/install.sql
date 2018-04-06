@@ -40,6 +40,13 @@ conn ~stn_logon
 @@grants/tables/stn/cession_event_premium_type.sql
 @@grants/tables/stn/policy_premium_type.sql
 @@grants/tables/stn/posting_method_derivation_rein.sql
+@@grants/tables/stn/event_type.sql
+@@grants/tables/stn/posting_ledger.sql
+@@grants/tables/stn/posting_method.sql
+@@grants/tables/stn/posting_method_derivation_mtm.sql
+@@grants/tables/stn/posting_method_ledger.sql
+@@grants/tables/stn/vie_event_type.sql
+@@grants/tables/stn/vie_posting_method_ledger.sql
 
 conn ~slr_logon
 
@@ -53,8 +60,6 @@ conn ~slr_logon
 @@grants/tables/slr/slr_entities.sql
 @@grants/tables/slr/slr_jrnl_headers.sql
 @@grants/tables/slr/slr_jrnl_headers_unposted.sql
-
-
 
 conn ~fdr_logon
 
@@ -107,7 +112,6 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_slr_jrnl_headers.sql
 @@views/rdr/rrv_ag_slr_jrnl_headers_unposted.sql
 @@views/rdr/rrv_ag_reinsurance.sql
-
-
+@@views/rdr/rrv_ag_posting_derivation.sql
 
 exit
