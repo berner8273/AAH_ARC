@@ -283,6 +283,9 @@ delete from fdr.fr_calendar_week             where caw_ca_calendar_name         
 delete from fdr.fr_calendar                  where ca_calendar_name               in ( 'AAH' , 'AG_DEFAULT' );
 delete from fdr.fr_rate_type_lookup          where rtyl_lookup_key                = 'MAVG';
 delete from fdr.fr_rate_type                 where rty_rate_type_id               = 'MAVG';
+update fdr.fr_rate_type
+set rty_active = 'A'
+where rty_rate_type_id = 'FORWARD' and rty_active <> 'A';
 delete from fdr.fr_party_type                where pt_party_type_name             in ( 'Internal' , 'External' , 'Customer' );
 delete from fdr.fr_city_lookup               where cil_ci_city_id                 = 'NVS';
 delete from fdr.fr_city                      where ci_city_id                     = 'NVS';

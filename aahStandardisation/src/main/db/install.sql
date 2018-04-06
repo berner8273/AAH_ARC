@@ -57,6 +57,9 @@ conn ~fdr_logon
 @@data/fdr/fr_currency.sql
 @@data/fdr/fr_db_upgrade_history.sql
 @@data/fdr/fr_rate_type.sql
+update fdr.fr_rate_type
+set rty_active = 'I'
+where rty_rate_type_id = 'FORWARD' and rty_active = 'A';
 @@data/fdr/fr_party_type.sql
 @@data/fdr/fr_city.sql
 @@data/fdr/fr_party_legal.sql
