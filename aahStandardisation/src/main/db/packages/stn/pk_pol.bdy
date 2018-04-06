@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY STN.PK_POL AS
+CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
     PROCEDURE pr_policy_istat
     AS
     BEGIN
@@ -818,7 +818,7 @@ and not exists (
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
                 pol.ROW_SID AS ROW_IN_ERROR_KEY_ID,
-                pol.TAX_JURISDICTION_CD AS ERROR_VALUE,
+                polt.TAX_JURISDICTION_CD AS ERROR_VALUE,
                 pol.LPG_ID AS LPG_ID,
                 vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
@@ -833,10 +833,11 @@ and not exists (
                 vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                 fd.FEED_SID AS FEED_SID
             FROM
-                INSURANCE_POLICY_TAX_JURISD pol
+                INSURANCE_POLICY pol
                 INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
+                INNER JOIN INSURANCE_POLICY_TAX_JURISD polt ON fd.FEED_UUID = polt.FEED_UUID AND polt.POLICY_ID = pol.POLICY_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
@@ -845,8 +846,8 @@ and not exists (
  select null
 from fdr.fr_general_codes frgc
 where 
-frgc.gc_client_code = pol.TAX_JURISDICTION_CD
-    and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
+frgc.gc_client_code = polt.TAX_JURISDICTION_CD
+	and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
 );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  pol-tax-jurisdiction-cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
@@ -1973,7 +1974,7 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_fsrfr_processed_records', NULL, v_no_fsrfr_processed_records, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_ip_processed_records', NULL, v_no_ip_processed_records, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_cl_processed_records', NULL, v_no_cl_processed_records, NULL);
-            IF v_no_validated_cession_records <> v_total_no_fsrip_published THEN
+            IF v_no_validated_cession_records <> (v_total_no_resub_published + v_total_no_fsrip_published) THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_validated_cession_records != v_total_no_fsrip_published', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
@@ -2007,3 +2008,4 @@ and exists (
     END;
 END PK_POL;
 /
+
