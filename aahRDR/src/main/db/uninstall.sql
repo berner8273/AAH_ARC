@@ -68,15 +68,16 @@ drop view rdr.rrv_ag_org_node_structure;
 drop view rdr.rrv_ag_org_hier_levels;
 drop view rdr.rrv_ag_slr_jrnl_headers;
 drop view rdr.rrv_ag_slr_jrnl_headers_unposted;
-
+drop view rdr.rrv_ag_reinsurance;
 
 conn ~stn_logon
 
-revoke select   on stn.gl_account_hierarchy       from rdr;
-revoke select   on stn.business_type              from rdr;
-revoke select   on stn.execution_type             from rdr;
-revoke select   on stn.cession_event_premium_type from rdr;
-revoke select   on stn.policy_premium_type        from rdr;
+revoke select   on stn.gl_account_hierarchy            from rdr;
+revoke select   on stn.business_type                   from rdr;
+revoke select   on stn.execution_type                  from rdr;
+revoke select   on stn.cession_event_premium_type      from rdr;
+revoke select   on stn.policy_premium_type             from rdr;
+revoke select   on stn.posting_method_derivation_rein  from rdr;
 
 conn ~slr_logon
 

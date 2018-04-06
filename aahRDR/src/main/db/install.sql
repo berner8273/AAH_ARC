@@ -39,6 +39,7 @@ conn ~stn_logon
 @@grants/tables/stn/execution_type.sql
 @@grants/tables/stn/cession_event_premium_type.sql
 @@grants/tables/stn/policy_premium_type.sql
+@@grants/tables/stn/posting_method_derivation_rein.sql
 
 conn ~slr_logon
 
@@ -105,6 +106,7 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_org_hier_levels.sql
 @@views/rdr/rrv_ag_slr_jrnl_headers.sql
 @@views/rdr/rrv_ag_slr_jrnl_headers_unposted.sql
+@@views/rdr/rrv_ag_reinsurance.sql
 
 
 
