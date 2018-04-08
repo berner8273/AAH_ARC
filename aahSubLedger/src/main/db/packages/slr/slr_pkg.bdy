@@ -161,7 +161,8 @@ BEGIN
 
 END LOOP;
 
-pGENERATE_ALL_BOP_VALUES();
+pGENERATE_FAK_BOP_VALUES();
+pGENERATE_EBA_BOP_VALUES();
 
 EXCEPTION
 WHEN e_lock_acquire_error THEN
@@ -2579,20 +2580,9 @@ BEGIN
                            ;
 END pEVENT_CLASS_PERIODS;
 
-PROCEDURE pGENERATE_ALL_BOP_VALUES AS
-BEGIN
-
-    SLR.SLR_PKG.pGENERATE_FAK_BOP_VALUES();
-    SLR.SLR_PKG.pGENERATE_EBA_BOP_VALUES();
-
-END pGENERATE_ALL_BOP_VALUES;
-
 PROCEDURE pGENERATE_EBA_BOP_VALUES AS
   BEGIN
   
---    dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_EBA_DAILY_BALANCES' , cascade => true);
---    dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_EBA_BOP_AMOUNTS' , cascade => true);
-
     EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP';
     INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP
      (     EDB_FAK_ID
@@ -2925,10 +2915,6 @@ END pGENERATE_EBA_BOP_VALUES;
 
 PROCEDURE pGENERATE_FAK_BOP_VALUES AS
   BEGIN
- 
---    dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_FAK_DAILY_BALANCES' , cascade => true);
---    dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_FAK_BOP_AMOUNTS' , cascade => true);
-
 
     EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP';
     INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP
