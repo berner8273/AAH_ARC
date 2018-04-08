@@ -1,14 +1,4 @@
 CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
-    PROCEDURE pr_policy_istat
-    AS
-    BEGIN
-        dbms_stats.gather_table_stats ( ownname => user , tabname => 'INSURANCE_POLICY'            , cascade => true );
-        dbms_stats.gather_table_stats ( ownname => user , tabname => 'CESSION'                     , cascade => true );
-        dbms_stats.gather_table_stats ( ownname => user , tabname => 'CESSION_LINK'                , cascade => true );
-        dbms_stats.gather_table_stats ( ownname => user , tabname => 'INSURANCE_POLICY_FX_RATE'    , cascade => true );
-        dbms_stats.gather_table_stats ( ownname => user , tabname => 'INSURANCE_POLICY_TAX_JURISD' , cascade => true );
-    END;
-    
     PROCEDURE pr_policy_idf
         (
             p_step_run_sid IN NUMBER,
@@ -1938,7 +1928,6 @@ and exists (
         v_total_no_resub_published NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
     BEGIN
-        pr_policy_istat;
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify policy records' );
         pr_policy_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
@@ -2008,4 +1997,3 @@ and exists (
     END;
 END PK_POL;
 /
-
