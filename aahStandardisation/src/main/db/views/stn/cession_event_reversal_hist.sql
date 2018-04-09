@@ -36,6 +36,7 @@ select distinct
      , fsrae.srae_client_spare_id10      vie_cd
      , fsrae.srae_client_spare_id9       is_mark_to_market
      , fsrae.srae_dimension_9            tax_jurisdiction_cd
+     , fsrae.srae_dimension_1            chartfield_cd
      , fsrae.srae_iso_currency_code      transaction_ccy
      , fsrae.srae_client_amount1 * -1    transaction_amt
      , fsrae.srae_client_spare_id5       functional_ccy

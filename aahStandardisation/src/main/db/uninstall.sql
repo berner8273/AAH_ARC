@@ -46,15 +46,17 @@ begin
                                   where lower(type) = 'to'
                                     and id1 in ( select object_id
                                                    from dba_objects
-                                                  where lower(object_name) in ( 'cev_valid'
+                                                  where lower(object_name) in ( 'cev_identified_record'
+                                                                              , 'posting_account_derivation'
+                                                                              , 'vie_posting_account_derivation'
                                                                               , 'cev_data'
-                                                                              , 'cev_identified_record'
                                                                               , 'cev_premium_typ_override'
                                                                               , 'cev_mtm_data'
                                                                               , 'cev_gaap_fut_accts_data'
                                                                               , 'cev_derived_plus_data'
                                                                               , 'cev_le_data'
-                                                                              , 'cev_non_intercompany_data' )
+                                                                              , 'cev_non_intercompany_data'
+                                                                              , 'cev_intercompany_data' )
                                                )
                                     and vs.sid = vl.sid
                                )
@@ -66,15 +68,17 @@ end;
 /
 conn ~stn_logon
 
-truncate table stn.cev_valid;
-truncate table stn.cev_data;
 truncate table stn.cev_identified_record;
+truncate table stn.posting_account_derivation;
+truncate table stn.vie_posting_account_derivation;
+truncate table stn.cev_data;
 truncate table stn.cev_premium_typ_override;
 truncate table stn.cev_mtm_data;
 truncate table stn.cev_gaap_fut_accts_data;
 truncate table stn.cev_derived_plus_data;
 truncate table stn.cev_le_data;
 truncate table stn.cev_non_intercompany_data;
+truncate table stn.cev_intercompany_data;
 
 drop procedure stn.pr_publish_log;
 drop package body stn.pk_dept;
@@ -201,6 +205,7 @@ drop table stn.posting_method_derivation_ic;
 drop table stn.posting_method_derivation_le;
 drop table stn.posting_method_derivation_link;
 drop table stn.posting_method_derivation_mtm;
+drop table stn.posting_method_derivation_rein;
 drop table stn.posting_accounting_basis;
 drop table stn.posting_accounting_basis_type;
 drop table stn.posting_financial_calc;
@@ -214,6 +219,7 @@ drop table stn.cev_identified_record;
 drop table stn.cev_le_data;
 drop table stn.cev_mtm_data;
 drop table stn.cev_non_intercompany_data;
+drop table stn.cev_intercompany_data;
 drop table stn.cev_premium_typ_override;
 drop table stn.posting_method_derivation_gfa;
 drop table stn.posting_account_derivation;
@@ -283,6 +289,9 @@ delete from fdr.fr_calendar_week             where caw_ca_calendar_name         
 delete from fdr.fr_calendar                  where ca_calendar_name               in ( 'AAH' , 'AG_DEFAULT' );
 delete from fdr.fr_rate_type_lookup          where rtyl_lookup_key                = 'MAVG';
 delete from fdr.fr_rate_type                 where rty_rate_type_id               = 'MAVG';
+update fdr.fr_rate_type
+set rty_active = 'A'
+where rty_rate_type_id = 'FORWARD' and rty_active <> 'A';
 delete from fdr.fr_party_type                where pt_party_type_name             in ( 'Internal' , 'External' , 'Customer' );
 delete from fdr.fr_city_lookup               where cil_ci_city_id                 = 'NVS';
 delete from fdr.fr_city                      where ci_city_id                     = 'NVS';

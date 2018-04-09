@@ -55,5 +55,5 @@ create global temporary table stn.cev_derived_plus_data
 ,  dp_partner_reporting_amt       number
 ,  lpg_id                         number ( 38 )      
 ) 
-on commit preserve rows
+on commit delete rows
 ;

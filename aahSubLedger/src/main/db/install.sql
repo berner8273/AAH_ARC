@@ -48,6 +48,11 @@ delete from fdr.fr_account_lookup_param;
 @@data/fdr/fr_acc_event_type.sql
 @@data/fdr/fr_gl_account.sql
 @@grants/tables/fdr/fr_general_lookup.sql
+update fdr.fr_acc_event_type
+set aet_active = 'I'
+where aet_input_by = 'SPS';
+commit;
+
 
 conn ~slr_logon
 

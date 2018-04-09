@@ -22,6 +22,9 @@ as
         , ec.tax_jurisdiction_cd
         , ec.premium_typ                      premium_type
         , ec.event_type
+        , jl_reference.gross_stream_owner
+        , jl_reference.owner_entity
+        , jl_reference.int_ext_counterparty
         , db.edb_tran_daily_movement
         , db.edb_tran_mtd_balance             edb_tran_mtd_activity
         , db.edb_tran_qtd_balance             edb_tran_qtd_activity
@@ -67,4 +70,16 @@ left join slr.slr_eba_bop_amounts            eba_bop
          and db.edb_balance_type = eba_bop.edb_balance_type
      join slr.slr_entities                     ent
           on fc.fc_entity = ent.ent_entity
+     join (
+            select jl.jl_eba_id
+                 , jl.jl_epg_id
+                 , min(jl.jl_reference_2) gross_stream_owner
+                 , min(jl.jl_reference_4) owner_entity
+                 , min(jl.jl_reference_7) int_ext_counterparty
+              from slr.slr_jrnl_lines jl
+          group by jl.jl_eba_id
+                 , jl.jl_epg_id
+          ) jl_reference
+          on db.edb_eba_id = jl_reference.jl_eba_id
+         and db.edb_epg_id = jl_reference.jl_epg_id
 ;

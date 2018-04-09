@@ -57,6 +57,9 @@ conn ~fdr_logon
 @@data/fdr/fr_currency.sql
 @@data/fdr/fr_db_upgrade_history.sql
 @@data/fdr/fr_rate_type.sql
+update fdr.fr_rate_type
+set rty_active = 'I'
+where rty_rate_type_id = 'FORWARD' and rty_active = 'A';
 @@data/fdr/fr_party_type.sql
 @@data/fdr/fr_city.sql
 @@data/fdr/fr_party_legal.sql
@@ -127,6 +130,7 @@ conn ~stn_logon
 @@tables/stn/cev_le_data.sql
 @@tables/stn/cev_mtm_data.sql
 @@tables/stn/cev_non_intercompany_data.sql
+@@tables/stn/cev_intercompany_data.sql
 @@tables/stn/cev_premium_typ_override.sql
 @@tables/stn/posting_method_derivation_gfa.sql
 @@tables/stn/posting_account_derivation.sql
@@ -186,6 +190,7 @@ conn ~stn_logon
 @@tables/stn/posting_method_derivation_le.sql
 @@tables/stn/posting_method_derivation_link.sql
 @@tables/stn/posting_method_derivation_mtm.sql
+@@tables/stn/posting_method_derivation_rein.sql
 @@tables/stn/posting_method_ledger.sql
 @@tables/stn/process_code_module.sql
 @@tables/stn/standardisation_log.sql
@@ -316,6 +321,7 @@ conn ~stn_logon
 @@data/stn/posting_method_derivation_ic.sql
 @@data/stn/posting_method_derivation_le.sql
 @@data/stn/posting_method_derivation_mtm.sql
+@@data/stn/posting_method_derivation_rein.sql
 @@data/stn/posting_method_ledger.sql
 @@data/stn/vie_posting_method_ledger.sql
 @@procedures/stn/pr_publish_log.sql
@@ -360,6 +366,7 @@ conn ~stn_logon
 @@grants/tables/stn/business_type.sql
 @@grants/tables/stn/execution_type.sql
 @@grants/tables/stn/journal_line_premium_type.sql
+@@grants/tables/stn/journal_line.sql
 
 
 @@indices/stn/cession_event.sql
@@ -370,7 +377,8 @@ conn ~stn_logon
  * Capture statistics across STN
  */
 
-exec dbms_stats.gather_schema_stats ( ownname => 'STN' , cascade => true );
+-- Commented out per user story 26774
+--exec dbms_stats.gather_schema_stats ( ownname => 'STN' , cascade => true );
 
 /*
  * Lie to the optimiser by shipping statistics at build time
@@ -378,16 +386,17 @@ exec dbms_stats.gather_schema_stats ( ownname => 'STN' , cascade => true );
 
 conn ~stn_logon
 
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DATA'                       , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DERIVED_PLUS_DATA'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_GAAP_FUT_ACCTS_DATA'        , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_IDENTIFIED_RECORD'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_LE_DATA'                    , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_MTM_DATA'                   , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_NON_INTERCOMPANY_DATA'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_PREMIUM_TYP_OVERRIDE'       , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'POSTING_ACCOUNT_DERIVATION'     , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
-exec dbms_stats.set_table_prefs ( 'STN' , 'VIE_POSTING_ACCOUNT_DERIVATION' , 'GLOBAL_TEMP_TABLE_STATS' , 'SHARED');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_IDENTIFIED_RECORD'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'POSTING_ACCOUNT_DERIVATION'     , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'VIE_POSTING_ACCOUNT_DERIVATION' , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DATA'                       , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_PREMIUM_TYP_OVERRIDE'       , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_MTM_DATA'                   , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_GAAP_FUT_ACCTS_DATA'        , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DERIVED_PLUS_DATA'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_LE_DATA'                    , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_NON_INTERCOMPANY_DATA'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_INTERCOMPANY_DATA'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 
 exec dbms_stats.create_stat_table   ( ownname => user , stattab => 'INIT_STAT' );
 @@data/stn/init_stat.sql
@@ -395,7 +404,8 @@ exec dbms_stats.create_stat_table   ( ownname => user , stattab => 'INIT_STAT' )
 
 conn ~fdr_logon
 
-exec dbms_stats.gather_schema_stats ( ownname => 'FDR' , cascade => true );
+-- Commented out per user story 26774
+--exec dbms_stats.gather_schema_stats ( ownname => 'FDR' , cascade => true );
 
 exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_INSURANCE_POLICY' , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
 exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_FX_RATE'          , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );

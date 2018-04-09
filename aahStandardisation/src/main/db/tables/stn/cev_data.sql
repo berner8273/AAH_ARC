@@ -55,5 +55,5 @@ create global temporary table stn.cev_data
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  lpg_id                         number ( 38 )
 )
-on commit preserve rows
+on commit delete rows
 ;

@@ -62,29 +62,42 @@ drop view rdr.rrv_ag_slr_jrnl_lines;
 drop view rdr.rrv_ag_stan_raw_acc_event;
 drop view rdr.rrv_ag_tax_jurisdiction;
 drop view rdr.rrv_ag_user_roles_and_tasks;
-drop view rdr/rrv_ag_org_hierarchy_type;
-drop view rdr/rrv_ag_org_network;
-drop view rdr/rrv_ag_org_node_structure;
-drop view rdr/rrv_ag_org_hier_levels;
-
+drop view rdr.rrv_ag_org_hierarchy_type;
+drop view rdr.rrv_ag_org_network;
+drop view rdr.rrv_ag_org_node_structure;
+drop view rdr.rrv_ag_org_hier_levels;
+drop view rdr.rrv_ag_slr_jrnl_headers;
+drop view rdr.rrv_ag_slr_jrnl_headers_unposted;
+drop view rdr.rrv_ag_reinsurance;
+drop view rdr.rrv_ag_posting_derivation;
 
 conn ~stn_logon
 
-revoke select   on stn.gl_account_hierarchy       from rdr;
-revoke select   on stn.business_type              from rdr;
-revoke select   on stn.execution_type             from rdr;
-revoke select   on stn.cession_event_premium_type from rdr;
-revoke select   on stn.policy_premium_type        from rdr;
+revoke select   on stn.gl_account_hierarchy            from rdr;
+revoke select   on stn.business_type                   from rdr;
+revoke select   on stn.execution_type                  from rdr;
+revoke select   on stn.cession_event_premium_type      from rdr;
+revoke select   on stn.policy_premium_type             from rdr;
+revoke select   on stn.posting_method_derivation_rein  from rdr;
+revoke select   on stn.event_type                      from rdr;
+revoke select   on stn.posting_ledger                  from rdr;
+revoke select   on stn.posting_method                  from rdr;
+revoke select   on stn.posting_method_derivation_mtm   from rdr;
+revoke select   on stn.posting_method_ledger           from rdr;
+revoke select   on stn.vie_event_type                  from rdr;
+revoke select   on stn.vie_posting_method_ledger       from rdr;
 
 conn ~slr_logon
 
-revoke select   on slr.slr_fak_combinations    from rdr;
-revoke select   on slr.slr_eba_combinations    from rdr;
-revoke select   on slr.slr_fak_daily_balances  from rdr;
-revoke select   on slr.slr_eba_daily_balances  from rdr;
-revoke select   on slr.slr_eba_bop_amounts     from rdr;
-revoke select   on slr.slr_fak_bop_amounts     from rdr;
-revoke select   on slr.slr_entities            from rdr;
+revoke select   on slr.slr_fak_combinations    	 from rdr;
+revoke select   on slr.slr_eba_combinations    	 from rdr;
+revoke select   on slr.slr_fak_daily_balances  	 from rdr;
+revoke select   on slr.slr_eba_daily_balances  	 from rdr;
+revoke select   on slr.slr_eba_bop_amounts     	 from rdr;
+revoke select   on slr.slr_fak_bop_amounts     	 from rdr;
+revoke select   on slr.slr_entities            	 from rdr;
+revoke select   on slr.slr_jrnl_headers          from rdr;
+revoke select   on slr.slr_jrnl_headers_unposted from rdr;
 
 conn ~fdr_logon
 

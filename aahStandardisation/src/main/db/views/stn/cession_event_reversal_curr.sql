@@ -2,74 +2,75 @@ create or replace view stn.cession_event_reversal_curr
 as
 with max_event as
 ( select
-                          trunc( cevnid.accounting_dt , 'MONTH' )   accounting_dt
-                        , cevnid.stream_id
-                        , cevnid.basis_cd
-                        , cevnid.premium_typ
-                        , cevnid.event_typ
-                        , cevnid.business_typ
+                          trunc( cep.accounting_dt , 'MONTH' )   accounting_dt
+                        , cep.stream_id
+                        , cep.basis_cd
+                        , cep.premium_typ
+                        , cep.event_typ
+                        , cep.business_typ
                         , max(cevval.source_event_ts)               source_event_ts
                         , max(fd.loaded_ts)                         loaded_ts
                      from 
-                               stn.cev_non_intercompany_data cevnid
-                          join stn.cev_valid                 cevval    on cevnid.event_seq_id = cevval.event_id
-                          join stn.feed                      fd        on cevval.feed_uuid    = fd.feed_uuid
+                               stn.cession_event_posting     cep
+                          join stn.cev_valid                 cevval    on cep.event_seq_id = cevval.event_id
+                          join stn.feed                      fd        on cevval.feed_uuid = fd.feed_uuid
                  group by
-                          trunc( cevnid.accounting_dt , 'MONTH' ) --accounting_dt
-                        , cevnid.stream_id                        --stream_id
-                        , cevnid.basis_cd                         --basis_cd
-                        , cevnid.premium_typ                      --premium_typ
-                        , cevnid.event_typ                        --event_typ
-                        , cevnid.business_typ                     --business_typ
+                          trunc( cep.accounting_dt , 'MONTH' ) --accounting_dt
+                        , cep.stream_id                        --stream_id
+                        , cep.basis_cd                         --basis_cd
+                        , cep.premium_typ                      --premium_typ
+                        , cep.event_typ                        --event_typ
+                        , cep.business_typ                     --business_typ
         )                     
 select distinct
-       'REVERSE_REPOST'                  posting_type
-     , cevnid.correlation_uuid
-     , cevnid.event_seq_id
-     , cevnid.row_sid||'.01'             row_sid
-     , cevnid.sub_event
-     , cevnid.accounting_dt
-     , cevnid.policy_id
-     , cevnid.policy_abbr_nm             journal_descr
-     , cevnid.stream_id
-     , cevnid.basis_cd
-     , cevnid.business_typ
-     , cevnid.premium_typ
-     , cevnid.policy_premium_typ
-     , cevnid.policy_accident_yr
-     , cevnid.policy_underwriting_yr
-     , cevnid.ultimate_parent_le_cd
-     , cevnid.execution_typ
-     , cevnid.policy_typ
-     , cevnid.event_typ
-     , cevnid.business_event_typ
-     , cevnid.business_unit
-     , cevnid.affiliate
-     , cevnid.owner_le_cd
-     , cevnid.counterparty_le_cd
-     , cevnid.ledger_cd
-     , cevnid.vie_cd
-     , cevnid.is_mark_to_market
-     , cevnid.tax_jurisdiction_cd
-     , cevnid.transaction_ccy
-     , cevnid.transaction_amt * -1       transaction_amt
-     , cevnid.functional_ccy
-     , cevnid.functional_amt * -1        functional_amt
-     , cevnid.reporting_ccy
-     , cevnid.reporting_amt * -1         reporting_amt
-     , cevnid.lpg_id
-     , null                              reversal_indicator
+       'REVERSE_REPOST'               posting_type
+     , cep.correlation_uuid
+     , cep.event_seq_id
+     , cep.row_sid||'.01'             row_sid
+     , cep.sub_event
+     , cep.accounting_dt
+     , cep.policy_id
+     , cep.policy_abbr_nm             journal_descr
+     , cep.stream_id
+     , cep.basis_cd
+     , cep.business_typ
+     , cep.premium_typ
+     , cep.policy_premium_typ
+     , cep.policy_accident_yr
+     , cep.policy_underwriting_yr
+     , cep.ultimate_parent_le_cd
+     , cep.execution_typ
+     , cep.policy_typ
+     , cep.event_typ
+     , cep.business_event_typ
+     , cep.business_unit
+     , cep.affiliate
+     , cep.owner_le_cd
+     , cep.counterparty_le_cd
+     , cep.ledger_cd
+     , cep.vie_cd
+     , cep.is_mark_to_market
+     , cep.tax_jurisdiction_cd
+     , cep.chartfield_cd
+     , cep.transaction_ccy
+     , cep.transaction_amt * -1       transaction_amt
+     , cep.functional_ccy
+     , cep.functional_amt * -1        functional_amt
+     , cep.reporting_ccy
+     , cep.reporting_amt * -1         reporting_amt
+     , cep.lpg_id
+     , null                           reversal_indicator
   from
-       stn.cev_non_intercompany_data     cevnid
-  join stn.cev_valid                     cevval    on cevnid.event_seq_id = cevval.event_id
-  join stn.feed                          fd        on cevval.feed_uuid    = fd.feed_uuid
+       stn.cession_event_posting         cep
+  join stn.cev_valid                     cevval    on cep.event_seq_id = cevval.event_id
+  join stn.feed                          fd        on cevval.feed_uuid = fd.feed_uuid
  where (
-               trunc( cevnid.accounting_dt , 'MONTH' )
-             , cevnid.stream_id
-             , cevnid.basis_cd
-             , cevnid.premium_typ
-             , cevnid.event_typ
-             , cevnid.business_typ
+               trunc( cep.accounting_dt , 'MONTH' )
+             , cep.stream_id
+             , cep.basis_cd
+             , cep.premium_typ
+             , cep.event_typ
+             , cep.business_typ
              , cevval.source_event_ts
              , fd.loaded_ts
                )

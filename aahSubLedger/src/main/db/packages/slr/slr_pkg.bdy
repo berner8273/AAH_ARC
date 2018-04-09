@@ -161,7 +161,8 @@ BEGIN
 
 END LOOP;
 
-pGENERATE_ALL_BOP_VALUES();
+pGENERATE_FAK_BOP_VALUES();
+pGENERATE_EBA_BOP_VALUES();
 
 EXCEPTION
 WHEN e_lock_acquire_error THEN
@@ -1253,7 +1254,7 @@ BEGIN
             fs8_amended_on)
     SELECT  distinct seg8.ent_segment_8_set,
             ext.iie_cover_signing_party,
-            ext.IIE_COVER_NOTE_DESCRIPTION,
+            substrb(ext.IIE_COVER_NOTE_DESCRIPTION,0,100) as IIE_COVER_NOTE_DESCRIPTION,
             'A',
             USER,
             TRUNC(SYSDATE),
@@ -2540,10 +2541,15 @@ BEGIN
               input
            on (
                       gl.LK_MATCH_KEY1           = input.LK_MATCH_KEY1
-                  and gl.LK_MATCH_KEY2           = input.LK_MATCH_KEY2
-                  and gl.LK_MATCH_KEY3           = input.LK_MATCH_KEY3
+                  and gl.LK_LOOKUP_VALUE2        = input.LK_LOOKUP_VALUE2
+                  and gl.LK_LOOKUP_VALUE3        = input.LK_LOOKUP_VALUE3
                   and GL.LK_LKT_LOOKUP_TYPE_CODE = 'EVENT_CLASS_PERIOD'
               )
+        when
+              matched then update set
+                             gl.LK_MATCH_KEY2 = input.LK_MATCH_KEY2
+                           , gl.LK_MATCH_KEY3 = input.LK_MATCH_KEY3
+                           , gl.LK_MATCH_KEY4 = input.LK_MATCH_KEY4
         when not
               matched then insert
                            (
@@ -2570,23 +2576,13 @@ BEGIN
                            ,   input.LK_LOOKUP_VALUE3
                            ,   input.LK_EFFECTIVE_FROM
                            ,   input.LK_EFFECTIVE_TO
-                           );
+                           )
+                           ;
 END pEVENT_CLASS_PERIODS;
-
-PROCEDURE pGENERATE_ALL_BOP_VALUES AS
-BEGIN
-
-    SLR.SLR_PKG.pGENERATE_FAK_BOP_VALUES();
-    SLR.SLR_PKG.pGENERATE_EBA_BOP_VALUES();
-
-END pGENERATE_ALL_BOP_VALUES;
 
 PROCEDURE pGENERATE_EBA_BOP_VALUES AS
   BEGIN
   
---    dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_EBA_DAILY_BALANCES' , cascade => true);
---    dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_EBA_BOP_AMOUNTS' , cascade => true);
-
     EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP';
     INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP
      (     EDB_FAK_ID
@@ -2919,10 +2915,6 @@ END pGENERATE_EBA_BOP_VALUES;
 
 PROCEDURE pGENERATE_FAK_BOP_VALUES AS
   BEGIN
- 
---    dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_FAK_DAILY_BALANCES' , cascade => true);
---    dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_FAK_BOP_AMOUNTS' , cascade => true);
-
 
     EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP';
     INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP

@@ -4,5 +4,5 @@ create global temporary table stn.cev_premium_typ_override
 ,  event_typ_id          number
 ,  premium_typ_override  varchar2 ( 1 char )
 )
-on commit preserve rows
+on commit delete rows
 ;

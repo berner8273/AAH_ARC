@@ -1,0 +1,1 @@
+grant select on slr_jrnl_headers          to rdr with grant option;
