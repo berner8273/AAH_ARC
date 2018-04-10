@@ -367,6 +367,5 @@ revoke select                            on slr.slr_eba_combinations         fro
 revoke select                            on slr.slr_fak_combinations         from stn;
 revoke select                            on slr.slr_eba_daily_balances       from stn;
 revoke select                            on slr.slr_jrnl_lines               from stn;
-revoke select                            on slr.slr_jrnl_headers             from rdr;
 
 exit

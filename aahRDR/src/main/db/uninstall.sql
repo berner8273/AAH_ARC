@@ -67,7 +67,6 @@ drop view rdr.rrv_ag_org_network;
 drop view rdr.rrv_ag_org_node_structure;
 drop view rdr.rrv_ag_org_hier_levels;
 drop view rdr.rrv_ag_slr_jrnl_headers;
-drop view rdr.rrv_ag_slr_jrnl_headers_unposted;
 drop view rdr.rrv_ag_reinsurance;
 drop view rdr.rrv_ag_posting_derivation;
 
