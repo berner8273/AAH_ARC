@@ -293,6 +293,7 @@ update fdr.fr_rate_type
 set rty_active = 'A'
 where rty_rate_type_id = 'FORWARD' and rty_active <> 'A';
 delete from fdr.fr_party_type                where pt_party_type_name             in ( 'Internal' , 'External' , 'Customer' );
+update fdr.fr_party_type fpt set fpt.pt_active = 'A' where fpt.pt_party_type_name in ( 'DEFAULT' , 'Counterparty' , 'Broker' , 'Governmental Agency' , 'Individual' , 'Clearing Agent' , 'Nostro Agent' , 'Business Unit' );
 delete from fdr.fr_city_lookup               where cil_ci_city_id                 = 'NVS';
 delete from fdr.fr_city                      where ci_city_id                     = 'NVS';
 delete from fdr.fr_general_codes             where gc_gct_code_type_id            in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' , 'POLICY_TAX' , 'USER_TASKS' ) or gc_gct_code_type_id like 'COMBO%';

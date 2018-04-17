@@ -61,6 +61,8 @@ update fdr.fr_rate_type
 set rty_active = 'I'
 where rty_rate_type_id = 'FORWARD' and rty_active = 'A';
 @@data/fdr/fr_party_type.sql
+update fdr.fr_party_type fpt set fpt.pt_active = 'I' where fpt.pt_party_type_name in ( 'DEFAULT' , 'Counterparty' , 'Broker' , 'Governmental Agency' , 'Individual' , 'Clearing Agent' , 'Nostro Agent' , 'Business Unit' );
+commit;
 @@data/fdr/fr_city.sql
 @@data/fdr/fr_party_legal.sql
 @@data/fdr/fr_internal_proc_entity_type.sql
