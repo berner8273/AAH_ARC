@@ -13,11 +13,9 @@ select
      , max ( case when fgl.lk_match_key1 = 'ERROR_TECHNOLOGY'
                   then fgl.lk_lookup_value1
              end )                                         error_technology
-
      , max ( case when fgl.lk_match_key1 = 'ERROR_TECHNOLOGY_RESUBMIT'
                   then fgl.lk_lookup_value1
              end )                                         error_technology_resubmit
-
      , max ( case when fgl.lk_match_key1 = 'PROCESSING_STAGE'
                   then fgl.lk_lookup_value1
              end )                                         processing_stage

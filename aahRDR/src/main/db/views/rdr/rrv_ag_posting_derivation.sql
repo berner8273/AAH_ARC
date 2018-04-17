@@ -1,4 +1,4 @@
-create view rdr.rrv_ag_posting_derivation
+create or replace view rdr.rrv_ag_posting_derivation
 as
 select
        fgl.lk_lookup_value4          event_category

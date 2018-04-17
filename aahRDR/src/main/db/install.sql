@@ -110,7 +110,6 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_org_node_structure.sql
 @@views/rdr/rrv_ag_org_hier_levels.sql
 @@views/rdr/rrv_ag_slr_jrnl_headers.sql
-@@views/rdr/rrv_ag_slr_jrnl_headers_unposted.sql
 @@views/rdr/rrv_ag_reinsurance.sql
 @@views/rdr/rrv_ag_posting_derivation.sql
 

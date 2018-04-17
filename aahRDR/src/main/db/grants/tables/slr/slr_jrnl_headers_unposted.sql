@@ -1,1 +1,1 @@
-grant select on slr_jrnl_headers_unposted to rdr with grant option;
+grant select on slr.slr_jrnl_headers_unposted to rdr with grant option;
