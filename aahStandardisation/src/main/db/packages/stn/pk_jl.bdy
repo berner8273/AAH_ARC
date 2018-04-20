@@ -1174,6 +1174,189 @@ and not exists (
                           sl.row_in_error_key_id = jl.ROW_SID
                );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-rval-balanced-output-transaction-sum', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : journal-line-validate-rval-balanced-header-functional-sum', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                TO_CHAR(jlsra.functional_amt) AS ERROR_VALUE,
+                jl.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                sveld.EVENT_TYPE AS EVENT_TYPE,
+                sveld.ERROR_STATUS AS ERROR_STATUS,
+                sveld.CATEGORY_ID AS CATEGORY_ID,
+                sveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
+                INNER JOIN (SELECT
+                    jl.FEED_UUID AS FEED_UUID,
+                    jl.ACCOUNTING_DT AS ACCOUNTING_DT,
+                    jl.FUNCTIONAL_CCY AS FUNCTIONAL_CCY,
+                    SUM(jl.FUNCTIONAL_AMT) AS functional_amt
+                FROM
+                    journal_line jl
+                    INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                WHERE
+                    not exists (
+               select
+                      null
+                 from
+                      stn.standardisation_log sl
+                where
+                      sl.row_in_error_key_id = jl.ROW_SID
+           )
+                GROUP BY
+                    jl.FEED_UUID,
+                    jl.ACCOUNTING_DT,
+                    jl.FUNCTIONAL_CCY,
+                    jl.EVENT_TYP,
+                    jl.LE_ID
+                HAVING
+                    SUM(jl.FUNCTIONAL_AMT) <> 0) jlsra ON jl.FEED_UUID = jlsra.FEED_UUID AND jl.ACCOUNTING_DT = jlsra.ACCOUNTING_DT AND jl.FUNCTIONAL_CCY = jlsra.FUNCTIONAL_CCY
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-functional_sum-rval-headers'
+and not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = jl.ROW_SID
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-rval-balanced-header-functional-sum', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : journal-line-validate-rval-balanced-headers-reporting-sum', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                TO_CHAR(jlsra.reporting_amt) AS ERROR_VALUE,
+                jl.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                sveld.EVENT_TYPE AS EVENT_TYPE,
+                sveld.ERROR_STATUS AS ERROR_STATUS,
+                sveld.CATEGORY_ID AS CATEGORY_ID,
+                sveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
+                INNER JOIN (SELECT
+                    jl.FEED_UUID AS FEED_UUID,
+                    jl.ACCOUNTING_DT AS ACCOUNTING_DT,
+                    jl.REPORTING_CCY AS REPORTING_CCY,
+                    SUM(jl.REPORTING_AMT) AS reporting_amt
+                FROM
+                    journal_line jl
+                    INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                WHERE
+                    not exists (
+               select
+                      null
+                 from
+                      stn.standardisation_log sl
+                where
+                      sl.row_in_error_key_id = jl.ROW_SID
+           )
+                GROUP BY
+                    jl.FEED_UUID,
+                    jl.ACCOUNTING_DT,
+                    jl.REPORTING_CCY,
+                    jl.EVENT_TYP,
+                    jl.LE_ID
+                HAVING
+                    SUM(jl.REPORTING_AMT) <> 0) jlsra ON jl.FEED_UUID = jlsra.FEED_UUID AND jl.ACCOUNTING_DT = jlsra.ACCOUNTING_DT AND jl.REPORTING_CCY = jlsra.REPORTING_CCY
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-reporting_sum-rval-headers'
+and not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = jl.ROW_SID
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-rval-balanced-headers-reporting-sum', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : journal-line-validate-rval-balanced-headers-transaction-sum', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                TO_CHAR(jlsra.transaction_amt) AS ERROR_VALUE,
+                jl.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                sveld.EVENT_TYPE AS EVENT_TYPE,
+                sveld.ERROR_STATUS AS ERROR_STATUS,
+                sveld.CATEGORY_ID AS CATEGORY_ID,
+                sveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
+                INNER JOIN (SELECT
+                    jl.FEED_UUID AS FEED_UUID,
+                    jl.ACCOUNTING_DT AS ACCOUNTING_DT,
+                    jl.TRANSACTION_CCY AS TRANSACTION_CCY,
+                    SUM(jl.TRANSACTION_AMT) AS transaction_amt
+                FROM
+                    journal_line jl
+                    INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                WHERE
+                    not exists (
+               select
+                      null
+                 from
+                      stn.standardisation_log sl
+                where
+                      sl.row_in_error_key_id = jl.ROW_SID
+           )
+                GROUP BY
+                    jl.FEED_UUID,
+                    jl.ACCOUNTING_DT,
+                    jl.TRANSACTION_CCY,
+                    jl.EVENT_TYP,
+                    jl.LE_ID
+                HAVING
+                    SUM(jl.TRANSACTION_AMT) <> 0) jlsra ON jl.FEED_UUID = jlsra.FEED_UUID AND jl.ACCOUNTING_DT = jlsra.ACCOUNTING_DT AND jl.TRANSACTION_CCY = jlsra.TRANSACTION_CCY
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-transaction_sum-rval-headers'
+and not exists (
+                   select
+                          null
+                     from
+                          stn.standardisation_log sl
+                    where
+                          sl.row_in_error_key_id = jl.ROW_SID
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-rval-balanced-headers-transaction-sum', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
     
     PROCEDURE pr_journal_line_svs
