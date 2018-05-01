@@ -15,4 +15,8 @@ as
           null as "PARENT_ID",
           null as "ENTITY"
      from fdr.fr_book frb
+     where bo_ipe_internal_entity_id = 'NVS'
 ;
+
+
+      
