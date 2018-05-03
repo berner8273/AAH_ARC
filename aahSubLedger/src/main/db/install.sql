@@ -300,6 +300,10 @@ conn ~slr_logon
 @@views/slr/vbmfxreval_eba_ag_r2_usstat.sql
 @@views/slr/vbmfxreval_eba_ag_r2_usgaap.sql
 
+-- ye cleardown views
+@@views/slr/vbm_ag_retainedearningseba01.sql
+@@views/slr/vbm_ag_retainedearningseba02.sql
+@@views/slr/vbm_ag_retainedearningseba03.sql
 
 -- -----------------------------------------------------------------------------------------
 -- purpose : Begin Combo Edit installation

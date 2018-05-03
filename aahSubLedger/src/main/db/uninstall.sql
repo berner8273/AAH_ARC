@@ -290,6 +290,15 @@ delete from       slr.slr_bm_entity_processing_set;
 delete from       slr.slr_process_errors where spe_p_process = 'FXREVALUE';
 commit;
 
+-- ye cleardown views
+drop view					slr.vbm_ag_retainedearningseba01;
+drop view					slr.vbm_ag_retainedearningseba02;
+drop view					slr.vbm_ag_retainedearningseba03;
+commit;
+
+revoke select, insert on  slr.slr_bm_entity_processing_set from FDR;
+commit;
+
 conn ~fdr_logon
 
 delete from       fdr.fr_general_lookup where lk_lkt_lookup_type_code = 'FXREVAL_REBAL_ACCTS';
