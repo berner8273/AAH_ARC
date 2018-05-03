@@ -1,0 +1,1 @@
+grant select on slr.slr_entities to rdr with grant option;

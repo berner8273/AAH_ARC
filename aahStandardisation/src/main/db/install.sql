@@ -35,6 +35,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_eba_daily_balances.sql
 @@grants/tables/slr/slr_jrnl_lines.sql
 @@grants/tables/slr/slr_jrnl_headers.sql
+@@grants/tables/slr/slr_entities.sql
 
 conn ~gui_logon
 
@@ -246,6 +247,7 @@ conn ~stn_logon
 @@views/stn/hopper_event_class.sql
 @@views/stn/hopper_event_group.sql
 @@views/stn/hopper_event_subgroup.sql
+@@views/stn/event_hierarchy_reference.sql
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
@@ -369,6 +371,7 @@ conn ~stn_logon
 @@grants/tables/stn/execution_type.sql
 @@grants/tables/stn/journal_line_premium_type.sql
 @@grants/tables/stn/journal_line.sql
+@@grants/tables/stn/event_hierarchy_reference.sql
 
 
 @@indices/stn/cession_event.sql

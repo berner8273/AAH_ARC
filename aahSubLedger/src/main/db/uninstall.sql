@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
-whenever sqlerror exit failure
+--whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -87,6 +87,7 @@ drop package      slr.slr_post_journals_pkg_bak;
 
 --Remove custom columns
 
+truncate table SLR.SLR_EBA_BALANCES_ROLLBACK;
 ALTER TABLE SLR.SLR_EBA_BALANCES_ROLLBACK 
  DROP  (     
   EDB_TRAN_QTD_BALANCE, 
@@ -94,6 +95,7 @@ ALTER TABLE SLR.SLR_EBA_BALANCES_ROLLBACK
     EDB_LOCAL_QTD_BALANCE, 
     EDB_PERIOD_QTR);
 
+truncate table SLR.SLR_EBA_DAILY_BALANCES;
 ALTER TABLE SLR.SLR_EBA_DAILY_BALANCES
  DROP  (     
   EDB_TRAN_QTD_BALANCE, 
@@ -101,12 +103,14 @@ ALTER TABLE SLR.SLR_EBA_DAILY_BALANCES
     EDB_LOCAL_QTD_BALANCE, 
     EDB_PERIOD_QTR);
 
+truncate table SLR.SLR_EBA_DAILY_BALANCES_ARC;
 ALTER TABLE SLR.SLR_EBA_DAILY_BALANCES_ARC
  DROP  (     
   EDBA_TRAN_QTD_BALANCE, 
     EDBA_BASE_QTD_BALANCE, 
     EDBA_LOCAL_QTD_BALANCE);
 
+truncate table SLR.SLR_FAK_BALANCES_ROLLBACK;
 ALTER TABLE SLR.SLR_FAK_BALANCES_ROLLBACK
  DROP  (
   FDB_TRAN_QTD_BALANCE, 
@@ -114,6 +118,7 @@ ALTER TABLE SLR.SLR_FAK_BALANCES_ROLLBACK
     FDB_LOCAL_QTD_BALANCE, 
     FDB_PERIOD_QTR);
 
+truncate table SLR.SLR_FAK_DAILY_BALANCES;
 ALTER TABLE SLR.SLR_FAK_DAILY_BALANCES
  DROP  (     
   FDB_TRAN_QTD_BALANCE, 
@@ -121,12 +126,14 @@ ALTER TABLE SLR.SLR_FAK_DAILY_BALANCES
     FDB_LOCAL_QTD_BALANCE, 
     FDB_PERIOD_QTR);
 
+truncate table SLR.SLR_FAK_DAILY_BALANCES_ARC;
 ALTER TABLE SLR.SLR_FAK_DAILY_BALANCES_ARC
  DROP  (     
   FDBA_TRAN_QTD_BALANCE, 
     FDBA_BASE_QTD_BALANCE, 
     FDBA_LOCAL_QTD_BALANCE);
 
+truncate table SLR.SLR_FAK_LAST_BALANCES;
 ALTER TABLE SLR.SLR_FAK_LAST_BALANCES
  DROP  (     
   FLB_TRAN_QTD_BALANCE, 
@@ -134,6 +141,7 @@ ALTER TABLE SLR.SLR_FAK_LAST_BALANCES
     FLB_LOCAL_QTD_BALANCE, 
     FLB_PERIOD_QTR);
 
+truncate table SLR.SLR_LAST_BALANCES;
 ALTER TABLE SLR.SLR_LAST_BALANCES
  DROP  (     
   LB_TRAN_QTD_BALANCE, 
@@ -256,5 +264,108 @@ revoke execute on fdr.pg_common from GUI;
 drop package body fdr.pg_common;
 drop package      fdr.pg_common;
 commit;
+
+-- -----------------------------------------------------------------------------------------
+-- purpose : Begin FX uninstall
+-- -----------------------------------------------------------------------------------------
+
+conn ~slr_logon
+
+drop view         slr.vbmfxreval_eba_ag_r2_usgaap;
+drop view         slr.vbmfxreval_eba_ag_r2_usstat;
+drop view         slr.vbmfxreval_eba_ag_r1_usstat;
+drop view         slr.vbmfxreval_eba_ag_r0_usgaap;
+drop view         slr.vbmfxreval_eba_ag_r0_usstat;
+drop view         slr.v_slr_fxreval_parameters;
+drop view         slr.v_slr_fxreval_rule2_events;
+drop view         slr.v_slr_fxreval_rule1_eventunion;
+drop view         slr.v_slr_fxreval_rule1_events;
+drop view         slr.v_slr_fxreval_rule0_accts;
+drop view         slr.v_slr_fxreval_run_values;
+delete from       slr.slr_process_source where upper(sps_db_object_name) like 'VBMFXREVAL_EBA_AG%';
+delete from       slr.slr_process_config_detail where pcd_pc_p_process = 'FXREVALUE' and pcd_pc_config <> 'FXREVALUE';
+delete from       slr.slr_process_config where pc_p_process = 'FXREVALUE' and pc_config <> 'FXREVALUE';
+delete from       slr.slr_entity_rates where er_entity_set IN ('FX_RULE0','FX_RULE1','FX_RULE2');
+delete from       slr.slr_bm_entity_processing_set;
+delete from       slr.slr_process_errors where spe_p_process = 'FXREVALUE';
+commit;
+
+conn ~fdr_logon
+
+delete from       fdr.fr_general_lookup where lk_lkt_lookup_type_code = 'FXREVAL_REBAL_ACCTS';
+delete from       fdr.fr_general_lookup where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS';
+delete from       fdr.fr_general_lookup where lk_lkt_lookup_type_code = 'FXREVAL_PARAMETERS';
+delete from       fdr.fr_general_lookup where lk_lkt_lookup_type_code = 'FXREVAL_RUN_VALUES';
+delete from       fdr.fr_general_lookup_type where lkt_lookup_type_code = 'FXREVAL_REBAL_ACCTS';
+delete from       fdr.fr_general_lookup_type where lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS';
+delete from       fdr.fr_general_lookup_type where lkt_lookup_type_code = 'FXREVAL_PARAMETERS';
+delete from       fdr.fr_general_lookup_type where lkt_lookup_type_code = 'FXREVAL_RUN_VALUES';
+commit;
+
+-- -----------------------------------------------------------------------------------------
+-- purpose : Begin Combo Edit uninstall
+-- -----------------------------------------------------------------------------------------
+
+conn ~rdr_logon
+
+drop procedure    rdr.pcombinationcheck_glint;
+drop table        rdr.rr_glint_suspense_line;
+drop view         rdr.rcv_combination_check_glint;
+drop view         rdr.rrv_combination_check_rule;
+drop view         rdr.rrv_combination_check_app_rule;
+
+conn ~slr_logon
+
+revoke execute on slr.fnslr_getheaderid from RDR;
+revoke select on slr.scv_combination_check_jlu from FDR;
+delete from slr.slr_error_message where em_error_code = 'JL_COMBO';
+drop procedure    slr.pcombinationcheck_jlu;
+drop view         slr.srv_combination_check_jte;
+drop view         slr.scv_combination_check_jlu;
+
+alter table slr.slr_jrnl_line_errors enable all triggers;
+alter table slr.slr_entities drop constraint ent_combo_check_flag;
+alter table slr.slr_entities drop column ent_combo_check_flag;
+commit;
+
+conn ~gui_logon
+
+delete from gui.ui_input_field_value where uif_category_code like 'COMBO%';
+delete from gui.ui_gen_lookup_type_properties where ugltp_lookup_type_code = 'COMBO_SUSPENSE';
+delete from gui.ui_general_lookup where ugl_lkt_lookup_type_code like 'COMBO%';
+delete from gui.ui_field where uf_id between 20000 and 20078;
+revoke select , insert , delete on gui.gui_jrnl_headers_unposted from RDR;
+revoke select , insert , delete on gui.gui_jrnl_lines_unposted from RDR;
+drop function     gui.fcombinationcheck_jlu;
+drop view         gui.ucv_combination_check_jlu;
+delete from gui.ui_component where uc_id in (10000, 20000);
+commit;
+
+conn ~fdr_logon
+
+revoke select on fdr.fcv_combination_check_suspense from RDR;
+revoke select on fdr.fcv_combination_check_suspense from SLR;
+revoke select on fdr.fcv_combination_check_data from RDR;
+revoke select on fdr.fcv_combination_check_data from SLR;
+revoke select , insert , delete on fdr.fr_combination_check_error from GUI;
+revoke select , insert , delete on fdr.fr_combination_check_error from SLR;
+revoke select , insert , delete on fdr.fr_combination_check_error from RDR;
+revoke select , insert , delete on fdr.fr_combination_check_input from GUI;
+revoke select , insert , delete on fdr.fr_combination_check_input from SLR;
+revoke select , insert , delete on fdr.fr_combination_check_input from RDR;
+revoke execute on fdr.pg_combination_check from GUI;
+revoke execute on fdr.pg_combination_check from SLR;
+revoke execute on fdr.pg_combination_check from RDR;
+delete from       fdr.fr_general_lookup_type where lkt_lookup_type_code = 'COMBO_SUSPENSE';
+drop procedure    fdr.pcombinationcheck_hopper;
+drop package body fdr.pg_combination_check;
+drop package      fdr.pg_combination_check;
+drop view         fdr.fcv_combination_check_hopper;
+drop view         fdr.fcv_combination_check_suspense;
+drop view         fdr.fcv_combination_check_data;
+drop table        fdr.fr_combination_check_error;
+drop table        fdr.fr_combination_check_input;
+commit;
+
 
 exit

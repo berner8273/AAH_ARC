@@ -152,6 +152,7 @@ drop view  stn.hopper_event_category;
 drop view  stn.hopper_event_group;
 drop view  stn.hopper_event_subgroup;
 drop view  stn.event_hierarchy_default;
+drop view  stn.event_hierarchy_reference;
 drop table stn.posting_amount_negate_flag;
 drop table stn.vie_posting_method_ledger;
 drop table stn.process_code_module;
