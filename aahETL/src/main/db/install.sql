@@ -27,7 +27,6 @@ begin
                         trim ( lower ( username ) ) in (
                                                          trim ( lower ( 'aah_ssis' ) )
                                                        , trim ( lower ( 'aah_read' ) )
-                                                       , trim ( lower ( 'aah_report' ) )
                                                        , trim ( lower ( 'aah_ps' ) )
                                                        )
              )
@@ -63,7 +62,6 @@ end;
 @@roles/aah_glint.sql
 @@users/aah_ssis.sql
 @@users/aah_read.sql
-@@users/aah_report.sql
 @@users/aah_ps.sql
 
 exit 

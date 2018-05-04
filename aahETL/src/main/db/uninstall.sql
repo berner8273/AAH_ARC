@@ -27,7 +27,6 @@ begin
                         trim ( lower ( username ) ) in (
                                                          trim ( lower ( 'aah_ssis' ) )
                                                        , trim ( lower ( 'aah_read' ) )
-                                                       , trim ( lower ( 'aah_report' ) )
                                                        , trim ( lower ( 'aah_ps' ) )
                                                        )
              )
