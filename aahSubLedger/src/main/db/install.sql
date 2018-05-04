@@ -60,6 +60,7 @@ conn ~slr_logon
 @@tables/slr/slr_fak_bop_amounts_tmp.sql
 @@tables/slr/slr_eba_bop_amounts.sql
 @@tables/slr/slr_eba_bop_amounts_tmp.sql
+@@grants/tables/slr/slr_bm_entity_processing_set.sql
 
 delete from slr.slr_entity_proc_group;
 commit;
@@ -300,6 +301,10 @@ conn ~slr_logon
 @@views/slr/vbmfxreval_eba_ag_r2_usstat.sql
 @@views/slr/vbmfxreval_eba_ag_r2_usgaap.sql
 
+-- ye cleardown views
+@@views/slr/vbm_ag_retainedearningseba01.sql
+@@views/slr/vbm_ag_retainedearningseba02.sql
+@@views/slr/vbm_ag_retainedearningseba03.sql
 
 -- -----------------------------------------------------------------------------------------
 -- purpose : Begin Combo Edit installation
