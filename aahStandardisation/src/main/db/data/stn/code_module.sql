@@ -9,4 +9,5 @@ insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_
 insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_id ) values ( 11 , 'stn.pr_journal_line_rval'       , ( select code_module_typ_id from stn.code_module_type where code_module_typ_cd = 'STD_RVAL' ) );
 insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_id ) values ( 12 , 'stn.pr_cession_event_rval'      , ( select code_module_typ_id from stn.code_module_type where code_module_typ_cd = 'STD_RVAL' ) );
 insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_id ) values ( 13 , 'stn.pr_event_hier_sval'         , ( select code_module_typ_id from stn.code_module_type where code_module_typ_cd = 'STD_SVAL' ) );
+insert into stn.code_module ( code_module_id , code_module_nm , code_module_typ_id ) values ( 14 , 'stn.pr_cession_event_sval'      , ( select code_module_typ_id from stn.code_module_type where code_module_typ_cd = 'STD_SVAL' ) );
 commit;

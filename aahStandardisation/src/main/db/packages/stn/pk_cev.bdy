@@ -7,8 +7,7 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_CEV AS
         )
     AS
     BEGIN
-        delete from stn.cev_identified_record;
-        INSERT INTO CEV_IDENTIFIED_RECORD
+        INSERT /*+ PARALLEL(16) */ INTO CEV_IDENTIFIED_RECORD
             (ROW_SID)
             SELECT
                 ce.ROW_SID AS ROW_SID
@@ -36,17 +35,15 @@ and not exists (
               )
 and exists    (
                   select
-                         distinct null
+                         null
                     from
                          stn.feed fd2 
                     join 
-                         stn.cession_event ce2 on fd2.feed_uuid = ce2.feed_uuid
-                    join (
-                         select min(ps.bus_year||ps.bus_month)  min_period
-                           from stn.period_status ps
-                          where ps.status = 'O'
-                         ) min_period
-                      on ( extract ( year from ce2.accounting_dt ) || extract ( month from ce2.accounting_dt ) ) = min_period.min_period
+                         stn.cession_event             ce2 on fd2.feed_uuid = ce2.feed_uuid
+                    join stn.event_hierarchy_reference ehr on ce2.event_typ = ehr.event_typ
+                    join stn.period_status ps  on ( extract ( year from ce2.accounting_dt ) || lpad ( extract ( month from ce2.accounting_dt ) , 2 , 0 ) ) = ps.period
+                                              and ehr.event_class = ps.event_class
+                                              and 'O'             = ps.status
                    where 
                          fd2.feed_sid = fd.FEED_SID
               );
@@ -139,7 +136,7 @@ and exists    (
         
         v_no_cev_valid := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_VALID' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_VALID' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_valid', 'v_no_cev_valid', NULL, v_no_cev_valid, NULL);
         insert into stn.posting_account_derivation
         select distinct
@@ -163,7 +160,7 @@ and exists    (
            and padt.amount_typ_descr   in ( 'DERIVED' , 'DERIVED_PLUS' )
              ;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'POSTING_ACCOUNT_DERIVATION' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'POSTING_ACCOUNT_DERIVATION' );
         insert into stn.vie_posting_account_derivation
         select distinct
                fpd.pd_posting_schema     posting_schema
@@ -191,11 +188,11 @@ and exists    (
                          where et.event_typ = fpd.pd_aet_event_type )
              ;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'VIE_POSTING_ACCOUNT_DERIVATION' );
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed posting_account_derivation and vie_posting_account_derivation', NULL, NULL, NULL, NULL);
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'VIE_POSTING_ACCOUNT_DERIVATION' );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_data', 'v_no_cev_data', NULL, v_no_cev_data, NULL);
         insert into stn.cev_data
         with
-             ce_data
+          ce_data
           as (
           select
                            ipr.policy_id
@@ -225,29 +222,120 @@ and exists    (
                       left join stn.insurance_policy_reference  pipr  on ipr.parent_stream_id          = pipr.stream_id
                       left join stn.insurance_policy_reference  upipr on ipr.ultimate_parent_stream_id = upipr.stream_id
              )
+           , cev_ex_in
+          as (
+                 select
+                        feed_uuid
+                      , correlation_uuid
+                      , event_id
+                      , row_sid
+                      , basis_cd
+                      , accounting_dt
+                      , event_typ
+                      , business_event_typ
+                      , policy_id
+                      , policy_abbr_nm
+                      , stream_id
+                      , parent_stream_id
+                      , vie_id
+                      , vie_cd
+                      , vie_effective_dt
+                      , vie_acct_dt
+                      , is_mark_to_market
+                      , premium_typ
+                      , policy_premium_typ
+                      , policy_accident_yr
+                      , policy_underwriting_yr
+                      , ultimate_parent_stream_id
+                      , ultimate_parent_le_cd
+                      , execution_typ
+                      , policy_typ
+                      , business_typ
+                      , le_cd
+                      , parent_cession_le_cd
+                      , owner_le_cd
+                      , counterparty_le_cd
+                      , transaction_amt
+                      , transaction_ccy
+                      , functional_amt
+                      , functional_ccy
+                      , reporting_amt
+                      , reporting_ccy
+                      , lpg_id
+                   from (
+                            select
+                                   cev.feed_uuid
+                                 , cev.correlation_uuid
+                                 , cev.event_id
+                                 , cev.row_sid
+                                 , cev.basis_cd
+                                 , cev.accounting_dt
+                                 , cev.event_typ
+                                 , cev.business_event_typ
+                                 , ce_data.policy_id
+                                 , ce_data.policy_abbr_nm
+                                 , cev.stream_id
+                                 , ce_data.parent_stream_id
+                                 , ce_data.vie_id
+                                 , ce_data.vie_cd
+                                 , ce_data.vie_effective_dt
+                                 , ce_data.vie_acct_dt
+                                 , ce_data.is_mark_to_market
+                                 , ce_data.policy_premium_typ
+                                 , ce_data.policy_underwriting_yr
+                                 , ce_data.policy_accident_yr
+                                 , ce_data.ultimate_parent_stream_id
+                                 , ce_data.ultimate_parent_le_cd
+                                 , ce_data.execution_typ
+                                 , ce_data.policy_typ
+                                 , cev.business_typ
+                                 , cev.premium_typ
+                                 , case
+                                        when ce_data.le_cd = 'FSAUK'
+                                         and cev.event_typ like 'PGAAP%'
+                                        then 'FSANY'
+                                        when cev.event_typ = 'DAC_CC_CONS_ADJUST'
+                                        then 'CA005'
+                                        else ce_data.le_cd
+                                   end le_cd
+                                 , ce_data.parent_cession_le_cd
+                                 , ce_data.owner_le_cd
+                                 , ce_data.counterparty_le_cd
+                                 , cev.transaction_amt
+                                 , cev.transaction_ccy
+                                 , cev.functional_amt
+                                 , cev.functional_ccy
+                                 , cev.reporting_amt
+                                 , cev.reporting_ccy
+                                 , cev.lpg_id
+                              from
+                                        stn.cev_valid  cev
+                                   join                ce_data on cev.stream_id = ce_data.stream_id
+                        )
+                  )
            , cev_sum
           as (
           select
-                    sum (cev.transaction_amt) transaction_amt
-                  , sum (cev.functional_amt)  functional_amt
-                  , sum (cev.reporting_amt)   reporting_amt
-                  , cev.feed_uuid
-                  , cev.correlation_uuid
-                  , cev.accounting_dt
-                  , cev.stream_id
-                  , cev.event_typ
-                  , cev.business_typ
-                  , cev.basis_cd
+                    sum (cev_ex_in.transaction_amt) transaction_amt
+                  , sum (cev_ex_in.functional_amt)  functional_amt
+                  , sum (cev_ex_in.reporting_amt)   reporting_amt
+                  , cev_ex_in.feed_uuid
+                  , cev_ex_in.correlation_uuid
+                  , cev_ex_in.accounting_dt
+                  , cev_ex_in.stream_id
+                  , cev_ex_in.event_typ
+                  , cev_ex_in.business_typ
+                  , cev_ex_in.basis_cd
             from
-                    stn.cev_valid cev
+                    cev_ex_in
             group by
-                    cev.feed_uuid
-                  , cev.correlation_uuid
-                  , cev.accounting_dt
-                  , cev.stream_id
-                  , cev.event_typ
-                  , cev.business_typ
-                  , cev.basis_cd
+                    cev_ex_in.feed_uuid
+                  , cev_ex_in.correlation_uuid
+                  , cev_ex_in.accounting_dt
+                  , cev_ex_in.stream_id
+                  , cev_ex_in.event_typ
+                  , cev_ex_in.business_typ
+                  , cev_ex_in.basis_cd
              )
                  select /*+ parallel(16)*/
                         gaap_fut_accts_flag
@@ -401,22 +489,26 @@ and exists    (
                                  , coalesce ( gfaout.event_typ    , etout.event_typ    , cev.event_typ )     event_typ
                                  , coalesce ( gfaout.event_typ_id , etout.event_typ_id , et.event_typ_id )   event_typ_id
                                  , cev.business_event_typ
-                                 , ce_data.policy_id
-                                 , ce_data.policy_abbr_nm
+                                 , cev.policy_id
+                                 , cev.policy_abbr_nm
                                  , cev.stream_id
-                                 , ce_data.parent_stream_id
-                                 , ce_data.vie_id
-                                 , ce_data.vie_cd
-                                 , ce_data.vie_effective_dt
-                                 , ce_data.vie_acct_dt
-                                 , ce_data.is_mark_to_market
-                                 , ce_data.policy_premium_typ
-                                 , ce_data.policy_accident_yr
-                                 , ce_data.policy_underwriting_yr
-                                 , ce_data.ultimate_parent_stream_id
-                                 , ce_data.ultimate_parent_le_cd
-                                 , ce_data.execution_typ
-                                 , ce_data.policy_typ
+                                 , cev.parent_stream_id
+                                 , cev.vie_id
+                                 , cev.vie_cd
+                                 , cev.vie_effective_dt
+                                 , cev.vie_acct_dt
+                                 , cev.is_mark_to_market
+                                 , cev.policy_premium_typ
+                                 , case
+                                       when ehr.event_class = 'LOSSES'
+                                       then cev.policy_accident_yr
+                                       else null
+                                   end                                                       policy_accident_yr
+                                 , cev.policy_underwriting_yr
+                                 , cev.ultimate_parent_stream_id
+                                 , cev.ultimate_parent_le_cd
+                                 , cev.execution_typ
+                                 , cev.policy_typ
                                  , cev.business_typ
                                  , case
                                        when cev.premium_typ = 'X'
@@ -426,30 +518,30 @@ and exists    (
                                  , bt.generate_interco_accounting
                                  , case
                                        when bt.bu_derivation_method = 'CESSION'
-                                       then ce_data.le_cd
+                                       then cev.le_cd
                                        when bt.bu_derivation_method = 'PARENT_CESSION'
-                                       then ce_data.parent_cession_le_cd
+                                       then cev.parent_cession_le_cd
                                        else null
                                    end                                                       business_unit
                                  , case
                                        when bt.afflte_derivation_method = 'CESSION'
-                                       then ce_data.le_cd
+                                       then cev.le_cd
                                        when bt.afflte_derivation_method = 'PARENT_CESSION'
-                                       then ce_data.parent_cession_le_cd
+                                       then cev.parent_cession_le_cd
                                        else null
                                    end                                                       affiliate
                                  , case
                                        when bt.owner_derivation_method = 'CESSION'
-                                       then ce_data.owner_le_cd
+                                       then cev.owner_le_cd
                                        when bt.owner_derivation_method = 'PARENT_CESSION'
-                                       then ce_data.counterparty_le_cd
+                                       then cev.counterparty_le_cd
                                        else null
                                    end                                                       owner_le_cd
                                  , case
                                        when bt.cparty_derivation_method = 'CESSION'
-                                       then ce_data.owner_le_cd
+                                       then cev.owner_le_cd
                                        when bt.cparty_derivation_method = 'PARENT_CESSION'
-                                       then ce_data.counterparty_le_cd
+                                       then cev.counterparty_le_cd
                                        else null
                                    end                                                       counterparty_le_cd
                                  , cev.transaction_amt * psanf.negate_flag_in                transaction_amt
@@ -463,12 +555,12 @@ and exists    (
                                  , cev.reporting_ccy
                                  , cev.lpg_id
                               from
-                                        stn.cev_valid                    cev
-                                   join                                  ce_data on cev.stream_id              = ce_data.stream_id
+                                        cev_ex_in                        cev
                                    join stn.event_type                   et      on cev.event_typ              = et.event_typ
+                              left join stn.event_hierarchy_reference    ehr     on cev.event_typ              = ehr.event_typ
                                    join stn.posting_accounting_basis     abasis  on cev.basis_cd               = abasis.basis_cd
                                    join stn.business_type                bt      on cev.business_typ           = bt.business_typ
-                                   join stn.policy_premium_type          ppt     on ce_data.policy_premium_typ = ppt.premium_typ
+                                   join stn.policy_premium_type          ppt     on cev.policy_premium_typ     = ppt.premium_typ
                               left join stn.posting_method_derivation_et psmdet  on et.event_typ_id            = psmdet.input_event_typ_id
                               left join stn.event_type                   etout   on psmdet.output_event_typ_id = etout.event_typ_id
                                    join cev_sum                                  on (
@@ -496,12 +588,12 @@ and exists    (
                                  join stn.posting_amount_derivation_type psadt  on psad.amount_typ_id   = psadt.amount_typ_id
                                  join stn.posting_amount_negate_flag     psanf  on psadt.amount_typ_id  = psanf.amount_typ_id
                                                                                and cev.business_typ     = psanf.business_typ
-                                 
+        
                             left join stn.posting_method_derivation_le   pmdl   on (case
                                                                                      when bt.bu_derivation_method = 'CESSION'
-                                                                                     then ce_data.le_cd
+                                                                                     then cev.le_cd
                                                                                      when bt.bu_derivation_method = 'PARENT_CESSION'
-                                                                                     then ce_data.parent_cession_le_cd
+                                                                                     then cev.parent_cession_le_cd
                                                                                     else null
                                                                                     end  ) = pmdl.le_cd
                         )
@@ -509,7 +601,7 @@ and exists    (
         
         v_no_cev_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_DATA' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_data', 'v_no_cev_data', NULL, v_no_cev_data, NULL);
         insert into stn.cev_premium_typ_override
                 select distinct
@@ -529,7 +621,7 @@ and exists    (
                     )
         ;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_PREMIUM_TYP_OVERRIDE' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_PREMIUM_TYP_OVERRIDE' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_premium_typ_override', NULL, NULL, NULL, NULL);
         insert into stn.cev_mtm_data
                  select /*+ parallel(16)*/
@@ -655,7 +747,7 @@ and exists    (
         
         v_no_cev_mtm_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_MTM_DATA' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_MTM_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_mtm_data', 'v_no_cev_mtm_data', NULL, v_no_cev_mtm_data, NULL);
         insert into stn.cev_gaap_fut_accts_data
         with gfa_1 as
@@ -754,7 +846,8 @@ and exists    (
                               , cev_data.lpg_id
                            from
                                      stn.cev_data                      cev_data
-                                join stn.posting_method                psm      on psm.psm_cd = 'GAAP_FUT_ACCTS'
+                                join stn.posting_method                psm      on ( psm.psm_cd = 'GAAP_FUT_ACCTS'
+                                                                                 or  psm.psm_cd = 'GAAP_TO_CORE' )
                                 join stn.posting_method_ledger         pml      on (
                                                                                            psm.psm_id            = pml.psm_id
                                                                                        and cev_data.input_basis_id = pml.input_basis_id
@@ -764,7 +857,7 @@ and exists    (
                                 join stn.posting_financial_calc        fincalc  on pml.fin_calc_id     = fincalc.fin_calc_id
                           where cev_data.gaap_fut_accts_flag = 'Y'
                             and cev_data.derived_plus_flag   = 'N'
-                            and cev_data.le_flag             = 'N'
+                            --and cev_data.le_flag             = 'N'
                )
                select psm_cd
                     , business_type_association_id
@@ -866,7 +959,7 @@ and exists    (
         
         v_no_cev_gaap_fut_accts_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_GAAP_FUT_ACCTS_DATA' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_GAAP_FUT_ACCTS_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_gaap_fut_accts_data', 'v_no_cev_gaap_fut_accts_data', NULL, v_no_cev_gaap_fut_accts_data, NULL);
         insert into stn.cev_derived_plus_data
         (
@@ -987,17 +1080,18 @@ and exists    (
                       , cev_data.lpg_id
                    from
                              stn.cev_data                       cev_data
+                   left join stn.posting_method_derivation_le   pmdl     on cev_data.business_unit = pmdl.le_cd
                         join stn.posting_method_derivation_mtm  psmtm    on (
                                                                                    cev_data.event_typ_id      = psmtm.event_typ_id
                                                                                and cev_data.is_mark_to_market = psmtm.is_mark_to_market
                                                                                and cev_data.premium_typ       = psmtm.premium_typ
-                                                                           )
+                                                                            )
                         join stn.posting_method_ledger          pml      on (
-                                                                                   psmtm.psm_id            = pml.psm_id
-                                                                               and cev_data.input_basis_id = pml.input_basis_id
-                                                                               and cev_data.input_basis_id = psmtm.basis_id
-                                                                           )
-                        join stn.posting_method                 psm      on psmtm.psm_id          = psm.psm_id
+                                                                                   coalesce( pmdl.psm_id , psmtm.psm_id ) = pml.psm_id
+                                                                               and cev_data.input_basis_id                = pml.input_basis_id
+                                                                               and cev_data.input_basis_id                = psmtm.basis_id
+                                                                            )
+                        join stn.posting_method                 psm      on coalesce( pmdl.psm_id , psmtm.psm_id ) = psm.psm_id
                         join stn.posting_ledger                 pldgr    on pml.ledger_id         = pldgr.ledger_id
                         join stn.posting_accounting_basis       abasis   on pml.output_basis_id   = abasis.basis_id
                         join stn.posting_financial_calc         fincalc  on pml.fin_calc_id       = fincalc.fin_calc_id
@@ -1029,13 +1123,13 @@ and exists    (
                                                                             )
                   where cev_data.gaap_fut_accts_flag = 'N'
                     and cev_data.derived_plus_flag   = 'Y'
-                    and cev_data.le_flag             = 'N'
+                    --and cev_data.le_flag             = 'N'
                     )
         ;
         
         v_no_cev_derived_plus_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_DERIVED_PLUS_DATA' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_DERIVED_PLUS_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_derived_plus_data', 'v_no_cev_derived_plus_data', NULL, v_no_cev_derived_plus_data, NULL);
         insert into stn.cev_le_data
         (
@@ -1099,13 +1193,16 @@ and exists    (
                         join stn.posting_ledger               pldgr     on pml.ledger_id       = pldgr.ledger_id
                         join stn.posting_accounting_basis     abasis    on pml.output_basis_id = abasis.basis_id
                         join stn.posting_financial_calc       fincalc   on pml.fin_calc_id     = fincalc.fin_calc_id
+                        join stn.posting_amount_derivation      pad      on cev_data.event_typ_id = pad.event_typ_id
+                        join stn.posting_amount_derivation_type padt     on pad.amount_typ_id     = padt.amount_typ_id
                   where cev_data.le_flag             = 'Y'
+                    and padt.amount_typ_descr not in ('DERIVED_PLUS')
                     )
         ;
         
         v_no_cev_le_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_LE_DATA' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_LE_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_le_data', 'v_no_cev_le_data', NULL, v_no_cev_le_data, NULL);
         insert into stn.cev_non_intercompany_data
         with amount_derivation
@@ -1476,7 +1573,12 @@ and exists    (
                                     , ad.ultimate_parent_le_cd
                                     , ad.execution_typ
                                     , ad.policy_typ
-                                    , ad.business_typ
+                                    , case
+                                           when ad.affiliate = 'AGFPI'
+                                            and ad.business_typ = 'AA'
+                                           then 'D'
+                                           else ad.business_typ
+                                      end business_typ
                                     , ad.generate_interco_accounting
                                     , ad.business_unit
                                     , ad.affiliate
@@ -1552,7 +1654,7 @@ and exists    (
         
         v_no_cev_non_intercompany_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_NON_INTERCOMPANY_DATA' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_NON_INTERCOMPANY_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_non_intercompany_data', 'v_no_cev_non_intercompany_data', NULL, v_no_cev_non_intercompany_data, NULL);
         insert into stn.cev_intercompany_data
         with intercompany_data
@@ -1589,7 +1691,12 @@ and exists    (
                       , cevnid.ultimate_parent_le_cd
                       , cevnid.execution_typ
                       , cevnid.policy_typ
-                      , cevnid.business_typ
+                      , case
+                             when cevnid.affiliate = 'AGFPI'
+                              and cevnid.business_typ = 'AA'
+                             then 'D'
+                             else cevnid.business_typ
+                         end business_typ
                       , coalesce( psmre.reins_le_cd , ele.elimination_le_cd )   business_unit
                       , nvl2( psmre.reins_le_cd , null , cevnid.affiliate ) affiliate
                       , cevnid.owner_le_cd           --what should these be
@@ -1921,10 +2028,10 @@ and exists    (
         
         v_no_cev_intercompany_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_INTERCOMPANY_DATA' );
+        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_INTERCOMPANY_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_intercompany_data', 'v_no_cev_intercompany_data', NULL, v_no_cev_intercompany_data, NULL);
         INSERT INTO HOPPER_CESSION_EVENT
-            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT)
+            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP)
             SELECT
                 cep.BUSINESS_UNIT AS BUSINESS_UNIT,
                 cep.AFFILIATE AS AFFILIATE_LE_CD,
@@ -1978,7 +2085,19 @@ and exists    (
                 'ORIGINAL' AS POSTING_INDICATOR,
                 cep.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cep.ACCOUNTING_DT )) AS EFFECTIVE_DT
+                trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cep.ACCOUNTING_DT )) AS EFFECTIVE_DT,
+                case
+when exists ( select
+                     null
+                from
+                     fdr.fr_account_lookup fal
+               where
+                     fal.al_lookup_3 = cep.BUSINESS_UNIT
+                 and sysdate between fal.al_valid_from and fal.al_valid_to
+             )
+then cep.BUSINESS_UNIT
+else 'NULL'
+end AS BU_ACCOUNT_LOOKUP
             FROM
                 CESSION_EVENT_POSTING cep
                 INNER JOIN CE_DEFAULT ON 1 = 1
@@ -1988,7 +2107,7 @@ and exists    (
         p_no_published_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting cession events into hopper', 'p_no_published_records', NULL, p_no_published_records, NULL);
         INSERT INTO HOPPER_CESSION_EVENT
-            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT)
+            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP)
             SELECT
                 cerhist.BUSINESS_UNIT AS BUSINESS_UNIT,
                 cerhist.AFFILIATE AS AFFILIATE_LE_CD,
@@ -2042,7 +2161,19 @@ and exists    (
                 'REVERSE_REPOST' AS POSTING_INDICATOR,
                 cerhist.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cerhist.ACCOUNTING_DT )) AS EFFECTIVE_DT
+                trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cerhist.ACCOUNTING_DT )) AS EFFECTIVE_DT,
+                case
+when exists ( select
+                     null
+                from
+                     fdr.fr_account_lookup fal
+               where
+                     fal.al_lookup_3 = cerhist.BUSINESS_UNIT
+                 and sysdate between fal.al_valid_from and fal.al_valid_to
+             )
+then cerhist.BUSINESS_UNIT
+else 'NULL'
+end AS BU_ACCOUNT_LOOKUP
             FROM
                 CESSION_EVENT_REVERSAL_HIST cerhist
                 INNER JOIN CE_DEFAULT ON 1 = 1
@@ -2052,7 +2183,7 @@ and exists    (
         p_no_pub_rev_hist_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting historical reversal records into hopper', 'p_no_pub_rev_hist_records', NULL, p_no_pub_rev_hist_records, NULL);
         INSERT INTO HOPPER_CESSION_EVENT
-            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT)
+            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP)
             SELECT
                 cercurr.BUSINESS_UNIT AS BUSINESS_UNIT,
                 cercurr.AFFILIATE AS AFFILIATE_LE_CD,
@@ -2106,7 +2237,19 @@ and exists    (
                 'REVERSE_REPOST' AS POSTING_INDICATOR,
                 cercurr.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cercurr.ACCOUNTING_DT )) AS EFFECTIVE_DT
+                trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cercurr.ACCOUNTING_DT )) AS EFFECTIVE_DT,
+                case
+when exists ( select
+                     null
+                from
+                     fdr.fr_account_lookup fal
+               where
+                     fal.al_lookup_3 = cercurr.BUSINESS_UNIT
+                 and sysdate between fal.al_valid_from and fal.al_valid_to
+             )
+then cercurr.BUSINESS_UNIT
+else 'NULL'
+end AS BU_ACCOUNT_LOOKUP
             FROM
                 CESSION_EVENT_REVERSAL_CURR cercurr
                 INNER JOIN CE_DEFAULT ON 1 = 1
@@ -2482,6 +2625,89 @@ and exists (
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of unprocessed records cancelled', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
     
+    PROCEDURE pr_cession_event_sval
+        (
+            p_step_run_sid IN NUMBER
+        )
+    AS
+    BEGIN
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cession-event-validate-event-class', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                cev.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                TO_CHAR(cevecd.COUNT_DISTINCT) AS ERROR_VALUE,
+                cev.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                sveld.EVENT_TYPE AS EVENT_TYPE,
+                sveld.ERROR_STATUS AS ERROR_STATUS,
+                sveld.CATEGORY_ID AS CATEGORY_ID,
+                sveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                cev.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                CESSION_EVENT cev
+                INNER JOIN IDENTIFIED_RECORD idr ON cev.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON cev.FEED_UUID = fd.FEED_UUID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
+                INNER JOIN (SELECT
+                    cev.FEED_UUID AS FEED_UUID,
+                    COUNT(DISTINCT fgl.LK_LOOKUP_VALUE3) AS COUNT_DISTINCT
+                FROM
+                    CESSION_EVENT cev
+                    INNER JOIN fdr.FR_GENERAL_LOOKUP fgl ON cev.EVENT_TYP = fgl.LK_LOOKUP_VALUE1
+                GROUP BY
+                    cev.FEED_UUID) cevecd ON cev.FEED_UUID = cevecd.FEED_UUID
+            WHERE
+                vdl.VALIDATION_CD = 'ce-event_class_count' AND cevecd.COUNT_DISTINCT > 1;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : jcession-event-validate-event-class', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cession-event-validate-event-class-period', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                cev.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                cev.EVENT_TYP AS ERROR_VALUE,
+                cev.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                sveld.EVENT_TYPE AS EVENT_TYPE,
+                sveld.ERROR_STATUS AS ERROR_STATUS,
+                sveld.CATEGORY_ID AS CATEGORY_ID,
+                sveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                sveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                cev.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                CESSION_EVENT cev
+                INNER JOIN IDENTIFIED_RECORD idr ON cev.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON cev.FEED_UUID = fd.FEED_UUID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'ce-event_class_period_status'
+and not exists ( select
+                        null
+                   from
+                        stn.event_hierarchy_reference ehr
+                   join stn.period_status             ps on ( extract ( year from cev.accounting_dt ) || lpad ( extract ( month from cev.accounting_dt ) , 2 , 0 ) ) = ps.period
+                                                        and ehr.event_class = ps.event_class
+                                                        and 'O'             = ps.status
+                  where
+                        cev.EVENT_TYP = ehr.event_typ
+                    
+               );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : jcession-event-validate-event-class-period', 'sql%rowcount', NULL, sql%rowcount, NULL);
+    END;
+    
     PROCEDURE pr_cession_event_prc
         (
             p_step_run_sid IN NUMBER,
@@ -2502,9 +2728,13 @@ and exists (
         pub_val_mismatch EXCEPTION;
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify cession event records' );
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start identify cession event records', NULL, NULL, NULL, NULL);
         pr_cession_event_idf(p_lpg_id, p_step_run_sid, v_no_identified_records);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified cession event records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
         IF v_no_identified_records > 0 THEN
+            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set level validate cession event records' );
+            pr_cession_event_sval(p_step_run_sid);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed set level validations', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate cession event records' );
             pr_cession_event_rval(p_step_run_sid);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations', NULL, NULL, NULL, NULL);

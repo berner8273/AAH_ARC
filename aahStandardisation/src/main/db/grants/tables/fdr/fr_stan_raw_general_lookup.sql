@@ -1,3 +1,3 @@
-grant select on fdr.fr_stan_raw_general_lookup to stn;
-grant update on fdr.fr_stan_raw_general_lookup to stn;
-grant insert on fdr.fr_stan_raw_general_lookup to stn;
+grant select on fdr.fr_stan_raw_general_lookup to stn with grant option;
+grant update on fdr.fr_stan_raw_general_lookup to stn with grant option;
+grant insert on fdr.fr_stan_raw_general_lookup to stn with grant option;

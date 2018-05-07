@@ -13,6 +13,7 @@ create table stn.event_hierarchy
 ,   event_category_descr      varchar2 ( 80 char )
 ,   is_cash_event             varchar2 ( 1 char )
 ,   is_core_earning_event     varchar2 ( 1 char )
+,   event_class_period_freq   varchar2 ( 1 char )                                               not null
 ,   lpg_id                    number   ( 38 , 0 )  default 1                                    not null
 ,   event_status              varchar2 ( 1 char )  default 'U'                                  not null
 ,   feed_uuid                 raw ( 16 )                                                        not null
@@ -20,6 +21,7 @@ create table stn.event_hierarchy
 ,   step_run_sid              number ( 38 , 0 )    default 0                                    not null
 ,   constraint pk_eh                       primary key ( row_sid )
 ,   constraint uk_eh                       unique      ( event_typ , feed_uuid )
-,   constraint ck_eh_is_cash_event         check       ( is_cash_event         in ( 'Y' , 'N' ) )
-,   constraint ck_eh_is_core_earning_event check       ( is_core_earning_event in ( 'Y' , 'N' ) )
+,   constraint ck_eh_is_cash_event         check       ( is_cash_event           in ( 'Y' , 'N' ) )
+,   constraint ck_eh_is_core_earning_event check       ( is_core_earning_event   in ( 'Y' , 'N' ) )
+,   constraint ck_eh_period_freq           check       ( event_class_period_freq in ( 'M' , 'Q' ) )
 );
