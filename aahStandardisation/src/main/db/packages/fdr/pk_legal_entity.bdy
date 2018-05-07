@@ -1,4 +1,4 @@
-create or replace package body fdr.pk_legal_entity
+create or replace package body stn.pk_legal_entity
 as
 
     procedure pr_seed_data
@@ -177,7 +177,40 @@ as
                               );
 
             stn.pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Created slr.slr_entities records' , 'sql%rowcount' , null , sql%rowcount , null );
-
+            
+            insert into slr.slr_bm_entity_processing_set 
+              (
+                bmeps_set_id,
+                bmeps_entity,
+                bmeps_input_by,
+                bmeps_input_time,
+                bmeps_amended_on,
+                bmeps_amended_by
+              )
+              (
+              select 
+                bmeps_set_id,
+                bmeps_entity,
+                'SLR' as bmeps_input_by,
+                sysdate as bmeps_input_time,
+                sysdate as bmeps_amended_on,
+                'SLR' as bmeps_amended_by
+              from 
+                (
+                  select distinct 
+                    'AG'       as bmeps_set_id
+                  , ent_entity as bmeps_entity
+                  from slr.slr_entities   
+                        minus
+                  select
+                    bmeps_set_id,
+                    bmeps_entity
+                  from slr.slr_bm_entity_processing_set
+                )
+              );
+            
+            stn.pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Created slr.slr_bm_entity_processing_set records' , 'sql%rowcount' , null , sql%rowcount , null );
+            
             insert
               into
                    slr.slr_fak_definitions
