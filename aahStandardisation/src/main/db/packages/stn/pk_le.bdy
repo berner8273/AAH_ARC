@@ -1,4 +1,4 @@
-create or replace package body     pk_legal_entity
+create or replace package body stn.pk_legal_entity
 as
 
     procedure pr_seed_data
