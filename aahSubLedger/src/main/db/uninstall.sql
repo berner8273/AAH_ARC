@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
---whenever sqlerror exit failure
+-- whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -220,7 +220,7 @@ conn ~gui_logon
 delete from gui.ui_field where uf_id between 10000 and 10050;
 delete from gui.ui_input_field_value where uif_category_code in ('Status','YesOrNo','GLINTSchema','GLINTSourceObject','GLINTTargetObject') or (uif_category_code = 'GLINTSourceAttribute' and uif_description = 'RR_GLINT_BATCH_CONTROL');
 delete from gui.ui_input_field_value where (uif_description like 'RCV_JOURNAL%' or uif_description like 'Custom%') and uif_category_code like 'GLINT%';
-delete from gui.ui_component where uc_id in (1000,50000);
+delete from gui.ui_component where uc_id in (1000,50000,10000,20000);
 commit;
 
 conn ~slr_logon
@@ -290,10 +290,13 @@ delete from       slr.slr_bm_entity_processing_set;
 delete from       slr.slr_process_errors where spe_p_process = 'FXREVALUE';
 commit;
 
--- ye cleardown views
+-- ye cleardown
 drop view					slr.vbm_ag_retainedearningseba01;
 drop view					slr.vbm_ag_retainedearningseba02;
 drop view					slr.vbm_ag_retainedearningseba03;
+delete from       slr.slr_process_config where pc_p_process = 'PLRETEARNINGS';
+delete from       slr.slr_process_config_detail where pcd_pc_p_process = 'PLRETEARNINGS';
+delete from       slr.slr_process_source where upper(sps_source_name) like 'BMRETAINEDEARNINGSEBA%';
 commit;
 
 revoke select, insert on  slr.slr_bm_entity_processing_set from FDR;
