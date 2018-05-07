@@ -24,7 +24,7 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'INTERNAL_EXTERNAL_IND'          , 'I' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'ORG_NODE_TYPE'                  , 'Business Unit' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'BASE_CCY'                       , 'USD' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'NO_GRACE_DAYS'                  , '0' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'NO_GRACE_DAYS'                  , '20' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'SLR_LPG_ID'                     , '2' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'EPG_ID'                         , 'AG' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'BANKING_TRADING'                , 'B' );
