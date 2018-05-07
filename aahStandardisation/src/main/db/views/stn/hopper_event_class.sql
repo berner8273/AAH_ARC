@@ -4,6 +4,7 @@ select
        fsrgl.srlk_lkt_lookup_type_code  feed_typ
      , fsrgl.srlk_match_key1            event_class
      , fsrgl.srlk_lookup_value1         event_class_descr
+     , fsrgl.srlk_lookup_value2         event_class_period_freq
      , fsrgl.srlk_effective_from        effective_from
      , fsrgl.srlk_effective_to          effective_to
      , fsrgl.srlk_active                event_class_sts

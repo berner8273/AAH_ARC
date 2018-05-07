@@ -265,6 +265,7 @@ insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id fr
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'event_hierarchy' ) , 'event_category_descr' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'event_hierarchy' ) , 'is_cash_event' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'event_hierarchy' ) , 'is_core_earning_event' );
+insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'event_hierarchy' ) , 'event_class_period_freq' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'event_hierarchy' ) , 'lpg_id' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'event_hierarchy' ) , 'event_status' );
 insert into stn.db_tab_column ( dbt_id , column_nm ) values ( ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'event_hierarchy' ) , 'feed_uuid' );
