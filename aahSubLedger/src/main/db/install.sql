@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
-whenever sqlerror exit failure
+-- whenever sqlerror exit failure
 
 set serveroutput on
 set define ~

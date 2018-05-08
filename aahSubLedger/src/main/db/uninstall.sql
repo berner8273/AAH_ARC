@@ -217,7 +217,11 @@ revoke select , insert , update on fdr.fr_general_lookup  from slr;
 -- purpose : Begin GLINT uninstall
 -- -----------------------------------------------------------------------------------------
 conn ~gui_logon
+-- jb
+delete from GUI.UI_GENERAL_LOOKUP where ugl_uf_id in (
+    select uf_id from gui.ui_field where uf_uc_id in (1000,50000,10000,20000) );
 delete from gui.ui_field where uf_id between 10000 and 10050;
+delete from gui.ui_field where uf_uc_id in (1000,50000,10000,20000);
 delete from gui.ui_input_field_value where uif_category_code in ('Status','YesOrNo','GLINTSchema','GLINTSourceObject','GLINTTargetObject') or (uif_category_code = 'GLINTSourceAttribute' and uif_description = 'RR_GLINT_BATCH_CONTROL');
 delete from gui.ui_input_field_value where (uif_description like 'RCV_JOURNAL%' or uif_description like 'Custom%') and uif_category_code like 'GLINT%';
 delete from gui.ui_component where uc_id in (1000,50000,10000,20000);
@@ -294,8 +298,8 @@ commit;
 drop view					slr.vbm_ag_retainedearningseba01;
 drop view					slr.vbm_ag_retainedearningseba02;
 drop view					slr.vbm_ag_retainedearningseba03;
-delete from       slr.slr_process_config where pc_p_process = 'PLRETEARNINGS';
 delete from       slr.slr_process_config_detail where pcd_pc_p_process = 'PLRETEARNINGS';
+delete from       slr.slr_process_config where pc_p_process = 'PLRETEARNINGS';
 delete from       slr.slr_process_source where upper(sps_source_name) like 'BMRETAINEDEARNINGSEBA%';
 commit;
 
