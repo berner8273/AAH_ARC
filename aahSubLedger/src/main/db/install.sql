@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
-whenever sqlerror exit failure
+-- whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -60,6 +60,7 @@ conn ~slr_logon
 @@tables/slr/slr_fak_bop_amounts_tmp.sql
 @@tables/slr/slr_eba_bop_amounts.sql
 @@tables/slr/slr_eba_bop_amounts_tmp.sql
+@@grants/tables/slr/slr_bm_entity_processing_set.sql
 
 delete from slr.slr_entity_proc_group;
 commit;
@@ -274,6 +275,95 @@ conn ~gui_logon
 @@data/gui/ui_input_field_value.sql
 @@data/gui/ui_field.sql
 
+-- -----------------------------------------------------------------------------------------
+-- purpose : Begin FX installation
+-- -----------------------------------------------------------------------------------------
 
+conn ~fdr_logon
+
+@@data/fdr/fr_general_lookup_type.sql
+@@data/fdr/fr_general_lookup.sql
+
+conn ~slr_logon
+
+@@data/slr/slr_process_config.sql
+@@data/slr/slr_process_config_detail.sql
+@@data/slr/slr_process_source.sql
+@@views/slr/v_slr_fxreval_parameters.sql
+@@views/slr/v_slr_fxreval_rule0_accts.sql
+@@views/slr/v_slr_fxreval_rule1_events.sql
+@@views/slr/v_slr_fxreval_rule2_events.sql
+@@views/slr/v_slr_fxreval_run_values.sql
+@@views/slr/v_slr_fxreval_rule1_eventunion.sql
+@@views/slr/vbmfxreval_eba_ag_r0_usstat.sql
+@@views/slr/vbmfxreval_eba_ag_r0_usgaap.sql
+@@views/slr/vbmfxreval_eba_ag_r1_usstat.sql
+@@views/slr/vbmfxreval_eba_ag_r2_usstat.sql
+@@views/slr/vbmfxreval_eba_ag_r2_usgaap.sql
+
+-- ye cleardown views
+@@views/slr/vbm_ag_retainedearningseba01.sql
+@@views/slr/vbm_ag_retainedearningseba02.sql
+@@views/slr/vbm_ag_retainedearningseba03.sql
+
+-- -----------------------------------------------------------------------------------------
+-- purpose : Begin Combo Edit installation
+-- -----------------------------------------------------------------------------------------
+conn ~slr_logon
+
+alter table slr.slr_entities add (ent_combo_check_flag char(1) default 'N');
+alter table slr.slr_entities add constraint ent_combo_check_flag check (ent_combo_check_flag in ('Y','N'));
+comment on column slr.slr_entities.ent_combo_check_flag is 'Whether the accounting key combination values should be validated for this entity.';
+alter table slr.slr_jrnl_line_errors disable all triggers;
+
+conn ~fdr_logon
+
+@@tables/fdr/fr_combination_check_input.sql
+@@tables/fdr/fr_combination_check_error.sql
+@@views/fdr/fcv_combination_check_data.sql
+@@views/fdr/fcv_combination_check_suspense.sql
+@@views/fdr/fcv_combination_check_hopper.sql
+@@packages/fdr/pg_combination_check.hdr
+@@packages/fdr/pg_combination_check.bdy
+@@procedures/fdr/pcombinationcheck_hopper.sql
+@@grants/packages/fdr/pg_combination_check.sql
+@@grants/tables/fdr/fr_combination_check_input.sql
+@@grants/tables/fdr/fr_combination_check_error.sql
+@@grants/tables/fdr/fcv_combination_check_data.sql
+@@grants/tables/fdr/fcv_combination_check_suspense.sql
+
+conn ~gui_logon
+
+@@views/gui/ucv_combination_check_jlu.sql
+@@functions/gui/fcombinationcheck_jlu.sql
+@@grants/packages/gui/fcombinationcheck_jlu.sql
+@@grants/tables/gui/gui_jrnl_lines_unposted.sql
+@@grants/tables/gui/gui_jrnl_headers_unposted.sql
+@@data/gui/ui_general_lookup.sql
+@@data/gui/ui_gen_lookup_type_properties.sql
+
+conn ~slr_logon
+
+@@views/slr/scv_combination_check_jlu.sql
+@@views/slr/srv_combination_check_jte.sql
+@@procedures/slr/pcombinationcheck_jlu.sql
+delete from slr.slr_error_message where em_error_code = 'JL_COMBO';
+@@data/slr/slr_error_message.sql
+@@grants/tables/slr/scv_combination_check_jlu.sql
+@@grants/tables/slr/slr_jrnl_headers.sql
+@@grants/tables/slr/slr_entities.sql
+@@grants/tables/slr/slr_jrnl_lines_unposted.sql
+@@grants/tables/slr/seq_process_number.sql
+@@grants/packages/slr/fnslr_getheaderid.sql
+commit;
+
+conn ~rdr_logon
+
+@@views/rdr/rrv_combination_check_app_rule.sql
+@@views/rdr/rrv_combination_check_rule.sql
+@@views/rdr/rcv_combination_check_glint.sql
+@@tables/rdr/rr_glint_suspense_line.sql
+@@procedures/rdr/pcombinationcheck_glint.sql
+@@grants/tables/rdr/rcv_combination_check_glint.sql
 
 exit

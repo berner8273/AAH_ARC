@@ -185,6 +185,42 @@ and not exists (
                 rveld.CATEGORY_ID AS CATEGORY_ID,
                 rveld.ERROR_STATUS AS ERROR_STATUS,
                 rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
+                eh.EVENT_CLASS_DESCR AS error_value,
+                vdl.VALIDATION_TYP_ERR_MSG AS event_text,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                vdl.COLUMN_NM AS field_in_error_name,
+                eh.LPG_ID AS LPG_ID,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                eh.ROW_SID AS row_in_error_key_id,
+                vdl.TABLE_NM AS table_in_error_name,
+                vdl.VALIDATION_CD AS rule_identity,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                eh.STEP_RUN_SID AS STEP_RUN_SID,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                EVENT_HIERARCHY eh
+                INNER JOIN IDENTIFIED_RECORD idr ON eh.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON eh.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER FR_GLOBAL_PARAMETER ON eh.LPG_ID = FR_GLOBAL_PARAMETER.LPG_ID
+                INNER JOIN EVENT_HIERARCHY_DEFAULT ehd ON 1 = 1
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN SET_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+                INNER JOIN (SELECT
+                    eh.EVENT_CLASS AS event_class
+                FROM
+                    EVENT_HIERARCHY eh
+                    INNER JOIN IDENTIFIED_RECORD idr ON eh.ROW_SID = idr.ROW_SID
+                GROUP BY
+                    eh.EVENT_CLASS
+                HAVING
+                    COUNT(DISTINCT eh.EVENT_CLASS_PERIOD_FREQ) > 1) multiple_class_period_freq ON eh.EVENT_CLASS = multiple_class_period_freq.event_class
+            WHERE
+                    vdl.VALIDATION_CD = 'event-hier-class-period-freq'
+            UNION ALL
+            SELECT
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.ERROR_TECHNOLOGY AS ERROR_TECHNOLOGY,
                 eh.EVENT_GRP_DESCR AS error_value,
                 vdl.VALIDATION_TYP_ERR_MSG AS event_text,
                 rveld.EVENT_TYPE AS EVENT_TYPE,
@@ -391,11 +427,12 @@ and not exists (
                 eh.EVENT_STATUS = 'V';
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Merged records into stn.hopper_event_category', 'sql%rowcount', NULL, sql%rowcount, NULL);
         INSERT INTO HOPPER_EVENT_CLASS
-            (FEED_TYP, EVENT_CLASS, EVENT_CLASS_DESCR, EFFECTIVE_FROM, EFFECTIVE_TO, EVENT_CLASS_STS, PROCESS_ID, LPG_ID)
+            (FEED_TYP, EVENT_CLASS, EVENT_CLASS_DESCR, EVENT_CLASS_PERIOD_FREQ, EFFECTIVE_FROM, EFFECTIVE_TO, EVENT_CLASS_STS, PROCESS_ID, LPG_ID)
             SELECT DISTINCT
                 'EVENT_CLASS' AS FEED_TYP,
                 eh.EVENT_CLASS AS EVENT_CLASS,
                 eh.EVENT_CLASS_DESCR AS EVENT_CLASS_DESCR,
+                eh.EVENT_CLASS_PERIOD_FREQ AS EVENT_CLASS_PERIOD_FREQ,
                 CURRENT_DATE AS EFFECTIVE_FROM,
                 TO_DATE('2099-12-31', 'YYYY-MM-DD HH24:MI:SS') AS EFFECTIVE_TO,
                 ehd.ACTIVE_FLAG AS EVENT_CLASS_STS,
@@ -532,17 +569,17 @@ and exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set event hier status = "P"' );
             pr_event_hier_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for acc event records', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
-            IF v_no_identified_records <> v_total_no_faet_published THEN
+            IF v_no_validated_records <> v_total_no_faet_published THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_identified_records != v_total_no_faet_published', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
             END IF;
-            IF v_no_identified_records <> v_total_no_hopper_published THEN
+            IF v_no_validated_records <> v_total_no_hopper_published THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_identified_records != v_total_no_hopper_published', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;
             END IF;
-            IF v_no_identified_records <> v_no_processed_records THEN
+            IF v_no_validated_records <> v_no_processed_records THEN
                 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_identified_records != v_no_processed_records', NULL, NULL, NULL, NULL);
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
                 raise pub_val_mismatch;

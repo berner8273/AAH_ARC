@@ -15,5 +15,5 @@ select frgc.gc_client_code as fdr_code,
        null as parent_id,
        null as entity
 from fdr.fr_general_codes frgc
-where frgc.gc_gct_code_type_id = 'GL_CHARTFIELD'
+where frgc.gc_gct_code_type_id = 'GL_CHARTFIELD' and gc_client_text1 = 'CHARTFIELD_1'
 ;

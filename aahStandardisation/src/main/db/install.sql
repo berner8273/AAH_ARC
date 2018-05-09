@@ -35,6 +35,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_eba_daily_balances.sql
 @@grants/tables/slr/slr_jrnl_lines.sql
 @@grants/tables/slr/slr_jrnl_headers.sql
+@@grants/tables/slr/slr_entities.sql
 
 conn ~gui_logon
 
@@ -61,6 +62,8 @@ update fdr.fr_rate_type
 set rty_active = 'I'
 where rty_rate_type_id = 'FORWARD' and rty_active = 'A';
 @@data/fdr/fr_party_type.sql
+update fdr.fr_party_type fpt set fpt.pt_active = 'I' where fpt.pt_party_type_name in ( 'DEFAULT' , 'Counterparty' , 'Broker' , 'Governmental Agency' , 'Individual' , 'Clearing Agent' , 'Nostro Agent' , 'Business Unit' );
+commit;
 @@data/fdr/fr_city.sql
 @@data/fdr/fr_party_legal.sql
 @@data/fdr/fr_internal_proc_entity_type.sql
@@ -244,6 +247,7 @@ conn ~stn_logon
 @@views/stn/hopper_event_class.sql
 @@views/stn/hopper_event_group.sql
 @@views/stn/hopper_event_subgroup.sql
+@@views/stn/event_hierarchy_reference.sql
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
@@ -367,6 +371,8 @@ conn ~stn_logon
 @@grants/tables/stn/execution_type.sql
 @@grants/tables/stn/journal_line_premium_type.sql
 @@grants/tables/stn/journal_line.sql
+@@grants/tables/stn/event_hierarchy_reference.sql
+@@grants/tables/stn/cession_event.sql
 
 
 @@indices/stn/cession_event.sql

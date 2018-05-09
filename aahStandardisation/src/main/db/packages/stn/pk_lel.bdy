@@ -286,21 +286,66 @@ and     exists (
         INSERT INTO fdr.FR_STAN_RAW_ORG_HIER_STRUC
             (LPG_ID, MESSAGE_ID, PROCESS_ID, SRHS_ONS_CHILD_ORG_NODE_CODE, SRHS_ONS_PARENT_ORG_NODE_CODE, SRHS_ONS_ORG_HIER_TYPE_CODE, SRHS_ACTIVE)
             SELECT
-                lel.LPG_ID AS LPG_ID,
-                TO_CHAR(lel.ROW_SID) AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID,
-                child_legal_entity.LE_CD AS SRHS_ONS_CHILD_ORG_NODE_CODE,
-                parent_legal_entity.LE_CD AS SRHS_ONS_PARENT_ORG_NODE_CODE,
-                lel.LEGAL_ENTITY_LINK_TYP AS SRHS_ONS_ORG_HIER_TYPE_CODE,
-                LE_DEFAULT.ACTIVE_FLAG AS SRHS_ACTIVE
+                LPG_ID,
+                MESSAGE_ID,
+                TO_CHAR(p_step_run_sid),
+                CHILD_LE_CD,
+                PARENT_LE_CD,
+                LINK_TYP,
+                ACTIVE_FLAG
             FROM
-                LEGAL_ENTITY_LINK lel
-                INNER JOIN IDENTIFIED_RECORD idr ON lel.ROW_SID = idr.ROW_SID
-                INNER JOIN LEGAL_ENTITY parent_legal_entity ON lel.PARENT_LE_ID = parent_legal_entity.LE_ID AND lel.FEED_UUID = parent_legal_entity.FEED_UUID
-                INNER JOIN LEGAL_ENTITY child_legal_entity ON lel.CHILD_LE_ID = child_legal_entity.LE_ID AND lel.FEED_UUID = child_legal_entity.FEED_UUID
-                INNER JOIN LE_DEFAULT ON 1 = 1
-            WHERE
-                lel.EVENT_STATUS = 'V';
+                (SELECT
+                    lel.LPG_ID AS LPG_ID,
+                    TO_CHAR(lel.ROW_SID) AS MESSAGE_ID,
+                    child_legal_entity.LE_CD AS CHILD_LE_CD,
+                    parent_legal_entity.LE_CD AS PARENT_LE_CD,
+                    lel.LEGAL_ENTITY_LINK_TYP AS LINK_TYP,
+                    LE_DEFAULT.ACTIVE_FLAG AS ACTIVE_FLAG
+                FROM
+                    LEGAL_ENTITY_LINK lel
+                    INNER JOIN IDENTIFIED_RECORD idr ON lel.ROW_SID = idr.ROW_SID
+                    INNER JOIN LEGAL_ENTITY parent_legal_entity ON lel.PARENT_LE_ID = parent_legal_entity.LE_ID AND lel.FEED_UUID = parent_legal_entity.FEED_UUID
+                    INNER JOIN LEGAL_ENTITY child_legal_entity ON lel.CHILD_LE_ID = child_legal_entity.LE_ID AND lel.FEED_UUID = child_legal_entity.FEED_UUID
+                    INNER JOIN LE_DEFAULT ON 1 = 1
+                WHERE
+                    lel.EVENT_STATUS = 'V'
+                UNION
+                SELECT
+                    lel.LPG_ID AS LPG_ID,
+                    TO_CHAR(lel.ROW_SID) || '.1' AS MESSAGE_ID,
+                    le.LE_CD AS CHILD_LE_CD,
+                    'DEFAULT' AS PARENT_LE_CD,
+                    lel.LEGAL_ENTITY_LINK_TYP AS LINK_TYP,
+                    LE_DEFAULT.ACTIVE_FLAG AS ACTIVE_FLAG
+                FROM
+                    LEGAL_ENTITY_LINK lel
+                    INNER JOIN IDENTIFIED_RECORD idr ON lel.ROW_SID = idr.ROW_SID
+                    INNER JOIN LEGAL_ENTITY le ON lel.PARENT_LE_ID = le.LE_ID AND lel.FEED_UUID = le.FEED_UUID
+                    INNER JOIN LE_DEFAULT ON 1 = 1
+                WHERE
+                    lel.EVENT_STATUS = 'V'
+and not exists
+           (
+             select 
+                    null
+               from 
+                    stn.legal_entity_link lelc
+              where
+                    le.LE_ID = lelc.child_le_id
+                and lel.LEGAL_ENTITY_LINK_TYP = lelc.LEGAL_ENTITY_LINK_TYP
+                and lel.FEED_UUID             = lelc.feed_uuid
+           )
+and exists (
+             select 
+                    null
+               from 
+                    stn.legal_entity_link lelp
+              where
+                    le.LE_ID = lelp.parent_le_id
+                and lel.LEGAL_ENTITY_LINK_TYP = lelp.LEGAL_ENTITY_LINK_TYP
+                and lel.FEED_UUID             = lelp.feed_uuid
+           )
+) SQ_Union;
         p_total_no_published := SQL%ROWCOUNT;
         /*
          * Each feed of legal entity/legal entity link record is supposed to represent to full legal entity hierarchy.
@@ -349,6 +394,80 @@ and     exists (
                                  and foht.oht_org_hier_type_name  = lel.legal_entity_link_typ
                           );
         p_no_cancel_records_published := sql%rowcount;
+        /*
+         * Each feed of legal entity/legal entity link record is supposed to represent to full legal entity hierarchy.
+         * If a link record exists in the FDR which has not been supplied in the feed being processed, then this is
+         * interpreted as meaning that this link between legal entities is no longer valid. This SQL inactivates the
+         * link.
+         */
+        insert
+          into
+               fdr.fr_stan_raw_org_hier_struc
+            (
+                lpg_id
+            ,   process_id
+            ,   srhs_active
+            ,   srhs_ons_parent_org_node_code
+            ,   srhs_ons_child_org_node_code
+            ,   srhs_ons_org_hier_type_code
+            )
+        select
+               1                              lpg_id
+             , to_char ( p_step_run_sid )     process_id
+             , 'I'                            srhs_active
+             , parent_le_cd                   srhs_ons_parent_org_node_code
+             , child_le_cd                    srhs_ons_child_org_node_code
+             , link_typ                       srhs_ons_org_hier_type_code
+        from (
+        select
+               fonp.on_org_node_client_code parent_le_cd
+             , fonc.on_org_node_client_code child_le_cd
+             , foht.oht_org_hier_type_name  link_typ
+          from
+                    fdr.fr_org_node_structure fons
+               join fdr.fr_org_network        fonp on fons.ons_on_parent_org_node_id = fonp.on_org_node_id
+               join fdr.fr_org_network        fonc on fons.ons_on_child_org_node_id  = fonc.on_org_node_id
+               join fdr.fr_org_hierarchy_type foht on fons.ons_oht_org_hier_type_id  = foht.oht_org_hier_type_id
+         where
+               fons.ons_active               = 'A'
+           and fonp.on_org_node_client_code  = 'DEFAULT'
+           and foht.OHT_ORG_HIER_TYPE_NAME  != 'DEFAULT'
+         minus
+        SELECT
+            'DEFAULT' AS PARENT_LE_CD,
+            le.LE_CD AS CHILD_LE_CD,
+            lel.LEGAL_ENTITY_LINK_TYP AS LINK_TYP
+        FROM
+            stn.LEGAL_ENTITY_LINK lel
+            INNER JOIN stn.IDENTIFIED_RECORD idr ON lel.ROW_SID = idr.ROW_SID
+            INNER JOIN stn.LEGAL_ENTITY le ON lel.PARENT_LE_ID = le.LE_ID AND lel.FEED_UUID = le.FEED_UUID
+            INNER JOIN stn.LE_DEFAULT LE_DEFAULT ON 1 = 1
+        WHERE
+            lel.EVENT_STATUS = 'V'
+        and not exists
+                   (
+                     select
+                            null
+                       from
+                            stn.legal_entity_link lelc
+                      where
+                            le.LE_ID = lelc.child_le_id
+                        and lel.LEGAL_ENTITY_LINK_TYP = lelc.LEGAL_ENTITY_LINK_TYP
+                        and lel.feed_uuid             = lelc.feed_uuid
+                   )
+        and exists (
+                     select
+                            null
+                       from
+                            stn.legal_entity_link lelp
+                      where
+                            le.LE_ID = lelp.parent_le_id
+                        and lel.LEGAL_ENTITY_LINK_TYP = lelp.LEGAL_ENTITY_LINK_TYP
+                        and lel.feed_uuid             = lelp.feed_uuid
+                   )
+            )
+        ;
+        --p_no_cancel_records_published := sql%rowcount;
     END;
     
     PROCEDURE pr_legal_ent_link_sps

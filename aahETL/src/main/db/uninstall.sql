@@ -24,7 +24,12 @@ begin
                    from
                         dba_users
                   where
-                        trim ( lower ( username ) ) in ( trim ( lower ( 'aah_ssis' ) ) , trim ( lower ( 'aah_read' ) ) )
+                        trim ( lower ( username ) ) in (
+                                                         trim ( lower ( 'aah_ssis' ) )
+                                                       , trim ( lower ( 'aah_read' ) )
+                                                       , trim ( lower ( 'aah_report' ) )
+                                                       , trim ( lower ( 'aah_ps' ) )
+                                                       )
              )
     loop
         execute immediate i.drop_stmt;
@@ -39,7 +44,12 @@ begin
                    from
                         dba_roles
                   where
-                        trim ( lower ( role ) ) in ( trim ( lower ( 'aah_load' ) ) , trim ( lower ( 'aah_read_only' ) ) )
+                        trim ( lower ( role ) ) in (
+                                                     trim ( lower ( 'aah_load' ) )
+                                                   , trim ( lower ( 'aah_read_only' ) )
+                                                   , trim ( lower ( 'aah_rdr' ) )
+                                                   , trim ( lower ( 'aah_glint' ) )
+                                                   )
              )
     loop
         execute immediate i.drop_stmt;

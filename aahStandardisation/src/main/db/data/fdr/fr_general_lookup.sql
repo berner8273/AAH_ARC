@@ -24,7 +24,7 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'INTERNAL_EXTERNAL_IND'          , 'I' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'ORG_NODE_TYPE'                  , 'Business Unit' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'BASE_CCY'                       , 'USD' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'NO_GRACE_DAYS'                  , '365' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'NO_GRACE_DAYS'                  , '20' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'SLR_LPG_ID'                     , '2' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'EPG_ID'                         , 'AG' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'LE_DEFAULT'               , 'BANKING_TRADING'                , 'B' );
@@ -91,12 +91,12 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 
 
 /* BEGIN EVENT HIERARCHY TEMPORARY SEED DATA */
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_CLASS'              , 'OVERHEAD_TAX'                   , 'Overhead and Premium Tax' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_CLASS'              , 'PROFIT_COMM'                    , 'Profit Commissons ' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_CLASS'              , 'PREM_COMM'                      , 'Premium & Commissions ' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_CLASS'              , 'CONT_RSRV'                      , 'Contingency Reserves' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_CLASS'              , 'OTHERS'                         , 'Others' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_CLASS'              , 'LOSSES'                         , 'Losses & Loss Reserves' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 , lk_lookup_value2 ) values ( 'EVENT_CLASS' , 'OVERHEAD_TAX' , 'Overhead and Premium Tax' , 'M' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 , lk_lookup_value2 ) values ( 'EVENT_CLASS' , 'PROFIT_COMM'  , 'Profit Commissons '       , 'M' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 , lk_lookup_value2 ) values ( 'EVENT_CLASS' , 'PREM_COMM'    , 'Premium & Commissions '   , 'M' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 , lk_lookup_value2 ) values ( 'EVENT_CLASS' , 'CONT_RSRV'    , 'Contingency Reserves'     , 'Q' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 , lk_lookup_value2 ) values ( 'EVENT_CLASS' , 'OTHERS'       , 'Others'                   , 'M' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 , lk_lookup_value2 ) values ( 'EVENT_CLASS' , 'LOSSES'       , 'Losses & Loss Reserves'   , 'M' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_GROUP'              , 'VIE_LOSS_RSRV'                  , 'VIE - Loss Reserves' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_GROUP'              , 'LOSSES_PAID_REC'                , 'Losses Paid, Recoveries and Loss Mitigation' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'EVENT_GROUP'              , 'OVERHEAD_TAX'                   , 'Overhead and Premium Tax' );

@@ -156,7 +156,16 @@ and not exists (
                 INNER JOIN IDENTIFIED_RECORD idr ON l.ROW_SID = idr.ROW_SID
                 INNER JOIN LEDGER_DEFAULT ON 1 = 1
             WHERE
-                abl.EVENT_STATUS = 'V';
+                    abl.EVENT_STATUS = 'V'
+and not exists ( select
+                        null
+                   from
+                        fdr.fr_general_lookup fgl
+                  where
+                        fgl.lk_lkt_lookup_type_code = 'ACCOUNTING_BASIS_LEDGER'
+                    and fgl.lk_lookup_value1       = abl.BASIS_CD
+                    and fgl.lk_lookup_value2       = abl.LEDGER_CD
+               );
         p_no_habl_pub := SQL%ROWCOUNT;
         MERGE INTO fdr.FR_GENERAL_LOOKUP fgl
             USING
@@ -199,7 +208,16 @@ and not exists (
                 INNER JOIN fdr.FR_PARTY_LEGAL fpl ON lel.LE_CD = fpl.PL_PARTY_LEGAL_CLICODE
                 INNER JOIN LEDGER_DEFAULT ON 1 = 1
             WHERE
-                lel.EVENT_STATUS = 'V';
+                    lel.EVENT_STATUS = 'V'
+and not exists ( select
+                        null
+                   from
+                        fdr.fr_general_lookup fgl
+                  where
+                        fgl.lk_lkt_lookup_type_code = 'LEGAL_ENTITY_LEDGER'
+                    and fgl.lk_lookup_value1       = lel.LEDGER_CD
+                    and fgl.lk_lookup_value2       = fpl.PL_GLOBAL_ID
+               );
         p_no_hlel_pub := SQL%ROWCOUNT;
     END;
     
@@ -365,7 +383,8 @@ and exists (
                 EVENT_STATUS = 'P'
             WHERE
                     abl.EVENT_STATUS = 'V'
-and exists (
+and (
+     exists (
            select
                   null
              from
@@ -378,7 +397,18 @@ and exists (
                   join stn.identified_record       idr  on l.row_sid = idr.row_sid
             where
                   to_number ( habl.message_id ) = abl.ROW_SID
-       );
+             )
+     or
+        exists ( select
+                        null
+                   from
+                        fdr.fr_general_lookup fgl
+                  where
+                        fgl.lk_lkt_lookup_type_code = 'ACCOUNTING_BASIS_LEDGER'
+                    and fgl.lk_lookup_value1       = abl.BASIS_CD
+                    and fgl.lk_lookup_value2       = abl.LEDGER_CD
+               )
+     );
         p_no_abl_processed_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of accounting_basis_ledger records set to processed', 'p_no_abl_processed_records', NULL, sql%rowcount, NULL);
         UPDATE LEGAL_ENTITY_LEDGER lel
@@ -386,7 +416,8 @@ and exists (
                 EVENT_STATUS = 'P'
             WHERE
                     lel.EVENT_STATUS = 'V'
-and exists (
+and (
+    exists (
            select
                   null
              from
@@ -399,7 +430,19 @@ and exists (
                   join stn.identified_record       idr  on l.row_sid = idr.row_sid
             where
                   to_number ( hlel.message_id ) = lel.ROW_SID
-       );
+            )
+     or
+        exists ( select
+                        null
+                   from
+                        fdr.fr_general_lookup fgl
+                   join fdr.fr_party_legal    fpl    on fgl.lk_lookup_value2 = fpl.pl_global_id
+                  where
+                        fgl.lk_lkt_lookup_type_code = 'LEGAL_ENTITY_LEDGER'
+                    and fgl.lk_lookup_value1       = lel.LEDGER_CD
+                    and fgl.lk_lookup_value2       = fpl.PL_GLOBAL_ID
+               )
+     );
         p_no_lel_processed_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of legal_entity_ledger records set to processed', 'p_no_lel_processed_records', NULL, sql%rowcount, NULL);
     END;
@@ -618,8 +661,6 @@ and exists (
                 dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
                 raise pub_val_mismatch;
             END IF;
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified ledger standardisation records', 'v_no_identified_records', NULL, v_no_l_identified_records + v_no_abl_identified_records + v_no_lel_identified_records, NULL);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for ledger records', 'v_no_processed_records', NULL, v_no_l_processed_records + v_no_abl_processed_records + v_no_lel_processed_records, NULL);
             p_no_processed_records := v_no_l_processed_records
                                     + v_no_abl_processed_records
                                     + v_no_lel_processed_records;

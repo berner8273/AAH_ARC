@@ -1,0 +1,1 @@
+grant execute on slr.fnslr_getheaderid to rdr;

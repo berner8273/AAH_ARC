@@ -46,4 +46,6 @@ insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_orde
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pPROCESS_SLR-subledger'             , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pUpdateJLU-subledger'               , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
 insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pPROCESS_GLINT-subledger'           , 2 , 'RDR' , 1 , 'RDR' , 'R' , 'aah' );
+insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'ye_cleardown'						           , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
+insert into fdr.fr_batch_schedule ( bs_object_name , lpg_id , bs_stage , bs_order_in_stage , bs_stage_owner , bs_object_type , bs_deployment_folder_name ) values ( 'pFX_REVAL-subledger'                 , 2 , 'SLR' , 1 , 'SLR' , 'R' , 'aah' );
 commit;
