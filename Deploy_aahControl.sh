@@ -1,10 +1,10 @@
-#!/usr/bin/sh
+#!/usr/bin/bash
 ###############################################################################
 # File    : Deploy_aahControl.sh
 # Info    : Octopus Deploy.sh script for aahControl package
 # Date    : 2018-01-19
 # Author  : Elli Wang
-# Version : 2018040401
+# Version : 2018041301
 # Note    :
 #   2018-03-09	Elli	GA 5.10.7
 #   2018-02-02	Elli	GA 1.2.2
