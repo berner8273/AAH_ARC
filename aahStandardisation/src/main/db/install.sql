@@ -372,6 +372,7 @@ conn ~stn_logon
 @@grants/tables/stn/journal_line_premium_type.sql
 @@grants/tables/stn/journal_line.sql
 @@grants/tables/stn/event_hierarchy_reference.sql
+@@grants/tables/stn/cession_event.sql
 
 
 @@indices/stn/cession_event.sql
