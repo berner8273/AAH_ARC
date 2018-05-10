@@ -1428,7 +1428,7 @@ PROCEDURE pr_account
                                                slr.slr_entities
                                     )
                                     eas
-                   where ga.ga_account_code <> ga.ga_client_text4     /* only include sub-accounts */
+                   where ga.ga_account_code <> NVL(ga.ga_client_text4,0)     /* only include sub-accounts */
               )
               input
            on (
