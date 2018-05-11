@@ -1910,7 +1910,7 @@ BEGIN
            ep.ep_entity    = p_entity
        and ep.ep_bus_year >= 2017
        and ep.ep_status    = 'O'
-       and exists ( select
+       and not exists ( select
                            null
                       from 
                            fdr.fr_general_lookup fgl
@@ -1922,7 +1922,7 @@ BEGIN
                                   when fgl.lk_lookup_value1 <> 'C'
                                   then 1
                                   else 0
-                              end ) = 0
+                              end ) > 0
                   group by 
                            fgl.lk_match_key2
                          , fgl.lk_match_key3 ) ;

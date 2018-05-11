@@ -355,6 +355,7 @@ delete from slr.slr_error_message where em_error_code = 'JL_COMBO';
 @@grants/tables/slr/slr_jrnl_lines_unposted.sql
 @@grants/tables/slr/seq_process_number.sql
 @@grants/packages/slr/fnslr_getheaderid.sql
+alter table slr.slr_jrnl_line_errors enable all triggers;
 commit;
 
 conn ~rdr_logon
