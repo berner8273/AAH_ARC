@@ -1428,7 +1428,7 @@ PROCEDURE pr_account
                                                slr.slr_entities
                                     )
                                     eas
-                   where ga.ga_account_code <> ga.ga_client_text4     /* only include sub-accounts */
+                   where ga.ga_account_code <> NVL(ga.ga_client_text4,0)     /* only include sub-accounts */
               )
               input
            on (
@@ -1910,7 +1910,7 @@ BEGIN
            ep.ep_entity    = p_entity
        and ep.ep_bus_year >= 2017
        and ep.ep_status    = 'O'
-       and exists ( select
+       and not exists ( select
                            null
                       from 
                            fdr.fr_general_lookup fgl
@@ -1922,7 +1922,7 @@ BEGIN
                                   when fgl.lk_lookup_value1 <> 'C'
                                   then 1
                                   else 0
-                              end ) = 0
+                              end ) > 0
                   group by 
                            fgl.lk_match_key2
                          , fgl.lk_match_key3 ) ;

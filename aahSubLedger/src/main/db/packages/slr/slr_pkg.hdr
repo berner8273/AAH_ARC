@@ -1,4 +1,4 @@
-create or replace package slr.slr_pkg as
+CREATE OR REPLACE package SLR.slr_pkg as
 
 PROCEDURE pPROCESS_SLR;
 
@@ -79,10 +79,12 @@ PROCEDURE pSLR_DAYS_PERIODS;
 PROCEDURE pEVENT_CLASS_PERIODS;
 PROCEDURE pGENERATE_EBA_BOP_VALUES;
 PROCEDURE pGENERATE_FAK_BOP_VALUES;
+PROCEDURE pYECleardown(pConfig      IN slr_process_config.pc_config%TYPE
+                                      ,pSource      IN slr_process_source.sps_source_name%TYPE
+                                      ,pBalanceDate IN DATE );                                                                                  
 
-PROCEDURE pYECleardown( pConfig      IN slr_process_config.pc_config%TYPE
-                       ,pSource      IN slr_process_source.sps_source_name%TYPE
-                       ,pBalanceDate IN DATE);
+
+
 
 END SLR_PKG;
 /
