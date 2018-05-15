@@ -136,7 +136,7 @@ and exists    (
         
         v_no_cev_valid := sql%rowcount;
         
-        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_VALID' );
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_VALID' , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_valid', 'v_no_cev_valid', NULL, v_no_cev_valid, NULL);
         insert into stn.posting_account_derivation
         select distinct
@@ -224,7 +224,7 @@ and exists    (
              )
            , cev_ex_in
           as (
-                 select
+                 select /*+ parallel(16)*/
                         feed_uuid
                       , correlation_uuid
                       , event_id
@@ -337,7 +337,7 @@ and exists    (
                   , cev_ex_in.business_typ
                   , cev_ex_in.basis_cd
              )
-                 select /*+ parallel(16)*/
+                 select
                         gaap_fut_accts_flag
                       , derived_plus_flag
                       , le_flag
