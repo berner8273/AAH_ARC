@@ -10,11 +10,16 @@
 set serveroutput on
 set define ~
 
-define tns_alias    = @oracleTnsAlias@
+--define tns_alias    = @oracleTnsAlias@
 
-define gui_user     = @guiUsername@
-define gui_password = @guiPassword@
-define gui_logon    = ~gui_user/~gui_password@~tns_alias
+--define gui_user     = @guiUsername@
+--define gui_password = @guiPassword@
+--define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
+define gui_logon    = ~1
+
+
+
 
 conn ~gui_logon
 

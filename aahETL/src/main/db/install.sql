@@ -10,10 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define tns_alias    = @oracleTnsAlias@
-define sys_user     = @sysUsername@
-define sys_password = @sysPassword@
-define sys_logon    = ~sys_user/~sys_password@~tns_alias
+-- define tns_alias    = @oracleTnsAlias@
+-- define sys_user     = @sysUsername@
+-- define sys_password = @sysPassword@
+-- define sys_logon    = ~sys_user/~sys_password@~tns_alias
+define sys_logon     = ~1
+define read_password = ~2
+define ssis_password = ~3
+
 
 conn ~sys_logon as sysdba
 
