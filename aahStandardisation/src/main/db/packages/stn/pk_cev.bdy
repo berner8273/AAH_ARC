@@ -726,7 +726,9 @@ and exists    (
                                                                                 or pacd.business_typ          = 'ND~' )
                                                                              and ( cev_data.is_mark_to_market = pacd.is_mark_to_market
                                                                                 or pacd.is_mark_to_market     = 'ND~' )
-                                                                             and ( cev_data.business_unit     = pacd.business_unit
+                                                                             and ( decode ( cev_data.business_unit
+                                                                                          , 'AGFPI' , 'AGFPI'
+                                                                                          , 'NULL' )          = pacd.business_unit
                                                                                 or pacd.business_unit         = 'ND~' )
                                                                             )
                    left join stn.cev_period_balances            pb       on (
@@ -1107,7 +1109,9 @@ and exists    (
                                                                                 or pacd.business_typ          = 'ND~' )
                                                                              and ( cev_data.is_mark_to_market = pacd.is_mark_to_market
                                                                                 or pacd.is_mark_to_market     = 'ND~' )
-                                                                             and ( cev_data.business_unit     = pacd.business_unit
+                                                                             and ( decode ( cev_data.business_unit
+                                                                                          , 'AGFPI' , 'AGFPI'
+                                                                                          , 'NULL' )          = pacd.business_unit
                                                                                 or pacd.business_unit         = 'ND~' )
                                                                             )
                    left join stn.cev_period_balances            pb       on (
