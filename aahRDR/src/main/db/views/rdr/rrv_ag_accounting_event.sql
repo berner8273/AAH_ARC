@@ -1,7 +1,7 @@
 create or replace view rdr.rrv_ag_accounting_event
 as
 select
-       ae_gl_account                sub_acccount
+       ae_gl_account                sub_account
      , ae_acc_event_id
      , ae_aet_acc_event_type_id
      , ae_in_repository_ind
