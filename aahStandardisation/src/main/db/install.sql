@@ -173,6 +173,7 @@ conn ~stn_logon
 @@tables/stn/insurance_policy_tax_jurisd.sql
 @@tables/stn/journal_line.sql
 @@tables/stn/journal_line_premium_type.sql
+@@tables/stn/journal_line_source_type.sql
 @@tables/stn/ledger.sql
 @@tables/stn/elimination_legal_entity.sql
 @@tables/stn/legal_entity.sql
