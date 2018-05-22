@@ -136,7 +136,7 @@ and not exists (
               );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated event_status to X on discarded records', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-
+    
     PROCEDURE pr_gl_account_pub
         (
             p_step_run_sid IN NUMBER,
@@ -190,7 +190,7 @@ and not exists (
                 INNER JOIN GLA_DEFAULT ON 1 = 1;
         p_total_no_sub_acct_published := SQL%ROWCOUNT;
     END;
-
+    
     PROCEDURE pr_gl_account_sps
         (
             p_no_processed_records OUT NUMBER
@@ -212,7 +212,7 @@ and not exists (
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-
+    
     PROCEDURE pr_gl_account_chr
         (
             p_step_run_sid IN NUMBER,
@@ -229,7 +229,7 @@ and not exists (
                 fsrga.EVENT_STATUS <> 'P' AND fsrga.LPG_ID = p_lpg_id;
         p_no_updated_hopper_records := SQL%ROWCOUNT;
     END;
-
+    
     PROCEDURE pr_gl_account_prc
         (
             p_step_run_sid IN NUMBER,
@@ -276,7 +276,7 @@ and not exists (
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
-            p_no_failed_records    := v_no_identified_records - v_no_processed_records;
+            p_no_failed_records    :=(v_no_identified_records + v_no_si_identified_records) - v_no_processed_records;
         ELSE
             p_no_processed_records := 0;
             p_no_failed_records    := 0;
@@ -284,5 +284,3 @@ and not exists (
     END;
 END PK_GL_ACCT;
 /
-
-
