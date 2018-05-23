@@ -65,6 +65,13 @@ conn ~slr_logon
 delete from slr.slr_entity_proc_group;
 commit;
 
+-- update journal type descriptions for manual journal entries by gui
+update slr_ext_jrnl_types set ejt_active_flag = 'I' where ejt_type not in ('MADJBDPPE','MADJREVPE','MADJPERB');
+update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE prior to open period' where ejt_type = 'MADJPERB';
+update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE open period'  where ejt_type = 'MADJBDPPE';
+update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE rev open period' where ejt_type = 'MADJREVPE';
+commit;
+
 @@data/slr/slr_ledgers.sql
 @@data/slr/slr_entity_sets.sql
 @@data/slr/slr_fak_segment_3.sql

@@ -205,6 +205,9 @@ delete from slr.slr_fak_segment_4;
 delete from slr.slr_fak_segment_3;
 commit;
 
+update slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type not in ('MADJBDPPE','MADJREVPE','MADJPERB');
+commit;
+
 conn ~stn_logon
 revoke select on stn.business_type      from slr;
 revoke select on stn.insurance_policy   from slr;
