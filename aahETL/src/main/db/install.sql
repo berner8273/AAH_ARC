@@ -14,9 +14,11 @@ set define ~
 -- define sys_user     = @sysUsername@
 -- define sys_password = @sysPassword@
 -- define sys_logon    = ~sys_user/~sys_password@~tns_alias
-define sys_logon     = ~1
-define read_password = ~2
-define ssis_password = ~3
+define sys_logonÂ Â Â     = ~1
+define ps_password     = ~2
+define read_password   = ~3
+define report_password = ~4
+define ssis_password   = ~5
 
 
 conn ~sys_logon as sysdba
