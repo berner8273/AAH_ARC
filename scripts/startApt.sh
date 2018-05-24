@@ -13,7 +13,7 @@ nohup ${APT_BASE}/bin/aptsrv > ${LOG_BASE}/aptsrv.out 2> ${LOG_BASE}/aptsrv_err.
 
 # Wait until port $SRV_PORT to be available
 timeout 360 bash -c "until > /dev/tcp/localhost/$SRV_PORT; do sleep 5; done" 2>/dev/null
-[[ $? = 0 ]] || { echo "aptsrv fails to start!"; exit 1; }
+[[ $? = 0 ]] || { echo "Timeout to start aptsrv!"; exit 1; }
 
 # Start apteng
 echo "$(date +'%F %T') Starting apteng ..."
@@ -21,7 +21,7 @@ nohup ${APT_BASE}/bin/apteng > ${LOG_BASE}/apteng.out 2> ${LOG_BASE}/apteng_err.
 
 # Wait until port $ENG_PORT to be available
 timeout 60 bash -c "until > /dev/tcp/localhost/$ENG_PORT; do sleep 1; done" 2>/dev/null
-[[ $? = 0 ]] || { echo "apteng fails to start!"; exit 1; }
+[[ $? = 0 ]] || { echo "Timeout to start apteng!"; exit 1; }
 
 # Start aptbus
 echo "$(date +'%F %T') Starting aptbus ..."
@@ -29,7 +29,7 @@ nohup ${APT_BASE}/bin/aptbus > ${LOG_BASE}/aptbus.out 2> ${LOG_BASE}/aptbus_err.
 
 # Wait until port $BUS_PORT to be available
 timeout 60 bash -c "until > /dev/tcp/localhost/$BUS_PORT; do sleep 1; done" 2>/dev/null
-[[ $? = 0 ]] || { echo "aptbus fails to start!"; exit 1; }
+[[ $? = 0 ]] || { echo "Timeout to start aptbus!"; exit 1; }
 
 # Wait 30 seconds, otherwise startProjects.sh will fail
 echo "Sleep 30 seconds ..."
