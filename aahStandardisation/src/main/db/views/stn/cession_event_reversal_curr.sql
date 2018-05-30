@@ -1,27 +1,29 @@
 create or replace view stn.cession_event_reversal_curr
 as
 with max_event as
-( select
-                          trunc( cep.accounting_dt , 'MONTH' )   accounting_dt
-                        , cep.stream_id
-                        , cep.basis_cd
-                        , cep.premium_typ
-                        , cep.event_typ
-                        , cep.business_typ
-                        , max(cevval.source_event_ts)               source_event_ts
-                        , max(fd.loaded_ts)                         loaded_ts
-                     from 
+          ( select
+                   correlation_uuid
+                 , event_seq_id
+            from ( select
+                          cep.correlation_uuid
+                        , cep.event_seq_id
+                        , rank() over (partition by trunc( cep.accounting_dt , 'MONTH' )
+                                                  , cep.stream_id
+                                                  , cep.basis_cd
+                                                  , cep.premium_typ
+                                                  , cep.event_typ
+                                                  , cep.business_typ
+                                           order by fd.loaded_ts desc
+                                                  , cevval.source_event_ts ) max_rank
+                     from
                                stn.cession_event_posting     cep
-                          join stn.cev_valid                 cevval    on cep.event_seq_id = cevval.event_id
-                          join stn.feed                      fd        on cevval.feed_uuid = fd.feed_uuid
-                 group by
-                          trunc( cep.accounting_dt , 'MONTH' ) --accounting_dt
-                        , cep.stream_id                        --stream_id
-                        , cep.basis_cd                         --basis_cd
-                        , cep.premium_typ                      --premium_typ
-                        , cep.event_typ                        --event_typ
-                        , cep.business_typ                     --business_typ
-        )                     
+                          join stn.cev_valid                 cevval    on cep.event_seq_id     = cevval.event_id
+                                                                      and cep.correlation_uuid = cevval.correlation_uuid
+                          join stn.feed                      fd        on cevval.feed_uuid     = fd.feed_uuid
+                 )
+           where
+                 max_rank = 1
+          )
 select distinct
        'REVERSE_REPOST'               posting_type
      , cep.correlation_uuid
@@ -61,32 +63,18 @@ select distinct
      , cep.lpg_id
      , null                           reversal_indicator
   from
-       stn.cession_event_posting         cep
-  join stn.cev_valid                     cevval    on cep.event_seq_id = cevval.event_id
-  join stn.feed                          fd        on cevval.feed_uuid = fd.feed_uuid
- where (
-               trunc( cep.accounting_dt , 'MONTH' )
-             , cep.stream_id
-             , cep.basis_cd
-             , cep.premium_typ
-             , cep.event_typ
-             , cep.business_typ
-             , cevval.source_event_ts
-             , fd.loaded_ts
-               )
-                not in
+       stn.cession_event_posting     cep
+  join stn.cev_valid                 cevval    on cep.event_seq_id     = cevval.event_id
+                                              and cep.correlation_uuid = cevval.correlation_uuid
+ where ( cep.correlation_uuid
+       , cep.event_seq_id )
+         not in
                  (
                    select
-                          accounting_dt
-                        , stream_id
-                        , basis_cd
-                        , premium_typ
-                        , event_typ
-                        , business_typ
-                        , source_event_ts
-                        , loaded_ts
-                     from 
-                               max_event
+                          correlation_uuid
+                        , event_seq_id
+                     from
+                          max_event
                  )
-        and cevval.event_status = 'V'
+   and cevval.event_status = 'V'
 ;
