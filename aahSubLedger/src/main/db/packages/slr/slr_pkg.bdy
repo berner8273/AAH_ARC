@@ -1,5 +1,6 @@
 CREATE OR REPLACE PACKAGE BODY slr.slr_pkg AS
 
+
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 -- Private procedures
@@ -1392,6 +1393,196 @@ PROCEDURE pr_fx_rate
                            );
         p_no_processed_records := SQL%ROWCOUNT;
         p_no_failed_records := 0;
+
+/*      FX RULE 0 FX RATES      */
+
+        MERGE INTO SLR.SLR_ENTITY_RATES SER
+        USING 
+        (
+        SELECT 
+        'FX_RULE0' AS ER_ENTITY_SET,
+        B.ER_DATE AS ER_DATE,
+        A.ER_CCY_FROM,
+        A.ER_CCY_TO,
+        A.ER_RATE AS ER_RATE,
+        A.ER_CREATED_BY,
+        A.ER_CREATED_ON,
+        A.ER_AMENDED_BY,
+        A.ER_AMENDED_ON,
+        'FX_RULE0' AS ER_RATE_TYPE
+        FROM SLR.SLR_ENTITY_RATES A
+        LEFT JOIN
+          SLR.SLR_ENTITY_RATES B
+            ON  A.ER_ENTITY_SET = B.ER_ENTITY_SET
+            AND LAST_DAY(ADD_MONTHS(A.ER_DATE,-1)) = B.ER_DATE
+            AND A.ER_CCY_FROM = B.ER_CCY_FROM
+            AND A.ER_CCY_TO = B.ER_CCY_TO
+            AND A.ER_RATE_TYPE = B.ER_RATE_TYPE 
+        WHERE A.ER_RATE_TYPE = 'SPOT'
+        AND   A.ER_DATE = LAST_DAY(A.ER_DATE)
+        AND   B.ER_DATE IS NOT NULL
+        )QRY
+        ON 
+        (
+            QRY.ER_ENTITY_SET = SER.ER_ENTITY_SET
+        AND QRY.ER_DATE = SER.ER_DATE
+        AND QRY.ER_CCY_FROM = SER.ER_CCY_FROM
+        AND QRY.ER_CCY_TO = SER.ER_CCY_TO
+        AND QRY.ER_RATE_TYPE = SER.ER_RATE_TYPE
+        )
+        WHEN MATCHED THEN UPDATE SET 
+        SER.ER_RATE = QRY.ER_RATE,
+        SER.ER_AMENDED_BY = 'SLR',
+        SER.ER_AMENDED_ON = SYSDATE
+        WHEN NOT MATCHED THEN INSERT 
+        (
+        SER.ER_ENTITY_SET,
+        SER.ER_DATE,
+        SER.ER_CCY_FROM,
+        SER.ER_CCY_TO,
+        SER.ER_RATE,
+        SER.ER_CREATED_BY,
+        SER.ER_CREATED_ON,
+        SER.ER_AMENDED_BY,
+        SER.ER_AMENDED_ON,
+        SER.ER_RATE_TYPE
+        )
+        VALUES 
+        (
+        QRY.ER_ENTITY_SET,
+        QRY.ER_DATE,
+        QRY.ER_CCY_FROM,
+        QRY.ER_CCY_TO,
+        QRY.ER_RATE,
+        QRY.ER_CREATED_BY,
+        QRY.ER_CREATED_ON,
+        'SLR',
+        SYSDATE,
+        QRY.ER_RATE_TYPE
+        )
+        ;
+
+/*      FX RULE 1 FX RATES      */
+
+        MERGE INTO SLR.SLR_ENTITY_RATES SER
+        USING 
+        (
+        SELECT 
+        'FX_RULE1' AS ER_ENTITY_SET,
+        ER_DATE,
+        ER_CCY_FROM,
+        ER_CCY_TO,
+        ER_RATE,
+        ER_CREATED_BY,
+        ER_CREATED_ON,
+        ER_AMENDED_BY,
+        ER_AMENDED_ON,
+        'FX_RULE1' AS ER_RATE_TYPE
+        FROM SLR_ENTITY_RATES 
+        WHERE ER_RATE_TYPE = 'MAVG'
+        AND ER_ENTITY_SET = 'ENT_RATE_SET'
+        AND ER_DATE = LAST_DAY(ER_DATE)
+        )QRY
+        ON 
+        (
+            QRY.ER_ENTITY_SET = SER.ER_ENTITY_SET
+        AND QRY.ER_DATE = SER.ER_DATE
+        AND QRY.ER_CCY_FROM = SER.ER_CCY_FROM
+        AND QRY.ER_CCY_TO = SER.ER_CCY_TO
+        AND QRY.ER_RATE_TYPE = SER.ER_RATE_TYPE
+        )
+        WHEN MATCHED THEN UPDATE SET 
+        SER.ER_RATE = QRY.ER_RATE,
+        SER.ER_AMENDED_BY = 'SLR',
+        SER.ER_AMENDED_ON = SYSDATE
+        WHEN NOT MATCHED THEN INSERT 
+        (
+        SER.ER_ENTITY_SET,
+        SER.ER_DATE,
+        SER.ER_CCY_FROM,
+        SER.ER_CCY_TO,
+        SER.ER_RATE,
+        SER.ER_CREATED_BY,
+        SER.ER_CREATED_ON,
+        SER.ER_AMENDED_BY,
+        SER.ER_AMENDED_ON,
+        SER.ER_RATE_TYPE
+        )
+        VALUES 
+        (
+        QRY.ER_ENTITY_SET,
+        QRY.ER_DATE,
+        QRY.ER_CCY_FROM,
+        QRY.ER_CCY_TO,
+        QRY.ER_RATE,
+        QRY.ER_CREATED_BY,
+        QRY.ER_CREATED_ON,
+        'SLR',
+        SYSDATE,
+        QRY.ER_RATE_TYPE
+        )
+        ;
+
+/*      FX RULE 2 FX RATES      */
+
+        MERGE INTO SLR.SLR_ENTITY_RATES SER
+        USING 
+        (
+        SELECT 
+        'FX_RULE2' AS ER_ENTITY_SET,
+        ER_DATE,
+        ER_CCY_FROM,
+        ER_CCY_TO,
+        ER_RATE,
+        ER_CREATED_BY,
+        ER_CREATED_ON,
+        ER_AMENDED_BY,
+        ER_AMENDED_ON,
+        'FX_RULE2' AS ER_RATE_TYPE
+        FROM SLR_ENTITY_RATES 
+        WHERE ER_RATE_TYPE = 'SPOT'
+        AND ER_ENTITY_SET = 'ENT_RATE_SET'
+        AND ER_DATE = LAST_DAY(ER_DATE)
+        )QRY
+        ON 
+        (
+            QRY.ER_ENTITY_SET = SER.ER_ENTITY_SET
+        AND QRY.ER_DATE = SER.ER_DATE
+        AND QRY.ER_CCY_FROM = SER.ER_CCY_FROM
+        AND QRY.ER_CCY_TO = SER.ER_CCY_TO
+        AND QRY.ER_RATE_TYPE = SER.ER_RATE_TYPE
+        )
+        WHEN MATCHED THEN UPDATE SET 
+        SER.ER_RATE = QRY.ER_RATE,
+        SER.ER_AMENDED_BY = 'SLR',
+        SER.ER_AMENDED_ON = SYSDATE
+        WHEN NOT MATCHED THEN INSERT 
+        (
+        SER.ER_ENTITY_SET,
+        SER.ER_DATE,
+        SER.ER_CCY_FROM,
+        SER.ER_CCY_TO,
+        SER.ER_RATE,
+        SER.ER_CREATED_BY,
+        SER.ER_CREATED_ON,
+        SER.ER_AMENDED_BY,
+        SER.ER_AMENDED_ON,
+        SER.ER_RATE_TYPE
+        )
+        VALUES 
+        (
+        QRY.ER_ENTITY_SET,
+        QRY.ER_DATE,
+        QRY.ER_CCY_FROM,
+        QRY.ER_CCY_TO,
+        QRY.ER_RATE,
+        QRY.ER_CREATED_BY,
+        QRY.ER_CREATED_ON,
+        'SLR',
+        SYSDATE,
+        QRY.ER_RATE_TYPE
+        );
+        
     end pr_fx_rate;
 
 PROCEDURE pr_account
@@ -1428,7 +1619,6 @@ PROCEDURE pr_account
                                                slr.slr_entities
                                     )
                                     eas
-                   where ga.ga_account_code <> NVL(ga.ga_client_text4,0)     /* only include sub-accounts */
               )
               input
            on (
@@ -1875,58 +2065,6 @@ BEGIN
 
     SLR_CALENDAR_PKG.pSetEntityBusinessDate(p_entity, lvBusinessDate);
 
-    begin
-    /* open closed periods */
-    update
-           slr.slr_entity_periods ep
-       set
-           ep.ep_status = 'O'
-     where
-           ep.ep_entity    = p_entity
-       and ep.ep_bus_year >= 2017
-       and ep.ep_status    = 'C'
-       and exists ( select
-                           null
-                      from 
-                           fdr.fr_general_lookup fgl
-                     where
-                           fgl.lk_lkt_lookup_type_code  = 'EVENT_CLASS_PERIOD'
-                       and to_number(fgl.lk_match_key2) = ep.ep_bus_year
-                       and to_number(fgl.lk_match_key3) = ep.ep_bus_period
-                       and ( case
-                                  when fgl.lk_lookup_value1 <> 'C'
-                                  then 1
-                                  else 0
-                              end ) > 0
-                  group by 
-                           fgl.lk_match_key2
-                         , fgl.lk_match_key3 ) ;
-    /* close open periods */
-    update
-           slr.slr_entity_periods ep
-       set
-           ep.ep_status = 'C'
-     where
-           ep.ep_entity    = p_entity
-       and ep.ep_bus_year >= 2017
-       and ep.ep_status    = 'O'
-       and not exists ( select
-                           null
-                      from 
-                           fdr.fr_general_lookup fgl
-                     where
-                           fgl.lk_lkt_lookup_type_code  = 'EVENT_CLASS_PERIOD'
-                       and to_number(fgl.lk_match_key2) = ep.ep_bus_year
-                       and to_number(fgl.lk_match_key3) = ep.ep_bus_period
-                       and ( case
-                                  when fgl.lk_lookup_value1 <> 'C'
-                                  then 1
-                                  else 0
-                              end ) > 0
-                  group by 
-                           fgl.lk_match_key2
-                         , fgl.lk_match_key3 ) ;
-    end;
     --find business year
     BEGIN
        SELECT EP_BUS_YEAR
@@ -2569,83 +2707,68 @@ END pSLR_ENTITY_PERIODS;
 PROCEDURE pEVENT_CLASS_PERIODS AS
 
 BEGIN
-merge
- into
-      fdr.fr_general_lookup gl
-using (
-          select distinct
-                 'EVENT_CLASS_PERIOD'                                       LK_LKT_LOOKUP_TYPE_CODE
-               , eg.event_group                                             LK_MATCH_KEY1
-               , to_char(ep.ep_bus_year)                                    LK_MATCH_KEY2
-               , lpad(ep.ep_bus_period,2,'0')                               LK_MATCH_KEY3
-               , to_char(ep.ep_bus_year)||'-'||lpad(ep.ep_bus_period,2,'0') LK_MATCH_KEY4
-               , 'O'                                                        LK_LOOKUP_VALUE1
-               , to_char(ep.ep_bus_period_start,'DD-MON-YYYY')              LK_LOOKUP_VALUE2
-               , to_char(ep.ep_bus_period_end,'DD-MON-YYYY')                LK_LOOKUP_VALUE3
-               , 'N'                                                        LK_LOOKUP_VALUE5
-               , to_date('01/01/2000','mm/dd/yyyy')                         LK_EFFECTIVE_FROM
-               , to_date('01/01/2099','mm/dd/yyyy')                         LK_EFFECTIVE_TO
-            from
-                 slr_entity_periods ep
-      cross join ( select distinct
-                          lk_match_key1    event_group
-                        , lk_lookup_value2 frequency_ind
-                     from
-                          fdr.fr_general_lookup
-                    where
-                          lk_lkt_lookup_type_code = 'EVENT_CLASS'
-                      and sysdate between LK_EFFECTIVE_FROM and LK_EFFECTIVE_TO
-                 ) eg
-         where (   eg.frequency_ind = 'M'
-                   or eg.frequency_ind is null
-                   or (     eg.frequency_ind = 'Q'
-                        and ep.ep_bus_period in ( 3 , 6 , 9 , 12 )
-                      )
-                  )
-              and ep.ep_bus_period_start >= to_date('01-JAN-2017','DD-MON-YYYY')
-      )
-      input
-   on (
-              gl.LK_MATCH_KEY1           = input.LK_MATCH_KEY1
-          and gl.LK_LOOKUP_VALUE2        = input.LK_LOOKUP_VALUE2
-          and gl.LK_LOOKUP_VALUE3        = input.LK_LOOKUP_VALUE3
-          and GL.LK_LKT_LOOKUP_TYPE_CODE = 'EVENT_CLASS_PERIOD'
-      )
-when
-      matched then update set
-                     gl.LK_MATCH_KEY2 = input.LK_MATCH_KEY2
-                   , gl.LK_MATCH_KEY3 = input.LK_MATCH_KEY3
-                   , gl.LK_MATCH_KEY4 = input.LK_MATCH_KEY4
-when not
-      matched then insert
-                   (
-                      gl.LK_LKT_LOOKUP_TYPE_CODE
-                    , gl.LK_MATCH_KEY1
-                    , gl.LK_MATCH_KEY2
-                    , gl.LK_MATCH_KEY3
-                    , gl.LK_MATCH_KEY4
-                    , gl.LK_LOOKUP_VALUE1
-                    , gl.LK_LOOKUP_VALUE2
-                    , gl.LK_LOOKUP_VALUE3
-                    , gl.LK_LOOKUP_VALUE5
-                    , gl.LK_EFFECTIVE_FROM
-                    , gl.LK_EFFECTIVE_TO
-                   )
-                   values
-                   (
-                       input.LK_LKT_LOOKUP_TYPE_CODE
-                   ,   input.LK_MATCH_KEY1
-                   ,   input.LK_MATCH_KEY2
-                   ,   input.LK_MATCH_KEY3
-                   ,   input.LK_MATCH_KEY4
-                   ,   input.LK_LOOKUP_VALUE1
-                   ,   input.LK_LOOKUP_VALUE2
-                   ,   input.LK_LOOKUP_VALUE3
-                   ,   input.LK_LOOKUP_VALUE5
-                   ,   input.LK_EFFECTIVE_FROM
-                   ,   input.LK_EFFECTIVE_TO
-                   )
-                   ;
+        merge
+         into
+              fdr.fr_general_lookup gl
+        using (
+                  select distinct
+                    'EVENT_CLASS_PERIOD'                           LK_LKT_LOOKUP_TYPE_CODE
+                    ,eg.event_group                                LK_MATCH_KEY1
+                    ,to_char(ep.ep_bus_year)                       LK_MATCH_KEY2
+                    ,decode(length(ep.ep_bus_period),1,'0'||ep.ep_bus_period,ep.ep_bus_period) LK_MATCH_KEY3
+                    ,to_char(ep.ep_bus_year)||'-'||decode(length(ep.ep_bus_period),1,'0'||ep.ep_bus_period,ep.ep_bus_period) LK_MATCH_KEY4
+                    ,'O'                                           LK_LOOKUP_VALUE1
+                    ,to_char(ep.ep_bus_period_start,'DD-MON-YYYY') LK_LOOKUP_VALUE2
+                    ,to_char(ep.ep_bus_period_end,'DD-MON-YYYY')   LK_LOOKUP_VALUE3
+                    ,to_date('01/01/2000','mm/dd/yyyy')            LK_EFFECTIVE_FROM
+                    ,to_date('01/01/2099','mm/dd/yyyy')            LK_EFFECTIVE_TO
+                    from slr_entity_periods ep
+                    cross join (
+                        select distinct LK_MATCH_KEY1 as event_group
+                        from fdr.fr_general_lookup where lk_lkt_lookup_type_code='EVENT_CLASS'
+                            and SYSDATE between LK_EFFECTIVE_FROM and LK_EFFECTIVE_TO
+                            ) eg
+              )
+              input
+           on (
+                      gl.LK_MATCH_KEY1           = input.LK_MATCH_KEY1
+                  and gl.LK_LOOKUP_VALUE2        = input.LK_LOOKUP_VALUE2
+                  and gl.LK_LOOKUP_VALUE3        = input.LK_LOOKUP_VALUE3
+                  and GL.LK_LKT_LOOKUP_TYPE_CODE = 'EVENT_CLASS_PERIOD'
+              )
+        when
+              matched then update set
+                             gl.LK_MATCH_KEY2 = input.LK_MATCH_KEY2
+                           , gl.LK_MATCH_KEY3 = input.LK_MATCH_KEY3
+                           , gl.LK_MATCH_KEY4 = input.LK_MATCH_KEY4
+        when not
+              matched then insert
+                           (
+                              gl.LK_LKT_LOOKUP_TYPE_CODE,
+                              gl.LK_MATCH_KEY1,
+                              gl.LK_MATCH_KEY2,
+                              gl.LK_MATCH_KEY3,
+                              gl.LK_MATCH_KEY4,
+                              gl.LK_LOOKUP_VALUE1,
+                              gl.LK_LOOKUP_VALUE2,
+                              gl.LK_LOOKUP_VALUE3,
+                              gl.LK_EFFECTIVE_FROM,
+                              gl.LK_EFFECTIVE_TO
+                           )
+                           values
+                           (
+                               input.LK_LKT_LOOKUP_TYPE_CODE
+                           ,   input.LK_MATCH_KEY1
+                           ,   input.LK_MATCH_KEY2
+                           ,   input.LK_MATCH_KEY3
+                           ,   input.LK_MATCH_KEY4
+                           ,   input.LK_LOOKUP_VALUE1
+                           ,   input.LK_LOOKUP_VALUE2
+                           ,   input.LK_LOOKUP_VALUE3
+                           ,   input.LK_EFFECTIVE_FROM
+                           ,   input.LK_EFFECTIVE_TO
+                           )
+                           ;
 END pEVENT_CLASS_PERIODS;
 
 PROCEDURE pGENERATE_EBA_BOP_VALUES AS
@@ -3307,25 +3430,554 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
 
 END pGENERATE_FAK_BOP_VALUES;
 
-PROCEDURE pYECleardown(pConfig      IN slr_process_config.pc_config%TYPE
-                                      ,pSource      IN slr_process_source.sps_source_name%TYPE
-                                      ,pBalanceDate IN DATE )                                                                                  
-                                       
-as
+PROCEDURE pFX_REVAL(p_month IN NUMBER, p_year IN NUMBER, p_event_class IN VARCHAR2, p_acc_basis IN VARCHAR2) AS
 
-    s_proc_name varchar2(50) := $$plsql_unit || '.' || $$plsql_function ;     
-    pProcess   slr_process.p_process%TYPE := 'PLRETEARNINGS';
-    pEntProcSet slr_bm_entity_processing_set.bmeps_set_id%TYPE :='AG';
-    pRateSet  slr_entity_rates.er_entity_set%TYPE := NULL;
-    gProcId  number;
-
-  begin
+  PPROCESS VARCHAR2(40);
+  PENTPROCSET VARCHAR2(20);
+  PCONFIG VARCHAR2(40);
+  PSOURCE VARCHAR2(40);
+  PBALANCEDATE DATE;
+  PRATESET VARCHAR2(20);
+  GPROCID NUMBER;
+ 
+  V_FX_DT     DATE;
+  V_FX_DT_LM  DATE;
   
-  slr.slr_balance_movement_pkg.pBMRunBalanceMovementProcess (pProcess,pEntProcSet,pConfig,pSource,pBalanceDate,pRateSet,gProcId);
+BEGIN
+
+/* DEFINE AND SET MONTH-END DATES FOR FX RUN */
+  V_FX_DT    := LAST_DAY(TO_DATE(TO_CHAR(LPAD(p_month||p_year,6,0)),'MMYYYY'));
+  V_FX_DT_LM := ADD_MONTHS(V_FX_DT,-1);
   
-end pYECleardown;                                        
+/* SET ALL ENTITY ACCOUNTS THAT SHOULD BE REVALUED */
+
+  UPDATE slr_entity_accounts
+  SET EA_REVALUATION_FLAG = 'Y'
+  WHERE EA_ACCOUNT IN
+  (
+    SELECT DISTINCT LK_MATCH_KEY2
+    FROM FDR.FR_GENERAL_LOOKUP
+    WHERE LK_LKT_LOOKUP_TYPE_CODE = 'FXREVAL_REBAL_ACCTS'
+  );
+  COMMIT;
+
+/* UPDATE FX RUN VARIABLES */
+    update fdr.fr_general_lookup
+    set lk_match_key1 = p_month -- month nbr
+      , lk_match_key2 = p_year -- year nbr
+      , lk_match_key3 = p_event_class -- event class
+      , lk_match_key4 = p_acc_basis -- accounting basis
+    where lk_lkt_lookup_type_code = 'FXREVAL_RUN_VALUES'
+    ;
+
+/**********************************************************************************************************
+**************************          BEGIN MONTH-END             *******************************************
+**************************           FX REVALUATION             *******************************************
+**************************             (FXRULE0)                *******************************************
+***********************************************************************************************************/
+  
+  IF p_acc_basis = 'US_STAT' 
+    THEN SLR.SLR_PKG.pFX_REVAL_RULE0_USSTAT(V_FX_DT_LM);
+  ELSIF p_acc_basis = 'US_GAAP' 
+    THEN SLR.SLR_PKG.pFX_REVAL_RULE0_USGAAP(V_FX_DT_LM) ;
+  END IF;
+
+/**********************************************************************************************************
+**************************        BEGIN MONTHLY TRAFFIC         *******************************************
+**************************           FX REVALUATION             *******************************************
+**************************             (FXRULE2)                *******************************************
+***********************************************************************************************************/
+
+  IF p_acc_basis = 'US_STAT' 
+    THEN SLR.SLR_PKG.pFX_REVAL_RULE2_USSTAT(V_FX_DT);
+  ELSIF p_acc_basis = 'US_GAAP' 
+    THEN SLR.SLR_PKG.pFX_REVAL_RULE2_USGAAP(V_FX_DT);
+  END IF;
+
+/**********************************************************************************************************
+**************************         POST NEWLY CREATED           *******************************************
+**************************           FX REVALUATION             *******************************************
+**************************           JOURNAL LINES              *******************************************
+***********************************************************************************************************/
+  
+  SLR_UTILITIES_PKG.pRunValidateAndPost ('AG', 'ENT_RATE_SET', GPROCID) ;  
+
+/**********************************************************************************************************
+**************************        BEGIN MONTHLY TRAFFIC         *******************************************
+**************************           FX REVALUATION             *******************************************
+**************************        SPOT VS MAVG (FXRULE1)        *******************************************
+***********************************************************************************************************/
+  
+  IF p_acc_basis = 'US_STAT' 
+    THEN SLR.SLR_PKG.pFX_REVAL_RULE1_USSTAT(V_FX_DT); -- RUN FX PROCESS
+         SLR_UTILITIES_PKG.pRunValidateAndPost ('AG', 'ENT_RATE_SET', GPROCID) ; -- POST NEW LINES FROM FXRULE1 RUN   
+  END IF;
+  
+END pFX_REVAL;
+
+PROCEDURE pFX_REVAL_RULE0_USSTAT(v_date IN DATE) AS
+
+  PPROCESS VARCHAR2(40);
+  PENTPROCSET VARCHAR2(20);
+  PCONFIG VARCHAR2(40);
+  PSOURCE VARCHAR2(40);
+  PBALANCEDATE DATE;
+  PRATESET VARCHAR2(20);
+  GPROCID NUMBER;
+
+BEGIN
+/* BEGIN FXRULE0 RUN */
+/* SET ALL VARIABLE VALUES FOR FXRULE0 RUN */
+
+  PPROCESS := 'FXREVALUE';
+  PENTPROCSET := 'AG';
+  PCONFIG := 'FX_AG_RULE0_USSTAT';
+  PSOURCE := 'BMFXREVAL_EBA_AG_R0_USSTAT';
+  PBALANCEDATE := v_date;
+  PRATESET := 'FX_RULE0';
+  GPROCID := NULL;
 
 
+/* EXECUTE FXRULE0 RUN */
+  SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
+  (  
+        PPROCESS => PPROCESS,
+        PENTPROCSET => PENTPROCSET,
+        PCONFIG => PCONFIG,
+        PSOURCE => PSOURCE,
+        PBALANCEDATE => PBALANCEDATE,
+        PRATESET => PRATESET,
+        GPROCID => GPROCID
+  ) ; 
+  
+  update SLR_JRNL_LINES_UNPOSTED
+  set JLU_EFFECTIVE_DATE = add_months(JLU_EFFECTIVE_DATE,1)
+   ,  JLU_VALUE_DATE = add_months(JLU_VALUE_DATE,1)
+   ,  JLU_JRNL_DATE = add_months(JLU_JRNL_DATE,1)
+   ,  JLU_FAK_ID = 0
+   ,  JLU_EBA_ID = 0
+  where jlu_jrnl_process_id = GPROCID
+  ;
+  commit;
+
+/* FXRULE0 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
+
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+  
+  insert into slr.slr_fx_reval_temp 
+  (
+     select 
+      fgl.lk_match_key10   as adjust_offset
+    , fgl.lk_lookup_value1 as fx_acccounting_event
+    , fgl.lk_lookup_value2 as fx_gl_account
+    , jlu.ROWID as jlu_ROWID
+    from fdr.fr_general_lookup fgl
+    join slr.slr_jrnl_lines_unposted jlu
+    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
+    and fgl.lk_match_key2  = jlu.jlu_account -- join on sub-account
+    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
+    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
+    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
+    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
+    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
+    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE0'
+  );
+  
+  commit;
+  
+  MERGE INTO 
+    slr.slr_jrnl_lines_unposted jlu
+  USING
+    (select * from slr.slr_fx_reval_temp) tmp
+  ON 
+    (tmp.jlu_rowid = jlu.ROWID)
+  WHEN MATCHED THEN UPDATE SET
+    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
+    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
+    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
+    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
+  ;
+  
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+
+/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
+  
+  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
+  
+  commit;
+
+/**********************************************************************************************************
+************************************* END FXRULE0 RUN *****************************************************
+***********************************************************************************************************/
+
+
+END pFX_REVAL_RULE0_USSTAT;
+
+PROCEDURE pFX_REVAL_RULE1_USSTAT(v_date IN DATE) AS
+   PPROCESS VARCHAR2(40);
+  PENTPROCSET VARCHAR2(20);
+  PCONFIG VARCHAR2(40);
+  PSOURCE VARCHAR2(40);
+  PBALANCEDATE DATE;
+  PRATESET VARCHAR2(20);
+  GPROCID NUMBER;
+
+BEGIN
+/* BEGIN FXRULE2 RUN */
+/* SET ALL VARIABLE VALUES FOR FXRULE2 RUN */
+
+  PPROCESS := 'FXREVALUE';
+  PENTPROCSET := 'AG';
+  PCONFIG := 'FX_AG_RULE1_USSTAT';
+  PSOURCE := 'BMFXREVAL_EBA_AG_R1_USSTAT';
+  PBALANCEDATE := v_date;
+  PRATESET := 'FX_RULE1';
+  GPROCID := NULL;
+
+
+/* EXECUTE FXRULE2 RUN */
+  SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
+  (  
+        PPROCESS => PPROCESS,
+        PENTPROCSET => PENTPROCSET,
+        PCONFIG => PCONFIG,
+        PSOURCE => PSOURCE,
+        PBALANCEDATE => PBALANCEDATE,
+        PRATESET => PRATESET,
+        GPROCID => GPROCID
+  ) ; 
+  
+  update SLR_JRNL_LINES_UNPOSTED
+  set JLU_FAK_ID = 0
+   ,  JLU_EBA_ID = 0
+  where jlu_jrnl_process_id = GPROCID
+  ;
+  commit;
+
+/* FXRULE2 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
+
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+  
+  insert into slr.slr_fx_reval_temp 
+  (
+     select 
+      fgl.lk_match_key10   as adjust_offset
+    , fgl.lk_lookup_value1 as fx_acccounting_event
+    , fgl.lk_lookup_value2 as fx_gl_account
+    , jlu.ROWID as jlu_ROWID
+    from fdr.fr_general_lookup fgl
+    join slr.slr_jrnl_lines_unposted jlu
+    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
+    and fgl.lk_match_key2  = jlu.jlu_attribute_4 -- join on accounting event
+    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
+    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
+    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
+    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
+    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
+    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE1'
+  );
+  
+  commit;
+  
+  MERGE INTO 
+    slr.slr_jrnl_lines_unposted jlu
+  USING
+    (select * from slr.slr_fx_reval_temp) tmp
+  ON 
+    (tmp.jlu_rowid = jlu.ROWID)
+  WHEN MATCHED THEN UPDATE SET
+    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
+    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
+    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
+    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
+  ;
+  
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+
+/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
+  
+  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
+  
+  commit;
+
+END pFX_REVAL_RULE1_USSTAT;
+
+
+PROCEDURE pFX_REVAL_RULE2_USSTAT(v_date IN DATE) AS
+   PPROCESS VARCHAR2(40);
+  PENTPROCSET VARCHAR2(20);
+  PCONFIG VARCHAR2(40);
+  PSOURCE VARCHAR2(40);
+  PBALANCEDATE DATE;
+  PRATESET VARCHAR2(20);
+  GPROCID NUMBER;
+
+BEGIN
+/* BEGIN FXRULE2 RUN */
+/* SET ALL VARIABLE VALUES FOR FXRULE2 RUN */
+
+  PPROCESS := 'FXREVALUE';
+  PENTPROCSET := 'AG';
+  PCONFIG := 'FX_AG_RULE2_USSTAT';
+  PSOURCE := 'BMFXREVAL_EBA_AG_R2_USSTAT';
+  PBALANCEDATE := v_date;
+  PRATESET := 'FX_RULE2';
+  GPROCID := NULL;
+
+
+/* EXECUTE FXRULE2 RUN */
+  SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
+  (  
+        PPROCESS => PPROCESS,
+        PENTPROCSET => PENTPROCSET,
+        PCONFIG => PCONFIG,
+        PSOURCE => PSOURCE,
+        PBALANCEDATE => PBALANCEDATE,
+        PRATESET => PRATESET,
+        GPROCID => GPROCID
+  ) ; 
+  
+  update SLR_JRNL_LINES_UNPOSTED
+  set JLU_FAK_ID = 0
+   ,  JLU_EBA_ID = 0
+  where jlu_jrnl_process_id = GPROCID
+  ;
+  commit;
+
+/* FXRULE2 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
+
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+  
+  insert into slr.slr_fx_reval_temp 
+  (
+     select 
+      fgl.lk_match_key10   as adjust_offset
+    , fgl.lk_lookup_value1 as fx_acccounting_event
+    , fgl.lk_lookup_value2 as fx_gl_account
+    , jlu.ROWID as jlu_ROWID
+    from fdr.fr_general_lookup fgl
+    join slr.slr_jrnl_lines_unposted jlu
+    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
+    and fgl.lk_match_key2  = jlu.jlu_attribute_4 -- join on accounting event
+    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
+    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
+    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
+    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
+    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
+    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE2'
+  );
+  
+  commit;
+  
+  MERGE INTO 
+    slr.slr_jrnl_lines_unposted jlu
+  USING
+    (select * from slr.slr_fx_reval_temp) tmp
+  ON 
+    (tmp.jlu_rowid = jlu.ROWID)
+  WHEN MATCHED THEN UPDATE SET
+    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
+    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
+    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
+    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
+  ;
+  
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+
+/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
+  
+  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
+  
+  commit;
+
+END pFX_REVAL_RULE2_USSTAT;
+
+PROCEDURE pFX_REVAL_RULE0_USGAAP(v_date IN DATE) AS
+
+  PPROCESS VARCHAR2(40);
+  PENTPROCSET VARCHAR2(20);
+  PCONFIG VARCHAR2(40);
+  PSOURCE VARCHAR2(40);
+  PBALANCEDATE DATE;
+  PRATESET VARCHAR2(20);
+  GPROCID NUMBER;
+
+BEGIN
+/* BEGIN FXRULE0 RUN */
+/* SET ALL VARIABLE VALUES FOR FXRULE0 RUN */
+
+  PPROCESS := 'FXREVALUE';
+  PENTPROCSET := 'AG';
+  PCONFIG := 'FX_AG_RULE0_USGAAP';
+  PSOURCE := 'BMFXREVAL_EBA_AG_R0_USGAAP';
+  PBALANCEDATE := v_date;
+  PRATESET := 'FX_RULE0';
+  GPROCID := NULL;
+
+
+/* EXECUTE FXRULE0 RUN */
+  SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
+  (  
+        PPROCESS => PPROCESS,
+        PENTPROCSET => PENTPROCSET,
+        PCONFIG => PCONFIG,
+        PSOURCE => PSOURCE,
+        PBALANCEDATE => PBALANCEDATE,
+        PRATESET => PRATESET,
+        GPROCID => GPROCID
+  ) ; 
+  
+  update SLR_JRNL_LINES_UNPOSTED
+  set JLU_EFFECTIVE_DATE = add_months(JLU_EFFECTIVE_DATE,1)
+   ,  JLU_VALUE_DATE = add_months(JLU_VALUE_DATE,1)
+   ,  JLU_JRNL_DATE = add_months(JLU_JRNL_DATE,1)
+   ,  JLU_FAK_ID = 0
+   ,  JLU_EBA_ID = 0
+  where jlu_jrnl_process_id = GPROCID
+  ;
+  commit;
+
+/* FXRULE0 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
+
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+  
+  insert into slr.slr_fx_reval_temp 
+  (
+     select 
+      fgl.lk_match_key10   as adjust_offset
+    , fgl.lk_lookup_value1 as fx_acccounting_event
+    , fgl.lk_lookup_value2 as fx_gl_account
+    , jlu.ROWID as jlu_ROWID
+    from fdr.fr_general_lookup fgl
+    join slr.slr_jrnl_lines_unposted jlu
+    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
+    and fgl.lk_match_key2  = jlu.jlu_account -- join on sub-account
+    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
+    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
+    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
+    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
+    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
+    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE0'
+  );
+  
+  commit;
+  
+  MERGE INTO 
+    slr.slr_jrnl_lines_unposted jlu
+  USING
+    (select * from slr.slr_fx_reval_temp) tmp
+  ON 
+    (tmp.jlu_rowid = jlu.ROWID)
+  WHEN MATCHED THEN UPDATE SET
+    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
+    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
+    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
+    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
+  ;
+  
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+
+/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
+  
+  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
+  
+  commit;
+
+/**********************************************************************************************************
+************************************* END FXRULE0 RUN *****************************************************
+***********************************************************************************************************/
+
+
+END pFX_REVAL_RULE0_USGAAP;
+
+PROCEDURE pFX_REVAL_RULE2_USGAAP(v_date IN DATE) AS
+   PPROCESS VARCHAR2(40);
+  PENTPROCSET VARCHAR2(20);
+  PCONFIG VARCHAR2(40);
+  PSOURCE VARCHAR2(40);
+  PBALANCEDATE DATE;
+  PRATESET VARCHAR2(20);
+  GPROCID NUMBER;
+
+BEGIN
+/* BEGIN FXRULE2 RUN */
+/* SET ALL VARIABLE VALUES FOR FXRULE2 RUN */
+
+  PPROCESS := 'FXREVALUE';
+  PENTPROCSET := 'AG';
+  PCONFIG := 'FX_AG_RULE2_USGAAP';
+  PSOURCE := 'BMFXREVAL_EBA_AG_R2_USGAAP';
+  PBALANCEDATE := v_date;
+  PRATESET := 'FX_RULE2';
+  GPROCID := NULL;
+
+
+/* EXECUTE FXRULE2 RUN */
+  SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
+  (  
+        PPROCESS => PPROCESS,
+        PENTPROCSET => PENTPROCSET,
+        PCONFIG => PCONFIG,
+        PSOURCE => PSOURCE,
+        PBALANCEDATE => PBALANCEDATE,
+        PRATESET => PRATESET,
+        GPROCID => GPROCID
+  ) ; 
+  
+  update SLR_JRNL_LINES_UNPOSTED
+  set JLU_FAK_ID = 0
+   ,  JLU_EBA_ID = 0
+  where jlu_jrnl_process_id = GPROCID
+  ;
+  commit;
+
+/* FXRULE2 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
+
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+  
+  insert into slr.slr_fx_reval_temp 
+  (
+     select 
+      fgl.lk_match_key10   as adjust_offset
+    , fgl.lk_lookup_value1 as fx_acccounting_event
+    , fgl.lk_lookup_value2 as fx_gl_account
+    , jlu.ROWID as jlu_ROWID
+    from fdr.fr_general_lookup fgl
+    join slr.slr_jrnl_lines_unposted jlu
+    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
+    and fgl.lk_match_key2  = jlu.jlu_attribute_4 -- join on accounting event
+    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
+    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
+    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
+    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
+    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
+    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE2'
+  );
+  
+  commit;
+  
+  MERGE INTO 
+    slr.slr_jrnl_lines_unposted jlu
+  USING
+    (select * from slr.slr_fx_reval_temp) tmp
+  ON 
+    (tmp.jlu_rowid = jlu.ROWID)
+  WHEN MATCHED THEN UPDATE SET
+    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
+    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
+    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
+    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
+  ;
+  
+  execute immediate 'truncate table slr.slr_fx_reval_temp';
+
+/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
+  
+  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
+  
+  commit;
+
+END pFX_REVAL_RULE2_USGAAP;
 
 END SLR_PKG;
 /
