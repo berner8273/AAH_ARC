@@ -965,7 +965,7 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-policy-stream' and jl.STREAM_ID is not null
+                    vdl.VALIDATION_CD = 'jl-policy-stream'
 and not exists (
                    select
                           null
