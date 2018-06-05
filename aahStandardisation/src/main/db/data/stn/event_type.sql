@@ -166,4 +166,6 @@ insert into stn.event_type ( event_typ ) values ( 'WP_WRITEOFF_CURRENT' );
 insert into stn.event_type ( event_typ ) values ( 'WP_WRITEOFF_FUTURE' );
 insert into stn.event_type ( event_typ ) values ( 'WRITTEN_PREM_NOMINAL' );
 insert into stn.event_type ( event_typ ) values ( 'WRITTEN_PREMIUM' );
+insert into stn.event_type ( event_typ ) values ( 'FV_UPR_INITIAL' );
+insert into stn.event_type ( event_typ ) values ( 'FV_UPR_CHANGE' );
 commit;
