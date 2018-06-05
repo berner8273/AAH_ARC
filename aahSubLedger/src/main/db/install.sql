@@ -94,6 +94,14 @@ commit;
 --Create custom view
 @@views/slr/v_slr_journal_lines.sql
 
+-- Modify AGL journal types
+update slr.slr_ext_jrnl_types set ejt_active_flag = 'I' where ejt_type not in ('MADJPERB','MADJBDPPE','MADJREVPE');
+update slr.slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type in ('MADJPERB','MADJBDPPE','MADJREVPE');
+update slr.slr_ext_jrnl_types set ejt_short_desc = 'Manual JE prior to open period' where ejt_type = 'MADJPERB' ; 
+update slr.slr_ext_jrnl_types set ejt_short_desc = 'Manual JE open period' where ejt_type = 'MADJBDPPE' ;
+update slr.slr_ext_jrnl_types set ejt_short_desc = 'Manual JE rev open period' where ejt_type = 'MADJREVPE' ;
+commit;
+
 --Add custom columns
 ALTER TABLE SLR.SLR_EBA_BALANCES_ROLLBACK 
  ADD  (     

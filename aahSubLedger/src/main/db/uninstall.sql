@@ -68,6 +68,9 @@ drop table slr.slr_eba_bop_amounts;
 drop table slr.slr_eba_bop_amounts_tmp;
 commit;
 
+update slr.slr_ext_jrnl_types set ejt_active_flag = 'A';
+commit;
+
 conn ~slr_logon
 /*Begin removal of SLR QTD modifications*/
 
