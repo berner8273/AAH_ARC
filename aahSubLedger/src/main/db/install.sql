@@ -10,35 +10,26 @@
 set serveroutput on
 set define ~
 
---define tns_alias    = @oracleTnsAlias@
---define stn_user     = @stnUsername@
---define stn_password = @stnPassword@
---define stn_logon    = ~stn_user/~stn_password@~tns_alias
+define tns_alias    = @oracleTnsAlias@
+define stn_user     = @stnUsername@
+define stn_password = @stnPassword@
+define stn_logon    = ~stn_user/~stn_password@~tns_alias
 
---define fdr_user     = @fdrUsername@
---define fdr_password = @fdrPassword@
---define fdr_logon    = ~fdr_user/~fdr_password@~tns_alias
+define fdr_user     = @fdrUsername@
+define fdr_password = @fdrPassword@
+define fdr_logon    = ~fdr_user/~fdr_password@~tns_alias
 
---define slr_user     = @slrUsername@
---define slr_password = @slrPassword@
---define slr_logon    = ~slr_user/~slr_password@~tns_alias
+define slr_user     = @slrUsername@
+define slr_password = @slrPassword@
+define slr_logon    = ~slr_user/~slr_password@~tns_alias
 
---define rdr_user     = @rdrUsername@
---define rdr_password = @rdrPassword@
---define rdr_logon    = ~rdr_user/~rdr_password@~tns_alias
+define rdr_user     = @rdrUsername@
+define rdr_password = @rdrPassword@
+define rdr_logon    = ~rdr_user/~rdr_password@~tns_alias
 
---define gui_user     = @guiUsername@
---define gui_password = @guiPassword@
---define gui_logon    = ~gui_user/~gui_password@~tns_alias
-
-define fdr_logon = ~1
-define gui_logon = ~2
-define rdr_logon = ~3
-define sla_logon = ~4
-define slr_logon = ~5
-define stn_logon = ~6
-define sys_logon = ~7
-define unittest_login = ~8
+define gui_user     = @guiUsername@
+define gui_password = @guiPassword@
+define gui_logon    = ~gui_user/~gui_password@~tns_alias
 
 conn ~stn_logon
 @@grants/tables/stn/business_type.sql
@@ -74,6 +65,14 @@ conn ~slr_logon
 delete from slr.slr_entity_proc_group;
 commit;
 
+-- update journal type descriptions for manual journal entries by gui
+update slr_ext_jrnl_types set ejt_active_flag = 'I' where ejt_type not in ('MADJBDPPE','MADJREVPE','MADJPERB');
+update slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type in ('MADJBDPPE','MADJREVPE','MADJPERB');
+update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE prior to open period' where ejt_type = 'MADJPERB';
+update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE open period'  where ejt_type = 'MADJBDPPE';
+update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE rev open period' where ejt_type = 'MADJREVPE';
+commit;
+
 @@data/slr/slr_ledgers.sql
 @@data/slr/slr_entity_sets.sql
 @@data/slr/slr_fak_segment_3.sql
@@ -93,14 +92,6 @@ commit;
 
 --Create custom view
 @@views/slr/v_slr_journal_lines.sql
-
--- Modify AGL journal types
-update slr.slr_ext_jrnl_types set ejt_active_flag = 'I' where ejt_type not in ('MADJPERB','MADJBDPPE','MADJREVPE');
-update slr.slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type in ('MADJPERB','MADJBDPPE','MADJREVPE');
-update slr.slr_ext_jrnl_types set ejt_short_desc = 'Manual JE prior to open period' where ejt_type = 'MADJPERB' ; 
-update slr.slr_ext_jrnl_types set ejt_short_desc = 'Manual JE open period' where ejt_type = 'MADJBDPPE' ;
-update slr.slr_ext_jrnl_types set ejt_short_desc = 'Manual JE rev open period' where ejt_type = 'MADJREVPE' ;
-commit;
 
 --Add custom columns
 ALTER TABLE SLR.SLR_EBA_BALANCES_ROLLBACK 
