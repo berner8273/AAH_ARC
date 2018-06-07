@@ -1619,6 +1619,7 @@ PROCEDURE pr_account
                                                slr.slr_entities
                                     )
                                     eas
+                   where ga.ga_account_code <> NVL(ga.ga_client_text4,0)     /* only include sub-accounts */
               )
               input
            on (
@@ -2065,6 +2066,58 @@ BEGIN
 
     SLR_CALENDAR_PKG.pSetEntityBusinessDate(p_entity, lvBusinessDate);
 
+    begin
+    /* open closed periods */
+    update
+           slr.slr_entity_periods ep
+       set
+           ep.ep_status = 'O'
+     where
+           ep.ep_entity    = p_entity
+       and ep.ep_bus_year >= 2017
+       and ep.ep_status    = 'C'
+       and exists ( select
+                           null
+                      from 
+                           fdr.fr_general_lookup fgl
+                     where
+                           fgl.lk_lkt_lookup_type_code  = 'EVENT_CLASS_PERIOD'
+                       and to_number(fgl.lk_match_key2) = ep.ep_bus_year
+                       and to_number(fgl.lk_match_key3) = ep.ep_bus_period
+                       and ( case
+                                  when fgl.lk_lookup_value1 <> 'C'
+                                  then 1
+                                  else 0
+                              end ) > 0
+                  group by 
+                           fgl.lk_match_key2
+                         , fgl.lk_match_key3 ) ;
+    /* close open periods */
+    update
+           slr.slr_entity_periods ep
+       set
+           ep.ep_status = 'C'
+     where
+           ep.ep_entity    = p_entity
+       and ep.ep_bus_year >= 2017
+       and ep.ep_status    = 'O'
+       and not exists ( select
+                           null
+                      from 
+                           fdr.fr_general_lookup fgl
+                     where
+                           fgl.lk_lkt_lookup_type_code  = 'EVENT_CLASS_PERIOD'
+                       and to_number(fgl.lk_match_key2) = ep.ep_bus_year
+                       and to_number(fgl.lk_match_key3) = ep.ep_bus_period
+                       and ( case
+                                  when fgl.lk_lookup_value1 <> 'C'
+                                  then 1
+                                  else 0
+                              end ) > 0
+                  group by 
+                           fgl.lk_match_key2
+                         , fgl.lk_match_key3 ) ;
+    end;
     --find business year
     BEGIN
        SELECT EP_BUS_YEAR
@@ -2707,68 +2760,83 @@ END pSLR_ENTITY_PERIODS;
 PROCEDURE pEVENT_CLASS_PERIODS AS
 
 BEGIN
-        merge
-         into
-              fdr.fr_general_lookup gl
-        using (
-                  select distinct
-                    'EVENT_CLASS_PERIOD'                           LK_LKT_LOOKUP_TYPE_CODE
-                    ,eg.event_group                                LK_MATCH_KEY1
-                    ,to_char(ep.ep_bus_year)                       LK_MATCH_KEY2
-                    ,decode(length(ep.ep_bus_period),1,'0'||ep.ep_bus_period,ep.ep_bus_period) LK_MATCH_KEY3
-                    ,to_char(ep.ep_bus_year)||'-'||decode(length(ep.ep_bus_period),1,'0'||ep.ep_bus_period,ep.ep_bus_period) LK_MATCH_KEY4
-                    ,'O'                                           LK_LOOKUP_VALUE1
-                    ,to_char(ep.ep_bus_period_start,'DD-MON-YYYY') LK_LOOKUP_VALUE2
-                    ,to_char(ep.ep_bus_period_end,'DD-MON-YYYY')   LK_LOOKUP_VALUE3
-                    ,to_date('01/01/2000','mm/dd/yyyy')            LK_EFFECTIVE_FROM
-                    ,to_date('01/01/2099','mm/dd/yyyy')            LK_EFFECTIVE_TO
-                    from slr_entity_periods ep
-                    cross join (
-                        select distinct LK_MATCH_KEY1 as event_group
-                        from fdr.fr_general_lookup where lk_lkt_lookup_type_code='EVENT_CLASS'
-                            and SYSDATE between LK_EFFECTIVE_FROM and LK_EFFECTIVE_TO
-                            ) eg
-              )
-              input
-           on (
-                      gl.LK_MATCH_KEY1           = input.LK_MATCH_KEY1
-                  and gl.LK_LOOKUP_VALUE2        = input.LK_LOOKUP_VALUE2
-                  and gl.LK_LOOKUP_VALUE3        = input.LK_LOOKUP_VALUE3
-                  and GL.LK_LKT_LOOKUP_TYPE_CODE = 'EVENT_CLASS_PERIOD'
-              )
-        when
-              matched then update set
-                             gl.LK_MATCH_KEY2 = input.LK_MATCH_KEY2
-                           , gl.LK_MATCH_KEY3 = input.LK_MATCH_KEY3
-                           , gl.LK_MATCH_KEY4 = input.LK_MATCH_KEY4
-        when not
-              matched then insert
-                           (
-                              gl.LK_LKT_LOOKUP_TYPE_CODE,
-                              gl.LK_MATCH_KEY1,
-                              gl.LK_MATCH_KEY2,
-                              gl.LK_MATCH_KEY3,
-                              gl.LK_MATCH_KEY4,
-                              gl.LK_LOOKUP_VALUE1,
-                              gl.LK_LOOKUP_VALUE2,
-                              gl.LK_LOOKUP_VALUE3,
-                              gl.LK_EFFECTIVE_FROM,
-                              gl.LK_EFFECTIVE_TO
-                           )
-                           values
-                           (
-                               input.LK_LKT_LOOKUP_TYPE_CODE
-                           ,   input.LK_MATCH_KEY1
-                           ,   input.LK_MATCH_KEY2
-                           ,   input.LK_MATCH_KEY3
-                           ,   input.LK_MATCH_KEY4
-                           ,   input.LK_LOOKUP_VALUE1
-                           ,   input.LK_LOOKUP_VALUE2
-                           ,   input.LK_LOOKUP_VALUE3
-                           ,   input.LK_EFFECTIVE_FROM
-                           ,   input.LK_EFFECTIVE_TO
-                           )
-                           ;
+merge
+ into
+      fdr.fr_general_lookup gl
+using (
+          select distinct
+                 'EVENT_CLASS_PERIOD'                                       LK_LKT_LOOKUP_TYPE_CODE
+               , eg.event_group                                             LK_MATCH_KEY1
+               , to_char(ep.ep_bus_year)                                    LK_MATCH_KEY2
+               , lpad(ep.ep_bus_period,2,'0')                               LK_MATCH_KEY3
+               , to_char(ep.ep_bus_year)||'-'||lpad(ep.ep_bus_period,2,'0') LK_MATCH_KEY4
+               , 'O'                                                        LK_LOOKUP_VALUE1
+               , to_char(ep.ep_bus_period_start,'DD-MON-YYYY')              LK_LOOKUP_VALUE2
+               , to_char(ep.ep_bus_period_end,'DD-MON-YYYY')                LK_LOOKUP_VALUE3
+               , 'N'                                                        LK_LOOKUP_VALUE5
+               , to_date('01/01/2000','mm/dd/yyyy')                         LK_EFFECTIVE_FROM
+               , to_date('01/01/2099','mm/dd/yyyy')                         LK_EFFECTIVE_TO
+            from
+                 slr_entity_periods ep
+      cross join ( select distinct
+                          lk_match_key1    event_group
+                        , lk_lookup_value2 frequency_ind
+                     from
+                          fdr.fr_general_lookup
+                    where
+                          lk_lkt_lookup_type_code = 'EVENT_CLASS'
+                      and sysdate between LK_EFFECTIVE_FROM and LK_EFFECTIVE_TO
+                 ) eg
+         where (   eg.frequency_ind = 'M'
+                   or eg.frequency_ind is null
+                   or (     eg.frequency_ind = 'Q'
+                        and ep.ep_bus_period in ( 3 , 6 , 9 , 12 )
+                      )
+                  )
+              and ep.ep_bus_period_start >= to_date('01-JAN-2017','DD-MON-YYYY')
+      )
+      input
+   on (
+              gl.LK_MATCH_KEY1           = input.LK_MATCH_KEY1
+          and gl.LK_LOOKUP_VALUE2        = input.LK_LOOKUP_VALUE2
+          and gl.LK_LOOKUP_VALUE3        = input.LK_LOOKUP_VALUE3
+          and GL.LK_LKT_LOOKUP_TYPE_CODE = 'EVENT_CLASS_PERIOD'
+      )
+when
+      matched then update set
+                     gl.LK_MATCH_KEY2 = input.LK_MATCH_KEY2
+                   , gl.LK_MATCH_KEY3 = input.LK_MATCH_KEY3
+                   , gl.LK_MATCH_KEY4 = input.LK_MATCH_KEY4
+when not
+      matched then insert
+                   (
+                      gl.LK_LKT_LOOKUP_TYPE_CODE
+                    , gl.LK_MATCH_KEY1
+                    , gl.LK_MATCH_KEY2
+                    , gl.LK_MATCH_KEY3
+                    , gl.LK_MATCH_KEY4
+                    , gl.LK_LOOKUP_VALUE1
+                    , gl.LK_LOOKUP_VALUE2
+                    , gl.LK_LOOKUP_VALUE3
+                    , gl.LK_LOOKUP_VALUE5
+                    , gl.LK_EFFECTIVE_FROM
+                    , gl.LK_EFFECTIVE_TO
+                   )
+                   values
+                   (
+                       input.LK_LKT_LOOKUP_TYPE_CODE
+                   ,   input.LK_MATCH_KEY1
+                   ,   input.LK_MATCH_KEY2
+                   ,   input.LK_MATCH_KEY3
+                   ,   input.LK_MATCH_KEY4
+                   ,   input.LK_LOOKUP_VALUE1
+                   ,   input.LK_LOOKUP_VALUE2
+                   ,   input.LK_LOOKUP_VALUE3
+                   ,   input.LK_LOOKUP_VALUE5
+                   ,   input.LK_EFFECTIVE_FROM
+                   ,   input.LK_EFFECTIVE_TO
+                   )
+                   ;
 END pEVENT_CLASS_PERIODS;
 
 PROCEDURE pGENERATE_EBA_BOP_VALUES AS
@@ -3996,6 +4064,7 @@ as
   slr.slr_balance_movement_pkg.pBMRunBalanceMovementProcess (pProcess,pEntProcSet,pConfig,pSource,pBalanceDate,pRateSet,gProcId);
   
 end pYECleardown;                                        
+
 
 
 END SLR_PKG;
