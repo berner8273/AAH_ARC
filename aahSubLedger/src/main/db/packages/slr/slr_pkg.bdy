@@ -3979,5 +3979,24 @@ BEGIN
 
 END pFX_REVAL_RULE2_USGAAP;
 
+PROCEDURE pYECleardown(pConfig      IN slr_process_config.pc_config%TYPE
+                                      ,pSource      IN slr_process_source.sps_source_name%TYPE
+                                      ,pBalanceDate IN DATE )                                                                                  
+                                       
+as
+
+    s_proc_name varchar2(50) := $$plsql_unit || '.' || $$plsql_function ;     
+    pProcess   slr_process.p_process%TYPE := 'PLRETEARNINGS';
+    pEntProcSet slr_bm_entity_processing_set.bmeps_set_id%TYPE :='AG';
+    pRateSet  slr_entity_rates.er_entity_set%TYPE := NULL;
+    gProcId  number;
+
+  begin
+  
+  slr.slr_balance_movement_pkg.pBMRunBalanceMovementProcess (pProcess,pEntProcSet,pConfig,pSource,pBalanceDate,pRateSet,gProcId);
+  
+end pYECleardown;                                        
+
+
 END SLR_PKG;
 /
