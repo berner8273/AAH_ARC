@@ -205,7 +205,6 @@ delete from slr.slr_fak_segment_4;
 delete from slr.slr_fak_segment_3;
 commit;
 
-update slr_ext_jrnl_types set ejt_active_flag = 'A' ;
 commit;
 
 conn ~stn_logon

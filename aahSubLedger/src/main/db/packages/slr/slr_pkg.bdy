@@ -66,8 +66,24 @@ PROCEDURE pPROCESS_SLR AS
 
     v_epg_id SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
     v_ent_rate_set slr_entities.ent_rate_set%TYPE;
+    v_combo_check_errors PLS_INTEGER := 0;
 
 BEGIN
+
+    EXECUTE IMMEDIATE 'INSERT INTO SLR_LOG(L_ID, L_DATE, L_TYPE, L_CODE, L_PROCESS_ID, L_DESC, L_DESC_EXT) VALUES(SLR_LOG_SEQ.NEXTVAL,SYSDATE, ''P'', ''AG'', ''30'', ''Begin Combo Check'', ''Begin Combo Check'')';
+    COMMIT;
+        
+       Execute Immediate 'Alter Session Enable Parallel DML';
+       lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+       fdr.PG_COMBINATION_CHECK.pCombinationCheck(
+        pinObjectName   =>  'slr.scv_combination_check_jlu',
+        pinFilter       =>  NULL,
+        pinBusinessDate =>  NULL,
+        poutErrorCount  =>  v_combo_check_errors);
+        SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+        SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
+    --END;
+    EXECUTE IMMEDIATE 'INSERT INTO SLR_LOG(L_ID, L_DATE, L_TYPE, L_CODE, L_PROCESS_ID, L_DESC, L_DESC_EXT) VALUES(SLR_LOG_SEQ.NEXTVAL,SYSDATE, ''P'', ''AG'', ''30'', ''END Combo Check'', ''END Combo Check'')';
 
   FOR i IN
       (
