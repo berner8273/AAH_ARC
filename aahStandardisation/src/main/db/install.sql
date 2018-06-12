@@ -80,6 +80,10 @@ commit;
 @@data/fdr/fr_instr_type_class.sql
 @@data/fdr/fr_instrument_type.sql
 @@data/fdr/fr_instrument.sql
+update fr_general_codes set gc_active = 'A' where gc_gct_code_type_id = '12' and gc_client_code in ('B','P'); 
+commit;
+update fr_general_codes set gc_active = 'I' where gc_gct_code_type_id = '12' and gc_client_code not in ('B','P');
+commit;
 @@grants/tables/fdr/fr_acc_event_type.sql
 @@grants/tables/fdr/fr_account_lookup.sql
 @@grants/tables/fdr/fr_fx_rate.sql
@@ -106,7 +110,6 @@ commit;
 @@grants/tables/fdr/fr_trade.sql
 @@grants/tables/fdr/fr_accounting_event_imp.sql
 @@grants/tables/fdr/fr_party_type.sql
-
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy
 @@indices/fdr/fr_stan_raw_book.sql
