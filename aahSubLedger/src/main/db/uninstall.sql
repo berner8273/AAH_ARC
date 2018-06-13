@@ -214,6 +214,7 @@ revoke select on stn.execution_type     from slr;
 
 conn ~fdr_logon
 revoke select , insert , update on fdr.fr_general_lookup  from slr;
+revoke update on fdr.fr_general_lookup  from rdr;
 
 -- -----------------------------------------------------------------------------------------
 -- purpose : Begin GLINT uninstall
