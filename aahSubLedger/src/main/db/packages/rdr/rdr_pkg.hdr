@@ -1,0 +1,5 @@
+CREATE OR REPLACE PACKAGE rdr.rdr_pkg
+AS
+   PROCEDURE pGLINT_CLEANUP;
+END rdr_pkg;
+/
