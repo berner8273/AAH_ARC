@@ -234,6 +234,8 @@ update slr.slr_ext_jrnl_types set ejt_client_flag1 = NULL where ejt_client_flag1
 commit;
 
 conn ~rdr_logon
+drop package body rdr.rdr_pkg;
+drop package      rdr.rdr_pkg;
 drop package body rdr.pgc_glint;
 drop package      rdr.pgc_glint;
 revoke execute on rdr.pg_glint from gui;
