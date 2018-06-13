@@ -271,6 +271,8 @@ conn ~rdr_logon
 @@grants/packages/rdr/pg_glint.sql
 @@packages/rdr/pgc_glint.hdr
 @@packages/rdr/pgc_glint.bdy
+@@packages/rdr/rdr_pkg.hdr
+@@packages/rdr/rdr_pkg.bdy
 
 conn ~slr_logon
 
