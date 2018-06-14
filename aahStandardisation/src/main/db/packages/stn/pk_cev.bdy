@@ -572,7 +572,6 @@ and exists    (
                                                                                 and cev.business_typ     = cev_sum.business_typ
                                                                                 and cev.basis_cd         = cev_sum.basis_cd
                                                                                     )
-        
                             left join stn.posting_method_derivation_gfa  gfa    on et.event_typ_id      = gfa.event_typ_in
                                                                                and exists (
                                                                                             select null
@@ -582,6 +581,18 @@ and exists    (
                                                                                               join stn.posting_method_derivation_gfa gfa2
                                                                                                 on et2.event_typ_id = gfa2.event_typ_qualifier
                                                                                              where cev2.correlation_uuid = cev.correlation_uuid
+                                                                                          )
+                                                                               and exists (
+                                                                                            select null
+                                                                                              from cev_ex_in                cev3
+                                                                                              join stn.policy_premium_type  ppt3
+                                                                                                on cev3.policy_premium_typ = ppt3.premium_typ
+                                                                                             where cev3.correlation_uuid = cev.correlation_uuid
+                                                                                               and case
+                                                                                                   when cev3.premium_typ = 'X'
+                                                                                                   then ppt3.cession_event_premium_typ
+                                                                                                   else cev3.premium_typ
+                                                                                                   end                   in ( 'M' , 'I' )
                                                                                           )
                             left join stn.event_type                     gfaout on gfa.event_typ_out    = gfaout.event_typ_id
                                  join stn.posting_amount_derivation      psad   on et.event_typ_id      = psad.event_typ_id
@@ -612,15 +623,21 @@ and exists    (
                 join stn.posting_method_derivation_gfa  gfa
                 on (
                     cev_data.event_typ_id = gfa.event_typ_in
-                and exists ( select null
-                             from stn.cev_data cev2
-                             where cev2.event_typ_id     = gfa.event_typ_qualifier
-                               and cev2.correlation_uuid = cev_data.correlation_uuid
-                               and cev_data.premium_typ   = 'U'
-                              )
-                    )
+                and exists (
+                             select null
+                               from stn.cev_data        cev2
+                              where cev2.event_typ_id      = gfa.event_typ_qualifier
+                                and cev2.correlation_uuid  = cev_data.correlation_uuid
+                                and cev_data.premium_typ   = 'U'
+                           )
+                and exists (
+                             select null
+                               from stn.cev_data        cev3
+                              where cev3.correlation_uuid = cev_data.correlation_uuid
+                                and cev3.premium_typ     in ( 'M' , 'I' )
+                           )
+                   )
         ;
-        
         --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_PREMIUM_TYP_OVERRIDE' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_premium_typ_override', NULL, NULL, NULL, NULL);
         insert into stn.cev_mtm_data
