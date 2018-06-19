@@ -20,6 +20,26 @@ conn ~sys_logon as sysdba
 begin
     for i in (
                  select
+                        'alter system kill session ''' || vs.sid || ',' || vs.serial# || ''' immediate' kill_stmt
+                   from
+                        v$session vs
+                  where 
+                        trim ( lower ( username ) ) in (
+                                                         trim ( lower ( 'aah_ssis' ) )
+                                                       , trim ( lower ( 'aah_read' ) )
+                                                       , trim ( lower ( 'aah_report' ) )
+                                                       , trim ( lower ( 'aah_ps' ) )
+                                                       )
+             )
+    loop
+        execute immediate i.kill_stmt;
+    end loop;
+end;
+/
+
+begin
+    for i in (
+                 select
                         'drop user ' || username || ' cascade' drop_stmt
                    from
                         dba_users
