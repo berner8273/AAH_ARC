@@ -33,6 +33,7 @@ select
      , fsrae.srae_client_spare_id15      basis_cd
      , fsrae.srae_client_spare_id16      posting_indicator
      , fsrae.srae_client_spare_id17      bu_account_lookup
+     , fsrae.srae_client_spare_id18      vie_bu_account_lookup
      , fsrae.srae_acc_event_type         aah_event_typ
      , fsrae.srae_iso_currency_code      transaction_ccy
      , fsrae.srae_client_amount1         transaction_amt

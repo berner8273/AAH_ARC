@@ -6,6 +6,8 @@ select
      , lpad( lk_match_key3 , 2 , '0' )                      business_month
      , fgl.lk_match_key2 || lpad( lk_match_key3 , 2 , '0' ) period
      , fgl.lk_lookup_value1                                 status
+     , to_date( fgl.lk_lookup_value2 , 'DD-MON-YYYY' )      period_start
+     , to_date( fgl.lk_lookup_value3 , 'DD-MON-YYYY' )      period_end
   from
        fdr.fr_general_lookup fgl
   join ( select

@@ -137,6 +137,7 @@ conn ~stn_logon
 @@tables/stn/cev_mtm_data.sql
 @@tables/stn/cev_non_intercompany_data.sql
 @@tables/stn/cev_intercompany_data.sql
+@@tables/stn/cev_vie_data.sql
 @@tables/stn/cev_premium_typ_override.sql
 @@tables/stn/posting_method_derivation_gfa.sql
 @@tables/stn/posting_account_derivation.sql
@@ -233,7 +234,6 @@ conn ~stn_logon
 @@views/stn/ce_default.sql
 @@views/stn/insurance_policy_reference.sql
 @@views/stn/validation_detail.sql
-@@views/stn/vie_event_cd.sql
 @@views/stn/policy_tax.sql
 @@views/stn/cession_event_posting.sql
 @@views/stn/cession_event_reversal_curr.sql
@@ -407,6 +407,7 @@ exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DERIVED_PLUS_DATA'          , 'GL
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_LE_DATA'                    , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_NON_INTERCOMPANY_DATA'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_INTERCOMPANY_DATA'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_VIE_DATA'                   , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 
 exec dbms_stats.create_stat_table   ( ownname => user , stattab => 'INIT_STAT' );
 @@data/stn/init_stat.sql

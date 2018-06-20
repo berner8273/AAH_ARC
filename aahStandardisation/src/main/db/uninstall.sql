@@ -56,7 +56,8 @@ begin
                                                                               , 'cev_derived_plus_data'
                                                                               , 'cev_le_data'
                                                                               , 'cev_non_intercompany_data'
-                                                                              , 'cev_intercompany_data' )
+                                                                              , 'cev_intercompany_data'
+                                                                              , 'cev_vie_data' )
                                                )
                                     and vs.sid = vl.sid
                                )
@@ -129,7 +130,6 @@ drop view  stn.ce_default;
 drop view  stn.cession_event_reversal_hist;
 drop view  stn.cession_event_reversal_curr;
 drop view  stn.cession_event_posting;
-drop view  stn.vie_event_cd;
 drop view  stn.cev_period_balances;
 drop view  stn.period_status;
 drop view  stn.hopper_gl_combo_edit_gc;
