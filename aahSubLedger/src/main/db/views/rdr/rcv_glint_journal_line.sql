@@ -1,6 +1,7 @@
 create or replace view rdr.rcv_glint_journal_line 
 (
    JL_JRNL_HDR_ID,
+   MAN_JE_ID,
    JL_JRNL_LINE_NUMBER,
    JL_FAK_ID,
    JL_EBA_ID,
@@ -60,7 +61,9 @@ create or replace view rdr.rcv_glint_journal_line
    MANUAL_JE
 )
 AS
-   SELECT CASE WHEN jt.ejt_madj_flag = 'Y' THEN jl_jrnl_hdr_id ELSE 0 END as jl_jrnl_hdr_id,
+   SELECT jl_jrnl_hdr_id,
+          CASE WHEN jt.ejt_madj_flag = 'Y' THEN jl_jrnl_hdr_id ELSE 0 END
+             AS jl_jrnl_hdr_id2,
           CAST (jl_jrnl_line_number AS NUMBER (5, 0)) AS jl_jrnl_line_number,
           jl_fak_id,
           jl_eba_id,
