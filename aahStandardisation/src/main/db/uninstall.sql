@@ -204,7 +204,6 @@ drop table stn.posting_method_ledger;
 drop table stn.posting_method_derivation_et;
 drop table stn.posting_method_derivation_ic;
 drop table stn.posting_method_derivation_le;
-drop table stn.posting_method_derivation_link;
 drop table stn.posting_method_derivation_mtm;
 drop table stn.posting_method_derivation_rein;
 drop table stn.posting_accounting_basis;

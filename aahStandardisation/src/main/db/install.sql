@@ -196,7 +196,6 @@ conn ~stn_logon
 @@tables/stn/posting_method_derivation_et.sql
 @@tables/stn/posting_method_derivation_ic.sql
 @@tables/stn/posting_method_derivation_le.sql
-@@tables/stn/posting_method_derivation_link.sql
 @@tables/stn/posting_method_derivation_mtm.sql
 @@tables/stn/posting_method_derivation_rein.sql
 @@tables/stn/posting_method_ledger.sql
