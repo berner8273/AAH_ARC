@@ -91,7 +91,7 @@ AS
              CASE WHEN jl_segment_4 = 'NVS' THEN ' ' ELSE jl_segment_4 END AS VARCHAR2 (5))
              AS jl_segment_4,
           CAST (
-             CASE WHEN jl_segment_5 = 'NVS' THEN ' ' ELSE jl_segment_5 END AS VARCHAR2 (6))
+             CASE WHEN jl_segment_5 = 'NVS' THEN ' ' ELSE jl_segment_5 END AS VARCHAR2 (10))
              AS jl_segment_5,
           CASE WHEN jl_entity LIKE 'E%' THEN 'MNCON' ELSE ' ' END
              AS program_code,
