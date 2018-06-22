@@ -40,6 +40,7 @@ CREATE GLOBAL TEMPORARY TABLE rdr.rr_glint_temp_journal_line
   CREDIT_AMT           NUMBER(23,3),
   DEBIT_AMT            NUMBER(23,3),
   EVENT_STATUS         CHAR(1 BYTE)            ,
+  SLR_PROCESS_ID       NUMBER(30),
   MANUAL_JE            CHAR(1 BYTE),
   PS_FILTER            CHAR(1 BYTE)         
 ) ON COMMIT DELETE ROWS ;
