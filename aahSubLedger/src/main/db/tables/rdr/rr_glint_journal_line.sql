@@ -41,6 +41,7 @@ CREATE TABLE rdr.rr_glint_journal_line
   CREDIT_AMT             NUMBER(23,3),
   DEBIT_AMT              NUMBER(23,3),
   EVENT_STATUS           CHAR(1 BYTE)           NOT NULL,
+  SLR_PROCESS_ID         NUMBER(30)             NOT NULL,
   MANUAL_JE              CHAR(1 BYTE)           NOT NULL,
   PS_FILTER              CHAR(1 BYTE)           NOT NULL
 
