@@ -58,6 +58,7 @@ create or replace view rdr.rcv_glint_journal_line
    CREDIT_AMT,
    DEBIT_AMT,
    EVENT_STATUS,
+   SLR_PROCESS_ID,
    MANUAL_JE
 )
 AS
@@ -151,6 +152,7 @@ AS
           CASE WHEN jl_tran_amount >= 0 THEN jl_tran_amount ELSE NULL END
              AS debit_amt,
           'U' AS event_status,
+          jl.jl_jrnl_process_id,
           jt.ejt_madj_flag
      FROM slr.slr_jrnl_lines jl
           LEFT JOIN fdr.fr_general_lookup fgl
