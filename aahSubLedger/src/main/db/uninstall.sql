@@ -245,6 +245,7 @@ drop package body rdr.pg_glint;
 drop package      rdr.pg_glint;
 drop view         rdr.rcv_glint_journal;
 drop view         rdr.rcv_glint_journal_line;
+drop view         rdr.rrv_ag_glint_ps_journals;
 drop index        rdr.xif1gl_interface_journal_line;
 drop table        rdr.rr_glint_journal_line;
 drop index        rdr.xif2gl_interface_journal_mappi;
