@@ -103,138 +103,137 @@ CREATE OR REPLACE FORCE VIEW RDR.RRV_AG_GLINT_PS_JOURNALS
    JL_PERIOD_LTD,
    JL_TYPE
 )
-   BEQUEATH DEFINER
 AS
-   SELECT GJL.RGJL_ID,
-          GJL.RGJL_RGJ_ID,
-          GJL.RGJL_RGJ_RGBC_ID,
-          GJL.RGJL_AAH_JOURNAL,
-          GJL.RGJL_AAH_JOURNAL_LINE,
-          GJL.INPUT_TIME,
-          GJL.INPUT_USER,
-          GJL.MODIFIED_TIME,
-          GJL.MODIFIED_USER,
-          GJL.GL_DISTRIB_STATUS,
-          GJL.APPL_JRNL_ID,
-          GJL.BUSINESS_UNIT_GL,
-          GJL.BUSINESS_UNIT,
-          GJL.LEDGER_GROUP,
-          GJL.LEDGER,
-          GJL.JOURNAL_ID,
-          GJL.JOURNAL_DATE,
-          GJL.JOURNAL_LINE,
-          GJL.ACCOUNTING_DT,
-          GJL.FISCAL_YEAR,
-          GJL.ACCOUNTING_PERIOD,
-          GJL.FOREIGN_CURRENCY,
-          GJL.FOREIGN_AMOUNT,
-          GJL.CURRENCY_CD,
-          GJL.MONETARY_AMOUNT,
-          GJL.ACCOUNT,
-          GJL.DEPTID,
-          GJL.PRODUCT,
-          GJL.AFFILIATE,
-          GJL.PROGRAM_CODE,
-          GJL.CHARTFIELD1,
-          GJL.LINE_DESCR,
-          GJL.JRNL_LN_REF,
-          GJL.PROCESS_INSTANCE,
-          GJL.NOTES_254,
-          GJL.DTTM_STAMP,
-          GJL.EVENT_CLASS,
-          GJL.AAH_JRNL_HDR_NBR,
-          GJL.CREDIT_AMT,
-          GJL.DEBIT_AMT,
-          GJL.EVENT_STATUS,
-          GJL.SLR_PROCESS_ID,
-          GJL.MANUAL_JE,
-          GJL.PS_FILTER,
-          SJL.JL_JRNL_HDR_ID,
-          SJL.JL_JRNL_LINE_NUMBER,
-          SJL.JL_FAK_ID,
-          SJL.JL_EBA_ID,
-          SJL.JL_JRNL_STATUS,
-          SJL.JL_JRNL_STATUS_TEXT,
-          SJL.JL_JRNL_PROCESS_ID,
-          SJL.JL_DESCRIPTION,
-          SJL.JL_SOURCE_JRNL_ID,
-          SJL.JL_EFFECTIVE_DATE,
-          SJL.JL_VALUE_DATE,
-          SJL.JL_ENTITY,
-          SJL.JL_EPG_ID,
-          SJL.JL_ACCOUNT,
-          SJL.JL_SEGMENT_1,
-          SJL.JL_SEGMENT_2,
-          SJL.JL_SEGMENT_3,
-          SJL.JL_SEGMENT_4,
-          SJL.JL_SEGMENT_5,
-          SJL.JL_SEGMENT_6,
-          SJL.JL_SEGMENT_7,
-          SJL.JL_SEGMENT_8,
-          SJL.JL_SEGMENT_9,
-          SJL.JL_SEGMENT_10,
-          SJL.JL_ATTRIBUTE_1,
-          SJL.JL_ATTRIBUTE_2,
-          SJL.JL_ATTRIBUTE_3,
-          SJL.JL_ATTRIBUTE_4,
-          SJL.JL_ATTRIBUTE_5,
-          SJL.JL_REFERENCE_1,
-          SJL.JL_REFERENCE_2,
-          SJL.JL_REFERENCE_3,
-          SJL.JL_REFERENCE_4,
-          SJL.JL_REFERENCE_5,
-          SJL.JL_REFERENCE_6,
-          SJL.JL_REFERENCE_7,
-          SJL.JL_REFERENCE_8,
-          SJL.JL_REFERENCE_9,
-          SJL.JL_REFERENCE_10,
-          SJL.JL_TRAN_CCY,
-          SJL.JL_TRAN_AMOUNT,
-          SJL.JL_BASE_RATE,
-          SJL.JL_BASE_CCY,
-          SJL.JL_BASE_AMOUNT,
-          SJL.JL_LOCAL_RATE,
-          SJL.JL_LOCAL_CCY,
-          SJL.JL_LOCAL_AMOUNT,
-          SJL.JL_CREATED_BY,
-          SJL.JL_CREATED_ON,
-          SJL.JL_AMENDED_BY,
-          SJL.JL_AMENDED_ON,
-          SJL.JL_RECON_STATUS,
-          SJL.JL_TRANSLATION_DATE,
-          SJL.JL_BUS_POSTING_DATE,
-          SJL.JL_PERIOD_MONTH,
-          SJL.JL_PERIOD_YEAR,
-          SJL.JL_PERIOD_LTD,
-          SJL.JL_TYPE
-     FROM RDR.RR_GLINT_JOURNAL_LINE GJL
-          JOIN SLR.SLR_JRNL_LINES SJL
-             ON     SJL.JL_EFFECTIVE_DATE = GJL.ACCOUNTING_DT
-                AND SJL.JL_TRAN_CCY = GJL.FOREIGN_CURRENCY
-                AND SJL.JL_BASE_CCY = GJL.CURRENCY_CD
-                AND SUBSTR (SJL.JL_ACCOUNT, 1, 8) = GJL.ACCOUNT
+   SELECT gjl.rgjl_id,
+          gjl.rgjl_rgj_id,
+          gjl.rgjl_rgj_rgbc_id,
+          gjl.rgjl_aah_journal,
+          gjl.rgjl_aah_journal_line,
+          gjl.input_time,
+          gjl.input_user,
+          gjl.modified_time,
+          gjl.modified_user,
+          gjl.gl_distrib_status,
+          gjl.appl_jrnl_id,
+          gjl.business_unit_gl,
+          gjl.business_unit,
+          gjl.ledger_group,
+          gjl.ledger,
+          gjl.journal_id,
+          gjl.journal_date,
+          gjl.journal_line,
+          gjl.accounting_dt,
+          gjl.fiscal_year,
+          gjl.accounting_period,
+          gjl.foreign_currency,
+          gjl.foreign_amount,
+          gjl.currency_cd,
+          gjl.monetary_amount,
+          gjl.account,
+          gjl.deptid,
+          gjl.product,
+          gjl.affiliate,
+          gjl.program_code,
+          gjl.chartfield1,
+          gjl.line_descr,
+          gjl.jrnl_ln_ref,
+          gjl.process_instance,
+          gjl.notes_254,
+          gjl.dttm_stamp,
+          gjl.event_class,
+          gjl.aah_jrnl_hdr_nbr,
+          gjl.credit_amt,
+          gjl.debit_amt,
+          gjl.event_status,
+          gjl.slr_process_id,
+          gjl.manual_je,
+          gjl.ps_filter,
+          sjl.jl_jrnl_hdr_id,
+          sjl.jl_jrnl_line_number,
+          sjl.jl_fak_id,
+          sjl.jl_eba_id,
+          sjl.jl_jrnl_status,
+          sjl.jl_jrnl_status_text,
+          sjl.jl_jrnl_process_id,
+          sjl.jl_description,
+          sjl.jl_source_jrnl_id,
+          sjl.jl_effective_date,
+          sjl.jl_value_date,
+          sjl.jl_entity,
+          sjl.jl_epg_id,
+          sjl.jl_account,
+          sjl.jl_segment_1,
+          sjl.jl_segment_2,
+          sjl.jl_segment_3,
+          sjl.jl_segment_4,
+          sjl.jl_segment_5,
+          sjl.jl_segment_6,
+          sjl.jl_segment_7,
+          sjl.jl_segment_8,
+          sjl.jl_segment_9,
+          sjl.jl_segment_10,
+          sjl.jl_attribute_1,
+          sjl.jl_attribute_2,
+          sjl.jl_attribute_3,
+          sjl.jl_attribute_4,
+          sjl.jl_attribute_5,
+          sjl.jl_reference_1,
+          sjl.jl_reference_2,
+          sjl.jl_reference_3,
+          sjl.jl_reference_4,
+          sjl.jl_reference_5,
+          sjl.jl_reference_6,
+          sjl.jl_reference_7,
+          sjl.jl_reference_8,
+          sjl.jl_reference_9,
+          sjl.jl_reference_10,
+          sjl.jl_tran_ccy,
+          sjl.jl_tran_amount,
+          sjl.jl_base_rate,
+          sjl.jl_base_ccy,
+          sjl.jl_base_amount,
+          sjl.jl_local_rate,
+          sjl.jl_local_ccy,
+          sjl.jl_local_amount,
+          sjl.jl_created_by,
+          sjl.jl_created_on,
+          sjl.jl_amended_by,
+          sjl.jl_amended_on,
+          sjl.jl_recon_status,
+          sjl.jl_translation_date,
+          sjl.jl_bus_posting_date,
+          sjl.jl_period_month,
+          sjl.jl_period_year,
+          sjl.jl_period_ltd,
+          sjl.jl_type
+     FROM rdr.rr_glint_journal_line gjl
+           JOIN slr.slr_jrnl_lines sjl
+             ON     sjl.jl_effective_date = gjl.accounting_dt
+                AND sjl.jl_tran_ccy = gjl.foreign_currency
+                AND sjl.jl_base_ccy = gjl.currency_cd
+                AND substr (sjl.jl_account, 1, 8) = gjl.account
                 AND (CASE
-                        WHEN SJL.JL_SEGMENT_3 = 'NVS' THEN ' '
-                        ELSE SJL.JL_SEGMENT_3
-                     END) = GJL.DEPTID
+                        WHEN sjl.jl_segment_3 = 'NVS' THEN ' '
+                        ELSE sjl.jl_segment_3
+                     END) = gjl.deptid
                 AND (CASE
-                        WHEN SJL.JL_SEGMENT_5 = 'NVS' THEN ' '
-                        ELSE SUBSTR (SJL.JL_SEGMENT_5, 1, 10)
-                     END) = GJL.CHARTFIELD1
+                        WHEN sjl.jl_segment_5 = 'NVS' THEN ' '
+                        ELSE substr (sjl.jl_segment_5, 1, 10)
+                     END) = gjl.chartfield1
                 AND (CASE
-                        WHEN SJL.JL_SEGMENT_4 = 'NVS' THEN ' '
-                        ELSE SJL.JL_SEGMENT_4
-                     END) = GJL.AFFILIATE
-                AND SJL.JL_ENTITY = GJL.BUSINESS_UNIT_GL
-                AND SJL.JL_JRNL_PROCESS_ID = GJL.SLR_PROCESS_ID
-                AND SJL.JL_SEGMENT_1 = GJL.LEDGER_GROUP
-                AND (   (    GJL.MANUAL_JE = 'Y'
-                         AND SJL.JL_JRNL_HDR_ID = GJL.AAH_JRNL_HDR_NBR)
-                     OR (GJL.MANUAL_JE = 'N' AND GJL.AAH_JRNL_HDR_NBR = 0))
-          JOIN FDR.FR_GENERAL_LOOKUP FGL
-             ON     SJL.JL_ATTRIBUTE_4 = FGL.LK_MATCH_KEY1
-                AND FGL.LK_LKT_LOOKUP_TYPE_CODE = 'EVENT_HIERARCHY'
-                AND GJL.EVENT_CLASS = FGL.LK_LOOKUP_VALUE3
+                        WHEN sjl.jl_segment_4 = 'NVS' THEN ' '
+                        ELSE sjl.jl_segment_4
+                     END) = gjl.affiliate
+                AND sjl.jl_entity = gjl.business_unit_gl
+                AND sjl.jl_jrnl_process_id = gjl.slr_process_id
+                AND sjl.jl_segment_1 = gjl.ledger_group
+                AND (   (    gjl.manual_je = 'Y'
+                         AND sjl.jl_jrnl_hdr_id = gjl.aah_jrnl_hdr_nbr)
+                     or (gjl.manual_je = 'N' AND gjl.aah_jrnl_hdr_nbr = 0))
+          JOIN fdr.fr_general_lookup fgl
+             ON     sjl.jl_attribute_4 = fgl.lk_match_key1
+                AND fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
+                AND gjl.event_class = fgl.lk_lookup_value3
     WHERE 1 = 1;
 
-COMMENT ON TABLE RDR.RRV_AG_GLINT_PS_JOURNALS IS 'View that ties PS Journals to GLINT to SLR';
+comment on table rdr.rrv_ag_glint_ps_journals is 'View that ties PS Journals to GLINT to SLR';
