@@ -266,6 +266,7 @@ conn ~rdr_logon
 @@indices/rdr/rr_glint_journal_line.sql
 @@views/rdr/rcv_glint_journal_line.sql
 @@views/rdr/rcv_glint_journal.sql
+@@views/rdr/rcv_ag_glint_ps_journals_.sql
 @@packages/rdr/pg_glint.hdr
 @@packages/rdr/pg_glint.bdy
 @@grants/packages/rdr/pg_glint.sql
