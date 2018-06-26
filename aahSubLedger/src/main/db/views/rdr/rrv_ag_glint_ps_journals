@@ -1,4 +1,4 @@
-CREATE OR REPLACE FORCE VIEW RDR.RRV_AG_GLINT_PS_JOURNALS
+create or replace force view rdr.rrv_ag_glint_ps_journals
 (
    RGJL_ID,
    RGJL_RGJ_ID,
