@@ -15,5 +15,3 @@ AS
 
 END rdr_pkg;
 /
-
-
