@@ -43,7 +43,7 @@ CREATE TABLE rdr.rr_glint_journal_line
   EVENT_STATUS           CHAR(1 BYTE)           NOT NULL,
   SLR_PROCESS_ID         NUMBER(30)             NOT NULL,
   MANUAL_JE              CHAR(1 BYTE)           NOT NULL,
-  PS_FILTER              CHAR(1 BYTE)           NOT NULL
+  PS_FILTER              CHAR(1 BYTE)           NOT NULL,
 
      CONSTRAINT "XPK_GLINT_JOURNAL_LINE" PRIMARY KEY ("RGJL_ID")
   USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
