@@ -30,5 +30,7 @@ delete from gui.t_ui_role_tasks         where role_id in ( 'role.subledger.admin
 delete from gui.t_ui_roles              where role_id in ( 'role.subledger.administrator' , 'role.reference.data.user' , 'role.reference.data.approver' , 'role.subledger.user' , 'role.subledger.manager' , 'role.subledger.viewer' , 'role.subledger.configurator' );
 commit;
 
+update gui.t_ui_gui_parameters set guiparam_value = '500' where guiparam_name = 'data.max.rows.returned';
+commit;
 
 exit

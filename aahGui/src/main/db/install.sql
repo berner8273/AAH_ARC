@@ -38,6 +38,9 @@ delete from gui.ui_gen_lookup_type_properties;
 @@data/gui/ui_input_field_value.sql
 @@data/gui/ui_general_lookup.sql
 
+update gui.t_ui_gui_parameters set guiparam_value = '25000' where guiparam_name = 'data.max.rows.returned';
+commit;
+
 @@views/gui/vw_ui_attribute_1.sql
 @@views/gui/vw_ui_attribute_1_val_to_lkp.sql
 @@views/gui/vw_ui_attribute_2.sql
