@@ -132,7 +132,6 @@ conn ~stn_logon
 @@tables/stn/cev_data.sql
 @@tables/stn/cev_derived_plus_data.sql
 @@tables/stn/cev_gaap_fut_accts_data.sql
-@@tables/stn/cev_identified_record.sql
 @@tables/stn/cev_le_data.sql
 @@tables/stn/cev_mtm_data.sql
 @@tables/stn/cev_non_intercompany_data.sql
@@ -395,7 +394,6 @@ conn ~stn_logon
 
 conn ~stn_logon
 
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_IDENTIFIED_RECORD'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'POSTING_ACCOUNT_DERIVATION'     , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'VIE_POSTING_ACCOUNT_DERIVATION' , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DATA'                       , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');

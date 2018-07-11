@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
---whenever sqlerror exit failure
+whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -46,8 +46,7 @@ begin
                                   where lower(type) = 'to'
                                     and id1 in ( select object_id
                                                    from dba_objects
-                                                  where lower(object_name) in ( 'cev_identified_record'
-                                                                              , 'posting_account_derivation'
+                                                  where lower(object_name) in ( 'posting_account_derivation'
                                                                               , 'vie_posting_account_derivation'
                                                                               , 'cev_data'
                                                                               , 'cev_premium_typ_override'
@@ -69,7 +68,6 @@ end;
 /
 conn ~stn_logon
 
-truncate table stn.cev_identified_record;
 truncate table stn.posting_account_derivation;
 truncate table stn.vie_posting_account_derivation;
 truncate table stn.cev_data;
@@ -215,7 +213,6 @@ drop table stn.cev_valid;
 drop table stn.cev_data;
 drop table stn.cev_derived_plus_data;
 drop table stn.cev_gaap_fut_accts_data;
-drop table stn.cev_identified_record;
 drop table stn.cev_le_data;
 drop table stn.cev_mtm_data;
 drop table stn.cev_non_intercompany_data;

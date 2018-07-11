@@ -1769,7 +1769,7 @@ and exists    (
                       , cevnid.parent_stream_id
                       , cevnid.basis_cd
                       , cevnid.basis_typ
-                      , pldgr.ledger_cd
+                      , pldgrout.ledger_cd
                       , cevnid.event_typ
                       , cevnid.business_event_typ
                       , cevnid.is_mark_to_market
@@ -1793,24 +1793,26 @@ and exists    (
                          end business_typ
                       , coalesce( psmre.reins_le_cd , ele.elimination_le_cd )   business_unit
                       , nvl2( psmre.reins_le_cd , null , cevnid.affiliate ) affiliate
-                      , cevnid.owner_le_cd           --what should these be
-                      , cevnid.counterparty_le_cd    --what should these be
+                      , cevnid.owner_le_cd
+                      , cevnid.counterparty_le_cd
                       , psmre.chartfield_cd
                       , cevnid.transaction_ccy
-                      , cevnid.transaction_amt                             transaction_amt
+                      , cevnid.transaction_amt * pdmic.negate_flag                             transaction_amt
                       , cevnid.functional_ccy
-                      , cevnid.functional_amt                              functional_amt
+                      , cevnid.functional_amt * pdmic.negate_flag                              functional_amt
                       , cevnid.reporting_ccy
-                      , cevnid.reporting_amt                               reporting_amt
+                      , cevnid.reporting_amt * pdmic.negate_flag                               reporting_amt
                       , cevnid.lpg_id
                    from
-                             stn.cev_non_intercompany_data  cevnid
-                        join stn.posting_accounting_basis   abasis on cevnid.basis_cd   = abasis.basis_cd
-                        join stn.elimination_legal_entity   ele    on (
-                                                                           cevnid.business_unit           = ele.le_1_cd
-                                                                       and cevnid.affiliate               = ele.le_2_cd
-                                                                       and abasis.basis_consolidation_typ = ele.legal_entity_link_typ
-                                                                      )
+                             stn.cev_non_intercompany_data    cevnid
+                        join stn.posting_ledger               pldgrin  on cevnid.ledger_cd       = pldgrin.ledger_cd
+                        join stn.posting_method_derivation_ic pdmic    on pldgrin.ledger_id      = pdmic.input_ledger_id
+                        join stn.posting_ledger               pldgrout on pdmic.output_ledger_id = pldgrout.ledger_id
+                        join stn.elimination_legal_entity     ele      on (
+                                                                                cevnid.business_unit        = ele.le_1_cd
+                                                                            and cevnid.affiliate            = ele.le_2_cd
+                                                                            and pdmic.legal_entity_link_typ = ele.legal_entity_link_typ
+                                                                          )
                         join (
                                  select
                                         step_run_sid
@@ -1836,17 +1838,11 @@ and exists    (
                                   where
                                         step_run_state_start_ts = mxts
                              )
-                                                              led    on ele.step_run_sid  = led.step_run_sid
-                        join stn.posting_method_derivation_ic pdmic  on abasis.basis_id   = pdmic.basis_id
-                        join stn.posting_method_ledger        pml    on (
-                                                                                pdmic.psm_id   = pml.psm_id
-                                                                            and pdmic.basis_id = pml.input_basis_id
-                                                                        )
-                        join stn.posting_ledger               pldgr  on pml.ledger_id = pldgr.ledger_id
-                   left join stn.posting_method_derivation_rein psmre on (
+                                                                led    on ele.step_run_sid  = led.step_run_sid
+                   left join stn.posting_method_derivation_rein psmre  on (
                                                                                 cevnid.business_unit           = psmre.le_1_cd
                                                                             and cevnid.affiliate               = psmre.le_2_cd
-                                                                         )
+                                                                          )
                   where
                         cevnid.generate_interco_accounting = 'Y'
              )
