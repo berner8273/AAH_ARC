@@ -1,9 +1,8 @@
-CREATE TABLE RDR.RR_GLINT_TO_SLR_AG
+CREATE TABLE rdr.rr_glint_to_slr_ag
 (
-  RGJL_ID              NUMBER(18)               NOT NULL,
-  JL_JRNL_HDR_ID       NUMBER(12)               NOT NULL,
-  JL_JRNL_LINE_NUMBER  NUMBER(12)               NOT NULL
-)
-;
+   rgjl_id               NUMBER (18) NOT NULL,
+   jl_jrnl_hdr_id        NUMBER (12) NOT NULL,
+   jl_jrnl_line_number   NUMBER (12) NOT NULL
+);
 
 COMMENT ON TABLE RDR.RR_GLINT_TO_SLR_AG IS 'MAPS SLR JOURNALS GO GLINT JOURNALS';
