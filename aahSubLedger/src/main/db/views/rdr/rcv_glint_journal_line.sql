@@ -61,6 +61,7 @@ create or replace view rdr.rcv_glint_journal_line
    SLR_PROCESS_ID,
    MANUAL_JE
 )
+   BEQUEATH DEFINER
 AS
    SELECT jl_jrnl_hdr_id,
           CASE WHEN jt.ejt_madj_flag = 'Y' THEN jl_jrnl_hdr_id ELSE 0 END
@@ -134,22 +135,22 @@ AS
           CASE WHEN jl_reference_10 = 'NVS' THEN ' ' ELSE jl_reference_10 END
              AS jl_reference_10,
           CAST (jl_tran_ccy AS VARCHAR2 (3)) AS jl_tran_ccy,
-          CAST (jl_tran_amount AS NUMBER (23, 3)) AS jl_tran_amount,
+          ROUND (jl_tran_amount, 2) AS jl_tran_amount,
           jl_base_rate,
           CAST (jl_base_ccy AS VARCHAR2 (3)) AS jl_base_ccy,
-          CAST (jl_base_amount AS NUMBER (23, 3)) AS jl_base_amount,
+          ROUND (jl_base_amount ,2) AS jl_base_amount,
           jl_local_rate,
           jl_local_ccy,
-          jl_local_amount,
+          ROUND (jl_local_amount,2) AS jl_local_amount,
           jl_created_by,
           jl_created_on,
           jl_amended_by,
           jl_amended_on,
           jl_recon_status,
           NVL (fgl.lk_lookup_value3, ' ') AS event_class,
-          CASE WHEN jl_tran_amount < 0 THEN jl_tran_amount ELSE NULL END
+          CASE WHEN jl_tran_amount < 0 THEN ROUND(jl_tran_amount,2) ELSE NULL END
              AS credit_amt,
-          CASE WHEN jl_tran_amount >= 0 THEN jl_tran_amount ELSE NULL END
+          CASE WHEN jl_tran_amount >= 0 THEN ROUND(jl_tran_amount,2) ELSE NULL END
              AS debit_amt,
           'U' AS event_status,
           jl.jl_jrnl_process_id,
@@ -192,4 +193,4 @@ AS
                                     CAST (
                                        fgl3.lk_match_key3 AS NUMBER (2, 0))));
 
- comment on table rdr.rcv_glint_journal_line  IS 'Configurable View on Journal Lines that should be considered for sending to the GL.';
+COMMENT ON TABLE RDR.RCV_GLINT_JOURNAL_LINE IS 'Configurable View on Journal Lines that should be considered for sending to the GL.';
