@@ -207,33 +207,10 @@ AS
           sjl.jl_period_ltd,
           sjl.jl_type
      FROM rdr.rr_glint_journal_line gjl
-           JOIN slr.slr_jrnl_lines sjl
-             ON     sjl.jl_effective_date = gjl.accounting_dt
-                AND sjl.jl_tran_ccy = gjl.foreign_currency
-                AND sjl.jl_base_ccy = gjl.currency_cd
-                AND substr (sjl.jl_account, 1, 8) = gjl.account
-                AND (CASE
-                        WHEN sjl.jl_segment_3 = 'NVS' THEN ' '
-                        ELSE sjl.jl_segment_3
-                     END) = gjl.deptid
-                AND (CASE
-                        WHEN sjl.jl_segment_5 = 'NVS' THEN ' '
-                        ELSE substr (sjl.jl_segment_5, 1, 10)
-                     END) = gjl.chartfield1
-                AND (CASE
-                        WHEN sjl.jl_segment_4 = 'NVS' THEN ' '
-                        ELSE sjl.jl_segment_4
-                     END) = gjl.affiliate
-                AND sjl.jl_entity = gjl.business_unit_gl
-                AND sjl.jl_jrnl_process_id = gjl.slr_process_id
-                AND sjl.jl_segment_1 = gjl.ledger_group
-                AND (   (    gjl.manual_je = 'Y'
-                         AND sjl.jl_jrnl_hdr_id = gjl.aah_jrnl_hdr_nbr)
-                     or (gjl.manual_je = 'N' AND gjl.aah_jrnl_hdr_nbr = 0))
-          JOIN fdr.fr_general_lookup fgl
-             ON     sjl.jl_attribute_4 = fgl.lk_match_key1
-                AND fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
-                AND gjl.event_class = fgl.lk_lookup_value3
+          JOIN rdr.rr_glint_to_slr_ag gts ON gts.rgjl_id = gjl.rgjl_id
+          JOIN slr.slr_jrnl_lines sjl
+             ON     sjl.jl_jrnl_hdr_id = gts.jl_jrnl_hdr_id
+                AND sjl.jl_jrnl_line_number = gts.jl_jrnl_line_number
     WHERE 1 = 1;
 
 comment on table rdr.rrv_ag_glint_ps_journals is 'View that ties PS Journals to GLINT to SLR';
