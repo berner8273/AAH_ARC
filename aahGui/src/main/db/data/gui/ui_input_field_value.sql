@@ -12,11 +12,15 @@ INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","U
 INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE")
   VALUES ('CONT_RSRV','Contingency Reserve','Contingency Reserve','event_class');
 INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE")
-  VALUES ('OVERHEAD_TAX','Overhead and Premium Tax','Overhead and Premium Tax','event_class');
+  VALUES ('OVERHEAD_TAX','Overhead Tax','Overhead Tax','event_class');
 INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE")
   VALUES ('OTHERS','Others','Others','event_class');
 INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE")
   VALUES ('O','Open Period','Open Period','open_close');
 INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE")
   VALUES ('C','Closed Period','Closed Period','open_close');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE")
+  VALUES ('N','No','No','run_status');
+INSERT INTO gui.ui_input_field_value ("UIF_CODE","UIF_TEXT","UIF_DESCRIPTION","UIF_CATEGORY_CODE")
+  VALUES ('Y','Process/Reprocess','Process/Reprocess','run_status');
 commit;
