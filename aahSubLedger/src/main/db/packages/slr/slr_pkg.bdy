@@ -54,6 +54,173 @@ BEGIN
 
 END pUpdateJLU;
 
+
+
+
+Procedure pCombinationCheck_JLU (
+  pinEPGID     in slr_entity_proc_group.epg_id%TYPE,
+  pinProcessID in slr_job_statistics.js_process_id%TYPE,
+  pinStatus    in slr_jrnl_lines_unposted.jlu_jrnl_status%TYPE := 'U'
+)
+As
+
+lcUnitName        Constant all_procedures.procedure_name%TYPE := 'pCombinationCheck_JLU';
+lcViewName        Constant all_views.view_name%TYPE := 'SCV_COMBINATION_CHECK_JLU';
+lcErrorCode_Combo Constant slr_error_message.em_error_code%TYPE := 'JL_COMBO';
+
+v_combo_check_errors Pls_Integer;
+
+Begin
+  dbms_application_info.set_module(
+    module_name => lcUnitName,
+    action_name => 'Start');
+  fdr.PG_COMMON.pLogDebug(pinMessage => 'Start Combo Check - Unposted Journal Lines');
+
+  /* Configure the optimizer hints for Combination Checking. */
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboInput := '';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboError := '';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertInput      := '/*+ no_parallel */';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectInput      := '/*+ parallel */';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertComboError := '/*+ no_parallel */';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectComboError := '/*+ parallel */';
+
+  /* Call the Combination Check for those journals that are not in error yet - use the [sub-]partitioning key. */
+  fdr.PG_COMBINATION_CHECK.pCombinationCheck(
+    pinObjectName   =>  'slr.scv_combination_check_jlu',
+    pinFilter       =>  NULL,
+    pinBusinessDate =>  NULL,
+    poutErrorCount  =>  v_combo_check_errors);
+
+  If v_combo_check_errors > 0 Then
+    dbms_application_info.set_action('Create Journal Line Error');
+    Insert /*+ parallel */ into slr_jrnl_line_errors (
+      jle_jrnl_process_id,
+      jle_jrnl_hdr_id,
+      jle_jrnl_line_number,
+      jle_error_code,
+      jle_error_string,
+      jle_created_by,
+      jle_created_on,
+      jle_amended_by,
+      jle_amended_on)
+    Select /*+ parallel */
+           pinProcessID as jle_jrnl_process_id,
+           substr(ce_input_id,1,instr(ce_input_id,'_')-1) as jle_jrnl_hdr_id,
+           substr(ce_input_id,instr(ce_input_id,'_')+1) as jle_jrnl_line_number,
+           lcErrorCode_Combo as jle_error_code,
+           replace(replace(em_error_message,'%1',ce_rule),'%2',ce_attribute_name) as jle_error_string,
+           user as jle_created_by,
+           sysdate as jle_created_on,
+           user as jle_amended_by,
+           sysdate as jle_amended_on
+      from fdr.fr_combination_check_error
+      join slr.slr_error_message on 1 = 1
+     where em_error_code = lcErrorCode_Combo;
+
+    /* Update the corresponding journal line to Error. */     
+    Merge /*+ parallel */ into slr_jrnl_lines_unposted a using (
+      Select /*+ parallel */ jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
+        from slr_jrnl_lines_unposted
+        join fdr.fr_combination_check_error on jlu_jrnl_hdr_id = substr(ce_input_id,1,instr(ce_input_id,'_')-1)
+                                           and jlu_jrnl_line_number = substr(ce_input_id,instr(ce_input_id,'_')+1)
+       where jlu_epg_id = pinEPGID
+         and jlu_jrnl_status = pinStatus
+       group by jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id) b
+      on (a.jlu_epg_id = b.jlu_epg_id
+          and a.jlu_jrnl_hdr_id = b.jlu_jrnl_hdr_id
+          and a.jlu_jrnl_line_number = b.jlu_jrnl_line_number)
+    When Matched Then Update
+      Set a.jlu_jrnl_status = 'E';
+      Commit;
+      
+      dbms_application_info.set_action('Create Correlated Journal Line Errors');
+    Insert /*+ parallel */ into slr_jrnl_line_errors (
+      jle_jrnl_process_id,
+      jle_jrnl_hdr_id,
+      jle_jrnl_line_number,
+      jle_error_code,
+      jle_error_string,
+      jle_created_by,
+      jle_created_on,
+      jle_amended_by,
+      jle_amended_on)
+    Select /*+ parallel */
+           pinProcessID as jle_jrnl_process_id,
+           JLU.JLU_JRNL_HDR_ID as jle_jrnl_hdr_id,
+           JLU.JLU_JRNL_LINE_NUMBER as jle_jrnl_line_number,
+           lcErrorCode_Combo as jle_error_code,
+           'Correlated Journal Line Error' as jle_error_string,
+           user as jle_created_by,
+           sysdate as jle_created_on,
+           user as jle_amended_by,
+           sysdate as jle_amended_on
+      from (select distinct jle1.jle_jrnl_hdr_id from  slr.slr_jrnl_line_errors jle1
+                where JLE1.JLE_JRNL_PROCESS_ID = pinProcessID ) jle
+      --join slr.slr_error_message on 1 = 1
+      join SLR.SLR_JRNL_LINES_UNPOSTED jlu on jle.jle_jrnl_hdr_id = JLU.JLU_JRNL_HDR_ID
+     --where em_error_code = lcErrorCode_Combo;
+     where not exists (select NULL from slr_jrnl_line_errors jle2
+                        where JLE2.JLE_JRNL_HDR_ID = JLU.JLU_JRNL_HDR_ID
+                          and JLE2.JLE_JRNL_LINE_NUMBER = JLU.JLU_JRNL_LINE_NUMBER
+                          and JLE2.JLE_JRNL_PROCESS_ID = pinProcessID );
+
+    /* Update the corresponding journal line to Error. */     
+    Merge /*+ parallel */ into slr_jrnl_lines_unposted a using (
+      Select /*+ parallel */ jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
+        from slr_jrnl_lines_unposted
+        join SLR.SLR_JRNL_LINE_ERRORS jle on jlu_jrnl_hdr_id = JLE.JLE_JRNL_HDR_ID
+                                           and jlu_jrnl_line_number = JLE.JLE_JRNL_LINE_NUMBER
+       where jlu_epg_id = pinEPGID
+         and jlu_jrnl_status = pinStatus
+       group by jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id) b
+      on (a.jlu_epg_id = b.jlu_epg_id
+          and a.jlu_jrnl_hdr_id = b.jlu_jrnl_hdr_id
+          and a.jlu_jrnl_line_number = b.jlu_jrnl_line_number)
+    When Matched Then Update
+      Set a.jlu_jrnl_status = 'E';
+
+
+  End If;
+ 
+  SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
+  /* Remove the combination input/error records and commit the journal error records. */
+  Commit;
+
+  fdr.PG_COMMON.pLogDebug(pinMessage => 'End Combo Check - Unposted Journal Lines');
+  dbms_application_info.set_module(
+    module_name => NULL,
+    action_name => NULL);
+Exception
+When Others Then
+  /* Log the error. */
+  dbms_application_info.set_action('Unhandled Exception');
+  fdr.PR_Error (
+    a_type => fdr.PG_COMMON.gcErrorEventType_Error,
+    a_text => dbms_utility.format_error_backtrace,
+    a_category => fdr.PG_COMMON.gcErrorCategory_Tech,
+    a_error_source => lcUnitName,
+    a_error_table => 'SLR_JRNL_LINES_UNPOSTED',
+    a_row => NULL,
+    a_error_field => NULL,
+    a_stage => user,
+    a_technology => fdr.PG_COMMON.gcErrorTechnology_PLSQL,
+    a_value => NULL,
+    a_entity => NULL,
+    a_book => NULL,
+    a_security => NULL,
+    a_source_system => NULL,
+    a_client_key => NULL,
+    a_client_ver => NULL,
+    a_lpg_id => NULL
+  );
+
+  /* Raise the error. */
+  Raise;
+End pCombinationCheck_JLU;
+
+
+
+
 PROCEDURE pPROCESS_SLR AS
 
     s_proc_name VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pPROCESS_SLR';
@@ -68,22 +235,10 @@ PROCEDURE pPROCESS_SLR AS
     v_ent_rate_set slr_entities.ent_rate_set%TYPE;
     v_combo_check_errors PLS_INTEGER := 0;
 
+
 BEGIN
 
-    EXECUTE IMMEDIATE 'INSERT INTO SLR_LOG(L_ID, L_DATE, L_TYPE, L_CODE, L_PROCESS_ID, L_DESC, L_DESC_EXT) VALUES(SLR_LOG_SEQ.NEXTVAL,SYSDATE, ''P'', ''AG'', ''30'', ''Begin Combo Check'', ''Begin Combo Check'')';
-    COMMIT;
-        
-       Execute Immediate 'Alter Session Enable Parallel DML';
-       lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-       fdr.PG_COMBINATION_CHECK.pCombinationCheck(
-        pinObjectName   =>  'slr.scv_combination_check_jlu',
-        pinFilter       =>  NULL,
-        pinBusinessDate =>  NULL,
-        poutErrorCount  =>  v_combo_check_errors);
-        SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-        SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
-    --END;
-    EXECUTE IMMEDIATE 'INSERT INTO SLR_LOG(L_ID, L_DATE, L_TYPE, L_CODE, L_PROCESS_ID, L_DESC, L_DESC_EXT) VALUES(SLR_LOG_SEQ.NEXTVAL,SYSDATE, ''P'', ''AG'', ''30'', ''END Combo Check'', ''END Combo Check'')';
+
 
   FOR i IN
       (
@@ -153,10 +308,45 @@ BEGIN
         AND JLU_EPG_ID = v_epg_id
         AND ROWNUM <= 1;
 
-        IF lvCount >= 1 THEN
-            ----------------------
-            -- Validate and Post
-            ----------------------
+IF lvCount >= 1 THEN
+    ----------------------
+    -- Validate and Post
+    ----------------------
+   --BEGIN
+    EXECUTE IMMEDIATE 'INSERT INTO SLR_LOG(L_ID, L_DATE, L_TYPE, L_CODE, L_PROCESS_ID, L_DESC, L_DESC_EXT) VALUES(SLR_LOG_SEQ.NEXTVAL,SYSDATE, ''P'', ''AG'', ''30'', ''Begin Combo Check'', ''Begin Combo Check'')';
+    COMMIT;
+        
+       Execute Immediate 'Alter Session Enable Parallel DML';
+       
+      lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+      pCombinationCheck_JLU(v_epg_id, lv_process_id, 'U');
+      SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+    --  SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
+ 
+       
+       /* Configure debugging output to output buffer. */
+--      fdr.PG_COMMON.gDebug_DBMSOutput := True;
+
+  /*    fdr.PG_COMMON.pLogDebug(pinMessage => 'Start Combo Check');
+
+       lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+       fdr.PG_COMBINATION_CHECK.pCombinationCheck(
+        pinObjectName   =>  'slr.scv_combination_check_jlu',
+        pinFilter       =>  NULL,
+        pinBusinessDate =>  NULL,
+        poutErrorCount  =>  v_combo_check_errors);
+        SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+        SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
+        
+        fdr.PG_COMMON.pLogDebug(pinMessage => 'End Combo Check : Errors=' || to_char(v_combo_check_errors));
+  */
+    --END;
+    
+    
+    
+    
+    EXECUTE IMMEDIATE 'INSERT INTO SLR_LOG(L_ID, L_DATE, L_TYPE, L_CODE, L_PROCESS_ID, L_DESC, L_DESC_EXT) VALUES(SLR_LOG_SEQ.NEXTVAL,SYSDATE, ''P'', ''AG'', ''30'', ''END Combo Check'', ''END Combo Check'')';
+    commit;
             lv_START_TIME:=DBMS_UTILITY.GET_TIME();
             SLR_VALIDATE_JOURNALS_PKG.pValidateJournals(p_epg_id => v_epg_id, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => v_ent_rate_set);
             SLR_ADMIN_PKG.PerfInfo( 'Validate function. Validate function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
@@ -3994,6 +4184,25 @@ BEGIN
   commit;
 
 END pFX_REVAL_RULE2_USGAAP;
+
+PROCEDURE pYECleardown(pConfig      IN slr_process_config.pc_config%TYPE
+                                      ,pSource      IN slr_process_source.sps_source_name%TYPE
+                                      ,pBalanceDate IN DATE )
+
+as
+
+    s_proc_name varchar2(50) := $$plsql_unit || '.' || $$plsql_function ;
+    pProcess   slr_process.p_process%TYPE := 'PLRETEARNINGS';
+    pEntProcSet slr_bm_entity_processing_set.bmeps_set_id%TYPE :='AG';
+    pRateSet  slr_entity_rates.er_entity_set%TYPE := NULL;
+    gProcId  number;
+
+  begin
+
+  slr.slr_balance_movement_pkg.pBMRunBalanceMovementProcess (pProcess,pEntProcSet,pConfig,pSource,pBalanceDate,pRateSet,gProcId);
+
+end pYECleardown;
+
 
 END SLR_PKG;
 /
