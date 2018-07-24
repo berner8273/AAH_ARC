@@ -175,4 +175,6 @@ insert into stn.event_type ( event_typ ) values ( 'FX_WP_CASH_OFFSET' );
 insert into stn.event_type ( event_typ ) values ( 'VIECF_FUT2CURR' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPF_FUT2CURR' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPF_FXCC_FUT2CURR' );
+insert into stn.event_type ( event_typ ) values ( 'VIECF_AR' );
+insert into stn.event_type ( event_typ ) values ( 'VIEPF_UN' );
 commit;
