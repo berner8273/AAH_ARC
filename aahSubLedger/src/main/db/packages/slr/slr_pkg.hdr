@@ -81,7 +81,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES;
 PROCEDURE pGENERATE_FAK_BOP_VALUES;
 PROCEDURE pYECleardown(pConfig      IN slr_process_config.pc_config%TYPE
                                       ,pSource      IN slr_process_source.sps_source_name%TYPE
-                                      ,pBalanceDate IN DATE );                                                                                  
+                                      ,pBalanceDate IN DATE );
 
 PROCEDURE pFX_REVAL(p_month IN NUMBER, p_year IN NUMBER, p_event_class VARCHAR2, p_acc_basis VARCHAR2);
 PROCEDURE pFX_REVAL_RULE0_USSTAT(v_date IN DATE);
@@ -90,6 +90,13 @@ PROCEDURE pFX_REVAL_RULE2_USSTAT(v_date IN DATE);
 
 PROCEDURE pFX_REVAL_RULE0_USGAAP(v_date IN DATE);
 PROCEDURE pFX_REVAL_RULE2_USGAAP(v_date IN DATE);
+
+Procedure pCombinationCheck_JLU (
+  pinEPGID     in slr_entity_proc_group.epg_id%TYPE,
+  pinProcessID in slr_job_statistics.js_process_id%TYPE,
+  pinStatus    in slr_jrnl_lines_unposted.jlu_jrnl_status%TYPE := 'U'
+);
+
 
 END SLR_PKG;
 /

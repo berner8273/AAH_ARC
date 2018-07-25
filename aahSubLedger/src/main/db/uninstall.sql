@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
--- whenever sqlerror exit failure
+whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -205,7 +205,6 @@ delete from slr.slr_fak_segment_4;
 delete from slr.slr_fak_segment_3;
 commit;
 
-update slr_ext_jrnl_types set ejt_active_flag = 'A' ;
 commit;
 
 conn ~stn_logon
@@ -215,6 +214,7 @@ revoke select on stn.execution_type     from slr;
 
 conn ~fdr_logon
 revoke select , insert , update on fdr.fr_general_lookup  from slr;
+revoke update on fdr.fr_general_lookup  from rdr;
 
 -- -----------------------------------------------------------------------------------------
 -- purpose : Begin GLINT uninstall
@@ -235,6 +235,8 @@ update slr.slr_ext_jrnl_types set ejt_client_flag1 = NULL where ejt_client_flag1
 commit;
 
 conn ~rdr_logon
+drop package body rdr.rdr_pkg;
+drop package      rdr.rdr_pkg;
 drop package body rdr.pgc_glint;
 drop package      rdr.pgc_glint;
 revoke execute on rdr.pg_glint from gui;
@@ -243,6 +245,7 @@ drop package body rdr.pg_glint;
 drop package      rdr.pg_glint;
 drop view         rdr.rcv_glint_journal;
 drop view         rdr.rcv_glint_journal_line;
+drop view         rdr.rrv_ag_glint_ps_journals;
 drop index        rdr.xif1gl_interface_journal_line;
 drop table        rdr.rr_glint_journal_line;
 drop index        rdr.xif2gl_interface_journal_mappi;
@@ -256,6 +259,7 @@ drop table        rdr.rr_interface_control;
 drop table        rdr.rr_glint_temp_journal;
 drop index        rdr.xie1gl_previous_flag;
 drop table        rdr.rr_glint_temp_journal_line;
+drop table        rdr.rr_glint_to_slr_ag;
 drop sequence     rdr.sqrr_glint_journal_line;
 drop sequence     rdr.sqrr_interface_control;
 drop sequence     rdr.sqrr_glint_batch_control;
