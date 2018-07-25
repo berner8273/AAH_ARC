@@ -5,16 +5,21 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
-whenever sqlerror exit failure
+--whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
 
-define tns_alias    = @oracleTnsAlias@
+--define tns_alias    = @oracleTnsAlias@
 
-define gui_user     = @guiUsername@
-define gui_password = @guiPassword@
-define gui_logon    = ~gui_user/~gui_password@~tns_alias
+--define gui_user     = @guiUsername@
+--define gui_password = @guiPassword@
+--define gui_logon    = ~gui_user/~gui_password@~tns_alias
+
+define gui_logon    = ~1
+
+
+
 
 conn ~gui_logon
 
@@ -30,7 +35,5 @@ delete from gui.t_ui_role_tasks         where role_id in ( 'role.subledger.admin
 delete from gui.t_ui_roles              where role_id in ( 'role.subledger.administrator' , 'role.reference.data.user' , 'role.reference.data.approver' , 'role.subledger.user' , 'role.subledger.manager' , 'role.subledger.viewer' , 'role.subledger.configurator' );
 commit;
 
-update gui.t_ui_gui_parameters set guiparam_value = '500' where guiparam_name = 'data.max.rows.returned';
-commit;
 
 exit

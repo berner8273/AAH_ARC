@@ -1,3 +1,2 @@
-alter table stn.posting_method_derivation_ic add constraint fk_psmic_psm     foreign key ( psm_id )           references stn.posting_method ( psm_id );
-alter table stn.posting_method_derivation_ic add constraint fk_psmic_ldgrin  foreign key ( input_ledger_id )  references stn.posting_ledger ( ledger_id );
-alter table stn.posting_method_derivation_ic add constraint fk_psmic_ldgrout foreign key ( output_ledger_id ) references stn.posting_ledger ( ledger_id );
+alter table stn.posting_method_derivation_ic add constraint fk_psmic_psm    foreign key ( psm_id )   references stn.posting_method           ( psm_id );
+alter table stn.posting_method_derivation_ic add constraint fk_psmic_abasis foreign key ( basis_id ) references stn.posting_accounting_basis ( basis_id );

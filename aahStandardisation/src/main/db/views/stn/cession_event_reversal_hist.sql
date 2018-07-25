@@ -61,7 +61,6 @@ select distinct
                                                  on faei2.ae_acc_event_id      = sjl2.jl_source_jrnl_id
                                               where faei2.ae_client_spare_id16 = 'REVERSE_REPOST'
                                            )
-   and fsrae.srae_client_spare_id16 <> 'VIE_HISTORICAL'
    and fsrae.event_status = 'P'
    and exists (
                 select null
