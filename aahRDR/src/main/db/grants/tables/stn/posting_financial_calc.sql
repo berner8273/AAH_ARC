@@ -1,0 +1,1 @@
+grant select on stn.posting_financial_calc to rdr with grant option;

@@ -41,10 +41,13 @@ conn ~stn_logon
 @@grants/tables/stn/policy_premium_type.sql
 @@grants/tables/stn/posting_method_derivation_rein.sql
 @@grants/tables/stn/event_type.sql
+@@grants/tables/stn/posting_accounting_basis.sql
+@@grants/tables/stn/posting_financial_calc.sql
 @@grants/tables/stn/posting_ledger.sql
 @@grants/tables/stn/posting_method.sql
 @@grants/tables/stn/posting_method_derivation_mtm.sql
 @@grants/tables/stn/posting_method_ledger.sql
+@@grants/tables/stn/vie_code.sql
 @@grants/tables/stn/vie_event_type.sql
 @@grants/tables/stn/vie_posting_method_ledger.sql
 

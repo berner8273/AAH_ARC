@@ -79,10 +79,13 @@ revoke select   on stn.cession_event_premium_type      from rdr;
 revoke select   on stn.policy_premium_type             from rdr;
 revoke select   on stn.posting_method_derivation_rein  from rdr;
 revoke select   on stn.event_type                      from rdr;
+revoke select   on stn.posting_accounting_basis        from rdr;
+revoke select   on stn.posting_financial_calc          from rdr;
 revoke select   on stn.posting_ledger                  from rdr;
 revoke select   on stn.posting_method                  from rdr;
 revoke select   on stn.posting_method_derivation_mtm   from rdr;
 revoke select   on stn.posting_method_ledger           from rdr;
+revoke select   on stn.vie_code                        from rdr;
 revoke select   on stn.vie_event_type                  from rdr;
 revoke select   on stn.vie_posting_method_ledger       from rdr;
 
