@@ -2569,7 +2569,14 @@ and exists    (
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
-                NULL AS DEPT_CD,
+                case 
+when cep.EVENT_TYP in ( 'DAC_CC_CAP_DEF'
+                      , 'VIECC_DAC_CAP_DEF'
+                      , 'VIECD_DAC_CAP_DEF'
+                      , 'VIECF_DAC_CAP_DEF' ) 
+then '4001'
+else null
+end AS DEPT_CD,
                 ce_default.SRAE_SOURCE_SYSTEM AS SRAE_SOURCE_SYSTEM,
                 ce_default.SRAE_INSTR_SUPER_CLASS AS SRAE_INSTR_SUPER_CLASS,
                 ce_default.SRAE_INSTRUMENT_CODE AS SRAE_INSTRUMENT_CODE,
@@ -2657,7 +2664,14 @@ end AS VIE_BU_ACCOUNT_LOOKUP
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
-                NULL AS DEPT_CD,
+                case 
+when cerhist.EVENT_TYP in ( 'DAC_CC_CAP_DEF'
+                          , 'VIECC_DAC_CAP_DEF'
+                          , 'VIECD_DAC_CAP_DEF'
+                          , 'VIECF_DAC_CAP_DEF' ) 
+then '4001'
+else null
+end AS DEPT_CD,
                 ce_default.SRAE_SOURCE_SYSTEM AS SRAE_SOURCE_SYSTEM,
                 ce_default.SRAE_INSTR_SUPER_CLASS AS SRAE_INSTR_SUPER_CLASS,
                 ce_default.SRAE_INSTRUMENT_CODE AS SRAE_INSTRUMENT_CODE,
@@ -2745,7 +2759,14 @@ end AS VIE_BU_ACCOUNT_LOOKUP
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
-                NULL AS DEPT_CD,
+                case 
+when cercurr.EVENT_TYP in ( 'DAC_CC_CAP_DEF'
+                          , 'VIECC_DAC_CAP_DEF'
+                          , 'VIECD_DAC_CAP_DEF'
+                          , 'VIECF_DAC_CAP_DEF' ) 
+then '4001'
+else null
+end AS DEPT_CD,
                 ce_default.SRAE_SOURCE_SYSTEM AS SRAE_SOURCE_SYSTEM,
                 ce_default.SRAE_INSTR_SUPER_CLASS AS SRAE_INSTR_SUPER_CLASS,
                 ce_default.SRAE_INSTRUMENT_CODE AS SRAE_INSTRUMENT_CODE,
