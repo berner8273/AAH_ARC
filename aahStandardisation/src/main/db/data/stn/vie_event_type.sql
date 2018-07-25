@@ -1,7 +1,6 @@
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECC_AR' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECC_DAC_CAP_DEF' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECD_AR' ) );
-insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECD_DAC_CAP_DEF' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_ACC' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_CC' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_DAC_CC_AMORT' ) );
@@ -63,4 +62,8 @@ insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id f
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_UPR_CHANGE' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_UPR_INITIAL' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_WP' ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_DAC_CAP_DEF' ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_FUT2CURR' ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_FUT2CURR' ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_FXCC_FUT2CURR' ) );
 commit;

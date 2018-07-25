@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
---whenever sqlerror exit failure
+whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -46,8 +46,7 @@ begin
                                   where lower(type) = 'to'
                                     and id1 in ( select object_id
                                                    from dba_objects
-                                                  where lower(object_name) in ( 'cev_identified_record'
-                                                                              , 'posting_account_derivation'
+                                                  where lower(object_name) in ( 'posting_account_derivation'
                                                                               , 'vie_posting_account_derivation'
                                                                               , 'cev_data'
                                                                               , 'cev_premium_typ_override'
@@ -56,7 +55,8 @@ begin
                                                                               , 'cev_derived_plus_data'
                                                                               , 'cev_le_data'
                                                                               , 'cev_non_intercompany_data'
-                                                                              , 'cev_intercompany_data' )
+                                                                              , 'cev_intercompany_data'
+                                                                              , 'cev_vie_data' )
                                                )
                                     and vs.sid = vl.sid
                                )
@@ -68,7 +68,6 @@ end;
 /
 conn ~stn_logon
 
-truncate table stn.cev_identified_record;
 truncate table stn.posting_account_derivation;
 truncate table stn.vie_posting_account_derivation;
 truncate table stn.cev_data;
@@ -129,7 +128,6 @@ drop view  stn.ce_default;
 drop view  stn.cession_event_reversal_hist;
 drop view  stn.cession_event_reversal_curr;
 drop view  stn.cession_event_posting;
-drop view  stn.vie_event_cd;
 drop view  stn.cev_period_balances;
 drop view  stn.period_status;
 drop view  stn.hopper_gl_combo_edit_gc;
@@ -204,7 +202,6 @@ drop table stn.posting_method_ledger;
 drop table stn.posting_method_derivation_et;
 drop table stn.posting_method_derivation_ic;
 drop table stn.posting_method_derivation_le;
-drop table stn.posting_method_derivation_link;
 drop table stn.posting_method_derivation_mtm;
 drop table stn.posting_method_derivation_rein;
 drop table stn.posting_accounting_basis;
@@ -216,7 +213,6 @@ drop table stn.cev_valid;
 drop table stn.cev_data;
 drop table stn.cev_derived_plus_data;
 drop table stn.cev_gaap_fut_accts_data;
-drop table stn.cev_identified_record;
 drop table stn.cev_le_data;
 drop table stn.cev_mtm_data;
 drop table stn.cev_non_intercompany_data;
