@@ -1,4 +1,4 @@
-create or replace force view rdr.rrv_ag_glint_ps_journals
+create or replace view rdr.rrv_ag_glint_ps_journals
 (
    RGJL_ID,
    RGJL_RGJ_ID,
@@ -212,5 +212,4 @@ AS
              ON     sjl.jl_jrnl_hdr_id = gts.jl_jrnl_hdr_id
                 AND sjl.jl_jrnl_line_number = gts.jl_jrnl_line_number
     WHERE 1 = 1;
-
 comment on table rdr.rrv_ag_glint_ps_journals is 'View that ties PS Journals to GLINT to SLR';
