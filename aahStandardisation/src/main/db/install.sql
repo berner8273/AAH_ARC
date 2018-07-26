@@ -10,22 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define tns_alias    = @oracleTnsAlias@
-define stn_user     = @stnUsername@
-define stn_password = @stnPassword@
-define stn_logon    = ~stn_user/~stn_password@~tns_alias
-
-define fdr_user     = @fdrUsername@
-define fdr_password = @fdrPassword@
-define fdr_logon    = ~fdr_user/~fdr_password@~tns_alias
-
-define gui_user     = @guiUsername@
-define gui_password = @guiPassword@
-define gui_logon    = ~gui_user/~gui_password@~tns_alias
-
-define slr_user     = @slrUsername@
-define slr_password = @slrPassword@
-define slr_logon    = ~slr_user/~slr_password@~tns_alias
+define fdr_logon    = ~1
+define gui_logon    = ~2
+define rdr_logon    = ~3
+define sla_logon    = ~4
+define slr_logon    = ~5
+define stn_logon    = ~6
+define sys_logon    = ~7
+define unittest_login   = ~8
 
 conn ~slr_logon
 
