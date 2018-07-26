@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
--- whenever sqlerror exit failure
+whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -54,8 +54,8 @@ delete from slr.slr_entity_proc_group;
 commit;
 
 -- update journal type descriptions for manual journal entries by gui
-update slr_ext_jrnl_types set ejt_active_flag = 'I' where ejt_type not in ('MADJBDPPE','MADJREVPE','MADJPERB');
-update slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type in ('MADJBDPPE','MADJREVPE','MADJPERB');
+update slr.slr_ext_jrnl_types set ejt_madj_flag = 'N' where ejt_type not in ('MADJPERB','MADJBDPPE','MADJREVPE');
+update slr.slr_ext_jrnl_types set ejt_madj_flag = 'Y' where ejt_type in ('MADJPERB','MADJBDPPE','MADJREVPE');
 update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE prior to open period' where ejt_type = 'MADJPERB';
 update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE open period'  where ejt_type = 'MADJBDPPE';
 update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE rev open period' where ejt_type = 'MADJREVPE';
@@ -254,11 +254,15 @@ conn ~rdr_logon
 @@indices/rdr/rr_glint_journal_line.sql
 @@views/rdr/rcv_glint_journal_line.sql
 @@views/rdr/rcv_glint_journal.sql
+@@views/rdr/rrv_ag_glint_ps_journals.sql
+@@tables/rdr/rr_glint_to_slr_ag.sql
 @@packages/rdr/pg_glint.hdr
 @@packages/rdr/pg_glint.bdy
 @@grants/packages/rdr/pg_glint.sql
 @@packages/rdr/pgc_glint.hdr
 @@packages/rdr/pgc_glint.bdy
+@@packages/rdr/rdr_pkg.hdr
+@@packages/rdr/rdr_pkg.bdy
 
 conn ~slr_logon
 
@@ -282,6 +286,7 @@ conn ~fdr_logon
 
 conn ~slr_logon
 
+@@tables/slr/slr_fx_reval_temp.sql
 @@data/slr/slr_process_config.sql
 @@data/slr/slr_process_config_detail.sql
 @@data/slr/slr_process_source.sql
