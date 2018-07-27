@@ -62,7 +62,6 @@ conn ~stn_logon
 @@grants/tables/stn/vie_event_type.sql
 @@grants/tables/stn/vie_code.sql
 @@grants/tables/stn/vie_posting_method_ledger.sql
-.sql
 
 conn ~slr_logon
 

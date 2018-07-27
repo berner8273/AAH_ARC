@@ -237,9 +237,9 @@ conn ~fdr_logon
 @@data/fdr/fr_general_codes.sql
 
 conn ~rdr_logon
-@@sequences/rdr/sqrr_glint_batch_control.sql
-@@sequences/rdr/sqrr_interface_control.sql
-@@sequences/rdr/sqrr_glint_journal_line.sql
+@@sequences/rdr/rr_glint_batch_control.sql
+@@sequences/rdr/rr_interface_control.sql
+@@sequences/rdr/rr_glint_journal_line.sql
 @@tables/rdr/rr_glint_temp_journal_line.sql
 @@indices/rdr/rr_glint_temp_journal_line.sql
 @@tables/rdr/rr_glint_temp_journal.sql
