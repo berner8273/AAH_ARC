@@ -10,39 +10,15 @@
 set serveroutput on
 set define ~
 
-define tns_alias    = aptci
-define stn_user     = stn
-define stn_password = NZ784FBLUJesbJvA
-define stn_logon    = ~stn_user/~stn_password@~tns_alias
 
-define fdr_user     = fdr
-define fdr_password = bJGeTSP2PbMikw4d
-define fdr_logon    = ~fdr_user/~fdr_password@~tns_alias
-
-define gui_user     = gui
-define gui_password = KWDfdtQqoa3A2nE5
-define gui_logon    = ~gui_user/~gui_password@~tns_alias
-
-define slr_user     = slr
-define slr_password = xJ4V8iyBJ7UuVSx6
-define slr_logon    = ~slr_user/~slr_password@~tns_alias
-
-define rdr_user     = rdr
-define rdr_password = HuJJnYnTr8LRwJqL
-define rdr_logon    = ~rdr_user/~rdr_password@~tns_alias
-
-define sys_user     = aptitude
-define sys_password = iK3BQ8QvbuhSvaAU
-define sys_logon    = ~sys_user/~sys_password@~tns_alias
-
---define fdr_logon    = ~1
---define gui_logon    = ~2
---define rdr_logon    = ~3
---define sla_logon    = ~4
---define slr_logon    = ~5
---define stn_logon    = ~6
---define sys_logon    = ~7
---define unittest_login   = ~8
+define fdr_logon    = ~1
+define gui_logon    = ~2
+define rdr_logon    = ~3
+define sla_logon    = ~4
+define slr_logon    = ~5
+define stn_logon    = ~6
+define sys_logon    = ~7
+define unittest_login   = ~8
 
 conn ~sys_logon as sysdba
 
