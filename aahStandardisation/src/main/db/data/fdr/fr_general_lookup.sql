@@ -37,7 +37,7 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'LKT_CODE2'                      , 'COMBO_APPLICABLE' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'LKT_CODE3'                      , 'COMBO_CHECK' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'ACTION'                         , 'CHECK' );
-insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'ATTRIBUTE1'                     , '1' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'ATTRIBUTE1'                     , 'ACCT_CD' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'ATTRIBUTE2'                     , '2' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'ATTRIBUTE3'                     , '3' );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_lookup_value1 ) values ( 'GCE_DEFAULT'              , 'ATTRIBUTE4'                     , '4' );
