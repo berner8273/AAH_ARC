@@ -1,2 +1,2 @@
-create user aah_report identified by ~1;
+create user aah_report identified by "@aahReportPassword@";
 grant aah_rdr to aah_report;

@@ -10,12 +10,6 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define tns_alias    = @oracleTnsAlias@
-
---define gui_user     = @guiUsername@
---define gui_password = @guiPassword@
---define gui_logon    = ~gui_user/~gui_password@~tns_alias
-
 define fdr_logon    = ~1
 define gui_logon    = ~2
 define rdr_logon    = ~3
@@ -46,6 +40,9 @@ delete from gui.ui_gen_lookup_type_properties;
 @@data/gui/ui_field.sql
 @@data/gui/ui_input_field_value.sql
 @@data/gui/ui_general_lookup.sql
+
+update gui.t_ui_gui_parameters set guiparam_value = '25000' where guiparam_name = 'data.max.rows.returned';
+commit;
 
 @@views/gui/vw_ui_attribute_1.sql
 @@views/gui/vw_ui_attribute_1_val_to_lkp.sql

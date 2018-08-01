@@ -10,15 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-
-define fdr_logon = ~1
-define gui_logon = ~2
-define rdr_logon = ~3
-define sla_logon = ~4
-define slr_logon = ~5
-define stn_logon = ~6
-define sys_logon = ~7
-define unittest_login = ~8
+define fdr_logon    = ~1
+define gui_logon    = ~2
+define rdr_logon    = ~3
+define sla_logon    = ~4
+define slr_logon    = ~5
+define stn_logon    = ~6
+define sys_logon    = ~7
+define unittest_login   = ~8
 
 conn ~rdr_logon
 
@@ -68,13 +67,13 @@ revoke select   on stn.policy_premium_type             from rdr;
 revoke select   on stn.posting_method_derivation_rein  from rdr;
 revoke select   on stn.event_type                      from rdr;
 revoke select   on stn.posting_accounting_basis        from rdr;
-revoke select   on stn.posting_ledger                  from rdr;
 revoke select   on stn.posting_financial_calc          from rdr;
+revoke select   on stn.posting_ledger                  from rdr;
 revoke select   on stn.posting_method                  from rdr;
 revoke select   on stn.posting_method_derivation_mtm   from rdr;
 revoke select   on stn.posting_method_ledger           from rdr;
+revoke select   on stn.vie_code                        from rdr;
 revoke select   on stn.vie_event_type                  from rdr;
-revoke select   on stn.vie_code			                   from rdr;
 revoke select   on stn.vie_posting_method_ledger       from rdr;
 
 conn ~slr_logon
