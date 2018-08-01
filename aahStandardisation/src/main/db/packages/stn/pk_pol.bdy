@@ -638,7 +638,7 @@ and not exists (
             WHERE
                     vdl.VALIDATION_CD = 'cs-vie_acct_dt'
 and (
-        cs.VIE_STATUS   in ( 'CONSO' , 'DECONSO' )
+        cs.VIE_STATUS   is not null
     and cs.VIE_ACCT_DT  is null
     )
 and  exists (
@@ -683,7 +683,7 @@ and  exists (
             WHERE
                     vdl.VALIDATION_CD = 'cs-vie_eff_dt'
 and (
-        cs.VIE_STATUS   in ( 'CONSO' , 'DECONSO' )
+        cs.VIE_STATUS        is not null
     and cs.VIE_EFFECTIVE_DT  is null
     )
 and  exists (

@@ -72,6 +72,10 @@ commit;
 @@data/fdr/fr_instr_type_class.sql
 @@data/fdr/fr_instrument_type.sql
 @@data/fdr/fr_instrument.sql
+update fr_general_codes set gc_active = 'A' where gc_gct_code_type_id = '12' and gc_client_code in ('B','P'); 
+commit;
+update fr_general_codes set gc_active = 'I' where gc_gct_code_type_id = '12' and gc_client_code not in ('B','P');
+commit;
 @@grants/tables/fdr/fr_acc_event_type.sql
 @@grants/tables/fdr/fr_account_lookup.sql
 @@grants/tables/fdr/fr_fx_rate.sql
@@ -98,7 +102,6 @@ commit;
 @@grants/tables/fdr/fr_trade.sql
 @@grants/tables/fdr/fr_accounting_event_imp.sql
 @@grants/tables/fdr/fr_party_type.sql
-
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy
 @@indices/fdr/fr_stan_raw_book.sql
@@ -121,12 +124,11 @@ conn ~stn_logon
 @@tables/stn/cev_data.sql
 @@tables/stn/cev_derived_plus_data.sql
 @@tables/stn/cev_gaap_fut_accts_data.sql
-@@tables/stn/cev_identified_record.sql
 @@tables/stn/cev_le_data.sql
-@@tables/stn/cev_vie_data.sql
 @@tables/stn/cev_mtm_data.sql
 @@tables/stn/cev_non_intercompany_data.sql
 @@tables/stn/cev_intercompany_data.sql
+@@tables/stn/cev_vie_data.sql
 @@tables/stn/cev_premium_typ_override.sql
 @@tables/stn/posting_method_derivation_gfa.sql
 @@tables/stn/posting_account_derivation.sql
@@ -185,7 +187,6 @@ conn ~stn_logon
 @@tables/stn/posting_method_derivation_et.sql
 @@tables/stn/posting_method_derivation_ic.sql
 @@tables/stn/posting_method_derivation_le.sql
-@@tables/stn/posting_method_derivation_link.sql
 @@tables/stn/posting_method_derivation_mtm.sql
 @@tables/stn/posting_method_derivation_rein.sql
 @@tables/stn/posting_method_ledger.sql
@@ -223,7 +224,6 @@ conn ~stn_logon
 @@views/stn/ce_default.sql
 @@views/stn/insurance_policy_reference.sql
 @@views/stn/validation_detail.sql
-@@views/stn/vie_event_cd.sql
 @@views/stn/policy_tax.sql
 @@views/stn/cession_event_posting.sql
 @@views/stn/cession_event_reversal_curr.sql
@@ -302,7 +302,6 @@ conn ~stn_logon
 @@data/stn/posting_accounting_basis_type.sql
 @@data/stn/cession_event_premium_type.sql
 @@data/stn/journal_line_premium_type.sql
-@@data/stn/journal_line_source_type.sql
 @@data/stn/policy_premium_type.sql
 @@data/stn/execution_type.sql
 @@data/stn/vie_code.sql
@@ -387,7 +386,6 @@ conn ~stn_logon
 
 conn ~stn_logon
 
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_IDENTIFIED_RECORD'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'POSTING_ACCOUNT_DERIVATION'     , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'VIE_POSTING_ACCOUNT_DERIVATION' , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DATA'                       , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
@@ -398,6 +396,7 @@ exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DERIVED_PLUS_DATA'          , 'GL
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_LE_DATA'                    , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_NON_INTERCOMPANY_DATA'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_INTERCOMPANY_DATA'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
+exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_VIE_DATA'                   , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 
 exec dbms_stats.create_stat_table   ( ownname => user , stattab => 'INIT_STAT' );
 @@data/stn/init_stat.sql
