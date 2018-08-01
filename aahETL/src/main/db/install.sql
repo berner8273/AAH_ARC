@@ -10,14 +10,11 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define sys_logon = ~1
+define ps_password = ~2
+define read_password = ~3
+define report_password = ~4
+define ssis_password = ~5
 
 conn ~sys_logon as sysdba
 
@@ -85,9 +82,9 @@ end;
 @@roles/aah_read_only.sql
 @@roles/aah_rdr.sql
 @@roles/aah_glint.sql
-@@users/aah_ssis.sql
-@@users/aah_read.sql
-@@users/aah_report.sql
-@@users/aah_ps.sql
+@@users/aah_ssis.sql ssis_password
+@@users/aah_read.sql read_password
+@@users/aah_report.sql report_password
+@@users/aah_ps.sql ps_password
 
 exit 
