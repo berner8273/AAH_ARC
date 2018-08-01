@@ -189,6 +189,7 @@ conn ~stn_logon
 @@tables/stn/posting_method_derivation_le.sql
 @@tables/stn/posting_method_derivation_mtm.sql
 @@tables/stn/posting_method_derivation_rein.sql
+@@tables/stn/posting_method_derivation_link.sql
 @@tables/stn/posting_method_ledger.sql
 @@tables/stn/process_code_module.sql
 @@tables/stn/standardisation_log.sql
