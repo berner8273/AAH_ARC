@@ -52,7 +52,6 @@ insert into stn.event_type ( event_typ ) values ( 'FX_WP_ACCRN_AMORT' );
 insert into stn.event_type ( event_typ ) values ( 'FX_WP_WRITEOFF_CURR' );
 insert into stn.event_type ( event_typ ) values ( 'FX_WP_WRITEOFF_FUT' );
 insert into stn.event_type ( event_typ ) values ( 'IBNR_RESERVES' );
-insert into stn.event_type ( event_typ ) values ( 'IN_POLCY' );
 insert into stn.event_type ( event_typ ) values ( 'LAE_INCOME_STMT' );
 insert into stn.event_type ( event_typ ) values ( 'LAE_PAID' );
 insert into stn.event_type ( event_typ ) values ( 'LAE_PAID_CONTRA' );
