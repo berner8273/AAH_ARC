@@ -134,6 +134,7 @@ insert into stn.event_type ( event_typ ) values ( 'VIEPC_UPR' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPD_AR' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPD_PGAAP_UPR' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPD_UPR' );
+insert into stn.event_type ( event_typ ) values ( 'VIEPD_UPR_INITIAL' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPF_ACC' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPF_FXAR_BEG_BAL' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPF_FXAR_FUT_INST' );
