@@ -189,7 +189,6 @@ conn ~stn_logon
 @@tables/stn/posting_method_derivation_le.sql
 @@tables/stn/posting_method_derivation_mtm.sql
 @@tables/stn/posting_method_derivation_rein.sql
-@@tables/stn/posting_method_derivation_link.sql
 @@tables/stn/posting_method_ledger.sql
 @@tables/stn/process_code_module.sql
 @@tables/stn/standardisation_log.sql
@@ -271,7 +270,6 @@ conn ~stn_logon
 @@ri_constraints/stn/posting_method_derivation_et.sql
 @@ri_constraints/stn/posting_method_derivation_ic.sql
 @@ri_constraints/stn/posting_method_derivation_le.sql
-@@ri_constraints/stn/posting_method_derivation_link.sql
 @@ri_constraints/stn/posting_method_derivation_mtm.sql
 @@ri_constraints/stn/posting_method_ledger.sql
 @@ri_constraints/stn/process_code_module.sql
