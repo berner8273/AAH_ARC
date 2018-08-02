@@ -52,8 +52,7 @@ CREATE TABLE rdr.rr_glint_journal_line
   BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
   TABLESPACE "RDR_DATA"  ENABLE, 
      CONSTRAINT "GLINT_J_JL" FOREIGN KEY ("RGJL_RGJ_RGBC_ID", "RGJL_RGJ_ID")
-      REFERENCES "RDR"."RR_GLINT_JOURNAL" ("RGJ_RGBC_ID", "RGJ_ID") ENABLE
-   ) ;
+      REFERENCES "RDR"."RR_GLINT_JOURNAL" ("RGJ_RGBC_ID", "RGJ_ID") ENABLE);
 
 COMMENT ON TABLE RDR.RR_GLINT_JOURNAL_LINE IS 'Stores each of the journal lines that is to be sent to the GL.
 Amend the custom columns within this table (and RR_GLINT_TEMP_JOURNAL_LINE) according to the specific General Ledger that is used. The default custom column list is for an Oracle GL.';
