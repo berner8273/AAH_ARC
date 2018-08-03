@@ -255,7 +255,7 @@ conn ~rdr_logon
 @@views/rdr/rcv_glint_journal_line.sql
 @@views/rdr/rcv_glint_journal.sql
 @@tables/rdr/rr_glint_to_slr_ag.sql
-@@views/rdr/rcv_ag_glint_ps_journals.sql
+@@views/rdr/rrv_ag_glint_ps_journals.sql
 
 @@packages/rdr/pg_glint.hdr
 @@packages/rdr/pg_glint.bdy
