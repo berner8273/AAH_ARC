@@ -301,6 +301,7 @@ conn ~stn_logon
 @@data/stn/posting_accounting_basis_type.sql
 @@data/stn/cession_event_premium_type.sql
 @@data/stn/journal_line_premium_type.sql
+@@data/stn/journal_line_source_type.sql
 @@data/stn/policy_premium_type.sql
 @@data/stn/execution_type.sql
 @@data/stn/vie_code.sql
