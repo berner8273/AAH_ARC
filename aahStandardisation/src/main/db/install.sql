@@ -270,7 +270,6 @@ conn ~stn_logon
 @@ri_constraints/stn/posting_method_derivation_et.sql
 @@ri_constraints/stn/posting_method_derivation_ic.sql
 @@ri_constraints/stn/posting_method_derivation_le.sql
-@@ri_constraints/stn/posting_method_derivation_link.sql
 @@ri_constraints/stn/posting_method_derivation_mtm.sql
 @@ri_constraints/stn/posting_method_ledger.sql
 @@ri_constraints/stn/process_code_module.sql
@@ -302,6 +301,7 @@ conn ~stn_logon
 @@data/stn/posting_accounting_basis_type.sql
 @@data/stn/cession_event_premium_type.sql
 @@data/stn/journal_line_premium_type.sql
+@@data/stn/journal_line_source_type.sql
 @@data/stn/policy_premium_type.sql
 @@data/stn/execution_type.sql
 @@data/stn/vie_code.sql

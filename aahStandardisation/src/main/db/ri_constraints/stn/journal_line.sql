@@ -1,4 +1,4 @@
 alter table stn.journal_line add constraint fk_bt_jl   foreign key ( business_typ ) references stn.business_type             ( business_typ );
 alter table stn.journal_line add constraint fk_ptyp_jl foreign key ( premium_typ )  references stn.journal_line_premium_type ( premium_typ );
-alter table stn.journal_line add constraint fk_styp_jl foreign key ( source_typ_cd) references stn.source_typ_cd						 ( journal_line_source_type );
+alter table stn.journal_line add constraint fk_styp_jl foreign key ( source_typ_cd) references stn.journal_line_source_type	 ( source_typ_cd );
 alter table stn.journal_line add constraint ck_styp_jl check 			 ( ( source_typ_cd <> 'HL' ) or (policy_id is not null and stream_id is not null and business_event_typ is not null and journal_descr is not null and underwriting_yr is not null and tax_jurisdiction_cd is not null and business_typ is not null and owner_le_id is not null and ultimate_parent_le_id is not null and execution_typ is not null) );

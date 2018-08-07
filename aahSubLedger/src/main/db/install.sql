@@ -48,6 +48,7 @@ conn ~slr_logon
 @@tables/slr/slr_fak_bop_amounts_tmp.sql
 @@tables/slr/slr_eba_bop_amounts.sql
 @@tables/slr/slr_eba_bop_amounts_tmp.sql
+@@tables/slr/slr_fx_reval_temp.sql
 @@grants/tables/slr/slr_bm_entity_processing_set.sql
 
 delete from slr.slr_entity_proc_group;
@@ -254,8 +255,9 @@ conn ~rdr_logon
 @@indices/rdr/rr_glint_journal_line.sql
 @@views/rdr/rcv_glint_journal_line.sql
 @@views/rdr/rcv_glint_journal.sql
-@@views/rdr/rcv_ag_glint_ps_journals.sql
 @@tables/rdr/rr_glint_to_slr_ag.sql
+@@views/rdr/rrv_ag_glint_ps_journals.sql
+
 @@packages/rdr/pg_glint.hdr
 @@packages/rdr/pg_glint.bdy
 @@grants/packages/rdr/pg_glint.sql

@@ -44,7 +44,6 @@ CREATE TABLE rdr.rr_glint_journal_line
   SLR_PROCESS_ID         NUMBER(30)             NOT NULL,
   MANUAL_JE              CHAR(1 BYTE)           NOT NULL,
   PS_FILTER              CHAR(1 BYTE)           NOT NULL,
-
      CONSTRAINT "XPK_GLINT_JOURNAL_LINE" PRIMARY KEY ("RGJL_ID")
   USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
   STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
@@ -53,7 +52,7 @@ CREATE TABLE rdr.rr_glint_journal_line
   TABLESPACE "RDR_DATA"  ENABLE, 
      CONSTRAINT "GLINT_J_JL" FOREIGN KEY ("RGJL_RGJ_RGBC_ID", "RGJL_RGJ_ID")
       REFERENCES "RDR"."RR_GLINT_JOURNAL" ("RGJ_RGBC_ID", "RGJ_ID") ENABLE
-   ) ;
+);
 
 COMMENT ON TABLE RDR.RR_GLINT_JOURNAL_LINE IS 'Stores each of the journal lines that is to be sent to the GL.
 Amend the custom columns within this table (and RR_GLINT_TEMP_JOURNAL_LINE) according to the specific General Ledger that is used. The default custom column list is for an Oracle GL.';
