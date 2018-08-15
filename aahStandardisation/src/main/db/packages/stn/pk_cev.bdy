@@ -2156,6 +2156,7 @@ and exists    (
                   from
                        stn.cev_non_intercompany_data   cev_nid
                   join stn.insurance_policy_reference  ipr      on cev_nid.stream_id                  = ipr.stream_id
+                                                               and ipr.vie_status is not null
                   join stn.event_hierarchy_reference   ehr      on cev_nid.event_typ                  = ehr.event_typ
              left join stn.period_status               ps       on trunc( ipr.vie_acct_dt , 'MONTH' ) = trunc( ps.period_start , 'MONTH' )
                                                                and ehr.event_class                    = ps.event_class
