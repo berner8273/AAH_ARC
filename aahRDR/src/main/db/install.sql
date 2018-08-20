@@ -10,14 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logonÂ Â Â  = ~1
+define gui_logonÂ Â Â  = ~2
+define rdr_logonÂ Â Â  = ~3
+define sla_logonÂ Â Â  = ~4
+define slr_logonÂ Â Â  = ~5
+define stn_logonÂ Â Â  = ~6
+define sys_logonÂ Â Â  = ~7
+define unittest_loginÂ Â  = ~8
 
 conn ~stn_logon
 
@@ -102,5 +102,7 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_slr_jrnl_headers.sql
 @@views/rdr/rrv_ag_reinsurance.sql
 @@views/rdr/rrv_ag_posting_derivation.sql
+@@views/rdr/rrv_ag_glint_jrnl_lines.sql
+@@views/rdr/rrv_ag_glint_to_ps.sql
 
 exit
