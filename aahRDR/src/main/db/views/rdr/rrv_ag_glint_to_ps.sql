@@ -9,7 +9,6 @@ CREATE OR REPLACE FORCE VIEW RDR.RRV_AG_GLINT_TO_PS
    JOURNAL_DATE,
    JOURNAL_LINE
 )
-   BEQUEATH DEFINER
 AS
    SELECT DISTINCT gts.jl_jrnl_hdr_id,
                    gts.jl_jrnl_line_number,
