@@ -10,14 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logonÂ Â Â  = ~1
+define gui_logonÂ Â Â  = ~2
+define rdr_logonÂ Â Â  = ~3
+define sla_logonÂ Â Â  = ~4
+define slr_logonÂ Â Â  = ~5
+define stn_logonÂ Â Â  = ~6
+define sys_logonÂ Â Â  = ~7
+define unittest_loginÂ Â  = ~8
 
 conn ~fdr_logon
 
@@ -233,7 +233,6 @@ drop package body rdr.pg_glint;
 drop package      rdr.pg_glint;
 drop view         rdr.rcv_glint_journal;
 drop view         rdr.rcv_glint_journal_line;
-drop view         rdr.rrv_ag_glint_ps_journals;
 drop index        rdr.xif1gl_interface_journal_line;
 drop table        rdr.rr_glint_journal_line;
 drop index        rdr.xif2gl_interface_journal_mappi;
