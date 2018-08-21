@@ -1808,7 +1808,10 @@ PROCEDURE pr_account
                          eas.ent_accounts_set            ea_entity_set
                        , ga.ga_account_code              ea_account
                        , nvl(ga.ga_account_type, 'X')    ea_account_type
-                       , ga.ga_account_type_flag         ea_account_type_flag
+                       , (CASE ga.ga_account_type
+                            WHEN 'P' THEN 'P'
+                            ELSE ga.ga_account_type_flag
+                          END)                           ea_account_type_flag
                        , ga.ga_position_flag             ea_position_flag
                        , ga.ga_revaluation_ind           ea_revaluation_flag
                        , nvl(ga.ga_account_name, 'NVS')  ea_description
