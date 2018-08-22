@@ -72,6 +72,8 @@ commit;
 @@data/slr/slr_fak_segment_8.sql
 @@packages/slr/slr_pkg.hdr
 @@packages/slr/slr_pkg.bdy
+@@packages/slr/slr_validate_journals_pkg.hdr
+@@packages/slr/slr_validate_journals_pkg.bdy
 
 /*Begin SLR QTD modifications*/
 
