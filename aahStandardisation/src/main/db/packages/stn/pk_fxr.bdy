@@ -1,10 +1,3 @@
----
---- PL/SQL Package 'PK_FXR' 
---- Generator tool: Aptitude Studio
---- Generator gender: Oracle 
---- Generation time: 8/22/2018 11:51:39 AM
----
-
 CREATE OR REPLACE PACKAGE BODY stn.PK_FXR AS
     PROCEDURE pr_fx_rate_idf
         (
