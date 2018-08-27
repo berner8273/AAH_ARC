@@ -2194,7 +2194,7 @@ CREATE OR REPLACE PACKAGE BODY SLR.slr_balance_movement_pkg as
         RAISE_APPLICATION_ERROR(-20001,'pBMPLRepatriation: '||sqlerrm);
   END pBMPLRepatriation;
 
-  PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
+PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
     processConfig slr_process_config_detail%rowtype;
     v_stmt VARCHAR2(13000);
     v_insert_stmt VARCHAR2(1000);
@@ -2288,7 +2288,8 @@ CREATE OR REPLACE PACKAGE BODY SLR.slr_balance_movement_pkg as
                     ||' inner join SLR_ENTITY_PERIODS p2 on (p2.EP_ENTITY = p1.EP_ENTITY and p2.EP_BUS_YEAR = p1.EP_BUS_YEAR+1 and p2.EP_BUS_PERIOD = 1)';
 
 
-    v_from_clause2 := ' from slr_jrnl_headers jh INNER JOIN slr_jrnl_lines jl ON (jh_jrnl_date = jl_effective_date and jh_jrnl_epg_id = jl_epg_id and JH_JRNL_ID=JL_JRNL_HDR_ID AND jh.JH_JRNL_INTERNAL_PERIOD_FLAG = ''Y'')'
+/*T.Nulty added clause  and jh.jh_jrnl_source = :gConfig  - otherwise applied JE to all rules*/
+    v_from_clause2 := ' from slr_jrnl_headers jh INNER JOIN slr_jrnl_lines jl ON (jh_jrnl_date = jl_effective_date and jh_jrnl_epg_id = jl_epg_id and JH_JRNL_ID=JL_JRNL_HDR_ID AND jh.JH_JRNL_INTERNAL_PERIOD_FLAG = ''Y'' and jh.jh_jrnl_source = :gConfig  )'
                    ||' INNER JOIN SLR_BM_ENTITY_PROCESSING_SET ON (BMEPS_ENTITY = JL_ENTITY and BMEPS_SET_ID = :pEntProcSet)'
                    ||' inner join slr_entities on (JL_ENTITY = ent_entity)'
                    ||' inner join SLR_ENTITY_PERIODS p1 on (p1.EP_ENTITY = BMEPS_ENTITY and :pBalanceDate between p1.EP_CAL_PERIOD_START and p1.EP_CAL_PERIOD_END)'
@@ -2365,11 +2366,14 @@ CREATE OR REPLACE PACKAGE BODY SLR.slr_balance_movement_pkg as
 
     v_stmt := v_insert_stmt || v_sel_stmt||v_from_clause ||v_group_by_clause||' UNION ALL '||v_sel_stmt2||v_from_clause2 ||v_group_by_clause2;
 
+/*T.Nulty added pConfig variable*/
     pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gJournalType||','||gEntProcSet||','||gBalanceDate||','
-                                                  ||processConfig.pcd_description||','||gJournalType||','||gEntProcSet||','||gBalanceDate||','||gJournalType||']');
+                                                  ||processConfig.pcd_description||','||gJournalType||','||gConfig||','||gEntProcSet||','||gBalanceDate||','||gJournalType||']');
+
+/*T.Nulty added pConfig variable*/      
     EXECUTE IMMEDIATE v_stmt
       USING processConfig.pcd_description,gJournalType,gEntProcSet,gBalanceDate
-            ,processConfig.pcd_description,gJournalType,gEntProcSet,gBalanceDate,gJournalType;
+            ,processConfig.pcd_description,gJournalType,gConfig,gEntProcSet,gBalanceDate,gJournalType;
 
    --offset--
    pBMCreateOffset;
