@@ -75,6 +75,11 @@ commit;
 @@packages/slr/slr_validate_journals_pkg.hdr
 @@packages/slr/slr_validate_journals_pkg.bdy
 
+/*Replace slr_balances_movement_pkg with custom version*/
+@@packages/slr/slr_balance_movement_pkg.hdr
+@@packages/slr/slr_balance_movement_pkg.bdy
+
+
 /*Begin SLR QTD modifications*/
 
 --Backup and replace with modified view
