@@ -3066,342 +3066,857 @@ when not
 END pEVENT_CLASS_PERIODS;
 
 PROCEDURE pGENERATE_EBA_BOP_VALUES AS
-  BEGIN
-  
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP';
-    INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP
-     (     EDB_FAK_ID
-         , EDB_EBA_ID
-         , EDB_BALANCE_DATE
-         , EDB_BALANCE_TYPE
-         , EDB_TRAN_BOP_MTD_BALANCE
-         , EDB_TRAN_BOP_QTD_BALANCE
-         , EDB_TRAN_BOP_YTD_BALANCE
-         , EDB_BASE_BOP_MTD_BALANCE
-         , EDB_BASE_BOP_QTD_BALANCE
-         , EDB_BASE_BOP_YTD_BALANCE
-         , EDB_LOCAL_BOP_MTD_BALANCE
-         , EDB_LOCAL_BOP_QTD_BALANCE
-         , EDB_LOCAL_BOP_YTD_BALANCE
-         , EDB_PERIOD_MONTH
-         , EDB_PERIOD_QTR
-         , EDB_PERIOD_YEAR
-         , EDB_PERIOD_LTD
-         , EDB_AMENDED_ON
-      )
-      with all_data as
-      (
-        SELECT
-                 EDB.EDB_FAK_ID
-               , EDB.EDB_EBA_ID
-               , EDB.EDB_BALANCE_DATE
-               , EDB.EDB_BALANCE_TYPE
-               , EDB.EDB_TRAN_DAILY_MOVEMENT
-               , EDB.EDB_TRAN_MTD_BALANCE
-               , EDB.EDB_TRAN_YTD_BALANCE
-               , EDB.EDB_TRAN_LTD_BALANCE
-               , EDB.EDB_BASE_DAILY_MOVEMENT
-               , EDB.EDB_BASE_MTD_BALANCE
-               , EDB.EDB_BASE_YTD_BALANCE
-               , EDB.EDB_BASE_LTD_BALANCE
-               , EDB.EDB_LOCAL_DAILY_MOVEMENT
-               , EDB.EDB_LOCAL_MTD_BALANCE
-               , EDB.EDB_LOCAL_YTD_BALANCE
-               , EDB.EDB_LOCAL_LTD_BALANCE
-               , EDB.EDB_ENTITY
-               , EDB.EDB_EPG_ID
-               , EDB.EDB_PERIOD_MONTH
-               , TO_NUMBER(TO_CHAR(EDB_BALANCE_DATE, 'Q')) AS EDB_PERIOD_QTR
-               , EDB.EDB_PERIOD_YEAR
-               , EDB.EDB_PERIOD_LTD
-               , EDB.EDB_PROCESS_ID
-               , EDB.EDB_AMENDED_ON
-               , EDB_FAK_ID||'\\'||EDB_EBA_ID||'\\'||EDB_BALANCE_TYPE||'\\'||EDB_ENTITY||'\\'||EDB_EPG_ID AS EDB_ID
-               , TO_CHAR(EDB_BALANCE_DATE, 'YYYYMM') AS YEAR_MTH
-               , TO_CHAR(EDB_BALANCE_DATE, 'YYYYQ') AS YEAR_QTR
-               , TO_CHAR(EDB_BALANCE_DATE, 'YYYY') AS YEAR
+       
+    v_ag_lp_dt      DATE;
+    v_ag_process_dt DATE;
+       
+    BEGIN   
 
-        FROM
-               SLR.SLR_EBA_DAILY_BALANCES EDB
+        EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP';
+        EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP2';
+        EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP3';
+                
+        v_ag_process_dt := SYSDATE; /*Get processing date*/     
+        
+             
+        /*Get the last date BOP was processed*/                
+        SELECT NVL(MAX(EDB_AMENDED_ON),TO_DATE('01/01/2000','MM/DD/YYYY') )INTO v_ag_lp_dt FROM SLR.SLR_EBA_BOP_AMOUNTS;
 
-        ORDER BY 1,2,3
-
-      ),
-
-      MAX_MTH_DATES AS
-      (
-        SELECT AD.EDB_ID
-             , AD.YEAR_MTH
-             , MAX(EDB_BALANCE_DATE) AS MAX_MTH_DATE
-        FROM   ALL_DATA AD
-        GROUP BY
-               AD.EDB_ID
-             , AD.YEAR_MTH
-      ),
-
-      MAX_MTH_DATE_AMTS AS
-      (
-        SELECT MMD.EDB_ID
-             , MMD.YEAR_MTH
-             , MMD.MAX_MTH_DATE
-             , RANK() OVER (PARTITION BY MMD.EDB_ID ORDER BY MMD.YEAR_MTH ASC) AS RANK_NBR
-             , AD.EDB_TRAN_LTD_BALANCE
-             , AD.EDB_BASE_LTD_BALANCE
-             , AD.EDB_LOCAL_LTD_BALANCE
-        FROM   MMD.MAX_MTH_DATES MMD
-        LEFT JOIN
-               ALL_DATA AD
-         ON   AD.EDB_ID = MMD.EDB_ID
-         AND  AD.EDB_BALANCE_DATE = MMD.MAX_MTH_DATE
-        ORDER BY
-              1,2 DESC
-      ),
-
-
-      MTD_BALANCES AS
-      (
-        SELECT   A.EDB_ID
-               , A.YEAR_MTH
-               , B.YEAR_MTH AS YEAR_MTH_LM
-               , B.MAX_MTH_DATE AS MAX_MTH_DATE_LM
-               , B.EDB_TRAN_LTD_BALANCE AS EDB_TRAN_BOP_MTD_BALANCE
-               , B.EDB_BASE_LTD_BALANCE AS EDB_BASE_BOP_MTD_BALANCE
-               , B.EDB_LOCAL_LTD_BALANCE AS EDB_LOCAL_BOP_MTD_BALANCE
-        FROM      MAX_MTH_DATE_AMTS A
-        LEFT JOIN MAX_MTH_DATE_AMTS B
-          ON     A.EDB_ID = B.EDB_ID
-          AND    A.RANK_NBR = (B.RANK_NBR+1)
-        ORDER BY 1,2
-      ),
-
-      MAX_QTR_DATES AS
-      (
-        SELECT
-               AD.EDB_ID
-             , AD.YEAR_QTR
-             , MAX(EDB_BALANCE_DATE) AS MAX_QTR_DATE
-        FROM   ALL_DATA AD
-        GROUP BY
-               AD.EDB_ID
-             , AD.YEAR_QTR
-      ),
-
-      MAX_QTR_DATE_AMTS AS
-      (
-        SELECT MQD.EDB_ID
-             , MQD.YEAR_QTR
-             , MQD.MAX_QTR_DATE
-             , RANK() OVER (PARTITION BY MQD.EDB_ID ORDER BY MQD.YEAR_QTR ASC) AS RANK_NBR
-             , AD.EDB_TRAN_LTD_BALANCE
-             , AD.EDB_BASE_LTD_BALANCE
-             , AD.EDB_LOCAL_LTD_BALANCE
-        FROM   MQD.MAX_QTR_DATES MQD
-        LEFT JOIN
-               ALL_DATA AD
-         ON   AD.EDB_ID = MQD.EDB_ID
-         AND  AD.EDB_BALANCE_DATE = MQD.MAX_QTR_DATE
-        ORDER BY
-              1,2 DESC
-      ),
-
-      QTD_BALANCES AS
-      (
-        SELECT   A.EDB_ID
-               , A.YEAR_QTR
-               , B.YEAR_QTR AS YEAR_QTR_LQ
-               , B.MAX_QTR_DATE AS MAX_QTR_DATE_LQ
-               , B.EDB_TRAN_LTD_BALANCE AS EDB_TRAN_BOP_QTD_BALANCE
-               , B.EDB_BASE_LTD_BALANCE AS EDB_BASE_BOP_QTD_BALANCE
-               , B.EDB_LOCAL_LTD_BALANCE AS EDB_LOCAL_BOP_QTD_BALANCE
-        FROM      MAX_QTR_DATE_AMTS A
-        LEFT JOIN MAX_QTR_DATE_AMTS B
-          ON     A.EDB_ID = B.EDB_ID
-          AND    A.RANK_NBR = (B.RANK_NBR+1)
-        ORDER BY 1,2
-      ),
-
-      MAX_YR_DATES AS
-      (
-        SELECT
-               AD.EDB_ID
-             , AD.YEAR
-             , MAX(EDB_BALANCE_DATE) AS MAX_YR_DATE
-        FROM   ALL_DATA AD
-        GROUP BY
-               AD.EDB_ID
-             , AD.YEAR
-      ),
-
-      MAX_YR_DATE_AMTS AS
-      (
-        SELECT MYD.EDB_ID
-             , MYD.YEAR
-             , MYD.MAX_YR_DATE
-             , RANK() OVER (PARTITION BY MYD.EDB_ID ORDER BY MYD.YEAR ASC) AS RANK_NBR
-             , AD.EDB_TRAN_LTD_BALANCE
-             , AD.EDB_BASE_LTD_BALANCE
-             , AD.EDB_LOCAL_LTD_BALANCE
-        FROM   MYD.MAX_YR_DATES MYD
-        LEFT JOIN
-               ALL_DATA AD
-         ON   AD.EDB_ID = MYD.EDB_ID
-         AND  AD.EDB_BALANCE_DATE = MYD.MAX_YR_DATE
-        ORDER BY
-              1,2 DESC
-      ),
-
-      YTD_BALANCES AS
-      (
-        SELECT   A.EDB_ID
-               , A.YEAR
-               , B.YEAR AS YEAR_LY
-               , B.MAX_YR_DATE AS MAX_QTR_DATE_LY
-               , B.EDB_TRAN_LTD_BALANCE AS EDB_TRAN_BOP_YTD_BALANCE
-               , B.EDB_BASE_LTD_BALANCE AS EDB_BASE_BOP_YTD_BALANCE
-               , B.EDB_LOCAL_LTD_BALANCE AS EDB_LOCAL_BOP_YTD_BALANCE
-        FROM      MAX_YR_DATE_AMTS A
-        LEFT JOIN MAX_YR_DATE_AMTS B
-          ON     A.EDB_ID = B.EDB_ID
-          AND    A.RANK_NBR = (B.RANK_NBR+1)
-        ORDER BY 1,2
-      )
-
-      SELECT  /*+ PARALLEL +*/
-                 AD.EDB_FAK_ID
-               , AD.EDB_EBA_ID
-               , AD.EDB_BALANCE_DATE
-               , AD.EDB_BALANCE_TYPE
-               , MB.EDB_TRAN_BOP_MTD_BALANCE
-               , QB.EDB_TRAN_BOP_QTD_BALANCE
-               , YB.EDB_TRAN_BOP_YTD_BALANCE
-               , MB.EDB_BASE_BOP_MTD_BALANCE
-               , QB.EDB_BASE_BOP_QTD_BALANCE
-               , YB.EDB_BASE_BOP_YTD_BALANCE
-               , MB.EDB_LOCAL_BOP_MTD_BALANCE
-               , QB.EDB_LOCAL_BOP_QTD_BALANCE
-               , YB.EDB_LOCAL_BOP_YTD_BALANCE
-               , AD.EDB_PERIOD_MONTH
-               , AD.EDB_PERIOD_QTR
-               , AD.EDB_PERIOD_YEAR
-               , AD.EDB_PERIOD_LTD
-               , AD.EDB_AMENDED_ON
-        FROM      ALL_DATA AD
-
-        LEFT JOIN MTD_BALANCES MB
-          ON     AD.EDB_ID = MB.EDB_ID
-          AND    AD.YEAR_MTH = MB.YEAR_MTH
-
-        LEFT JOIN QTD_BALANCES QB
-          ON     AD.EDB_ID = QB.EDB_ID
-          AND    AD.YEAR_QTR = QB.YEAR_QTR
-
-        LEFT JOIN YTD_BALANCES YB
-          ON     AD.EDB_ID = YB.EDB_ID
-          AND    AD.YEAR_QTR = YB.YEAR
-
-      ORDER BY 1,2;
-
-   COMMIT;
-
-   MERGE INTO SLR.SLR_EBA_BOP_AMOUNTS BOP
-     USING (
-            SELECT
-                 EDB_FAK_ID
-               , EDB_EBA_ID
-               , EDB_BALANCE_DATE
-               , EDB_BALANCE_TYPE
-               , EDB_TRAN_BOP_MTD_BALANCE
-               , EDB_TRAN_BOP_QTD_BALANCE
-               , EDB_TRAN_BOP_YTD_BALANCE
-               , EDB_BASE_BOP_MTD_BALANCE
-               , EDB_BASE_BOP_QTD_BALANCE
-               , EDB_BASE_BOP_YTD_BALANCE
-               , EDB_LOCAL_BOP_MTD_BALANCE
-               , EDB_LOCAL_BOP_QTD_BALANCE
-               , EDB_LOCAL_BOP_YTD_BALANCE
-               , EDB_PERIOD_MONTH
-               , EDB_PERIOD_QTR
-               , EDB_PERIOD_YEAR
-               , EDB_PERIOD_LTD
-               , EDB_AMENDED_ON
-            FROM
-                SLR_EBA_BOP_AMOUNTS_TMP TMP
-            ) TMP
-      ON (
-                TMP.EDB_FAK_ID = BOP.EDB_FAK_ID
-            AND TMP.EDB_EBA_ID = BOP.EDB_EBA_ID
-            AND TMP.EDB_BALANCE_DATE = BOP.EDB_BALANCE_DATE
-            AND TMP.EDB_BALANCE_TYPE = BOP.EDB_BALANCE_TYPE
-          )
-    WHEN MATCHED
-    THEN
-       UPDATE SET BOP.EDB_TRAN_BOP_MTD_BALANCE  = TMP.EDB_TRAN_BOP_MTD_BALANCE
-                , BOP.EDB_TRAN_BOP_QTD_BALANCE  = TMP.EDB_TRAN_BOP_QTD_BALANCE
-                , BOP.EDB_TRAN_BOP_YTD_BALANCE  = TMP.EDB_TRAN_BOP_YTD_BALANCE
-                , BOP.EDB_BASE_BOP_MTD_BALANCE  = TMP.EDB_BASE_BOP_MTD_BALANCE
-                , BOP.EDB_BASE_BOP_QTD_BALANCE  = TMP.EDB_BASE_BOP_QTD_BALANCE
-                , BOP.EDB_BASE_BOP_YTD_BALANCE  = TMP.EDB_BASE_BOP_YTD_BALANCE
-                , BOP.EDB_LOCAL_BOP_MTD_BALANCE = TMP.EDB_LOCAL_BOP_MTD_BALANCE
-                , BOP.EDB_LOCAL_BOP_QTD_BALANCE = TMP.EDB_LOCAL_BOP_QTD_BALANCE
-                , BOP.EDB_LOCAL_BOP_YTD_BALANCE = TMP.EDB_LOCAL_BOP_YTD_BALANCE
-                , BOP.EDB_PERIOD_MONTH = TMP.EDB_PERIOD_MONTH
-                , BOP.EDB_PERIOD_QTR = TMP.EDB_PERIOD_QTR
-                , BOP.EDB_PERIOD_YEAR = TMP.EDB_PERIOD_YEAR
-                , BOP.EDB_PERIOD_LTD = TMP.EDB_PERIOD_LTD
-                , BOP.EDB_AMENDED_ON = SYSDATE
-
-    WHEN NOT MATCHED
-    THEN
-       INSERT
-        (
-          EDB_FAK_ID
-        , EDB_EBA_ID
-        , EDB_BALANCE_DATE
-        , EDB_BALANCE_TYPE
-        , EDB_TRAN_BOP_MTD_BALANCE
-        , EDB_TRAN_BOP_QTD_BALANCE
-        , EDB_TRAN_BOP_YTD_BALANCE
-        , EDB_BASE_BOP_MTD_BALANCE
-        , EDB_BASE_BOP_QTD_BALANCE
-        , EDB_BASE_BOP_YTD_BALANCE
-        , EDB_LOCAL_BOP_MTD_BALANCE
-        , EDB_LOCAL_BOP_QTD_BALANCE
-        , EDB_LOCAL_BOP_YTD_BALANCE
-        , EDB_PERIOD_MONTH
-        , EDB_PERIOD_QTR
-        , EDB_PERIOD_YEAR
-        , EDB_PERIOD_LTD
-        , EDB_AMENDED_ON
+        /*Identify the balances updated and the earliest period for each*/
+        INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP2 
+        ( EDB_FAK_ID,
+            EDB_EBA_ID,
+            EDB_BALANCE_DATE,
+            EDB_BALANCE_TYPE,
+            EDB_ENTITY,
+            EDB_EPG_ID,
+            EDB_ID
         )
-        VALUES
+        SELECT  
+             EDB_FAK_ID,
+             EDB_EBA_ID,
+             MIN(EDB_BALANCE_DATE),
+             EDB_BALANCE_TYPE,
+             EDB_ENTITY,
+             EDB_EPG_ID,
+             EDB_FAK_ID|| '\\'|| EDB_EBA_ID|| '\\'|| EDB_BALANCE_TYPE|| '\\'|| EDB_ENTITY|| '\\'|| EDB_EPG_ID AS EDB_ID
+        FROM SLR.SLR_EBA_DAILY_BALANCES EDB
+        WHERE EDB.EDB_AMENDED_ON > v_ag_lp_dt
+        GROUP BY EDB_FAK_ID,
+             EDB_EBA_ID,
+             EDB_BALANCE_TYPE,
+             EDB_ENTITY,
+             EDB_EPG_ID,
+             EDB_FAK_ID|| '\\'|| EDB_EBA_ID|| '\\'|| EDB_BALANCE_TYPE|| '\\'|| EDB_ENTITY|| '\\'|| EDB_EPG_ID;
+        
+        COMMIT;
+        
+        /*Select the balances to be calculated.  Put in temp table inorder to "Post" Y/E cleardown entries to December.  These went to 1/1 of the new year*/         
+        INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP3 (EDB_FAK_ID
+                                                , EDB_EBA_ID
+                                                , EDB_BALANCE_DATE
+                                                , EDB_BALANCE_TYPE
+                                                , EDB_TRAN_DAILY_MOVEMENT
+                                                , EDB_TRAN_MTD_BALANCE
+                                                , EDB_TRAN_YTD_BALANCE
+                                                , EDB_TRAN_LTD_BALANCE
+                                                , EDB_BASE_DAILY_MOVEMENT
+                                                , EDB_BASE_MTD_BALANCE
+                                                , EDB_BASE_YTD_BALANCE
+                                                , EDB_BASE_LTD_BALANCE
+                                                , EDB_LOCAL_DAILY_MOVEMENT
+                                                , EDB_LOCAL_MTD_BALANCE
+                                                , EDB_LOCAL_YTD_BALANCE
+                                                , EDB_LOCAL_LTD_BALANCE
+                                                , EDB_PERIOD_MONTH
+                                                , EDB_PERIOD_QTR
+                                                , EDB_PERIOD_YEAR
+                                                , EDB_PERIOD_LTD
+                                                , EDB_PROCESS_ID
+                                                , EDB_AMENDED_ON
+                                                , EDB_ENTITY
+                                                , EDB_EPG_ID
+                                                , EDB_ID
+                                                , YEAR_MTH
+                                                , YEAR_QTR
+                                                , YEAR
+                                                , LAST_IN_YR)
+           SELECT EDB.EDB_FAK_ID,
+                  EDB.EDB_EBA_ID,
+                  EDB.EDB_BALANCE_DATE,
+                  EDB.EDB_BALANCE_TYPE,
+                  EDB.EDB_TRAN_DAILY_MOVEMENT,
+                  EDB.EDB_TRAN_MTD_BALANCE,
+                  EDB.EDB_TRAN_YTD_BALANCE,
+                  EDB.EDB_TRAN_LTD_BALANCE,
+                  EDB.EDB_BASE_DAILY_MOVEMENT,
+                  EDB.EDB_BASE_MTD_BALANCE,
+                  EDB.EDB_BASE_YTD_BALANCE,
+                  EDB.EDB_BASE_LTD_BALANCE,
+                  EDB.EDB_LOCAL_DAILY_MOVEMENT,
+                  EDB.EDB_LOCAL_MTD_BALANCE,
+                  EDB.EDB_LOCAL_YTD_BALANCE,
+                  EDB.EDB_LOCAL_LTD_BALANCE,
+                  EDB.EDB_PERIOD_MONTH,
+                  TO_NUMBER (TO_CHAR (EDB.EDB_BALANCE_DATE, 'Q')) AS EDB_PERIOD_QTR,
+                  EDB.EDB_PERIOD_YEAR,
+                  EDB.EDB_PERIOD_LTD,
+                  EDB.EDB_PROCESS_ID,
+                  EDB.EDB_AMENDED_ON,
+                  EDB.EDB_ENTITY,
+                  EDB.EDB_EPG_ID,
+                  EDB.EDB_FAK_ID|| '\\'|| EDB.EDB_EBA_ID|| '\\'|| EDB.EDB_BALANCE_TYPE|| '\\'|| EDB.EDB_ENTITY|| '\\'|| EDB.EDB_EPG_ID AS EDB_ID,
+                  TO_CHAR (EDB.EDB_BALANCE_DATE, 'YYYYMM') AS YEAR_MTH,
+                  TO_CHAR (EDB.EDB_BALANCE_DATE, 'YYYYQ') AS YEAR_QTR,
+                  TO_CHAR (EDB.EDB_BALANCE_DATE, 'YYYY') AS YEAR,
+                  'N'
+             FROM SLR.SLR_EBA_DAILY_BALANCES EDB
+             WHERE EXISTS
+                  (SELECT 1
+                     FROM SLR.SLR_EBA_BOP_AMOUNTS_TMP2 TMP2
+                    WHERE     EDB.EDB_FAK_ID = TMP2.EDB_FAK_ID
+                          AND EDB.EDB_EBA_ID = TMP2.EDB_EBA_ID
+                          AND EDB.EDB_BALANCE_TYPE = TMP2.EDB_BALANCE_TYPE
+                          AND EDB.EDB_ENTITY = TMP2.EDB_ENTITY
+                          AND EDB.EDB_EPG_ID = TMP2.EDB_EPG_ID)
+          
+                  ORDER BY 1,2,3;               
+                  
+        COMMIT;          
+                 
+        /*Flag the latest balance by year for each ID.  This is the record that will be update by the Y/E "posting"*/            
+        UPDATE SLR.SLR_EBA_BOP_AMOUNTS_TMP3
+           SET LAST_IN_YR = 'Y'
+         WHERE EDB_BALANCE_DATE =
+                  (SELECT MAX (A.EDB_BALANCE_DATE)
+                     FROM SLR.SLR_EBA_BOP_AMOUNTS_TMP3 A
+                    WHERE     A.EDB_FAK_ID = SLR_EBA_BOP_AMOUNTS_TMP3.EDB_FAK_ID
+                          AND A.EDB_EBA_ID = SLR_EBA_BOP_AMOUNTS_TMP3.EDB_EBA_ID
+                          AND A.EDB_ENTITY = SLR_EBA_BOP_AMOUNTS_TMP3.EDB_ENTITY
+                          AND A.EDB_EPG_ID = SLR_EBA_BOP_AMOUNTS_TMP3.EDB_EPG_ID
+                          AND A.YEAR = SLR_EBA_BOP_AMOUNTS_TMP3.YEAR);
+       
+       COMMIT;
+       
+       /*Post the Y/E cleardown entries to the lastest record for each ID.  If no prior record, create one for December of the prior year*/                                 
+       MERGE INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP3 TMP3
+               USING (
+                        SELECT JL_FAK_ID,
+                               JL_EBA_ID,
+                               JL_EFFECTIVE_DATE,
+                               JL_PERIOD_YEAR,
+                               JL_EPG_ID,
+                               JH_JRNL_ENTITY,
+                               SUM(JL_TRAN_AMOUNT)  JL_TRAN_AMOUNT,
+                               SUM(JL_BASE_AMOUNT)  JL_BASE_AMOUNT,
+                               SUM(JL_LOCAL_AMOUNT) JL_LOCAL_AMOUNT
+                          FROM SLR_JRNL_HEADERS JH
+                               INNER JOIN SLR_JRNL_LINES JL
+                                  ON     JH.JH_JRNL_DATE = JL.JL_EFFECTIVE_DATE
+                                     AND JH.JH_JRNL_EPG_ID = JL.JL_EPG_ID
+                                     AND JH.JH_JRNL_ID = JL.JL_JRNL_HDR_ID
+                                     AND JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y'
+                               JOIN SLR.SLR_EBA_BOP_AMOUNTS_TMP2 TMP2
+                                  ON     JL.JL_FAK_ID = TMP2.EDB_FAK_ID
+                                     AND JL.JL_EBA_ID = TMP2.EDB_EBA_ID
+                                     AND JH.JH_JRNL_ENTITY = TMP2.EDB_ENTITY
+                                     AND JH.JH_JRNL_EPG_ID = TMP2.EDB_EPG_ID      
+                         GROUP BY JL_FAK_ID,
+                               JL_EBA_ID,
+                               JL_EFFECTIVE_DATE,
+                               JL_PERIOD_YEAR,
+                               JL_EPG_ID,
+                               JH_JRNL_ENTITY                     
+                      ) TMP
+                ON (
+                          TMP.JL_FAK_ID = TMP3.EDB_FAK_ID
+                      AND TMP.JL_EBA_ID = TMP3.EDB_EBA_ID
+                      AND TMP.JH_JRNL_ENTITY = TMP3.EDB_ENTITY
+                      AND TMP.JL_EPG_ID = TMP3.EDB_EPG_ID
+                      AND TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY') = TMP3.YEAR
+                      AND TMP3.LAST_IN_YR = 'Y'
+                      AND TMP3.EDB_BALANCE_TYPE = 50
+                    )
+              WHEN MATCHED
+              THEN
+                 UPDATE            
+                   SET TMP3.EDB_TRAN_DAILY_MOVEMENT = TMP3.EDB_TRAN_DAILY_MOVEMENT + TMP.JL_TRAN_AMOUNT,
+                       TMP3.EDB_TRAN_MTD_BALANCE = TMP3.EDB_TRAN_MTD_BALANCE + TMP.JL_TRAN_AMOUNT,
+                       TMP3.EDB_TRAN_YTD_BALANCE = TMP3.EDB_TRAN_YTD_BALANCE + TMP.JL_TRAN_AMOUNT,
+                       TMP3.EDB_TRAN_LTD_BALANCE = TMP3.EDB_TRAN_LTD_BALANCE + TMP.JL_TRAN_AMOUNT,
+                       TMP3.EDB_BASE_DAILY_MOVEMENT = TMP3.EDB_BASE_DAILY_MOVEMENT + TMP.JL_BASE_AMOUNT,
+                       TMP3.EDB_BASE_MTD_BALANCE = TMP3.EDB_BASE_MTD_BALANCE + TMP.JL_BASE_AMOUNT,
+                       TMP3.EDB_BASE_YTD_BALANCE = TMP3.EDB_BASE_YTD_BALANCE + TMP.JL_BASE_AMOUNT,
+                       TMP3.EDB_BASE_LTD_BALANCE = TMP3.EDB_BASE_LTD_BALANCE + TMP.JL_BASE_AMOUNT,
+                       TMP3.EDB_LOCAL_DAILY_MOVEMENT = TMP3.EDB_LOCAL_DAILY_MOVEMENT + TMP.JL_LOCAL_AMOUNT,
+                       TMP3.EDB_LOCAL_MTD_BALANCE = TMP3.EDB_LOCAL_MTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
+                       TMP3.EDB_LOCAL_YTD_BALANCE = TMP3.EDB_LOCAL_YTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
+                       TMP3.EDB_LOCAL_LTD_BALANCE = TMP3.EDB_LOCAL_LTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
+                       TMP3.EDB_AMENDED_ON = v_ag_process_dt
+          
+              WHEN NOT MATCHED
+              THEN
+                 INSERT
+                  (
+                      EDB_FAK_ID
+                    , EDB_EBA_ID
+                    , EDB_BALANCE_DATE
+                    , EDB_BALANCE_TYPE
+                    , EDB_TRAN_DAILY_MOVEMENT
+                    , EDB_TRAN_MTD_BALANCE
+                    , EDB_TRAN_YTD_BALANCE
+                    , EDB_TRAN_LTD_BALANCE
+                    , EDB_BASE_DAILY_MOVEMENT
+                    , EDB_BASE_MTD_BALANCE
+                    , EDB_BASE_YTD_BALANCE
+                    , EDB_BASE_LTD_BALANCE
+                    , EDB_LOCAL_DAILY_MOVEMENT
+                    , EDB_LOCAL_MTD_BALANCE
+                    , EDB_LOCAL_YTD_BALANCE
+                    , EDB_LOCAL_LTD_BALANCE
+                    , EDB_PERIOD_MONTH
+                    , EDB_PERIOD_QTR
+                    , EDB_PERIOD_YEAR
+                    , EDB_PERIOD_LTD
+                    , EDB_PROCESS_ID
+                    , EDB_AMENDED_ON
+                    , EDB_ENTITY
+                    , EDB_EPG_ID
+                    , EDB_ID
+                    , YEAR_MTH
+                    , YEAR_QTR
+                    , YEAR
+                    , LAST_IN_YR
+                  )
+                  VALUES
+                  (
+                      TMP.JL_FAK_ID
+                    , TMP.JL_EBA_ID  
+                    , TMP.JL_EFFECTIVE_DATE - 1
+                    , 50
+                    , TMP.JL_TRAN_AMOUNT
+                    , TMP.JL_TRAN_AMOUNT
+                    , TMP.JL_TRAN_AMOUNT
+                    , TMP.JL_TRAN_AMOUNT
+                    , TMP.JL_BASE_AMOUNT
+                    , TMP.JL_BASE_AMOUNT
+                    , TMP.JL_BASE_AMOUNT
+                    , TMP.JL_BASE_AMOUNT
+                    , TMP.JL_LOCAL_AMOUNT
+                    , TMP.JL_LOCAL_AMOUNT
+                    , TMP.JL_LOCAL_AMOUNT
+                    , TMP.JL_LOCAL_AMOUNT
+                    , 12
+                    , 4
+                    , TMP.JL_PERIOD_YEAR - 1
+                    , 1
+                    , 1
+                    , v_ag_process_dt
+                    , TMP.JH_JRNL_ENTITY
+                    , TMP.JL_EPG_ID
+                    , TMP.JL_FAK_ID||'\\'||TMP.JL_EBA_ID ||'\\'||'50'||'\\'||TMP.JH_JRNL_ENTITY||'\\'||TMP.JL_EPG_ID
+                    , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'12'
+                    , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'4'
+                    , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')
+                    , 'I'
+                  );                
+                
+              
+       COMMIT; 
+
+       /*SQL to calcuate prior balance for month, QTR and YTD - original code*/
+     
+        INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP (EDB_FAK_ID,
+                                                 EDB_EBA_ID,
+                                                 EDB_BALANCE_DATE,
+                                                 EDB_BALANCE_TYPE,
+                                                 EDB_TRAN_BOP_MTD_BALANCE,
+                                                 EDB_TRAN_BOP_QTD_BALANCE,
+                                                 EDB_TRAN_BOP_YTD_BALANCE,
+                                                 EDB_BASE_BOP_MTD_BALANCE,
+                                                 EDB_BASE_BOP_QTD_BALANCE,
+                                                 EDB_BASE_BOP_YTD_BALANCE,
+                                                 EDB_LOCAL_BOP_MTD_BALANCE,
+                                                 EDB_LOCAL_BOP_QTD_BALANCE,
+                                                 EDB_LOCAL_BOP_YTD_BALANCE,
+                                                 EDB_PERIOD_MONTH,
+                                                 EDB_PERIOD_QTR,
+                                                 EDB_PERIOD_YEAR,
+                                                 EDB_PERIOD_LTD,
+                                                 EDB_AMENDED_ON)
+           WITH all_data
+                AS (  SELECT EDB_FAK_ID,
+                             EDB_EBA_ID,
+                             EDB_BALANCE_DATE,
+                             EDB_BALANCE_TYPE,
+                             EDB_TRAN_DAILY_MOVEMENT,
+                             EDB_TRAN_MTD_BALANCE,
+                             EDB_TRAN_YTD_BALANCE,
+                             EDB_TRAN_LTD_BALANCE,
+                             EDB_BASE_DAILY_MOVEMENT,
+                             EDB_BASE_MTD_BALANCE,
+                             EDB_BASE_YTD_BALANCE,
+                             EDB_BASE_LTD_BALANCE,
+                             EDB_LOCAL_DAILY_MOVEMENT,
+                             EDB_LOCAL_MTD_BALANCE,
+                             EDB_LOCAL_YTD_BALANCE,
+                             EDB_LOCAL_LTD_BALANCE,
+                             EDB_PERIOD_MONTH,
+                             EDB_PERIOD_QTR,
+                             EDB_PERIOD_YEAR,
+                             EDB_PERIOD_LTD,
+                             EDB_PROCESS_ID,
+                             EDB_AMENDED_ON,
+                             EDB_ENTITY,
+                             EDB_EPG_ID,
+                             EDB_ID,
+                             YEAR_MTH,
+                             YEAR_QTR,
+                             YEAR,
+                             LAST_IN_YR
+                        FROM SLR_EBA_BOP_AMOUNTS_TMP3 EDB
+
+            ORDER BY 1, 2, 3
+        ),
+  
+        MAX_MTH_DATES AS
         (
-          TMP.EDB_FAK_ID
-        , TMP.EDB_EBA_ID
-        , TMP.EDB_BALANCE_DATE
-        , TMP.EDB_BALANCE_TYPE
-        , TMP.EDB_TRAN_BOP_MTD_BALANCE
-        , TMP.EDB_TRAN_BOP_QTD_BALANCE
-        , TMP.EDB_TRAN_BOP_YTD_BALANCE
-        , TMP.EDB_BASE_BOP_MTD_BALANCE
-        , TMP.EDB_BASE_BOP_QTD_BALANCE
-        , TMP.EDB_BASE_BOP_YTD_BALANCE
-        , TMP.EDB_LOCAL_BOP_MTD_BALANCE
-        , TMP.EDB_LOCAL_BOP_QTD_BALANCE
-        , TMP.EDB_LOCAL_BOP_YTD_BALANCE
-        , TMP.EDB_PERIOD_MONTH
-        , TMP.EDB_PERIOD_QTR
-        , TMP.EDB_PERIOD_YEAR
-        , TMP.EDB_PERIOD_LTD
-        , SYSDATE
-        );
-
+          SELECT AD.EDB_ID
+               , AD.YEAR_MTH
+               , MAX(EDB_BALANCE_DATE) AS MAX_MTH_DATE
+          FROM   ALL_DATA AD
+          GROUP BY
+                 AD.EDB_ID
+               , AD.YEAR_MTH
+        ),
+  
+        MAX_MTH_DATE_AMTS AS
+        (
+          SELECT MMD.EDB_ID
+               , MMD.YEAR_MTH
+               , MMD.MAX_MTH_DATE
+               , RANK() OVER (PARTITION BY MMD.EDB_ID ORDER BY MMD.YEAR_MTH ASC) AS RANK_NBR
+               , AD.EDB_TRAN_LTD_BALANCE
+               , AD.EDB_BASE_LTD_BALANCE
+               , AD.EDB_LOCAL_LTD_BALANCE
+          FROM   MMD.MAX_MTH_DATES MMD
+          LEFT JOIN
+                 ALL_DATA AD
+           ON   AD.EDB_ID = MMD.EDB_ID
+           AND  AD.EDB_BALANCE_DATE = MMD.MAX_MTH_DATE
+          ORDER BY
+                1,2 DESC
+        ),
+  
+  
+        MTD_BALANCES AS
+        (
+          SELECT   A.EDB_ID
+                 , A.YEAR_MTH
+                 , B.YEAR_MTH AS YEAR_MTH_LM
+                 , B.MAX_MTH_DATE AS MAX_MTH_DATE_LM
+                 , B.EDB_TRAN_LTD_BALANCE AS EDB_TRAN_BOP_MTD_BALANCE
+                 , B.EDB_BASE_LTD_BALANCE AS EDB_BASE_BOP_MTD_BALANCE
+                 , B.EDB_LOCAL_LTD_BALANCE AS EDB_LOCAL_BOP_MTD_BALANCE
+          FROM      MAX_MTH_DATE_AMTS A
+          LEFT JOIN MAX_MTH_DATE_AMTS B
+            ON     A.EDB_ID = B.EDB_ID
+            AND    A.RANK_NBR = (B.RANK_NBR+1)
+          ORDER BY 1,2
+        ),
+  
+        MAX_QTR_DATES AS
+        (
+          SELECT
+                 AD.EDB_ID
+               , AD.YEAR_QTR
+               , MAX(EDB_BALANCE_DATE) AS MAX_QTR_DATE
+          FROM   ALL_DATA AD
+          GROUP BY
+                 AD.EDB_ID
+               , AD.YEAR_QTR
+        ),
+  
+        MAX_QTR_DATE_AMTS AS
+        (
+          SELECT MQD.EDB_ID
+               , MQD.YEAR_QTR
+               , MQD.MAX_QTR_DATE
+               , RANK() OVER (PARTITION BY MQD.EDB_ID ORDER BY MQD.YEAR_QTR ASC) AS RANK_NBR
+               , AD.EDB_TRAN_LTD_BALANCE
+               , AD.EDB_BASE_LTD_BALANCE
+               , AD.EDB_LOCAL_LTD_BALANCE
+          FROM   MQD.MAX_QTR_DATES MQD
+          LEFT JOIN
+                 ALL_DATA AD
+           ON   AD.EDB_ID = MQD.EDB_ID
+           AND  AD.EDB_BALANCE_DATE = MQD.MAX_QTR_DATE
+          ORDER BY
+                1,2 DESC
+        ),
+  
+        QTD_BALANCES AS
+        (
+          SELECT   A.EDB_ID
+                 , A.YEAR_QTR
+                 , B.YEAR_QTR AS YEAR_QTR_LQ
+                 , B.MAX_QTR_DATE AS MAX_QTR_DATE_LQ
+                 , B.EDB_TRAN_LTD_BALANCE AS EDB_TRAN_BOP_QTD_BALANCE
+                 , B.EDB_BASE_LTD_BALANCE AS EDB_BASE_BOP_QTD_BALANCE
+                 , B.EDB_LOCAL_LTD_BALANCE AS EDB_LOCAL_BOP_QTD_BALANCE
+          FROM      MAX_QTR_DATE_AMTS A
+          LEFT JOIN MAX_QTR_DATE_AMTS B
+            ON     A.EDB_ID = B.EDB_ID
+            AND    A.RANK_NBR = (B.RANK_NBR+1)
+          ORDER BY 1,2
+        ),
+  
+        MAX_YR_DATES AS
+        (
+          SELECT
+                 AD.EDB_ID
+               , AD.YEAR
+               , MAX(EDB_BALANCE_DATE) AS MAX_YR_DATE
+          FROM   ALL_DATA AD
+          GROUP BY
+                 AD.EDB_ID
+               , AD.YEAR
+        ),
+  
+        MAX_YR_DATE_AMTS AS
+        (
+          SELECT MYD.EDB_ID
+               , MYD.YEAR
+               , MYD.MAX_YR_DATE
+               , RANK() OVER (PARTITION BY MYD.EDB_ID ORDER BY MYD.YEAR ASC) AS RANK_NBR
+               , AD.EDB_TRAN_LTD_BALANCE
+               , AD.EDB_BASE_LTD_BALANCE
+               , AD.EDB_LOCAL_LTD_BALANCE
+          FROM   MYD.MAX_YR_DATES MYD
+          LEFT JOIN
+                 ALL_DATA AD
+           ON   AD.EDB_ID = MYD.EDB_ID
+           AND  AD.EDB_BALANCE_DATE = MYD.MAX_YR_DATE
+          ORDER BY
+                1,2 DESC
+        ),
+  
+        YTD_BALANCES AS
+        (
+          SELECT   A.EDB_ID
+                 , A.YEAR
+                 , B.YEAR AS YEAR_LY
+                 , B.MAX_YR_DATE AS MAX_QTR_DATE_LY
+                 , B.EDB_TRAN_LTD_BALANCE AS EDB_TRAN_BOP_YTD_BALANCE
+                 , B.EDB_BASE_LTD_BALANCE AS EDB_BASE_BOP_YTD_BALANCE
+                 , B.EDB_LOCAL_LTD_BALANCE AS EDB_LOCAL_BOP_YTD_BALANCE
+          FROM      MAX_YR_DATE_AMTS A
+          LEFT JOIN MAX_YR_DATE_AMTS B
+            ON     A.EDB_ID = B.EDB_ID
+            AND    A.RANK_NBR = (B.RANK_NBR+1)
+          ORDER BY 1,2
+        )
+  
+        SELECT  /*+ PARALLEL +*/
+                   AD.EDB_FAK_ID
+                 , AD.EDB_EBA_ID
+                 , AD.EDB_BALANCE_DATE
+                 , AD.EDB_BALANCE_TYPE
+                 , MB.EDB_TRAN_BOP_MTD_BALANCE
+                 , QB.EDB_TRAN_BOP_QTD_BALANCE
+                 , YB.EDB_TRAN_BOP_YTD_BALANCE
+                 , MB.EDB_BASE_BOP_MTD_BALANCE
+                 , QB.EDB_BASE_BOP_QTD_BALANCE
+                 , YB.EDB_BASE_BOP_YTD_BALANCE
+                 , MB.EDB_LOCAL_BOP_MTD_BALANCE
+                 , QB.EDB_LOCAL_BOP_QTD_BALANCE
+                 , YB.EDB_LOCAL_BOP_YTD_BALANCE
+                 , AD.EDB_PERIOD_MONTH
+                 , AD.EDB_PERIOD_QTR
+                 , AD.EDB_PERIOD_YEAR
+                 , AD.EDB_PERIOD_LTD
+                 , AD.EDB_AMENDED_ON
+          FROM      ALL_DATA AD
+  
+          LEFT JOIN MTD_BALANCES MB
+            ON     AD.EDB_ID = MB.EDB_ID
+            AND    AD.YEAR_MTH = MB.YEAR_MTH
+  
+          LEFT JOIN QTD_BALANCES QB
+            ON     AD.EDB_ID = QB.EDB_ID
+            AND    AD.YEAR_QTR = QB.YEAR_QTR
+  
+          LEFT JOIN YTD_BALANCES YB
+            ON     AD.EDB_ID = YB.EDB_ID
+            AND    AD.YEAR = YB.YEAR
+  
+        ORDER BY 1,2;       
+  
+     COMMIT;
+ 
+  
+     /*Update the BOP balances with the new data or insert a record if new. Only need to go back as the earlest EBA record updated for each ID */
+     MERGE INTO SLR.SLR_EBA_BOP_AMOUNTS BOP
+       USING (
+              SELECT
+                   EDB_FAK_ID
+                 , EDB_EBA_ID
+                 , EDB_BALANCE_DATE
+                 , EDB_BALANCE_TYPE
+                 , EDB_TRAN_BOP_MTD_BALANCE
+                 , EDB_TRAN_BOP_QTD_BALANCE
+                 , EDB_TRAN_BOP_YTD_BALANCE
+                 , EDB_BASE_BOP_MTD_BALANCE
+                 , EDB_BASE_BOP_QTD_BALANCE
+                 , EDB_BASE_BOP_YTD_BALANCE
+                 , EDB_LOCAL_BOP_MTD_BALANCE
+                 , EDB_LOCAL_BOP_QTD_BALANCE
+                 , EDB_LOCAL_BOP_YTD_BALANCE
+                 , EDB_PERIOD_MONTH
+                 , EDB_PERIOD_QTR
+                 , EDB_PERIOD_YEAR
+                 , EDB_PERIOD_LTD
+                 , EDB_AMENDED_ON
+              FROM
+                  SLR_EBA_BOP_AMOUNTS_TMP TMP
+                  WHERE EXISTS (SELECT 1
+                     FROM SLR.SLR_EBA_BOP_AMOUNTS_TMP2 TMP2
+                    WHERE     TMP.EDB_FAK_ID = TMP2.EDB_FAK_ID
+                          AND TMP.EDB_EBA_ID = TMP2.EDB_EBA_ID
+                          AND TMP.EDB_BALANCE_TYPE = TMP2.EDB_BALANCE_TYPE
+                          AND TMP.EDB_BALANCE_DATE >= TMP2.EDB_BALANCE_DATE)
+                  
+                  
+                  
+              ) TMP
+        ON (
+                  TMP.EDB_FAK_ID = BOP.EDB_FAK_ID
+              AND TMP.EDB_EBA_ID = BOP.EDB_EBA_ID
+              AND TMP.EDB_BALANCE_DATE = BOP.EDB_BALANCE_DATE
+              AND TMP.EDB_BALANCE_TYPE = BOP.EDB_BALANCE_TYPE
+            )
+      WHEN MATCHED
+      THEN
+         UPDATE SET BOP.EDB_TRAN_BOP_MTD_BALANCE  = TMP.EDB_TRAN_BOP_MTD_BALANCE
+                  , BOP.EDB_TRAN_BOP_QTD_BALANCE  = TMP.EDB_TRAN_BOP_QTD_BALANCE
+                  , BOP.EDB_TRAN_BOP_YTD_BALANCE  = TMP.EDB_TRAN_BOP_YTD_BALANCE
+                  , BOP.EDB_BASE_BOP_MTD_BALANCE  = TMP.EDB_BASE_BOP_MTD_BALANCE
+                  , BOP.EDB_BASE_BOP_QTD_BALANCE  = TMP.EDB_BASE_BOP_QTD_BALANCE
+                  , BOP.EDB_BASE_BOP_YTD_BALANCE  = TMP.EDB_BASE_BOP_YTD_BALANCE
+                  , BOP.EDB_LOCAL_BOP_MTD_BALANCE = TMP.EDB_LOCAL_BOP_MTD_BALANCE
+                  , BOP.EDB_LOCAL_BOP_QTD_BALANCE = TMP.EDB_LOCAL_BOP_QTD_BALANCE
+                  , BOP.EDB_LOCAL_BOP_YTD_BALANCE = TMP.EDB_LOCAL_BOP_YTD_BALANCE
+                  , BOP.EDB_PERIOD_MONTH = TMP.EDB_PERIOD_MONTH
+                  , BOP.EDB_PERIOD_QTR = TMP.EDB_PERIOD_QTR
+                  , BOP.EDB_PERIOD_YEAR = TMP.EDB_PERIOD_YEAR
+                  , BOP.EDB_PERIOD_LTD = TMP.EDB_PERIOD_LTD
+                  , BOP.EDB_AMENDED_ON = v_ag_process_dt
+  
+      WHEN NOT MATCHED
+      THEN
+         INSERT
+          (
+            EDB_FAK_ID
+          , EDB_EBA_ID
+          , EDB_BALANCE_DATE
+          , EDB_BALANCE_TYPE
+          , EDB_TRAN_BOP_MTD_BALANCE
+          , EDB_TRAN_BOP_QTD_BALANCE
+          , EDB_TRAN_BOP_YTD_BALANCE
+          , EDB_BASE_BOP_MTD_BALANCE
+          , EDB_BASE_BOP_QTD_BALANCE
+          , EDB_BASE_BOP_YTD_BALANCE
+          , EDB_LOCAL_BOP_MTD_BALANCE
+          , EDB_LOCAL_BOP_QTD_BALANCE
+          , EDB_LOCAL_BOP_YTD_BALANCE
+          , EDB_PERIOD_MONTH
+          , EDB_PERIOD_QTR
+          , EDB_PERIOD_YEAR
+          , EDB_PERIOD_LTD
+          , EDB_AMENDED_ON
+          )
+          VALUES
+          (
+            TMP.EDB_FAK_ID
+          , TMP.EDB_EBA_ID
+          , TMP.EDB_BALANCE_DATE
+          , TMP.EDB_BALANCE_TYPE
+          , TMP.EDB_TRAN_BOP_MTD_BALANCE
+          , TMP.EDB_TRAN_BOP_QTD_BALANCE
+          , TMP.EDB_TRAN_BOP_YTD_BALANCE
+          , TMP.EDB_BASE_BOP_MTD_BALANCE
+          , TMP.EDB_BASE_BOP_QTD_BALANCE
+          , TMP.EDB_BASE_BOP_YTD_BALANCE
+          , TMP.EDB_LOCAL_BOP_MTD_BALANCE
+          , TMP.EDB_LOCAL_BOP_QTD_BALANCE
+          , TMP.EDB_LOCAL_BOP_YTD_BALANCE
+          , TMP.EDB_PERIOD_MONTH
+          , TMP.EDB_PERIOD_QTR
+          , TMP.EDB_PERIOD_YEAR
+          , TMP.EDB_PERIOD_LTD
+          , v_ag_process_dt
+          );
+  
+      COMMIT; 
+      
       EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP';
-END pGENERATE_EBA_BOP_VALUES;
+      EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP2';
+      EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP3';
+          
 
+END pGENERATE_EBA_BOP_VALUES;
+    
 PROCEDURE pGENERATE_FAK_BOP_VALUES AS
+
+    v_ag_lp_dt      DATE;
+    v_ag_process_dt DATE;
+
   BEGIN
 
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP';
+        EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP';
+        EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP2';
+        EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP3';
+                
+        v_ag_process_dt := SYSDATE; /*Get processing date*/     
+        
+             
+        /*Get the last date BOP was processed*/                
+        SELECT NVL(MAX(FDB_AMENDED_ON),TO_DATE('01/01/2000','MM/DD/YYYY') )INTO v_ag_lp_dt FROM SLR.SLR_FAK_BOP_AMOUNTS;
+
+        /*Identify the balances updated and the earliest period for each*/
+        INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP2  
+        ( FDB_FAK_ID,
+            FDB_BALANCE_DATE,
+            FDB_BALANCE_TYPE,
+            FDB_ENTITY,
+            FDB_EPG_ID,
+            FDB_ID
+        )
+        SELECT  
+             FDB_FAK_ID,
+             MIN(FDB_BALANCE_DATE),
+             FDB_BALANCE_TYPE,
+             FDB_ENTITY,
+             FDB_EPG_ID,
+             FDB_FAK_ID|| '\\'|| FDB_BALANCE_TYPE|| '\\'|| FDB_ENTITY|| '\\'|| FDB_EPG_ID AS FDB_ID
+        FROM SLR.SLR_FAK_DAILY_BALANCES FDB
+        WHERE FDB.FDB_AMENDED_ON > v_ag_lp_dt
+        GROUP BY FDB_FAK_ID,
+             FDB_BALANCE_TYPE,
+             FDB_ENTITY,
+             FDB_EPG_ID,
+             FDB_FAK_ID|| '\\'|| FDB_BALANCE_TYPE|| '\\'|| FDB_ENTITY|| '\\'|| FDB_EPG_ID;
+        
+        COMMIT;
+        
+        
+        /*Select the balances to be calculated.  Put in temp table inorder to "Post" Y/E cleardown entries to December.  These went to 1/1 of the new year*/         
+        INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP3 (FDB_FAK_ID
+                                                , FDB_BALANCE_DATE
+                                                , FDB_BALANCE_TYPE
+                                                , FDB_TRAN_DAILY_MOVEMENT
+                                                , FDB_TRAN_MTD_BALANCE
+                                                , FDB_TRAN_YTD_BALANCE
+                                                , FDB_TRAN_LTD_BALANCE
+                                                , FDB_BASE_DAILY_MOVEMENT
+                                                , FDB_BASE_MTD_BALANCE
+                                                , FDB_BASE_YTD_BALANCE
+                                                , FDB_BASE_LTD_BALANCE
+                                                , FDB_LOCAL_DAILY_MOVEMENT
+                                                , FDB_LOCAL_MTD_BALANCE
+                                                , FDB_LOCAL_YTD_BALANCE
+                                                , FDB_LOCAL_LTD_BALANCE
+                                                , FDB_PERIOD_MONTH
+                                                , FDB_PERIOD_QTR
+                                                , FDB_PERIOD_YEAR
+                                                , FDB_PERIOD_LTD
+                                                , FDB_PROCESS_ID
+                                                , FDB_AMENDED_ON
+                                                , FDB_ENTITY
+                                                , FDB_EPG_ID
+                                                , FDB_ID
+                                                , YEAR_MTH
+                                                , YEAR_QTR
+                                                , YEAR
+                                                , LAST_IN_YR)
+           SELECT FDB.FDB_FAK_ID,
+                  FDB.FDB_BALANCE_DATE,
+                  FDB.FDB_BALANCE_TYPE,
+                  FDB.FDB_TRAN_DAILY_MOVEMENT,
+                  FDB.FDB_TRAN_MTD_BALANCE,
+                  FDB.FDB_TRAN_YTD_BALANCE,
+                  FDB.FDB_TRAN_LTD_BALANCE,
+                  FDB.FDB_BASE_DAILY_MOVEMENT,
+                  FDB.FDB_BASE_MTD_BALANCE,
+                  FDB.FDB_BASE_YTD_BALANCE,
+                  FDB.FDB_BASE_LTD_BALANCE,
+                  FDB.FDB_LOCAL_DAILY_MOVEMENT,
+                  FDB.FDB_LOCAL_MTD_BALANCE,
+                  FDB.FDB_LOCAL_YTD_BALANCE,
+                  FDB.FDB_LOCAL_LTD_BALANCE,
+                  FDB.FDB_PERIOD_MONTH,
+                  TO_NUMBER (TO_CHAR (FDB.FDB_BALANCE_DATE, 'Q')) AS FDB_PERIOD_QTR,
+                  FDB.FDB_PERIOD_YEAR,
+                  FDB.FDB_PERIOD_LTD,
+                  FDB.FDB_PROCESS_ID,
+                  FDB.FDB_AMENDED_ON,
+                  FDB.FDB_ENTITY,
+                  FDB.FDB_EPG_ID,
+                  FDB.FDB_FAK_ID|| '\\'|| FDB.FDB_FAK_ID|| '\\'|| FDB.FDB_BALANCE_TYPE|| '\\'|| FDB.FDB_ENTITY|| '\\'|| FDB.FDB_EPG_ID AS FDB_ID,
+                  TO_CHAR (FDB.FDB_BALANCE_DATE, 'YYYYMM') AS YEAR_MTH,
+                  TO_CHAR (FDB.FDB_BALANCE_DATE, 'YYYYQ') AS YEAR_QTR,
+                  TO_CHAR (FDB.FDB_BALANCE_DATE, 'YYYY') AS YEAR,
+                  'N'
+             FROM SLR.SLR_FAK_DAILY_BALANCES FDB
+             WHERE EXISTS
+                  (SELECT 1
+                     FROM SLR.SLR_FAK_BOP_AMOUNTS_TMP2 TMP2
+                    WHERE     FDB.FDB_FAK_ID = TMP2.FDB_FAK_ID
+                          AND FDB.FDB_FAK_ID = TMP2.FDB_FAK_ID
+                          AND FDB.FDB_BALANCE_TYPE = TMP2.FDB_BALANCE_TYPE
+                          AND FDB.FDB_ENTITY = TMP2.FDB_ENTITY
+                          AND FDB.FDB_EPG_ID = TMP2.FDB_EPG_ID)
+          
+                  ORDER BY 1,2,3;               
+                  
+        COMMIT;          
+                 
+        /*Flag the latest balance by year for each ID.  This is the record that will be update by the Y/E "posting"*/            
+        UPDATE SLR.SLR_FAK_BOP_AMOUNTS_TMP3
+           SET LAST_IN_YR = 'Y'
+         WHERE FDB_BALANCE_DATE =
+                  (SELECT MAX (A.FDB_BALANCE_DATE)
+                     FROM SLR.SLR_FAK_BOP_AMOUNTS_TMP3 A
+                    WHERE     A.FDB_FAK_ID = SLR_FAK_BOP_AMOUNTS_TMP3.FDB_FAK_ID
+                          AND A.FDB_ENTITY = SLR_FAK_BOP_AMOUNTS_TMP3.FDB_ENTITY
+                          AND A.FDB_EPG_ID = SLR_FAK_BOP_AMOUNTS_TMP3.FDB_EPG_ID
+                          AND A.YEAR = SLR_FAK_BOP_AMOUNTS_TMP3.YEAR);
+       
+       COMMIT;
+             
+       /*Post the Y/E cleardown entries to the lastest record for each ID.  If no prior record, create one for December of the prior year*/                                 
+       MERGE INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP3 TMP3
+               USING (
+                        SELECT JL_FAK_ID,
+                               JL_EFFECTIVE_DATE,
+                               JL_PERIOD_YEAR,
+                               JL_EPG_ID,
+                               JH_JRNL_ENTITY,
+                               SUM(JL_TRAN_AMOUNT)  JL_TRAN_AMOUNT,
+                               SUM(JL_BASE_AMOUNT)  JL_BASE_AMOUNT,
+                               SUM(JL_LOCAL_AMOUNT) JL_LOCAL_AMOUNT
+                               
+                          FROM SLR_JRNL_HEADERS JH
+                               INNER JOIN SLR_JRNL_LINES JL
+                                  ON     JH.JH_JRNL_DATE = JL.JL_EFFECTIVE_DATE
+                                     AND JH.JH_JRNL_EPG_ID = JL.JL_EPG_ID
+                                     AND JH.JH_JRNL_ID = JL.JL_JRNL_HDR_ID
+                                     AND JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y'  
+                               JOIN SLR.SLR_FAK_BOP_AMOUNTS_TMP2 TMP2
+                                  ON     JL.JL_FAK_ID = TMP2.FDB_FAK_ID
+                                     AND JH.JH_JRNL_ENTITY = TMP2.FDB_ENTITY
+                                     AND JH.JH_JRNL_EPG_ID = TMP2.FDB_EPG_ID
+                          GROUP BY JL_FAK_ID,
+                               JL_EFFECTIVE_DATE,
+                               JL_PERIOD_YEAR,
+                               JL_EPG_ID,
+                               JH_JRNL_ENTITY                    
+                      ) TMP
+                ON (
+                          TMP.JL_FAK_ID = TMP3.FDB_FAK_ID
+                      AND TMP.JH_JRNL_ENTITY = TMP3.FDB_ENTITY
+                      AND TMP.JL_EPG_ID = TMP3.FDB_EPG_ID
+                      AND TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY') = TMP3.YEAR
+                      AND TMP3.LAST_IN_YR = 'Y'
+                      AND TMP3.FDB_BALANCE_TYPE = 50
+                    )
+              WHEN MATCHED
+              THEN
+                 UPDATE            
+                   SET TMP3.FDB_TRAN_DAILY_MOVEMENT = TMP3.FDB_TRAN_DAILY_MOVEMENT + TMP.JL_TRAN_AMOUNT,
+                       TMP3.FDB_TRAN_MTD_BALANCE = TMP3.FDB_TRAN_MTD_BALANCE + TMP.JL_TRAN_AMOUNT,
+                       TMP3.FDB_TRAN_YTD_BALANCE = TMP3.FDB_TRAN_YTD_BALANCE + TMP.JL_TRAN_AMOUNT,
+                       TMP3.FDB_TRAN_LTD_BALANCE = TMP3.FDB_TRAN_LTD_BALANCE + TMP.JL_TRAN_AMOUNT,
+                       TMP3.FDB_BASE_DAILY_MOVEMENT = TMP3.FDB_BASE_DAILY_MOVEMENT + TMP.JL_BASE_AMOUNT,
+                       TMP3.FDB_BASE_MTD_BALANCE = TMP3.FDB_BASE_MTD_BALANCE + TMP.JL_BASE_AMOUNT,
+                       TMP3.FDB_BASE_YTD_BALANCE = TMP3.FDB_BASE_YTD_BALANCE + TMP.JL_BASE_AMOUNT,
+                       TMP3.FDB_BASE_LTD_BALANCE = TMP3.FDB_BASE_LTD_BALANCE + TMP.JL_BASE_AMOUNT,
+                       TMP3.FDB_LOCAL_DAILY_MOVEMENT = TMP3.FDB_LOCAL_DAILY_MOVEMENT + TMP.JL_LOCAL_AMOUNT,
+                       TMP3.FDB_LOCAL_MTD_BALANCE = TMP3.FDB_LOCAL_MTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
+                       TMP3.FDB_LOCAL_YTD_BALANCE = TMP3.FDB_LOCAL_YTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
+                       TMP3.FDB_LOCAL_LTD_BALANCE = TMP3.FDB_LOCAL_LTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
+                       TMP3.FDB_AMENDED_ON = v_ag_process_dt
+          
+              WHEN NOT MATCHED
+              THEN
+                 INSERT
+                  (
+                      FDB_FAK_ID
+                    , FDB_BALANCE_DATE
+                    , FDB_BALANCE_TYPE
+                    , FDB_TRAN_DAILY_MOVEMENT
+                    , FDB_TRAN_MTD_BALANCE
+                    , FDB_TRAN_YTD_BALANCE
+                    , FDB_TRAN_LTD_BALANCE
+                    , FDB_BASE_DAILY_MOVEMENT
+                    , FDB_BASE_MTD_BALANCE
+                    , FDB_BASE_YTD_BALANCE
+                    , FDB_BASE_LTD_BALANCE
+                    , FDB_LOCAL_DAILY_MOVEMENT
+                    , FDB_LOCAL_MTD_BALANCE
+                    , FDB_LOCAL_YTD_BALANCE
+                    , FDB_LOCAL_LTD_BALANCE
+                    , FDB_PERIOD_MONTH
+                    , FDB_PERIOD_QTR
+                    , FDB_PERIOD_YEAR
+                    , FDB_PERIOD_LTD
+                    , FDB_PROCESS_ID
+                    , FDB_AMENDED_ON
+                    , FDB_ENTITY
+                    , FDB_EPG_ID
+                    , FDB_ID
+                    , YEAR_MTH
+                    , YEAR_QTR
+                    , YEAR
+                    , LAST_IN_YR
+                  )
+                  VALUES
+                  (
+                      TMP.JL_FAK_ID
+                    , TMP.JL_EFFECTIVE_DATE - 1
+                    , 50
+                    , TMP.JL_TRAN_AMOUNT
+                    , TMP.JL_TRAN_AMOUNT
+                    , TMP.JL_TRAN_AMOUNT
+                    , TMP.JL_TRAN_AMOUNT
+                    , TMP.JL_BASE_AMOUNT
+                    , TMP.JL_BASE_AMOUNT
+                    , TMP.JL_BASE_AMOUNT
+                    , TMP.JL_BASE_AMOUNT
+                    , TMP.JL_LOCAL_AMOUNT
+                    , TMP.JL_LOCAL_AMOUNT
+                    , TMP.JL_LOCAL_AMOUNT
+                    , TMP.JL_LOCAL_AMOUNT
+                    , 12
+                    , 4
+                    , TMP.JL_PERIOD_YEAR - 1
+                    , 1
+                    , 1
+                    , v_ag_process_dt
+                    , TMP.JH_JRNL_ENTITY
+                    , TMP.JL_EPG_ID
+                    , TMP.JL_FAK_ID||'\\'||'50'||'\\'||TMP.JH_JRNL_ENTITY||'\\'||TMP.JL_EPG_ID
+                    , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'12'
+                    , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'4'
+                    , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')
+                    , 'I'
+                  );                
+                
+              
+       COMMIT; 
+       
+     /*SQL to calcuate prior balance for month, QTR and YTD - original code*/
+  
     INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP
      (     FDB_FAK_ID
          , FDB_BALANCE_DATE
@@ -3453,7 +3968,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                , TO_CHAR(FDB_BALANCE_DATE, 'YYYY') AS YEAR
 
         FROM
-               SLR.SLR_FAK_DAILY_BALANCES FDB
+               SLR_FAK_BOP_AMOUNTS_TMP3 FDB
 
         ORDER BY 1,2,3
 
@@ -3627,12 +4142,13 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
 
         LEFT JOIN YTD_BALANCES YB
           ON     AD.FDB_ID = YB.FDB_ID
-          AND    AD.YEAR_QTR = YB.YEAR
+          AND    AD.YEAR = YB.YEAR  
 
       ORDER BY 1,2;
 
    COMMIT;
-
+  
+     /*Update the BOP balances with the new data or insert a record if new. Only need to go back as the earlest EBA record updated for each ID */
    MERGE INTO SLR.SLR_FAK_BOP_AMOUNTS BOP
      USING (
             SELECT
@@ -3655,6 +4171,11 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                , FDB_AMENDED_ON
             FROM
                 SLR.SLR_FAK_BOP_AMOUNTS_TMP TMP
+                WHERE EXISTS (SELECT 1
+                   FROM SLR.SLR_FAK_BOP_AMOUNTS_TMP2 TMP2
+                  WHERE     TMP.FDB_FAK_ID = TMP2.FDB_FAK_ID
+                        AND TMP.FDB_BALANCE_TYPE = TMP2.FDB_BALANCE_TYPE
+                        AND TMP.FDB_BALANCE_DATE >= TMP2.FDB_BALANCE_DATE)              
             ) TMP
       ON (
                 TMP.FDB_FAK_ID = BOP.FDB_FAK_ID
@@ -3676,7 +4197,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                 , BOP.FDB_PERIOD_QTR = TMP.FDB_PERIOD_QTR
                 , BOP.FDB_PERIOD_YEAR = TMP.FDB_PERIOD_YEAR
                 , BOP.FDB_PERIOD_LTD = TMP.FDB_PERIOD_LTD
-                , BOP.FDB_AMENDED_ON = SYSDATE
+                , BOP.FDB_AMENDED_ON = v_ag_process_dt
 
     WHEN NOT MATCHED
     THEN
@@ -3718,11 +4239,17 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
         , TMP.FDB_PERIOD_QTR
         , TMP.FDB_PERIOD_YEAR
         , TMP.FDB_PERIOD_LTD
-        , SYSDATE
+        , v_ag_process_dt
         );
+        
+   COMMIT;
+        
    EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP';
+   EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP2';
+   EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP3';
 
-END pGENERATE_FAK_BOP_VALUES;
+
+END pGENERATE_FAK_BOP_VALUES;    
 
 PROCEDURE pFX_REVAL( p_month IN NUMBER , p_year IN NUMBER , p_event_class IN VARCHAR2 , p_acc_basis IN VARCHAR2 ) AS
 
