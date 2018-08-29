@@ -1,0 +1,1 @@
+create index idx_fak_bop_amounts_tmp_01 on slr.slr_fak_bop_amounts_tmp (fdb_fak_id, fdb_balance_date);

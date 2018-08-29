@@ -1,0 +1,2 @@
+create index idx_fak_bop_amounts_tmp3_01 on slr.slr_fak_bop_amounts_tmp3 (fdb_fak_id, fdb_balance_date, fdb_id, last_in_yr);
+create index idx_fak_bop_amounts_tmp3_02 on slr.slr_fak_bop_amounts_tmp3 (fdb_id, fdb_period_month, fdb_period_qtr, fdb_period_year, fdb_period_ltd);
