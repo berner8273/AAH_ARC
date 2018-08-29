@@ -1,3 +1,0 @@
-insert into stn.posting_method_derivation_et ( input_event_typ_id , output_event_typ_id , psm_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'UPR' )               , ( select event_typ_id from stn.event_type where event_typ = 'UPR_CHANGE' )         , ( select psm_id from stn.posting_method where psm_cd = 'GAAP_FUT_ACCTS' ) );
-insert into stn.posting_method_derivation_et ( input_event_typ_id , output_event_typ_id , psm_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'PGAAP_UPR' )         , ( select event_typ_id from stn.event_type where event_typ = 'PGAAP_UPR_CHANGE' )   , ( select psm_id from stn.posting_method where psm_cd = 'GAAP_FUT_ACCTS' ) );
-commit;

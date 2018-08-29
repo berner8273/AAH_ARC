@@ -122,7 +122,6 @@ conn ~stn_logon
 @@tables/stn/cession_event.sql
 @@tables/stn/cev_valid.sql
 @@tables/stn/cev_data.sql
-@@tables/stn/cev_derived_plus_data.sql
 @@tables/stn/cev_gaap_fut_accts_data.sql
 @@tables/stn/cev_le_data.sql
 @@tables/stn/cev_mtm_data.sql
@@ -184,7 +183,6 @@ conn ~stn_logon
 @@tables/stn/posting_financial_calc.sql
 @@tables/stn/posting_ledger.sql
 @@tables/stn/posting_method.sql
-@@tables/stn/posting_method_derivation_et.sql
 @@tables/stn/posting_method_derivation_ic.sql
 @@tables/stn/posting_method_derivation_le.sql
 @@tables/stn/posting_method_derivation_mtm.sql
@@ -267,7 +265,6 @@ conn ~stn_logon
 @@ri_constraints/stn/legal_entity_link.sql
 @@ri_constraints/stn/posting_accounting_basis.sql
 @@ri_constraints/stn/posting_amount_negate_flag.sql
-@@ri_constraints/stn/posting_method_derivation_et.sql
 @@ri_constraints/stn/posting_method_derivation_ic.sql
 @@ri_constraints/stn/posting_method_derivation_le.sql
 @@ri_constraints/stn/posting_method_derivation_mtm.sql
@@ -314,7 +311,6 @@ conn ~stn_logon
 @@data/stn/posting_financial_calc.sql
 @@data/stn/posting_ledger.sql
 @@data/stn/posting_method.sql
-@@data/stn/posting_method_derivation_et.sql
 @@data/stn/posting_method_derivation_gfa.sql
 @@data/stn/posting_method_derivation_ic.sql
 @@data/stn/posting_method_derivation_le.sql
@@ -392,7 +388,6 @@ exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DATA'                       , 'GL
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_PREMIUM_TYP_OVERRIDE'       , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_MTM_DATA'                   , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_GAAP_FUT_ACCTS_DATA'        , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
-exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_DERIVED_PLUS_DATA'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_LE_DATA'                    , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_NON_INTERCOMPANY_DATA'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_INTERCOMPANY_DATA'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');

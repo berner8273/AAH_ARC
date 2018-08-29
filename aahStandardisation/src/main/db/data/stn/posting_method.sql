@@ -9,6 +9,5 @@ insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'GAAP_FUT_ACCTS' 
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'STAT_TO_GAAP_ADJ'  , 'Post STAT amounts to GAAP_ADJ ledger' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'STAT_TO_CORE'      , 'Post STAT amounts to CORE ledger' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'INTERCOMPANY'      , 'Post intercompany eliminations' );
-insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'UKGAAP_ALL_EVENTS' , 'UK GAAP amounts to UKGAAP_ADJ ledger' );
-insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'UKGAAP_CASH'       , 'UK GAAP amounts to UKGAAP_ADJ ledger plus RECLASS sub-event' );
+insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'UKGAAP_ADJ'        , 'UK GAAP amounts to UKGAAP_ADJ ledger' );
 commit;

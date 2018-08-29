@@ -40,7 +40,6 @@ begin
                                                                               , 'cev_premium_typ_override'
                                                                               , 'cev_mtm_data'
                                                                               , 'cev_gaap_fut_accts_data'
-                                                                              , 'cev_derived_plus_data'
                                                                               , 'cev_le_data'
                                                                               , 'cev_non_intercompany_data'
                                                                               , 'cev_intercompany_data'
@@ -62,7 +61,6 @@ truncate table stn.cev_data;
 truncate table stn.cev_premium_typ_override;
 truncate table stn.cev_mtm_data;
 truncate table stn.cev_gaap_fut_accts_data;
-truncate table stn.cev_derived_plus_data;
 truncate table stn.cev_le_data;
 truncate table stn.cev_non_intercompany_data;
 truncate table stn.cev_intercompany_data;
@@ -187,7 +185,6 @@ drop table stn.business_type;
 drop table stn.posting_amount_derivation;
 drop table stn.posting_amount_derivation_type;
 drop table stn.posting_method_ledger;
-drop table stn.posting_method_derivation_et;
 drop table stn.posting_method_derivation_ic;
 drop table stn.posting_method_derivation_le;
 drop table stn.posting_method_derivation_mtm;
@@ -199,7 +196,6 @@ drop table stn.posting_ledger;
 drop table stn.posting_method;
 drop table stn.cev_valid;
 drop table stn.cev_data;
-drop table stn.cev_derived_plus_data;
 drop table stn.cev_gaap_fut_accts_data;
 drop table stn.cev_le_data;
 drop table stn.cev_mtm_data;
