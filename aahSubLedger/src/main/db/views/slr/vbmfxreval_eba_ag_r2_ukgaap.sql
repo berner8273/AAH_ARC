@@ -1,4 +1,4 @@
-create or replace view slr.vbmfxreval_eba_ag_r2_usgaap as
+create or replace view slr.vbmfxreval_eba_ag_r2_ukgaap as
 with
 rule2_events as
 (
@@ -18,7 +18,7 @@ select
  where
        fgl.lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
    and fgl.lk_match_key9           = 'FXRULE2'
-   and fgl.lk_match_key1           = 'US_GAAP'
+   and fgl.lk_match_key1           = 'UK_GAAP'
 )
 ,
 population as
@@ -33,7 +33,7 @@ select
                                                 and ec.ec_fak_id = fc.fc_fak_id )
   join fdr.fr_general_lookup         fgl    on (    fc.fc_segment_1           = fgl.lk_lookup_value2
                                                 and 'ACCOUNTING_BASIS_LEDGER' = fgl.lk_lkt_lookup_type_code
-                                                and 'US_GAAP'                 = fgl.lk_lookup_value1 )
+                                                and 'UK_GAAP'                 = fgl.lk_lookup_value1 )
   join stn.event_hierarchy_reference eh     on      ec.ec_attribute_4         = eh.event_typ
  where exists ( select null
                   from slr.v_slr_fxreval_parameters  fxparam
@@ -50,7 +50,6 @@ select
                                                    and fc.fc_account        = ea.ea_account
                                                    and 'B'                  = ea.ea_account_type 
                  where fc.fc_entity          = ent.ent_entity )
-                   
 )
 ,
 fx_population as
@@ -65,7 +64,7 @@ select
                                                 and ec.ec_fak_id = fc.fc_fak_id )
   join fdr.fr_general_lookup         fgl    on (    fc.fc_segment_1           = fgl.lk_lookup_value2
                                                 and 'ACCOUNTING_BASIS_LEDGER' = fgl.lk_lkt_lookup_type_code
-                                                and 'US_GAAP'                 = fgl.lk_lookup_value1 )
+                                                and 'UK_GAAP'                 = fgl.lk_lookup_value1 )
   join stn.event_hierarchy_reference eh     on      ec.ec_attribute_4 = eh.event_typ
  where exists ( select null
                   from slr.v_slr_fxreval_parameters  fxparam

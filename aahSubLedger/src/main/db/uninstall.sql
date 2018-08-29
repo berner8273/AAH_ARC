@@ -271,14 +271,11 @@ conn ~slr_logon
 
 drop view         slr.vbmfxreval_eba_ag_r2_usgaap;
 drop view         slr.vbmfxreval_eba_ag_r2_usstat;
-drop view         slr.vbmfxreval_eba_ag_r1_usstat;
+drop view         slr.vbmfxreval_eba_ag_r2_ukgaap;
 drop view         slr.vbmfxreval_eba_ag_r0_usgaap;
 drop view         slr.vbmfxreval_eba_ag_r0_usstat;
+drop view         slr.vbmfxreval_eba_ag_r0_ukgaap;
 drop view         slr.v_slr_fxreval_parameters;
-drop view         slr.v_slr_fxreval_rule2_events;
-drop view         slr.v_slr_fxreval_rule1_eventunion;
-drop view         slr.v_slr_fxreval_rule1_events;
-drop view         slr.v_slr_fxreval_rule0_accts;
 drop view         slr.v_slr_fxreval_run_values;
 delete from       slr.slr_process_source where upper(sps_db_object_name) like 'VBMFXREVAL_EBA_AG%';
 delete from       slr.slr_process_config_detail where pcd_pc_p_process = 'FXREVALUE' and pcd_pc_config <> 'FXREVALUE';
@@ -353,16 +350,17 @@ commit;
 
 conn ~fdr_logon
 
-revoke select on fdr.fcv_combination_check_suspense from RDR;
-revoke select on fdr.fcv_combination_check_suspense from SLR;
-revoke select on fdr.fcv_combination_check_data from RDR;
-revoke select on fdr.fcv_combination_check_data from SLR;
-revoke select , insert , delete on fdr.fr_combination_check_error from GUI;
-revoke select , insert , delete on fdr.fr_combination_check_error from SLR;
-revoke select , insert , delete on fdr.fr_combination_check_error from RDR;
-revoke select , insert , delete on fdr.fr_combination_check_input from GUI;
-revoke select , insert , delete on fdr.fr_combination_check_input from SLR;
-revoke select , insert , delete on fdr.fr_combination_check_input from RDR;
+revoke select                   on fdr.fcv_combination_check_suspense from RDR;
+revoke select                   on fdr.fcv_combination_check_suspense from SLR;
+revoke select                   on fdr.fcv_combination_check_data     from RDR;
+revoke select                   on fdr.fcv_combination_check_data     from SLR;
+revoke select , insert , delete on fdr.fr_combination_check_error     from GUI;
+revoke select , insert , delete on fdr.fr_combination_check_error     from SLR;
+revoke select , insert , delete on fdr.fr_combination_check_error     from RDR;
+revoke select , insert , delete on fdr.fr_combination_check_input     from GUI;
+revoke select , insert , delete on fdr.fr_combination_check_input     from SLR;
+revoke select , insert , delete on fdr.fr_combination_check_input     from RDR;
+revoke select                   on fdr.fr_gaap                        from SLR;
 revoke execute on fdr.pg_combination_check from GUI;
 revoke execute on fdr.pg_combination_check from SLR;
 revoke execute on fdr.pg_combination_check from RDR;

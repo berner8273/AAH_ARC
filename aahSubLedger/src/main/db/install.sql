@@ -48,7 +48,6 @@ conn ~slr_logon
 @@tables/slr/slr_fak_bop_amounts_tmp.sql
 @@tables/slr/slr_eba_bop_amounts.sql
 @@tables/slr/slr_eba_bop_amounts_tmp.sql
-@@tables/slr/slr_fx_reval_temp.sql
 @@grants/tables/slr/slr_bm_entity_processing_set.sql
 
 delete from slr.slr_entity_proc_group;
@@ -291,6 +290,7 @@ conn ~fdr_logon
 
 @@data/fdr/fr_general_lookup_type.sql
 @@data/fdr/fr_general_lookup.sql
+@@grants/tables/fdr/fr_gaap.sql
 
 conn ~slr_logon
 
@@ -298,16 +298,13 @@ conn ~slr_logon
 @@data/slr/slr_process_config_detail.sql
 @@data/slr/slr_process_source.sql
 @@views/slr/v_slr_fxreval_parameters.sql
-@@views/slr/v_slr_fxreval_rule0_accts.sql
-@@views/slr/v_slr_fxreval_rule1_events.sql
-@@views/slr/v_slr_fxreval_rule2_events.sql
 @@views/slr/v_slr_fxreval_run_values.sql
-@@views/slr/v_slr_fxreval_rule1_eventunion.sql
 @@views/slr/vbmfxreval_eba_ag_r0_usstat.sql
 @@views/slr/vbmfxreval_eba_ag_r0_usgaap.sql
-@@views/slr/vbmfxreval_eba_ag_r1_usstat.sql
+@@views/slr/vbmfxreval_eba_ag_r0_ukgaap.sql
 @@views/slr/vbmfxreval_eba_ag_r2_usstat.sql
 @@views/slr/vbmfxreval_eba_ag_r2_usgaap.sql
+@@views/slr/vbmfxreval_eba_ag_r2_ukgaap.sql
 
 -- ye cleardown views
 @@views/slr/vbm_ag_retainedearningseba01.sql

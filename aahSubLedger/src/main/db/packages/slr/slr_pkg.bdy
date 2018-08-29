@@ -1031,7 +1031,7 @@ END pIMPORT_SLR_JRNLS;
 ----------------------------------------------------------------------------------------
 -- Used during batch processing to assign FAK/EBA combinations base on accounting events
 -- NOTE: Mappings in following merge queries should be updated
--- to be coherent with segments and atrributes settings from import
+-- to be coherent with segments and attributes settings from import
 -- (insert query in pIMPORT_SLR_JRNLS procedure)
 -----------------------------------------------------------------------------------------
 
@@ -1604,7 +1604,7 @@ PROCEDURE pr_fx_rate
 
         MERGE INTO SLR.SLR_ENTITY_RATES SER
         USING 
-        (
+        /*(
         SELECT 
         'FX_RULE0' AS ER_ENTITY_SET,
         B.ER_DATE AS ER_DATE,
@@ -1627,6 +1627,23 @@ PROCEDURE pr_fx_rate
         WHERE A.ER_RATE_TYPE = 'SPOT'
         AND   A.ER_DATE = LAST_DAY(A.ER_DATE)
         AND   B.ER_DATE IS NOT NULL
+        )QRY*/
+        (
+        SELECT 
+        'FX_RULE0' AS ER_ENTITY_SET,
+        ER_DATE,
+        ER_CCY_FROM,
+        ER_CCY_TO,
+        ER_RATE,
+        ER_CREATED_BY,
+        ER_CREATED_ON,
+        ER_AMENDED_BY,
+        ER_AMENDED_ON,
+        'FX_RULE0' AS ER_RATE_TYPE
+        FROM SLR_ENTITY_RATES 
+        WHERE ER_RATE_TYPE = 'SPOT'
+        AND ER_ENTITY_SET = 'ENT_RATE_SET'
+        AND ER_DATE = LAST_DAY(ER_DATE)
         )QRY
         ON 
         (
@@ -3707,113 +3724,83 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
 
 END pGENERATE_FAK_BOP_VALUES;
 
-PROCEDURE pFX_REVAL(p_month IN NUMBER, p_year IN NUMBER, p_event_class IN VARCHAR2, p_acc_basis IN VARCHAR2) AS
+PROCEDURE pFX_REVAL( p_month IN NUMBER , p_year IN NUMBER , p_event_class IN VARCHAR2 , p_acc_basis IN VARCHAR2 ) AS
 
-  PPROCESS VARCHAR2(40);
-  PENTPROCSET VARCHAR2(20);
-  PCONFIG VARCHAR2(40);
-  PSOURCE VARCHAR2(40);
+  PPROCESS     VARCHAR2(40);
+  PENTPROCSET  VARCHAR2(20);
+  PCONFIG      VARCHAR2(40);
+  PSOURCE      VARCHAR2(40);
   PBALANCEDATE DATE;
-  PRATESET VARCHAR2(20);
-  GPROCID NUMBER;
- 
-  V_FX_DT     DATE;
-  V_FX_DT_LM  DATE;
+  PRATESET     VARCHAR2(20);
+  GPROCID      NUMBER;
+  V_FX_DT      DATE;
   
 BEGIN
 
-/* DEFINE AND SET MONTH-END DATES FOR FX RUN */
+/* DEFINE AND SET MONTH-END DATE FOR FX RUN */
   V_FX_DT    := LAST_DAY(TO_DATE(TO_CHAR(LPAD(p_month||p_year,6,0)),'MMYYYY'));
-  V_FX_DT_LM := ADD_MONTHS(V_FX_DT,-1);
   
 /* SET ALL ENTITY ACCOUNTS THAT SHOULD BE REVALUED */
+  update
+         slr_entity_accounts  ea
+     set
+         ea.ea_revaluation_flag = 'Y'
+   where
+         exists ( select
+                         null
+                    from
+                         fdr.fr_general_lookup fgl
+                   where
+                         fgl.lk_lkt_lookup_type_code = 'FXREVAL_REBAL_ACCTS'
+                     and fgl.lk_match_key2           = ea.ea_account );
+  commit;
 
-  UPDATE slr_entity_accounts
-  SET EA_REVALUATION_FLAG = 'Y'
-  WHERE EA_ACCOUNT IN
-  (
-    SELECT DISTINCT LK_MATCH_KEY2
-    FROM FDR.FR_GENERAL_LOOKUP
-    WHERE LK_LKT_LOOKUP_TYPE_CODE = 'FXREVAL_REBAL_ACCTS'
-  );
-  COMMIT;
-
-/* UPDATE FX RUN VARIABLES */
-    update fdr.fr_general_lookup
-    set lk_match_key1 = p_month -- month nbr
-      , lk_match_key2 = p_year -- year nbr
-      , lk_match_key3 = p_event_class -- event class
-      , lk_match_key4 = p_acc_basis -- accounting basis
-    where lk_lkt_lookup_type_code = 'FXREVAL_RUN_VALUES'
-    ;
-
-/**********************************************************************************************************
-**************************          BEGIN MONTH-END             *******************************************
-**************************           FX REVALUATION             *******************************************
-**************************             (FXRULE0)                *******************************************
-***********************************************************************************************************/
-  
-  IF p_acc_basis = 'US_STAT' 
-    THEN SLR.SLR_PKG.pFX_REVAL_RULE0_USSTAT(V_FX_DT_LM);
-  ELSIF p_acc_basis = 'US_GAAP' 
-    THEN SLR.SLR_PKG.pFX_REVAL_RULE0_USGAAP(V_FX_DT_LM) ;
+/* BEGIN FXRULE0 - MONTH-END FX REVALUATION */
+  IF p_acc_basis = 'US_STAT'
+    THEN SLR.SLR_PKG.pFX_REVAL_RULE0_USSTAT(V_FX_DT);
+  ELSIF p_acc_basis = 'US_GAAP'
+    THEN SLR.SLR_PKG.pFX_REVAL_RULE0_USGAAP(V_FX_DT) ;
+  ELSIF p_acc_basis = 'UK_GAAP'
+    THEN SLR.SLR_PKG.pFX_REVAL_RULE0_UKGAAP(V_FX_DT) ;
   END IF;
 
-/**********************************************************************************************************
-**************************        BEGIN MONTHLY TRAFFIC         *******************************************
-**************************           FX REVALUATION             *******************************************
-**************************             (FXRULE2)                *******************************************
-***********************************************************************************************************/
-
-  IF p_acc_basis = 'US_STAT' 
+/* BEGIN FXRULE2 - MONTHLY FLOW FX REVALUATION */
+  IF p_acc_basis = 'US_STAT'
     THEN SLR.SLR_PKG.pFX_REVAL_RULE2_USSTAT(V_FX_DT);
-  ELSIF p_acc_basis = 'US_GAAP' 
+  ELSIF p_acc_basis = 'US_GAAP'
     THEN SLR.SLR_PKG.pFX_REVAL_RULE2_USGAAP(V_FX_DT);
+  ELSIF p_acc_basis = 'UK_GAAP'
+    THEN SLR.SLR_PKG.pFX_REVAL_RULE2_UKGAAP(V_FX_DT) ;
   END IF;
 
-/**********************************************************************************************************
-**************************         POST NEWLY CREATED           *******************************************
-**************************           FX REVALUATION             *******************************************
-**************************           JOURNAL LINES              *******************************************
-***********************************************************************************************************/
-  
-  SLR_UTILITIES_PKG.pRunValidateAndPost ('AG', 'ENT_RATE_SET', GPROCID) ;  
-
-/**********************************************************************************************************
-**************************        BEGIN MONTHLY TRAFFIC         *******************************************
-**************************           FX REVALUATION             *******************************************
-**************************        SPOT VS MAVG (FXRULE1)        *******************************************
-***********************************************************************************************************/
-  
-  IF p_acc_basis = 'US_STAT' 
-    THEN SLR.SLR_PKG.pFX_REVAL_RULE1_USSTAT(V_FX_DT); -- RUN FX PROCESS
-         SLR_UTILITIES_PKG.pRunValidateAndPost ('AG', 'ENT_RATE_SET', GPROCID) ; -- POST NEW LINES FROM FXRULE1 RUN   
-  END IF;
+/* VALIDATE AND POST FX JOURNAL LINES */
+  SLR_UTILITIES_PKG.pRunValidateAndPost ( 'AG' , 'ENT_RATE_SET' , GPROCID ) ;  
   
 END pFX_REVAL;
 
 PROCEDURE pFX_REVAL_RULE0_USSTAT(v_date IN DATE) AS
 
-  PPROCESS VARCHAR2(40);
-  PENTPROCSET VARCHAR2(20);
-  PCONFIG VARCHAR2(40);
-  PSOURCE VARCHAR2(40);
-  PBALANCEDATE DATE;
-  PRATESET VARCHAR2(20);
-  GPROCID NUMBER;
+  PPROCESS      VARCHAR2(40);
+  PENTPROCSET   VARCHAR2(20);
+  PCONFIG       VARCHAR2(40);
+  PSOURCE       VARCHAR2(40);
+  PBALANCEDATE  DATE;
+  PRATESET      VARCHAR2(20);
+  GPROCID       NUMBER;
+  V_BASIS       VARCHAR2(20);
+  V_FX_RULE     VARCHAR2(20);
 
 BEGIN
-/* BEGIN FXRULE0 RUN */
-/* SET ALL VARIABLE VALUES FOR FXRULE0 RUN */
 
-  PPROCESS := 'FXREVALUE';
-  PENTPROCSET := 'AG';
-  PCONFIG := 'FX_AG_RULE0_USSTAT';
-  PSOURCE := 'BMFXREVAL_EBA_AG_R0_USSTAT';
+  PPROCESS     := 'FXREVALUE';
+  PENTPROCSET  := 'AG';
+  PCONFIG      := 'FX_AG_RULE0_USSTAT';
+  PSOURCE      := 'BMFXREVAL_EBA_AG_R0_USSTAT';
   PBALANCEDATE := v_date;
-  PRATESET := 'FX_RULE0';
-  GPROCID := NULL;
-
+  PRATESET     := 'FX_RULE0';
+  GPROCID      := NULL;
+  V_BASIS      := 'US_STAT';
+  V_FX_RULE    := 'FXRULE0';
 
 /* EXECUTE FXRULE0 RUN */
   SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
@@ -3825,181 +3812,37 @@ BEGIN
         PBALANCEDATE => PBALANCEDATE,
         PRATESET => PRATESET,
         GPROCID => GPROCID
-  ) ; 
-  
-  update SLR_JRNL_LINES_UNPOSTED
-  set JLU_EFFECTIVE_DATE = add_months(JLU_EFFECTIVE_DATE,1)
-   ,  JLU_VALUE_DATE = add_months(JLU_VALUE_DATE,1)
-   ,  JLU_JRNL_DATE = add_months(JLU_JRNL_DATE,1)
-   ,  JLU_FAK_ID = 0
-   ,  JLU_EBA_ID = 0
-  where jlu_jrnl_process_id = GPROCID
-  ;
+  ) ;
+
+/* UPDATE UNPOSTED JOURNAL LINES WITH FX ATTRIBUTES AND UPDATE FAK/EBA IDS */
+  SLR.SLR_PKG.pFX_REVAL_UPDATE_UNPOSTED( V_FX_RULE , PRATESET , V_BASIS , GPROCID , PENTPROCSET );
   commit;
-
-/* FXRULE0 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
-
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-  
-  insert into slr.slr_fx_reval_temp 
-  (
-     select 
-      fgl.lk_match_key10   as adjust_offset
-    , fgl.lk_lookup_value1 as fx_acccounting_event
-    , fgl.lk_lookup_value2 as fx_gl_account
-    , jlu.ROWID as jlu_ROWID
-    from fdr.fr_general_lookup fgl
-    join slr.slr_jrnl_lines_unposted jlu
-    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
-    and fgl.lk_match_key2  = jlu.jlu_account -- join on sub-account
-    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
-    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
-    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
-    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
-    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
-    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE0'
-  );
-  
-  commit;
-  
-  MERGE INTO 
-    slr.slr_jrnl_lines_unposted jlu
-  USING
-    (select * from slr.slr_fx_reval_temp) tmp
-  ON 
-    (tmp.jlu_rowid = jlu.ROWID)
-  WHEN MATCHED THEN UPDATE SET
-    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
-    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
-    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
-    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
-  ;
-  
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-
-/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
-  
-  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
-  
-  commit;
-
-/**********************************************************************************************************
-************************************* END FXRULE0 RUN *****************************************************
-***********************************************************************************************************/
-
 
 END pFX_REVAL_RULE0_USSTAT;
 
-PROCEDURE pFX_REVAL_RULE1_USSTAT(v_date IN DATE) AS
-   PPROCESS VARCHAR2(40);
-  PENTPROCSET VARCHAR2(20);
-  PCONFIG VARCHAR2(40);
-  PSOURCE VARCHAR2(40);
-  PBALANCEDATE DATE;
-  PRATESET VARCHAR2(20);
-  GPROCID NUMBER;
-
-BEGIN
-/* BEGIN FXRULE2 RUN */
-/* SET ALL VARIABLE VALUES FOR FXRULE2 RUN */
-
-  PPROCESS := 'FXREVALUE';
-  PENTPROCSET := 'AG';
-  PCONFIG := 'FX_AG_RULE1_USSTAT';
-  PSOURCE := 'BMFXREVAL_EBA_AG_R1_USSTAT';
-  PBALANCEDATE := v_date;
-  PRATESET := 'FX_RULE1';
-  GPROCID := NULL;
-
-
-/* EXECUTE FXRULE2 RUN */
-  SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
-  (  
-        PPROCESS => PPROCESS,
-        PENTPROCSET => PENTPROCSET,
-        PCONFIG => PCONFIG,
-        PSOURCE => PSOURCE,
-        PBALANCEDATE => PBALANCEDATE,
-        PRATESET => PRATESET,
-        GPROCID => GPROCID
-  ) ; 
-  
-  update SLR_JRNL_LINES_UNPOSTED
-  set JLU_FAK_ID = 0
-   ,  JLU_EBA_ID = 0
-  where jlu_jrnl_process_id = GPROCID
-  ;
-  commit;
-
-/* FXRULE2 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
-
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-  
-  insert into slr.slr_fx_reval_temp 
-  (
-     select 
-      fgl.lk_match_key10   as adjust_offset
-    , fgl.lk_lookup_value1 as fx_acccounting_event
-    , fgl.lk_lookup_value2 as fx_gl_account
-    , jlu.ROWID as jlu_ROWID
-    from fdr.fr_general_lookup fgl
-    join slr.slr_jrnl_lines_unposted jlu
-    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
-    and fgl.lk_match_key2  = jlu.jlu_attribute_4 -- join on accounting event
-    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
-    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
-    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
-    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
-    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
-    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE1'
-  );
-  
-  commit;
-  
-  MERGE INTO 
-    slr.slr_jrnl_lines_unposted jlu
-  USING
-    (select * from slr.slr_fx_reval_temp) tmp
-  ON 
-    (tmp.jlu_rowid = jlu.ROWID)
-  WHEN MATCHED THEN UPDATE SET
-    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
-    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
-    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
-    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
-  ;
-  
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-
-/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
-  
-  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
-  
-  commit;
-
-END pFX_REVAL_RULE1_USSTAT;
-
-
 PROCEDURE pFX_REVAL_RULE2_USSTAT(v_date IN DATE) AS
-   PPROCESS VARCHAR2(40);
-  PENTPROCSET VARCHAR2(20);
-  PCONFIG VARCHAR2(40);
-  PSOURCE VARCHAR2(40);
-  PBALANCEDATE DATE;
-  PRATESET VARCHAR2(20);
-  GPROCID NUMBER;
+
+  PPROCESS      VARCHAR2(40);
+  PENTPROCSET   VARCHAR2(20);
+  PCONFIG       VARCHAR2(40);
+  PSOURCE       VARCHAR2(40);
+  PBALANCEDATE  DATE;
+  PRATESET      VARCHAR2(20);
+  GPROCID       NUMBER;
+  V_BASIS       VARCHAR2(20);
+  V_FX_RULE     VARCHAR2(20);
 
 BEGIN
-/* BEGIN FXRULE2 RUN */
-/* SET ALL VARIABLE VALUES FOR FXRULE2 RUN */
 
-  PPROCESS := 'FXREVALUE';
-  PENTPROCSET := 'AG';
-  PCONFIG := 'FX_AG_RULE2_USSTAT';
-  PSOURCE := 'BMFXREVAL_EBA_AG_R2_USSTAT';
+  PPROCESS     := 'FXREVALUE';
+  PENTPROCSET  := 'AG';
+  PCONFIG      := 'FX_AG_RULE2_USSTAT';
+  PSOURCE      := 'BMFXREVAL_EBA_AG_R2_USSTAT';
   PBALANCEDATE := v_date;
-  PRATESET := 'FX_RULE2';
-  GPROCID := NULL;
+  PRATESET     := 'FX_RULE2';
+  GPROCID      := NULL;
+  V_BASIS      := 'US_STAT';
+  V_FX_RULE    := 'FXRULE2';
 
 
 /* EXECUTE FXRULE2 RUN */
@@ -4012,84 +3855,37 @@ BEGIN
         PBALANCEDATE => PBALANCEDATE,
         PRATESET => PRATESET,
         GPROCID => GPROCID
-  ) ; 
-  
-  update SLR_JRNL_LINES_UNPOSTED
-  set JLU_FAK_ID = 0
-   ,  JLU_EBA_ID = 0
-  where jlu_jrnl_process_id = GPROCID
-  ;
-  commit;
+  ) ;
 
-/* FXRULE2 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
-
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-  
-  insert into slr.slr_fx_reval_temp 
-  (
-     select 
-      fgl.lk_match_key10   as adjust_offset
-    , fgl.lk_lookup_value1 as fx_acccounting_event
-    , fgl.lk_lookup_value2 as fx_gl_account
-    , jlu.ROWID as jlu_ROWID
-    from fdr.fr_general_lookup fgl
-    join slr.slr_jrnl_lines_unposted jlu
-    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
-    and fgl.lk_match_key2  = jlu.jlu_attribute_4 -- join on accounting event
-    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
-    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
-    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
-    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
-    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
-    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE2'
-  );
-  
-  commit;
-  
-  MERGE INTO 
-    slr.slr_jrnl_lines_unposted jlu
-  USING
-    (select * from slr.slr_fx_reval_temp) tmp
-  ON 
-    (tmp.jlu_rowid = jlu.ROWID)
-  WHEN MATCHED THEN UPDATE SET
-    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
-    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
-    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
-    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
-  ;
-  
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-
-/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
-  
-  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
-  
+/* UPDATE UNPOSTED JOURNAL LINES WITH FX ATTRIBUTES AND UPDATE FAK/EBA IDS */
+  SLR.SLR_PKG.pFX_REVAL_UPDATE_UNPOSTED( V_FX_RULE , PRATESET , V_BASIS , GPROCID , PENTPROCSET );
   commit;
 
 END pFX_REVAL_RULE2_USSTAT;
 
 PROCEDURE pFX_REVAL_RULE0_USGAAP(v_date IN DATE) AS
 
-  PPROCESS VARCHAR2(40);
-  PENTPROCSET VARCHAR2(20);
-  PCONFIG VARCHAR2(40);
-  PSOURCE VARCHAR2(40);
-  PBALANCEDATE DATE;
-  PRATESET VARCHAR2(20);
-  GPROCID NUMBER;
+  PPROCESS      VARCHAR2(40);
+  PENTPROCSET   VARCHAR2(20);
+  PCONFIG       VARCHAR2(40);
+  PSOURCE       VARCHAR2(40);
+  PBALANCEDATE  DATE;
+  PRATESET      VARCHAR2(20);
+  GPROCID       NUMBER;
+  V_BASIS       VARCHAR2(20);
+  V_FX_RULE     VARCHAR2(20);
 
 BEGIN
-/* BEGIN FXRULE0 RUN */
-/* SET ALL VARIABLE VALUES FOR FXRULE0 RUN */
 
-  PPROCESS := 'FXREVALUE';
-  PENTPROCSET := 'AG';
-  PCONFIG := 'FX_AG_RULE0_USGAAP';
-  PSOURCE := 'BMFXREVAL_EBA_AG_R0_USGAAP';
+  PPROCESS     := 'FXREVALUE';
+  PENTPROCSET  := 'AG';
+  PCONFIG      := 'FX_AG_RULE0_USGAAP';
+  PSOURCE      := 'BMFXREVAL_EBA_AG_R0_USGAAP';
   PBALANCEDATE := v_date;
-  PRATESET := 'FX_RULE0';
-  GPROCID := NULL;
+  PRATESET     := 'FX_RULE0';
+  GPROCID      := NULL;
+  V_BASIS      := 'US_GAAP';
+  V_FX_RULE    := 'FXRULE0';
 
 
 /* EXECUTE FXRULE0 RUN */
@@ -4102,92 +3898,37 @@ BEGIN
         PBALANCEDATE => PBALANCEDATE,
         PRATESET => PRATESET,
         GPROCID => GPROCID
-  ) ; 
-  
-  update SLR_JRNL_LINES_UNPOSTED
-  set JLU_EFFECTIVE_DATE = add_months(JLU_EFFECTIVE_DATE,1)
-   ,  JLU_VALUE_DATE = add_months(JLU_VALUE_DATE,1)
-   ,  JLU_JRNL_DATE = add_months(JLU_JRNL_DATE,1)
-   ,  JLU_FAK_ID = 0
-   ,  JLU_EBA_ID = 0
-  where jlu_jrnl_process_id = GPROCID
-  ;
+  ); 
+
+/* UPDATE UNPOSTED JOURNAL LINES WITH FX ATTRIBUTES AND UPDATE FAK/EBA IDS */
+  SLR.SLR_PKG.pFX_REVAL_UPDATE_UNPOSTED( V_FX_RULE , PRATESET , V_BASIS , GPROCID , PENTPROCSET );
   commit;
-
-/* FXRULE0 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
-
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-  
-  insert into slr.slr_fx_reval_temp 
-  (
-     select 
-      fgl.lk_match_key10   as adjust_offset
-    , fgl.lk_lookup_value1 as fx_acccounting_event
-    , fgl.lk_lookup_value2 as fx_gl_account
-    , jlu.ROWID as jlu_ROWID
-    from fdr.fr_general_lookup fgl
-    join slr.slr_jrnl_lines_unposted jlu
-    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
-    and fgl.lk_match_key2  = jlu.jlu_account -- join on sub-account
-    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
-    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
-    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
-    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
-    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
-    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE0'
-  );
-  
-  commit;
-  
-  MERGE INTO 
-    slr.slr_jrnl_lines_unposted jlu
-  USING
-    (select * from slr.slr_fx_reval_temp) tmp
-  ON 
-    (tmp.jlu_rowid = jlu.ROWID)
-  WHEN MATCHED THEN UPDATE SET
-    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
-    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
-    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
-    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
-  ;
-  
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-
-/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
-  
-  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
-  
-  commit;
-
-/**********************************************************************************************************
-************************************* END FXRULE0 RUN *****************************************************
-***********************************************************************************************************/
-
 
 END pFX_REVAL_RULE0_USGAAP;
 
 PROCEDURE pFX_REVAL_RULE2_USGAAP(v_date IN DATE) AS
-   PPROCESS VARCHAR2(40);
-  PENTPROCSET VARCHAR2(20);
-  PCONFIG VARCHAR2(40);
-  PSOURCE VARCHAR2(40);
-  PBALANCEDATE DATE;
-  PRATESET VARCHAR2(20);
-  GPROCID NUMBER;
+
+  PPROCESS      VARCHAR2(40);
+  PENTPROCSET   VARCHAR2(20);
+  PCONFIG       VARCHAR2(40);
+  PSOURCE       VARCHAR2(40);
+  PBALANCEDATE  DATE;
+  PRATESET      VARCHAR2(20);
+  GPROCID       NUMBER;
+  V_BASIS       VARCHAR2(20);
+  V_FX_RULE     VARCHAR2(20);
 
 BEGIN
-/* BEGIN FXRULE2 RUN */
-/* SET ALL VARIABLE VALUES FOR FXRULE2 RUN */
 
-  PPROCESS := 'FXREVALUE';
-  PENTPROCSET := 'AG';
-  PCONFIG := 'FX_AG_RULE2_USGAAP';
-  PSOURCE := 'BMFXREVAL_EBA_AG_R2_USGAAP';
+  PPROCESS     := 'FXREVALUE';
+  PENTPROCSET  := 'AG';
+  PCONFIG      := 'FX_AG_RULE2_USGAAP';
+  PSOURCE      := 'BMFXREVAL_EBA_AG_R2_USGAAP';
   PBALANCEDATE := v_date;
-  PRATESET := 'FX_RULE2';
-  GPROCID := NULL;
-
+  PRATESET     := 'FX_RULE2';
+  GPROCID      := NULL;
+  V_BASIS      := 'US_GAAP';
+  V_FX_RULE    := 'FXRULE2';
 
 /* EXECUTE FXRULE2 RUN */
   SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
@@ -4199,62 +3940,212 @@ BEGIN
         PBALANCEDATE => PBALANCEDATE,
         PRATESET => PRATESET,
         GPROCID => GPROCID
-  ) ; 
-  
-  update SLR_JRNL_LINES_UNPOSTED
-  set JLU_FAK_ID = 0
-   ,  JLU_EBA_ID = 0
-  where jlu_jrnl_process_id = GPROCID
-  ;
-  commit;
+  ) ;
 
-/* FXRULE2 ==> UPDATE UNPOSTED FXRULE0 JOURNAL LINES WITH CORRECT ACCOUNT NUMBERS AND ACCOUNTING EVENT TYPES */
-
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-  
-  insert into slr.slr_fx_reval_temp 
-  (
-     select 
-      fgl.lk_match_key10   as adjust_offset
-    , fgl.lk_lookup_value1 as fx_acccounting_event
-    , fgl.lk_lookup_value2 as fx_gl_account
-    , jlu.ROWID as jlu_ROWID
-    from fdr.fr_general_lookup fgl
-    join slr.slr_jrnl_lines_unposted jlu
-    on  fgl.lk_match_key1  = jlu.jlu_segment_2 --join on accounting basis
-    and fgl.lk_match_key2  = jlu.jlu_attribute_4 -- join on accounting event
-    and fgl.lk_match_key3  = jlu.jlu_segment_6 -- join on execution type (MTM/NON_MTM)
-    and fgl.lk_match_key4  = jlu.jlu_attribute_3 -- join on premium type (U/I/M)
-    and fgl.lk_match_key5  = jlu.jlu_segment_7 -- join on business type (A/AA/C/CA/D)
-    and fgl.lk_match_key10 = jlu.jlu_type -- join on adjust/offset record type
-    where lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
-    and jlu.jlu_jrnl_ent_rate_set = 'FX_RULE2'
-  );
-  
-  commit;
-  
-  MERGE INTO 
-    slr.slr_jrnl_lines_unposted jlu
-  USING
-    (select * from slr.slr_fx_reval_temp) tmp
-  ON 
-    (tmp.jlu_rowid = jlu.ROWID)
-  WHEN MATCHED THEN UPDATE SET
-    jlu.jlu_account     = tmp.fx_gl_account,         -- updating account number
-    jlu.jlu_attribute_4 = tmp.fx_accounting_event,   -- updating accounting event
-    jlu.jlu_amended_by  = 'FXPROCESS',               -- updating amended by to FX to identify all records that were updated by process
-    jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
-  ;
-  
-  execute immediate 'truncate table slr.slr_fx_reval_temp';
-
-/* FXRULE0 ==> GENERATE APPROPRIATE FAK/EBA IDs */
-  
-  SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (PENTPROCSET,GPROCID, 'U');  
-  
+/* UPDATE UNPOSTED JOURNAL LINES WITH FX ATTRIBUTES AND UPDATE FAK/EBA IDS */
+  SLR.SLR_PKG.pFX_REVAL_UPDATE_UNPOSTED( V_FX_RULE , PRATESET , V_BASIS , GPROCID , PENTPROCSET );
   commit;
 
 END pFX_REVAL_RULE2_USGAAP;
+
+PROCEDURE pFX_REVAL_RULE0_UKGAAP(v_date IN DATE) AS
+
+  PPROCESS      VARCHAR2(40);
+  PENTPROCSET   VARCHAR2(20);
+  PCONFIG       VARCHAR2(40);
+  PSOURCE       VARCHAR2(40);
+  PBALANCEDATE  DATE;
+  PRATESET      VARCHAR2(20);
+  GPROCID       NUMBER;
+  V_BASIS       VARCHAR2(20);
+  V_FX_RULE     VARCHAR2(20);
+
+BEGIN
+
+  PPROCESS     := 'FXREVALUE';
+  PENTPROCSET  := 'AG';
+  PCONFIG      := 'FX_AG_RULE0_UKGAAP';
+  PSOURCE      := 'BMFXREVAL_EBA_AG_R0_UKGAAP';
+  PBALANCEDATE := v_date;
+  PRATESET     := 'FX_RULE0';
+  GPROCID      := NULL;
+  V_BASIS      := 'UK_GAAP';
+  V_FX_RULE    := 'FXRULE0';
+
+
+/* EXECUTE FXRULE0 RUN */
+  SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
+  (  
+        PPROCESS => PPROCESS,
+        PENTPROCSET => PENTPROCSET,
+        PCONFIG => PCONFIG,
+        PSOURCE => PSOURCE,
+        PBALANCEDATE => PBALANCEDATE,
+        PRATESET => PRATESET,
+        GPROCID => GPROCID
+  ); 
+
+/* UPDATE UNPOSTED JOURNAL LINES WITH FX ATTRIBUTES AND UPDATE FAK/EBA IDS */
+  SLR.SLR_PKG.pFX_REVAL_UPDATE_UNPOSTED( V_FX_RULE , PRATESET , V_BASIS , GPROCID , PENTPROCSET );
+  commit;
+
+END pFX_REVAL_RULE0_UKGAAP;
+
+PROCEDURE pFX_REVAL_RULE2_UKGAAP(v_date IN DATE) AS
+
+  PPROCESS      VARCHAR2(40);
+  PENTPROCSET   VARCHAR2(20);
+  PCONFIG       VARCHAR2(40);
+  PSOURCE       VARCHAR2(40);
+  PBALANCEDATE  DATE;
+  PRATESET      VARCHAR2(20);
+  GPROCID       NUMBER;
+  V_BASIS       VARCHAR2(20);
+  V_FX_RULE     VARCHAR2(20);
+
+BEGIN
+
+  PPROCESS     := 'FXREVALUE';
+  PENTPROCSET  := 'AG';
+  PCONFIG      := 'FX_AG_RULE2_UKGAAP';
+  PSOURCE      := 'BMFXREVAL_EBA_AG_R2_UKGAAP';
+  PBALANCEDATE := v_date;
+  PRATESET     := 'FX_RULE2';
+  GPROCID      := NULL;
+  V_BASIS      := 'UK_GAAP';
+  V_FX_RULE    := 'FXRULE2';
+
+/* EXECUTE FXRULE2 RUN */
+  SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
+  (  
+        PPROCESS => PPROCESS,
+        PENTPROCSET => PENTPROCSET,
+        PCONFIG => PCONFIG,
+        PSOURCE => PSOURCE,
+        PBALANCEDATE => PBALANCEDATE,
+        PRATESET => PRATESET,
+        GPROCID => GPROCID
+  ) ;
+
+/* UPDATE UNPOSTED JOURNAL LINES WITH FX ATTRIBUTES AND UPDATE FAK/EBA IDS */
+  SLR.SLR_PKG.pFX_REVAL_UPDATE_UNPOSTED( V_FX_RULE , PRATESET , V_BASIS , GPROCID , PENTPROCSET );
+  commit;
+
+END pFX_REVAL_RULE2_UKGAAP;
+
+PROCEDURE pFX_REVAL_UPDATE_UNPOSTED( p_fx_rule     IN VARCHAR2
+                                   , p_fx_rate_set IN VARCHAR2
+                                   , p_basis       IN VARCHAR2
+                                   , p_GPROCID     IN NUMBER
+                                   , p_PENTPROCSET IN VARCHAR2 ) AS
+
+  lv_START_TIME     PLS_INTEGER := 0;
+  GPROCID           NUMBER;
+  PENTPROCSET       VARCHAR2(20);
+  V_FX_RULE         VARCHAR2(20);
+  V_FX_RATE_SET     VARCHAR2(20);
+  V_BASIS           VARCHAR2(20);
+  V_FX_JLU_CT       NUMBER;
+  V_FX_UPDATED_CT   NUMBER;
+  pub_val_mismatch  EXCEPTION;
+  
+BEGIN
+
+  lv_START_TIME    := DBMS_UTILITY.GET_TIME();
+  GPROCID          := p_GPROCID;
+  PENTPROCSET      := p_PENTPROCSET;
+  V_FX_RULE        := p_fx_rule;
+  V_FX_RATE_SET    := p_fx_rate_set;
+  V_BASIS          := p_basis;
+  V_FX_JLU_CT      := 0;
+  V_FX_UPDATED_CT  := 0;
+
+-- Remove generated FAK/EBA IDs
+update
+       slr_jrnl_lines_unposted  jlu
+   set
+       jlu.jlu_fak_id = 0
+     , jlu.jlu_eba_id = 0
+ where
+       jlu.jlu_jrnl_process_id = GPROCID
+;
+V_FX_JLU_CT := SQL%ROWCOUNT;
+
+IF V_FX_JLU_CT > 0 THEN
+
+  SLR_ADMIN_PKG.PerfInfo( 'FX journals generated. FX rule ' || V_BASIS || ' ' || V_FX_RULE || ' generated ' || V_FX_JLU_CT || ' unposted rows.');
+
+  -- Update FAK/EBA attributes
+  merge into 
+    slr.slr_jrnl_lines_unposted jlu
+  using
+    ( select
+             fgl.lk_match_key10       adjust_offset
+           , fgl.lk_lookup_value1     fx_accounting_event
+           , fgl.lk_lookup_value2     fx_gl_account
+           , fgl.lk_lookup_value3     fx_ledger
+           , jlu.jlu_jrnl_hdr_id      jlu_jrnl_hdr_id
+           , jlu.jlu_jrnl_line_number jlu_jrnl_line_number
+        from
+             fdr.fr_general_lookup fgl
+        join slr.slr_jrnl_lines_unposted jlu   on fgl.lk_match_key1  = jlu.jlu_segment_2     -- accounting basis
+                                              and (
+                                                  fgl.lk_match_key2  = jlu.jlu_attribute_4
+                                               or fgl.lk_match_key2  = 'ND~'
+                                                  )                                          -- accounting event
+                                              and fgl.lk_match_key3  = jlu.jlu_segment_6     -- execution type (MTM/NON_MTM)
+                                              and fgl.lk_match_key4  = jlu.jlu_attribute_3   -- premium type (U/I/M)
+                                              and fgl.lk_match_key5  = jlu.jlu_segment_7     -- business type (A/AA/C/CA/D)
+                                              and (
+                                                  fgl.lk_match_key7  = jlu.jlu_account
+                                               or fgl.lk_match_key7  = 'ND~'
+                                                  )                                          -- account
+                                              and fgl.lk_match_key10 = jlu.jlu_type          -- adjust/offset record type
+       where fgl.lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
+         and fgl.lk_match_key9           = V_FX_RULE
+         and jlu.jlu_jrnl_ent_rate_set   = V_FX_RATE_SET
+         and jlu.jlu_jrnl_process_id     = GPROCID
+         and jlu.jlu_segment_2           = V_BASIS ) tmp
+  on 
+        ( tmp.jlu_jrnl_hdr_id      = jlu.jlu_jrnl_hdr_id
+      and tmp.jlu_jrnl_line_number = jlu.jlu_jrnl_line_number )
+  when matched then
+  update set
+             jlu.jlu_account     = tmp.fx_gl_account          -- updating account number
+           , jlu.jlu_attribute_4 = tmp.fx_accounting_event    -- updating accounting event
+           , jlu.jlu_segment_1   = tmp.fx_ledger              -- updating ledger
+           , jlu.jlu_amended_by  = 'FXPROCESS'                -- updating amended by to FX to identify all records that were updated by process
+           , jlu.jlu_amended_on  = sysdate                    -- updating amended time to when the process ran
+;
+
+  select
+         count(*)
+    into
+         V_FX_UPDATED_CT
+    from
+         slr.slr_jrnl_lines_unposted jlu
+   where
+         jlu.jlu_jrnl_process_id = GPROCID
+     and jlu.jlu_amended_by      = 'FXPROCESS';
+
+  SLR_ADMIN_PKG.PerfInfo( 'FX journals updated. FX rule ' || V_BASIS || ' ' || V_FX_RULE || ' updated ' || V_FX_UPDATED_CT || ' unposted rows.');
+  SLR_ADMIN_PKG.PerfInfo( 'Updated unposted FX reval journals. Execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+
+  IF V_FX_JLU_CT <> V_FX_UPDATED_CT THEN
+     SLR_ADMIN_PKG.Error( 'Exception : V_FX_JLU_CT != V_FX_UPDATED_CT for FX rule ' || V_BASIS || ' ' || V_FX_RULE );
+     dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
+     --raise pub_val_mismatch;
+  END IF;
+
+-- Reassign FAK/EBA IDs
+SLR.SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu ( PENTPROCSET , GPROCID , 'U' );
+
+ELSE
+  SLR_ADMIN_PKG.PerfInfo( 'FX rule ' || V_BASIS || ' ' || V_FX_RULE || ' generated no rows.');
+
+END IF;
+
+END pFX_REVAL_UPDATE_UNPOSTED;
 
 PROCEDURE pYECleardown(pConfig      IN slr_process_config.pc_config%TYPE
                                       ,pSource      IN slr_process_source.sps_source_name%TYPE

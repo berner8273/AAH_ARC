@@ -1,10 +1,10 @@
-create or replace view slr.vbmfxreval_eba_ag_r2_usgaap as
+create or replace view slr.vbmfxreval_eba_ag_r0_ukgaap as
 with
-rule2_events as
+rule0_accounts as
 (
 select
        fgl.lk_match_key1       accounting_basis
-     , fgl.lk_match_key2       source_event
+     , fgl.lk_match_key7       source_account
      , fgl.lk_match_key3       execution_type
      , fgl.lk_match_key4       premium_type
      , fgl.lk_match_key5       business_type
@@ -17,40 +17,40 @@ select
        fdr.fr_general_lookup fgl
  where
        fgl.lk_lkt_lookup_type_code = 'FXREVAL_GL_MAPPINGS'
-   and fgl.lk_match_key9           = 'FXRULE2'
-   and fgl.lk_match_key1           = 'US_GAAP'
+   and fgl.lk_match_key9           = 'FXRULE0'
+   and fgl.lk_match_key1           = 'UK_GAAP'
 )
 ,
 population as
 (
+
 select
        ec.ec_eba_id
      , ec.ec_fak_id
      , ec.ec_epg_id
   from
        slr.slr_eba_combinations      ec
-  join slr.slr_fak_combinations      fc     on (    ec.ec_epg_id = fc.fc_epg_id
-                                                and ec.ec_fak_id = fc.fc_fak_id )
-  join fdr.fr_general_lookup         fgl    on (    fc.fc_segment_1           = fgl.lk_lookup_value2
-                                                and 'ACCOUNTING_BASIS_LEDGER' = fgl.lk_lkt_lookup_type_code
-                                                and 'US_GAAP'                 = fgl.lk_lookup_value1 )
-  join stn.event_hierarchy_reference eh     on      ec.ec_attribute_4         = eh.event_typ
+  join slr.slr_fak_combinations      fc     on ec.ec_epg_id              = fc.fc_epg_id
+                                           and ec.ec_fak_id              = fc.fc_fak_id
+  join fdr.fr_general_lookup         fgl    on fc.fc_segment_1           = fgl.lk_lookup_value2
+                                           and 'ACCOUNTING_BASIS_LEDGER' = fgl.lk_lkt_lookup_type_code
+                                           and 'UK_GAAP'                 = fgl.lk_lookup_value1
+  join stn.event_hierarchy_reference eh     on ec.ec_attribute_4         = eh.event_typ
  where exists ( select null
                   from slr.v_slr_fxreval_parameters  fxparam
                  where eh.event_class    = fxparam.event_class )
    and exists ( select null
-                  from rule2_events r2
-                 where fc.fc_segment_6       = r2.execution_type
-                   and fc.fc_segment_7       = r2.business_type
-                   and ec.ec_attribute_3     = r2.premium_type
-                   and ec.ec_attribute_4     = r2.source_event )
-   and exists ( select null
+                  from rule0_accounts r0
+                 where fc.fc_account     = r0.source_account
+                   and fc.fc_segment_6   = r0.execution_type
+                   and fc.fc_segment_7   = r0.business_type
+                   and ec.ec_attribute_3 = r0.premium_type )
+ /*  and exists ( select null
                   from slr_entities          ent     
                   join slr_entity_accounts   ea     on ent.ent_accounts_set = ea.ea_entity_set
                                                    and fc.fc_account        = ea.ea_account
-                                                   and 'B'                  = ea.ea_account_type 
-                 where fc.fc_entity          = ent.ent_entity )
-                   
+                                                   and 'P'                  = ea.ea_account_type 
+                 where fc.fc_entity          = ent.ent_entity )*/
 )
 ,
 fx_population as
@@ -65,17 +65,18 @@ select
                                                 and ec.ec_fak_id = fc.fc_fak_id )
   join fdr.fr_general_lookup         fgl    on (    fc.fc_segment_1           = fgl.lk_lookup_value2
                                                 and 'ACCOUNTING_BASIS_LEDGER' = fgl.lk_lkt_lookup_type_code
-                                                and 'US_GAAP'                 = fgl.lk_lookup_value1 )
+                                                and 'UK_GAAP'                 = fgl.lk_lookup_value1 )
   join stn.event_hierarchy_reference eh     on      ec.ec_attribute_4 = eh.event_typ
  where exists ( select null
                   from slr.v_slr_fxreval_parameters  fxparam
                  where eh.event_class    = fxparam.event_class )
    and exists ( select null
-                  from rule2_events r2
-                 where fc.fc_segment_6       = r2.execution_type
-                   and fc.fc_segment_7       = r2.business_type
-                   and ec.ec_attribute_3     = r2.premium_type
-                   and ec.ec_attribute_4     = r2.fx_event_type )
+                  from rule0_accounts r0
+                 where fc.fc_segment_6       = r0.execution_type
+                   and fc.fc_segment_7       = r0.business_type
+                   and ec.ec_attribute_3     = r0.premium_type
+                   and ec.ec_attribute_4     = r0.fx_event_type
+                   and fc.fc_account         = r0.fx_account )
 )
 ,
 fx_fak_eba as
@@ -90,11 +91,11 @@ select distinct
        slr.slr_eba_combinations     ec_orig
   join slr.slr_fak_combinations     fc_orig   on   ec_orig.ec_fak_id      = fc_orig.fc_fak_id
                                              and   ec_orig.ec_epg_id      = fc_orig.fc_epg_id
-  join rule2_events                 r2        on   ec_orig.ec_attribute_4 = r2.source_event
-                                             and   fc_orig.fc_segment_2   = r2.accounting_basis
-                                             and   'Adjust'               = r2.offset_adjust
-  join slr.slr_fak_combinations     fc_fx     on   r2.fx_account          = fc_fx.fc_account
-                                             and   r2.fx_ledger           = fc_fx.fc_segment_1
+  join rule0_accounts               r0        on   fc_orig.fc_account     = r0.source_account
+                                             and   fc_orig.fc_segment_2   = r0.accounting_basis
+                                             and   'Adjust'               = r0.offset_adjust
+  join slr.slr_fak_combinations     fc_fx     on   r0.fx_account          = fc_fx.fc_account
+                                             and   r0.fx_ledger           = fc_fx.fc_segment_1
                                              and   fc_orig.fc_segment_2   = fc_fx.fc_segment_2
                                              and   fc_orig.fc_segment_3   = fc_fx.fc_segment_3
                                              and   fc_orig.fc_segment_4   = fc_fx.fc_segment_4
@@ -108,7 +109,7 @@ select distinct
                                              and   ec_orig.ec_attribute_1 = ec_fx.ec_attribute_1
                                              and   ec_orig.ec_attribute_2 = ec_fx.ec_attribute_2
                                              and   ec_orig.ec_attribute_3 = ec_fx.ec_attribute_3
-                                             and   r2.fx_event_type       = ec_fx.ec_attribute_4
+                                             and   r0.fx_event_type       = ec_fx.ec_attribute_4
  where exists ( select
                        null
                   from
@@ -126,7 +127,7 @@ select /*+ parallel( edb )*/
      , edb.edb_fak_id               fak_id
      , edb.edb_balance_type         balance_type
      , edb.edb_entity               entity
-     , edb.edb_balance_date         balance_date
+     , add_months(edb.edb_balance_date,1)         balance_date
      , edb.edb_epg_id               epg_id
      , edb.edb_tran_ltd_balance     tran_ltd_balance
      , edb.edb_base_ltd_balance     base_ltd_balance
@@ -137,16 +138,19 @@ select /*+ parallel( edb )*/
      , edb.edb_tran_mtd_balance     tran_mtd_balance
      , edb.edb_base_mtd_balance     base_mtd_balance
      , edb.edb_local_mtd_balance    local_mtd_balance
-     , edb.edb_period_month         period_month
-     , edb.edb_period_year          period_year
-     , edb.edb_period_ltd           period_ltd
+     , extract(month from add_months(edb.edb_balance_date,1))         period_month
+     , extract(year from add_months(edb.edb_balance_date,1))          period_year
+     , case
+            when edb.edb_period_ltd = 1 then 1
+            else extract(year from add_months(edb.edb_balance_date,1))
+       end                                                            period_ltd
   from
-       slr.slr_eba_daily_balances edb
-  join population                 pop   on pop.ec_eba_id = edb.edb_eba_id
-                                       and pop.ec_fak_id = edb.edb_fak_id
-                                       and pop.ec_epg_id = edb.edb_epg_id
+       slr_eba_daily_balances edb
+  join population             pop  on pop.ec_eba_id = edb.edb_eba_id
+                                  and pop.ec_fak_id = edb.edb_fak_id
+                                  and pop.ec_epg_id = edb.edb_epg_id
  where
-       edb.edb_balance_type = 50
+       edb_balance_type  = 50
 union all
 select /*+ parallel( edb )*/
        fx_fak_eba.eba_id_orig       key_id

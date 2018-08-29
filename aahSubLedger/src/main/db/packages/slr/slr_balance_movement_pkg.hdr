@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE SLR.SLR_BALANCE_MOVEMENT_PKG AS
+create or replace package slr.slr_balance_movement_pkg as
 
 
 procedure pBMRunBalanceMovementProcess( pProcess     IN slr_process.p_process%TYPE
