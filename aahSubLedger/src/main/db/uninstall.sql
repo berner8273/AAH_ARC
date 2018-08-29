@@ -43,8 +43,12 @@ conn ~slr_logon
 
 drop table slr.slr_fak_bop_amounts;
 drop table slr.slr_fak_bop_amounts_tmp;
+drop table slr.slr_fak_bop_amounts_tmp2;
+drop table slr.slr_fak_bop_amounts_tmp3;
 drop table slr.slr_eba_bop_amounts;
 drop table slr.slr_eba_bop_amounts_tmp;
+drop table slr.slr_eba_bop_amounts_tmp2;
+drop table slr.slr_eba_bop_amounts_tmp3;
 commit;
 
 conn ~slr_logon
