@@ -297,6 +297,7 @@ conn ~slr_logon
 @@data/slr/slr_process_config.sql
 @@data/slr/slr_process_config_detail.sql
 @@data/slr/slr_process_source.sql
+@@data/slr/slr_hints_sets.sql
 @@views/slr/v_slr_fxreval_parameters.sql
 @@views/slr/v_slr_fxreval_run_values.sql
 @@views/slr/vbmfxreval_eba_ag_r0_usstat.sql
