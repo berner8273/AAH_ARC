@@ -93,6 +93,7 @@ revoke select   on slr.slr_jrnl_headers_unposted from rdr;
 conn ~fdr_logon
 
 revoke select   on fdr.fr_account_lookup       from rdr;
+revoke select   on fdr.fr_general_lookup_aud   from rdr;
 revoke select   on fdr.fr_posting_schema       from rdr;
 revoke select   on fdr.fr_stan_raw_acc_event   from rdr;
 

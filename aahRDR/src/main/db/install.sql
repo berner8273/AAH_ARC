@@ -54,6 +54,7 @@ conn ~slr_logon
 conn ~fdr_logon
 
 @@grants/tables/fdr/fr_account_lookup.sql
+@@grants/tables/fdr/fr_general_lookup_aud.sql
 @@grants/tables/fdr/fr_posting_schema.sql
 @@grants/tables/fdr/fr_stan_raw_acc_event.sql
 @@grants/tables/fdr/fr_org_hier_levels.sql
