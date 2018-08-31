@@ -3,7 +3,6 @@ create global temporary table stn.cev_mtm_data
    psm_cd                         varchar2 ( 20 char )
 ,  business_type_association_id   number
 ,  intercompany_association_id    number
-,  derived_plus_association_id    number
 ,  gaap_fut_accts_association_id  number
 ,  correlation_uuid               raw ( 16 )
 ,  event_seq_id                   number ( 38 )
@@ -21,6 +20,7 @@ create global temporary table stn.cev_mtm_data
 ,  business_event_typ             varchar2 ( 50 char )
 ,  is_mark_to_market              varchar2 ( 20 char )
 ,  vie_cd                         number ( 1 )
+,  vie_status                     varchar2 ( 80 char )
 ,  vie_effective_dt               date
 ,  vie_acct_dt                    date
 ,  premium_typ                    varchar2 ( 1 char )

@@ -10,14 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logonÂ Â Â  = ~1
+define gui_logonÂ Â Â  = ~2
+define rdr_logonÂ Â Â  = ~3
+define sla_logonÂ Â Â  = ~4
+define slr_logonÂ Â Â  = ~5
+define stn_logonÂ Â Â  = ~6
+define sys_logonÂ Â Â  = ~7
+define unittest_loginÂ Â  = ~8
 
 conn ~fdr_logon
 
@@ -43,8 +43,12 @@ conn ~slr_logon
 
 drop table slr.slr_fak_bop_amounts;
 drop table slr.slr_fak_bop_amounts_tmp;
+drop table slr.slr_fak_bop_amounts_tmp2;
+drop table slr.slr_fak_bop_amounts_tmp3;
 drop table slr.slr_eba_bop_amounts;
 drop table slr.slr_eba_bop_amounts_tmp;
+drop table slr.slr_eba_bop_amounts_tmp2;
+drop table slr.slr_eba_bop_amounts_tmp3;
 commit;
 
 conn ~slr_logon
@@ -233,7 +237,6 @@ drop package body rdr.pg_glint;
 drop package      rdr.pg_glint;
 drop view         rdr.rcv_glint_journal;
 drop view         rdr.rcv_glint_journal_line;
-drop view         rdr.rrv_ag_glint_ps_journals;
 drop index        rdr.xif1gl_interface_journal_line;
 drop table        rdr.rr_glint_journal_line;
 drop index        rdr.xif2gl_interface_journal_mappi;
@@ -272,27 +275,25 @@ conn ~slr_logon
 
 drop view         slr.vbmfxreval_eba_ag_r2_usgaap;
 drop view         slr.vbmfxreval_eba_ag_r2_usstat;
-drop view         slr.vbmfxreval_eba_ag_r1_usstat;
+drop view         slr.vbmfxreval_eba_ag_r2_ukgaap;
 drop view         slr.vbmfxreval_eba_ag_r0_usgaap;
 drop view         slr.vbmfxreval_eba_ag_r0_usstat;
+drop view         slr.vbmfxreval_eba_ag_r0_ukgaap;
 drop view         slr.v_slr_fxreval_parameters;
-drop view         slr.v_slr_fxreval_rule2_events;
-drop view         slr.v_slr_fxreval_rule1_eventunion;
-drop view         slr.v_slr_fxreval_rule1_events;
-drop view         slr.v_slr_fxreval_rule0_accts;
 drop view         slr.v_slr_fxreval_run_values;
-delete from       slr.slr_process_source where upper(sps_db_object_name) like 'VBMFXREVAL_EBA_AG%';
-delete from       slr.slr_process_config_detail where pcd_pc_p_process = 'FXREVALUE' and pcd_pc_config <> 'FXREVALUE';
-delete from       slr.slr_process_config where pc_p_process = 'FXREVALUE' and pc_config <> 'FXREVALUE';
-delete from       slr.slr_entity_rates where er_entity_set IN ('FX_RULE0','FX_RULE1','FX_RULE2');
+delete from       slr.slr_process_source             where upper(sps_db_object_name) like 'VBMFXREVAL_EBA_AG%';
+delete from       slr.slr_process_config_detail      where pcd_pc_p_process = 'FXREVALUE' and pcd_pc_config <> 'FXREVALUE';
+delete from       slr.slr_process_config             where pc_p_process = 'FXREVALUE' and pc_config <> 'FXREVALUE';
+delete from       slr.slr_entity_rates               where er_entity_set in ( 'FX_RULE0' , 'FX_RULE1' , 'FX_RULE2' );
 delete from       slr.slr_bm_entity_processing_set;
-delete from       slr.slr_process_errors where spe_p_process = 'FXREVALUE';
+delete from       slr.slr_process_errors             where spe_p_process = 'FXREVALUE';
+delete from       slr.slr_hints_sets                 where hs_statement in ( 'FX_REVALUATION_ADJUST' , 'PL_REPATRIATION' , 'PL_RETAINED_EARNINGS' );
 commit;
 
 -- ye cleardown
-drop view					slr.vbm_ag_retainedearningseba01;
-drop view					slr.vbm_ag_retainedearningseba02;
-drop view					slr.vbm_ag_retainedearningseba03;
+drop view         slr.vbm_ag_retainedearningseba01;
+drop view         slr.vbm_ag_retainedearningseba02;
+drop view         slr.vbm_ag_retainedearningseba03;
 delete from       slr.slr_process_config_detail where pcd_pc_p_process = 'PLRETEARNINGS';
 delete from       slr.slr_process_config where pc_p_process = 'PLRETEARNINGS';
 delete from       slr.slr_process_source where upper(sps_source_name) like 'BMRETAINEDEARNINGSEBA%';
@@ -354,16 +355,17 @@ commit;
 
 conn ~fdr_logon
 
-revoke select on fdr.fcv_combination_check_suspense from RDR;
-revoke select on fdr.fcv_combination_check_suspense from SLR;
-revoke select on fdr.fcv_combination_check_data from RDR;
-revoke select on fdr.fcv_combination_check_data from SLR;
-revoke select , insert , delete on fdr.fr_combination_check_error from GUI;
-revoke select , insert , delete on fdr.fr_combination_check_error from SLR;
-revoke select , insert , delete on fdr.fr_combination_check_error from RDR;
-revoke select , insert , delete on fdr.fr_combination_check_input from GUI;
-revoke select , insert , delete on fdr.fr_combination_check_input from SLR;
-revoke select , insert , delete on fdr.fr_combination_check_input from RDR;
+revoke select                   on fdr.fcv_combination_check_suspense from RDR;
+revoke select                   on fdr.fcv_combination_check_suspense from SLR;
+revoke select                   on fdr.fcv_combination_check_data     from RDR;
+revoke select                   on fdr.fcv_combination_check_data     from SLR;
+revoke select , insert , delete on fdr.fr_combination_check_error     from GUI;
+revoke select , insert , delete on fdr.fr_combination_check_error     from SLR;
+revoke select , insert , delete on fdr.fr_combination_check_error     from RDR;
+revoke select , insert , delete on fdr.fr_combination_check_input     from GUI;
+revoke select , insert , delete on fdr.fr_combination_check_input     from SLR;
+revoke select , insert , delete on fdr.fr_combination_check_input     from RDR;
+revoke select                   on fdr.fr_gaap                        from SLR;
 revoke execute on fdr.pg_combination_check from GUI;
 revoke execute on fdr.pg_combination_check from SLR;
 revoke execute on fdr.pg_combination_check from RDR;

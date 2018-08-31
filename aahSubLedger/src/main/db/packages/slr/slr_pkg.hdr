@@ -84,12 +84,19 @@ PROCEDURE pYECleardown(pConfig      IN slr_process_config.pc_config%TYPE
                                       ,pBalanceDate IN DATE );
 
 PROCEDURE pFX_REVAL(p_month IN NUMBER, p_year IN NUMBER, p_event_class VARCHAR2, p_acc_basis VARCHAR2);
-PROCEDURE pFX_REVAL_RULE0_USSTAT(v_date IN DATE);
-PROCEDURE pFX_REVAL_RULE1_USSTAT(v_date IN DATE);
-PROCEDURE pFX_REVAL_RULE2_USSTAT(v_date IN DATE);
 
+PROCEDURE pFX_REVAL_RULE0_USSTAT(v_date IN DATE);
+PROCEDURE pFX_REVAL_RULE2_USSTAT(v_date IN DATE);
 PROCEDURE pFX_REVAL_RULE0_USGAAP(v_date IN DATE);
 PROCEDURE pFX_REVAL_RULE2_USGAAP(v_date IN DATE);
+PROCEDURE pFX_REVAL_RULE0_UKGAAP(v_date IN DATE);
+PROCEDURE pFX_REVAL_RULE2_UKGAAP(v_date IN DATE);
+
+PROCEDURE pFX_REVAL_UPDATE_UNPOSTED( p_fx_rule       IN VARCHAR2
+                                   , p_fx_rate_set   IN VARCHAR2
+                                   , p_basis         IN VARCHAR2
+                                   , p_GPROCID       IN NUMBER
+                                   , p_PENTPROCSET   IN VARCHAR2 );
 
 Procedure pCombinationCheck_JLU (
   pinEPGID     in slr_entity_proc_group.epg_id%TYPE,

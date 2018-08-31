@@ -148,28 +148,6 @@ and not exists (
         INSERT INTO fdr.FR_STAN_RAW_GL_ACCOUNT
             (SRGA_GA_ACCOUNT_CODE, SRGA_GA_ACTIVE, SRGA_GA_ACCOUNT_TYPE, SRGA_GA_CLIENT_TEXT2, SRGA_GA_ACCOUNT_NAME, SRGA_GA_ACCOUNT_ADJ_TYPE, SRGA_GA_CLIENT_TEXT3, SRGA_GA_CLIENT_TEXT4, LPG_ID, MESSAGE_ID, PROCESS_ID)
             SELECT
-                gla.ACCT_CD AS SRGA_GA_ACCOUNT_CODE,
-                (CASE
-                    WHEN gla.ACCT_STS = 'I' THEN 'A'
-                    ELSE gla.ACCT_STS
-                END) AS SRGA_GA_ACTIVE,
-                gla.ACCT_TYP AS SRGA_GA_ACCOUNT_TYPE,
-                gla.ACCT_CAT AS SRGA_GA_CLIENT_TEXT2,
-                gla.ACCT_DESCR AS SRGA_GA_ACCOUNT_NAME,
-                GLA_DEFAULT.ADJUSTMENT_TYPE AS SRGA_GA_ACCOUNT_ADJ_TYPE,
-                GLA_DEFAULT.ACCOUNT_GENUS AS SRGA_GA_CLIENT_TEXT3,
-                gla.ACCT_CD AS SRGA_GA_CLIENT_TEXT4,
-                gla.LPG_ID AS LPG_ID,
-                TO_CHAR(gla.ROW_SID) AS MESSAGE_ID,
-                TO_CHAR(p_step_run_sid) AS PROCESS_ID
-            FROM
-                GL_ACCOUNT gla
-                INNER JOIN IDENTIFIED_RECORD idr ON gla.ROW_SID = idr.ROW_SID
-                INNER JOIN GLA_DEFAULT ON 1 = 1;
-        p_total_no_published := SQL%ROWCOUNT;
-        INSERT INTO fdr.FR_STAN_RAW_GL_ACCOUNT
-            (SRGA_GA_ACCOUNT_CODE, SRGA_GA_ACTIVE, SRGA_GA_ACCOUNT_TYPE, SRGA_GA_CLIENT_TEXT2, SRGA_GA_ACCOUNT_NAME, SRGA_GA_ACCOUNT_ADJ_TYPE, SRGA_GA_CLIENT_TEXT3, SRGA_GA_CLIENT_TEXT4, LPG_ID, MESSAGE_ID, PROCESS_ID)
-            SELECT
                 gla.ACCT_CD || '-01' AS SRGA_GA_ACCOUNT_CODE,
                 (CASE
                     WHEN gla.ACCT_STS = 'I' THEN 'A'
@@ -182,7 +160,7 @@ and not exists (
                 GLA_DEFAULT.ACCOUNT_GENUS AS SRGA_GA_CLIENT_TEXT3,
                 gla.ACCT_CD AS SRGA_GA_CLIENT_TEXT4,
                 gla.LPG_ID AS LPG_ID,
-                TO_CHAR(gla.ROW_SID) || '.01' AS MESSAGE_ID,
+                TO_CHAR(gla.ROW_SID) AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID
             FROM
                 GL_ACCOUNT gla
@@ -276,7 +254,7 @@ and not exists (
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
-            p_no_failed_records    :=(v_no_identified_records + v_no_si_identified_records) - v_no_processed_records;
+            p_no_failed_records    := v_no_identified_records - v_no_processed_records;
         ELSE
             p_no_processed_records := 0;
             p_no_failed_records    := 0;

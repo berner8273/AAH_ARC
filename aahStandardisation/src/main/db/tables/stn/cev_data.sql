@@ -1,11 +1,9 @@
 create global temporary table stn.cev_data
 (
    gaap_fut_accts_flag            varchar2 ( 1 char )
-,  derived_plus_flag              varchar2 ( 1 char )
 ,  le_flag                        varchar2 ( 1 char )
 ,  business_type_association_id   number
 ,  intercompany_association_id    number
-,  derived_plus_association_id    number
 ,  gaap_fut_accts_association_id  number
 ,  basis_association_id           number
 ,  correlation_uuid               raw ( 16 )
@@ -24,6 +22,7 @@ create global temporary table stn.cev_data
 ,  parent_stream_id               varchar2 ( 80 char )
 ,  vie_id                         number ( 38 )
 ,  vie_cd                         number ( 1 )
+,  vie_status                     varchar2 ( 80 char )
 ,  vie_effective_dt               date
 ,  vie_acct_dt                    date
 ,  is_mark_to_market              varchar2 ( 20 char )
@@ -43,15 +42,12 @@ create global temporary table stn.cev_data
 ,  counterparty_le_cd             varchar2 ( 20 char )
 ,  input_transaction_amt          number ( 38 , 9 )
 ,  partner_transaction_amt        number
-,  dp_partner_transaction_amt     number
 ,  transaction_ccy                varchar2 ( 3 char )
 ,  input_functional_amt           number ( 38 , 9 )
 ,  partner_functional_amt         number
-,  dp_partner_functional_amt      number
 ,  functional_ccy                 varchar2 ( 3 char )
 ,  input_reporting_amt            number ( 38 , 9 )
 ,  partner_reporting_amt          number
-,  dp_partner_reporting_amt       number
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  lpg_id                         number ( 38 )
 )

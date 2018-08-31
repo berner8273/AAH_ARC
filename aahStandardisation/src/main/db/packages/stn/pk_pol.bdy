@@ -1,10 +1,3 @@
----
---- PL/SQL Package 'PK_POL' 
---- Generator tool: Aptitude Studio
---- Generator gender: Oracle 
---- Generation time: 8/20/2018 11:20:00 AM
----
-
 CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
     PROCEDURE pr_policy_idf
         (
@@ -1614,17 +1607,7 @@ and external_le.pl_active = 'A'
                 LEFT OUTER JOIN fdr.FR_PARTY_LEGAL external_le ON     pol.EXTERNAL_LE_ID    = to_number ( external_le.PL_GLOBAL_ID )
 and external_le.pl_active = 'A'
                 INNER JOIN fdr.FR_PARTY_LEGAL cession_le ON cs.LE_ID = to_number ( cession_le.PL_GLOBAL_ID )
-                INNER JOIN (SELECT
-                    FR_LOG.LO_ERROR_STATUS AS ERROR_STATUS,
-                    FR_LOG.LO_TABLE_IN_ERROR_NAME AS ERROR_TABLE_NAME,
-                    FR_LOG.LO_ROW_IN_ERROR_KEY_ID AS ERROR_KEY_ID,
-                    MAX(FR_LOG.LO_ROW_IN_ERROR_KEY_ID) AS MAX_ROW_ID
-                FROM
-                    fdr.FR_LOG FR_LOG
-                GROUP BY
-                    FR_LOG.LO_ERROR_STATUS,
-                    FR_LOG.LO_TABLE_IN_ERROR_NAME,
-                    FR_LOG.LO_ROW_IN_ERROR_KEY_ID) SubQuery ON SubQuery.ERROR_KEY_ID = pol.ROW_SID AND SubQuery.ERROR_STATUS = 'R' AND SubQuery.ERROR_TABLE_NAME = 'insurance_policy'
+                INNER JOIN fdr.FR_LOG FR_LOG ON FR_LOG.LO_ROW_IN_ERROR_KEY_ID = pol.ROW_SID AND FR_LOG.LO_ERROR_STATUS = 'R' AND FR_LOG.LO_TABLE_IN_ERROR_NAME = 'insurance_policy'
                 INNER JOIN POL_DEFAULT pold ON 1 = 1
                 LEFT OUTER JOIN (SELECT
                     fiie.iie_cover_signing_party AS policy_id,
@@ -2014,4 +1997,3 @@ and exists (
     END;
 END PK_POL;
 /
-

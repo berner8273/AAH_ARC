@@ -419,7 +419,7 @@ and not exists (
                                     fx_dt.effective_dt + rownum - 1 rate_dt
                                from (
                                         select
-                                               min ( fd.effective_dt ) effective_dt
+                                               max ( fd.effective_dt ) effective_dt
                                           from
                                                stn.feed fd
                                          where

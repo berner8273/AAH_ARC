@@ -10,14 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logonÂ Â Â  = ~1
+define gui_logonÂ Â Â  = ~2
+define rdr_logonÂ Â Â  = ~3
+define sla_logonÂ Â Â  = ~4
+define slr_logonÂ Â Â  = ~5
+define stn_logonÂ Â Â  = ~6
+define sys_logonÂ Â Â  = ~7
+define unittest_loginÂ Â  = ~8
 
 conn ~rdr_logon
 
@@ -56,6 +56,8 @@ drop view rdr.rrv_ag_org_hier_levels;
 drop view rdr.rrv_ag_slr_jrnl_headers;
 drop view rdr.rrv_ag_reinsurance;
 drop view rdr.rrv_ag_posting_derivation;
+drop view rdr.rrv_ag_glint_to_ps;
+drop view rdr.rrv_ag_glint_jrnl_lines;
 
 conn ~stn_logon
 
@@ -91,6 +93,7 @@ revoke select   on slr.slr_jrnl_headers_unposted from rdr;
 conn ~fdr_logon
 
 revoke select   on fdr.fr_account_lookup       from rdr;
+revoke select   on fdr.fr_general_lookup_aud   from rdr;
 revoke select   on fdr.fr_posting_schema       from rdr;
 revoke select   on fdr.fr_stan_raw_acc_event   from rdr;
 

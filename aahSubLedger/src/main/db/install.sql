@@ -10,14 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logonÂ Â Â  = ~1
+define gui_logonÂ Â Â  = ~2
+define rdr_logonÂ Â Â  = ~3
+define sla_logonÂ Â Â  = ~4
+define slr_logonÂ Â Â  = ~5
+define stn_logonÂ Â Â  = ~6
+define sys_logonÂ Â Â  = ~7
+define unittest_loginÂ Â  = ~8
 
 conn ~stn_logon
 @@grants/tables/stn/business_type.sql
@@ -46,9 +46,18 @@ conn ~slr_logon
 
 @@tables/slr/slr_fak_bop_amounts.sql
 @@tables/slr/slr_fak_bop_amounts_tmp.sql
+@@tables/slr/slr_fak_bop_amounts_tmp2.sql
+@@tables/slr/slr_fak_bop_amounts_tmp3.sql
 @@tables/slr/slr_eba_bop_amounts.sql
 @@tables/slr/slr_eba_bop_amounts_tmp.sql
-@@tables/slr/slr_fx_reval_temp.sql
+@@tables/slr/slr_eba_bop_amounts_tmp2.sql
+@@tables/slr/slr_eba_bop_amounts_tmp3.sql
+@@indices/slr/slr_fak_bop_amounts_tmp.sql
+@@indices/slr/slr_fak_bop_amounts_tmp2.sql
+@@indices/slr/slr_fak_bop_amounts_tmp3.sql
+@@indices/slr/slr_eba_bop_amounts_tmp.sql
+@@indices/slr/slr_eba_bop_amounts_tmp2.sql
+@@indices/slr/slr_eba_bop_amounts_tmp3.sql
 @@grants/tables/slr/slr_bm_entity_processing_set.sql
 
 delete from slr.slr_entity_proc_group;
@@ -72,6 +81,13 @@ commit;
 @@data/slr/slr_fak_segment_8.sql
 @@packages/slr/slr_pkg.hdr
 @@packages/slr/slr_pkg.bdy
+@@packages/slr/slr_validate_journals_pkg.hdr
+@@packages/slr/slr_validate_journals_pkg.bdy
+
+/*Replace slr_balances_movement_pkg with custom version*/
+@@packages/slr/slr_balance_movement_pkg.hdr
+@@packages/slr/slr_balance_movement_pkg.bdy
+
 
 /*Begin SLR QTD modifications*/
 
@@ -256,7 +272,6 @@ conn ~rdr_logon
 @@views/rdr/rcv_glint_journal_line.sql
 @@views/rdr/rcv_glint_journal.sql
 @@tables/rdr/rr_glint_to_slr_ag.sql
-@@views/rdr/rrv_ag_glint_ps_journals.sql
 
 @@packages/rdr/pg_glint.hdr
 @@packages/rdr/pg_glint.bdy
@@ -285,23 +300,22 @@ conn ~fdr_logon
 
 @@data/fdr/fr_general_lookup_type.sql
 @@data/fdr/fr_general_lookup.sql
+@@grants/tables/fdr/fr_gaap.sql
 
 conn ~slr_logon
 
 @@data/slr/slr_process_config.sql
 @@data/slr/slr_process_config_detail.sql
 @@data/slr/slr_process_source.sql
+@@data/slr/slr_hints_sets.sql
 @@views/slr/v_slr_fxreval_parameters.sql
-@@views/slr/v_slr_fxreval_rule0_accts.sql
-@@views/slr/v_slr_fxreval_rule1_events.sql
-@@views/slr/v_slr_fxreval_rule2_events.sql
 @@views/slr/v_slr_fxreval_run_values.sql
-@@views/slr/v_slr_fxreval_rule1_eventunion.sql
 @@views/slr/vbmfxreval_eba_ag_r0_usstat.sql
 @@views/slr/vbmfxreval_eba_ag_r0_usgaap.sql
-@@views/slr/vbmfxreval_eba_ag_r1_usstat.sql
+@@views/slr/vbmfxreval_eba_ag_r0_ukgaap.sql
 @@views/slr/vbmfxreval_eba_ag_r2_usstat.sql
 @@views/slr/vbmfxreval_eba_ag_r2_usgaap.sql
+@@views/slr/vbmfxreval_eba_ag_r2_ukgaap.sql
 
 -- ye cleardown views
 @@views/slr/vbm_ag_retainedearningseba01.sql

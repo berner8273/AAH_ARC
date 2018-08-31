@@ -23,7 +23,8 @@ create or replace view rdr.rrv_ag_slr_jrnl_headers
    jh_created_on,
    jh_amended_by,
    jh_amended_on,
-   jh_bus_posting_date
+   jh_bus_posting_date,
+   jh_jrnl_internal_period_flag
 )   
 as
    select jh_jrnl_id,
@@ -49,7 +50,8 @@ as
           jh_created_on,
           jh_amended_by,
           jh_amended_on,
-          jh_bus_posting_date
+          jh_bus_posting_date,
+          jh_jrnl_internal_period_flag
      from slr.slr_jrnl_headers
    union all
    select jhu_jrnl_id as jh_jrnl_id,
@@ -75,6 +77,7 @@ as
           jhu_created_on as jh_created_on,
           jhu_amended_by as jh_amended_by,
           jhu_amended_on as jh_amended_on,
-          null as jh_bus_posting_date
+          null as jh_bus_posting_date,
+          NULL AS jh_jrnl_internal_period_flag
      from slr.slr_jrnl_headers_unposted
 ;

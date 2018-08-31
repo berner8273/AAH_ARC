@@ -165,7 +165,8 @@ AS
              ON jh.jh_jrnl_id = jl.jl_jrnl_hdr_id
           LEFT JOIN slr.slr_ext_jrnl_types jt
              ON jt.ejt_type = jh.jh_jrnl_type
-    WHERE     jl.jl_amended_on >= SYSDATE - 365
+    WHERE     jl.jl_amended_on >= SYSDATE - 180
+          AND jh.jh_jrnl_internal_period_flag = 'N'
           AND (   EXISTS
                      (SELECT NULL
                         FROM fdr.fr_general_lookup fgl2
