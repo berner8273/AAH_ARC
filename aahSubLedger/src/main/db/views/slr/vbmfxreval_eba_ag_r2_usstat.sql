@@ -120,8 +120,7 @@ select distinct
 ,
 balances as
 (
-select /*+ parallel( edb )*/
-       edb.edb_eba_id               key_id
+select edb.edb_eba_id               key_id
      , edb.edb_fak_id               fak_id
      , edb.edb_balance_type         balance_type
      , edb.edb_entity               entity
@@ -147,8 +146,7 @@ select /*+ parallel( edb )*/
  where
        edb.edb_balance_type = 50
 union all
-select /*+ parallel( edb )*/
-       fx_fak_eba.eba_id_orig       key_id
+select fx_fak_eba.eba_id_orig       key_id
      , fx_fak_eba.fak_id_orig       fak_id
      , edb.edb_balance_type         balance_type
      , edb.edb_entity               entity
