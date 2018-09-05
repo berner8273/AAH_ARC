@@ -45,12 +45,6 @@ select
                    and fc.fc_segment_6   = r0.execution_type
                    and fc.fc_segment_7   = r0.business_type
                    and ec.ec_attribute_3 = r0.premium_type )
- /*  and exists ( select null
-                  from slr_entities          ent     
-                  join slr_entity_accounts   ea     on ent.ent_accounts_set = ea.ea_entity_set
-                                                   and fc.fc_account        = ea.ea_account
-                                                   and 'P'                  = ea.ea_account_type 
-                 where fc.fc_entity          = ent.ent_entity )*/
 )
 ,
 fx_population as
@@ -122,8 +116,7 @@ select distinct
 ,
 balances as
 (
-select /*+ parallel( edb )*/
-       edb.edb_eba_id               key_id
+select edb.edb_eba_id               key_id
      , edb.edb_fak_id               fak_id
      , edb.edb_balance_type         balance_type
      , edb.edb_entity               entity
@@ -152,8 +145,7 @@ select /*+ parallel( edb )*/
  where
        edb_balance_type  = 50
 union all
-select /*+ parallel( edb )*/
-       fx_fak_eba.eba_id_orig       key_id
+select fx_fak_eba.eba_id_orig       key_id
      , fx_fak_eba.fak_id_orig       fak_id
      , edb.edb_balance_type         balance_type
      , edb.edb_entity               entity
