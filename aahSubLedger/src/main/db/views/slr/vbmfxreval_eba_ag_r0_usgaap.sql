@@ -22,7 +22,6 @@ select
 )
 , population as
 (
-
 select
        ec.ec_eba_id
      , ec.ec_fak_id

@@ -49,7 +49,6 @@ select
                                                    and fc.fc_account        = ea.ea_account
                                                    and 'B'                  = ea.ea_account_type 
                  where fc.fc_entity          = ent.ent_entity )
-                   
 )
 , fx_population as
 (
