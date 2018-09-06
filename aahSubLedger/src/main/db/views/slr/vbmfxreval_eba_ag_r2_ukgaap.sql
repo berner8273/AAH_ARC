@@ -20,8 +20,7 @@ select
    and fgl.lk_match_key9           = 'FXRULE2'
    and fgl.lk_match_key1           = 'UK_GAAP'
 )
-,
-population as
+, population as
 (
 select
        ec.ec_eba_id
@@ -51,8 +50,7 @@ select
                                                    and 'B'                  = ea.ea_account_type 
                  where fc.fc_entity          = ent.ent_entity )
 )
-,
-fx_population as
+, fx_population as
 (
 select
        ec.ec_eba_id
@@ -76,8 +74,7 @@ select
                    and ec.ec_attribute_3     = r2.premium_type
                    and ec.ec_attribute_4     = r2.fx_event_type )
 )
-,
-fx_fak_eba as
+, fx_fak_eba as
 (
 select distinct
        ec_fx.ec_eba_id              eba_id_fx
@@ -117,8 +114,7 @@ select distinct
                   and  ec_orig.ec_fak_id = pop.ec_fak_id
                   and  ec_orig.ec_epg_id = pop.ec_epg_id )
 )
-,
-balances as
+, balances as
 (
 select edb.edb_eba_id               key_id
      , edb.edb_fak_id               fak_id

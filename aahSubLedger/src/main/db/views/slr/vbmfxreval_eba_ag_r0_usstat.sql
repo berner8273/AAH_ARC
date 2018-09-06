@@ -20,8 +20,7 @@ select
    and fgl.lk_match_key9           = 'FXRULE0'
    and fgl.lk_match_key1           = 'US_STAT'
 )
-,
-population as
+, population as
 (
 
 select
@@ -46,8 +45,7 @@ select
                    and fc.fc_segment_7   = r0.business_type
                    and ec.ec_attribute_3 = r0.premium_type )
 )
-,
-fx_population as
+, fx_population as
 (
 select
        ec.ec_eba_id
@@ -72,8 +70,7 @@ select
                    and ec.ec_attribute_4     = r0.fx_event_type
                    and fc.fc_account         = r0.fx_account )
 )
-,
-fx_fak_eba as
+, fx_fak_eba as
 (
 select distinct
        ec_fx.ec_eba_id              eba_id_fx
@@ -113,8 +110,7 @@ select distinct
                   and  ec_orig.ec_fak_id = pop.ec_fak_id
                   and  ec_orig.ec_epg_id = pop.ec_epg_id )
 )
-,
-balances as
+, balances as
 (
 select edb.edb_eba_id               key_id
      , edb.edb_fak_id               fak_id
