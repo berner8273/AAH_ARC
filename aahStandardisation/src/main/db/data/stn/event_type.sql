@@ -177,4 +177,6 @@ insert into stn.event_type ( event_typ ) values ( 'VIEPF_FUT2CURR' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPF_FXCC_FUT2CURR' );
 insert into stn.event_type ( event_typ ) values ( 'VIECF_AR' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPF_UN' );
+insert into stn.event_type ( event_typ ) values ( 'FX_CC_WRITEOFF_CURR' );
+insert into stn.event_type ( event_typ ) values ( 'FX_CC_DAC_CAP_DEF' );
 commit;
