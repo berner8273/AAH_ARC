@@ -186,4 +186,12 @@ insert into stn.event_type ( event_typ ) values ( 'FX_AR_CUR_RECPAY' );
 insert into stn.event_type ( event_typ ) values ( 'FX_CC_CUR_RECPAY' );
 insert into stn.event_type ( event_typ ) values ( 'FX_AR_NOM_BEG_BAL' );
 insert into stn.event_type ( event_typ ) values ( 'FX_CC_NMRECPAYBEGBAL' );
+insert into stn.event_type ( event_typ ) values ( 'FX_CC_DAC_CAP_DEF');
+insert into stn.event_type ( event_typ ) values ( 'FX_AR_CUR_BEG_BAL');
+insert into stn.event_type ( event_typ ) values ( 'FX_CC_ARAPCUR_BEGBAL');
+insert into stn.event_type ( event_typ ) values ( 'FX_AR_CUR_RECPAY');
+insert into stn.event_type ( event_typ ) values ( 'FX_CC_CUR_RECPAY');
+insert into stn.event_type ( event_typ ) values ( 'FX_AR_NOM_BEG_BAL');
+insert into stn.event_type ( event_typ ) values ( 'FX_CC_NMRECPAYBEGBAL');
+
 commit;
