@@ -35,6 +35,7 @@ insert into stn.event_type ( event_typ ) values ( 'FX_CC_RECPAY_BEG_BAL' );
 insert into stn.event_type ( event_typ ) values ( 'FX_CC_RECPAY_FUT' );
 insert into stn.event_type ( event_typ ) values ( 'FX_CC_RECPAY_NOM' );
 insert into stn.event_type ( event_typ ) values ( 'FX_CC_WRITEOFF_FUT' );
+insert into stn.event_type ( event_typ ) values ( 'FX_CC_WRITEOFF_CURR' );
 insert into stn.event_type ( event_typ ) values ( 'FX_CNTGY_RESERVE' );
 insert into stn.event_type ( event_typ ) values ( 'FX_IBNR_RESERVES' );
 insert into stn.event_type ( event_typ ) values ( 'FX_LAE_RECPAY' );
