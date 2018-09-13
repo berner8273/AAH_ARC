@@ -127,7 +127,7 @@ and not exists (
                      from
                           fdr.fr_gl_account fga
                     where
-                         fga.ga_account_code = gcer.ACCT_CD
+                         fga.ga_client_text4 = gcer.ACCT_CD
                )) SubQuery;
     END;
     
