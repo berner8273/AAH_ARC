@@ -76,8 +76,6 @@ commit;
 @@views/gui/vw_ui_segment_6.sql
 @@views/gui/vw_ui_segment_7.sql
 @@views/gui/vw_ui_segment_8.sql
-
-
-
+@@views/gui/svc_combination_check_gjlu.sql
 
 exit
