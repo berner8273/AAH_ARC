@@ -1,4 +1,4 @@
-create or replace package slr.slr_pkg as
+CREATE OR REPLACE package SLR.slr_pkg as
 
 PROCEDURE pPROCESS_SLR;
 
@@ -82,7 +82,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES;
 PROCEDURE pYECleardown(pConfig      IN slr_process_config.pc_config%TYPE
                                       ,pSource      IN slr_process_source.sps_source_name%TYPE
                                       ,pBalanceDate IN DATE );
-
+PROCEDURE pYECleardownUpdateJLU;
 PROCEDURE pFX_REVAL(p_month IN NUMBER, p_year IN NUMBER, p_event_class VARCHAR2, p_acc_basis VARCHAR2);
 
 PROCEDURE pFX_REVAL_RULE0_USSTAT(v_date IN DATE);
