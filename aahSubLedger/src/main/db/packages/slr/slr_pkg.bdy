@@ -1,5 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY slr.slr_pkg AS
-
+CREATE OR REPLACE PACKAGE BODY SLR.slr_pkg AS
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
@@ -117,7 +116,7 @@ Begin
       join slr.slr_error_message on 1 = 1
      where em_error_code = lcErrorCode_Combo;
 
-    /* Update the corresponding journal line to Error. */     
+    /* Update the corresponding journal line to Error. */
     Merge /*+ parallel */ into slr_jrnl_lines_unposted a using (
       Select /*+ parallel */ jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
         from slr_jrnl_lines_unposted
@@ -132,7 +131,7 @@ Begin
     When Matched Then Update
       Set a.jlu_jrnl_status = 'E';
       Commit;
-      
+
       dbms_application_info.set_action('Create Correlated Journal Line Errors');
     Insert /*+ parallel */ into slr_jrnl_line_errors (
       jle_jrnl_process_id,
@@ -164,7 +163,7 @@ Begin
                           and JLE2.JLE_JRNL_LINE_NUMBER = JLU.JLU_JRNL_LINE_NUMBER
                           and JLE2.JLE_JRNL_PROCESS_ID = pinProcessID );
 
-    /* Update the corresponding journal line to Error. */     
+    /* Update the corresponding journal line to Error. */
     Merge /*+ parallel */ into slr_jrnl_lines_unposted a using (
       Select /*+ parallel */ jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
         from slr_jrnl_lines_unposted
@@ -181,7 +180,7 @@ Begin
 
 
   End If;
- 
+
   SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
   /* Remove the combination input/error records and commit the journal error records. */
   Commit;
@@ -315,15 +314,15 @@ IF lvCount >= 1 THEN
    --BEGIN
     EXECUTE IMMEDIATE 'INSERT INTO SLR_LOG(L_ID, L_DATE, L_TYPE, L_CODE, L_PROCESS_ID, L_DESC, L_DESC_EXT) VALUES(SLR_LOG_SEQ.NEXTVAL,SYSDATE, ''P'', ''AG'', ''30'', ''Begin Combo Check'', ''Begin Combo Check'')';
     COMMIT;
-        
+
        Execute Immediate 'Alter Session Enable Parallel DML';
-       
+
       lv_START_TIME:=DBMS_UTILITY.GET_TIME();
       pCombinationCheck_JLU(v_epg_id, lv_process_id, 'U');
       SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
     --  SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
- 
-       
+
+
        /* Configure debugging output to output buffer. */
 --      fdr.PG_COMMON.gDebug_DBMSOutput := True;
 
@@ -337,14 +336,14 @@ IF lvCount >= 1 THEN
         poutErrorCount  =>  v_combo_check_errors);
         SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
         SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
-        
+
         fdr.PG_COMMON.pLogDebug(pinMessage => 'End Combo Check : Errors=' || to_char(v_combo_check_errors));
   */
     --END;
-    
-    
-    
-    
+
+
+
+
     EXECUTE IMMEDIATE 'INSERT INTO SLR_LOG(L_ID, L_DATE, L_TYPE, L_CODE, L_PROCESS_ID, L_DESC, L_DESC_EXT) VALUES(SLR_LOG_SEQ.NEXTVAL,SYSDATE, ''P'', ''AG'', ''30'', ''END Combo Check'', ''END Combo Check'')';
     commit;
             lv_START_TIME:=DBMS_UTILITY.GET_TIME();
@@ -1603,9 +1602,9 @@ PROCEDURE pr_fx_rate
 /*      FX RULE 0 FX RATES      */
 
         MERGE INTO SLR.SLR_ENTITY_RATES SER
-        USING 
+        USING
         /*(
-        SELECT 
+        SELECT
         'FX_RULE0' AS ER_ENTITY_SET,
         B.ER_DATE AS ER_DATE,
         A.ER_CCY_FROM,
@@ -1623,13 +1622,13 @@ PROCEDURE pr_fx_rate
             AND LAST_DAY(ADD_MONTHS(A.ER_DATE,-1)) = B.ER_DATE
             AND A.ER_CCY_FROM = B.ER_CCY_FROM
             AND A.ER_CCY_TO = B.ER_CCY_TO
-            AND A.ER_RATE_TYPE = B.ER_RATE_TYPE 
+            AND A.ER_RATE_TYPE = B.ER_RATE_TYPE
         WHERE A.ER_RATE_TYPE = 'SPOT'
         AND   A.ER_DATE = LAST_DAY(A.ER_DATE)
         AND   B.ER_DATE IS NOT NULL
         )QRY*/
         (
-        SELECT 
+        SELECT
         'FX_RULE0' AS ER_ENTITY_SET,
         ER_DATE,
         ER_CCY_FROM,
@@ -1640,12 +1639,12 @@ PROCEDURE pr_fx_rate
         ER_AMENDED_BY,
         ER_AMENDED_ON,
         'FX_RULE0' AS ER_RATE_TYPE
-        FROM SLR_ENTITY_RATES 
+        FROM SLR_ENTITY_RATES
         WHERE ER_RATE_TYPE = 'SPOT'
         AND ER_ENTITY_SET = 'ENT_RATE_SET'
         AND ER_DATE = LAST_DAY(ER_DATE)
         )QRY
-        ON 
+        ON
         (
             QRY.ER_ENTITY_SET = SER.ER_ENTITY_SET
         AND QRY.ER_DATE = SER.ER_DATE
@@ -1653,11 +1652,11 @@ PROCEDURE pr_fx_rate
         AND QRY.ER_CCY_TO = SER.ER_CCY_TO
         AND QRY.ER_RATE_TYPE = SER.ER_RATE_TYPE
         )
-        WHEN MATCHED THEN UPDATE SET 
+        WHEN MATCHED THEN UPDATE SET
         SER.ER_RATE = QRY.ER_RATE,
         SER.ER_AMENDED_BY = 'SLR',
         SER.ER_AMENDED_ON = SYSDATE
-        WHEN NOT MATCHED THEN INSERT 
+        WHEN NOT MATCHED THEN INSERT
         (
         SER.ER_ENTITY_SET,
         SER.ER_DATE,
@@ -1670,7 +1669,7 @@ PROCEDURE pr_fx_rate
         SER.ER_AMENDED_ON,
         SER.ER_RATE_TYPE
         )
-        VALUES 
+        VALUES
         (
         QRY.ER_ENTITY_SET,
         QRY.ER_DATE,
@@ -1688,9 +1687,9 @@ PROCEDURE pr_fx_rate
 /*      FX RULE 1 FX RATES      */
 
         MERGE INTO SLR.SLR_ENTITY_RATES SER
-        USING 
+        USING
         (
-        SELECT 
+        SELECT
         'FX_RULE1' AS ER_ENTITY_SET,
         ER_DATE,
         ER_CCY_FROM,
@@ -1701,12 +1700,12 @@ PROCEDURE pr_fx_rate
         ER_AMENDED_BY,
         ER_AMENDED_ON,
         'FX_RULE1' AS ER_RATE_TYPE
-        FROM SLR_ENTITY_RATES 
+        FROM SLR_ENTITY_RATES
         WHERE ER_RATE_TYPE = 'MAVG'
         AND ER_ENTITY_SET = 'ENT_RATE_SET'
         AND ER_DATE = LAST_DAY(ER_DATE)
         )QRY
-        ON 
+        ON
         (
             QRY.ER_ENTITY_SET = SER.ER_ENTITY_SET
         AND QRY.ER_DATE = SER.ER_DATE
@@ -1714,11 +1713,11 @@ PROCEDURE pr_fx_rate
         AND QRY.ER_CCY_TO = SER.ER_CCY_TO
         AND QRY.ER_RATE_TYPE = SER.ER_RATE_TYPE
         )
-        WHEN MATCHED THEN UPDATE SET 
+        WHEN MATCHED THEN UPDATE SET
         SER.ER_RATE = QRY.ER_RATE,
         SER.ER_AMENDED_BY = 'SLR',
         SER.ER_AMENDED_ON = SYSDATE
-        WHEN NOT MATCHED THEN INSERT 
+        WHEN NOT MATCHED THEN INSERT
         (
         SER.ER_ENTITY_SET,
         SER.ER_DATE,
@@ -1731,7 +1730,7 @@ PROCEDURE pr_fx_rate
         SER.ER_AMENDED_ON,
         SER.ER_RATE_TYPE
         )
-        VALUES 
+        VALUES
         (
         QRY.ER_ENTITY_SET,
         QRY.ER_DATE,
@@ -1749,9 +1748,9 @@ PROCEDURE pr_fx_rate
 /*      FX RULE 2 FX RATES      */
 
         MERGE INTO SLR.SLR_ENTITY_RATES SER
-        USING 
+        USING
         (
-        SELECT 
+        SELECT
         'FX_RULE2' AS ER_ENTITY_SET,
         ER_DATE,
         ER_CCY_FROM,
@@ -1762,12 +1761,12 @@ PROCEDURE pr_fx_rate
         ER_AMENDED_BY,
         ER_AMENDED_ON,
         'FX_RULE2' AS ER_RATE_TYPE
-        FROM SLR_ENTITY_RATES 
+        FROM SLR_ENTITY_RATES
         WHERE ER_RATE_TYPE = 'SPOT'
         AND ER_ENTITY_SET = 'ENT_RATE_SET'
         AND ER_DATE = LAST_DAY(ER_DATE)
         )QRY
-        ON 
+        ON
         (
             QRY.ER_ENTITY_SET = SER.ER_ENTITY_SET
         AND QRY.ER_DATE = SER.ER_DATE
@@ -1775,11 +1774,11 @@ PROCEDURE pr_fx_rate
         AND QRY.ER_CCY_TO = SER.ER_CCY_TO
         AND QRY.ER_RATE_TYPE = SER.ER_RATE_TYPE
         )
-        WHEN MATCHED THEN UPDATE SET 
+        WHEN MATCHED THEN UPDATE SET
         SER.ER_RATE = QRY.ER_RATE,
         SER.ER_AMENDED_BY = 'SLR',
         SER.ER_AMENDED_ON = SYSDATE
-        WHEN NOT MATCHED THEN INSERT 
+        WHEN NOT MATCHED THEN INSERT
         (
         SER.ER_ENTITY_SET,
         SER.ER_DATE,
@@ -1792,7 +1791,7 @@ PROCEDURE pr_fx_rate
         SER.ER_AMENDED_ON,
         SER.ER_RATE_TYPE
         )
-        VALUES 
+        VALUES
         (
         QRY.ER_ENTITY_SET,
         QRY.ER_DATE,
@@ -1805,7 +1804,7 @@ PROCEDURE pr_fx_rate
         SYSDATE,
         QRY.ER_RATE_TYPE
         );
-        
+
     end pr_fx_rate;
 
 PROCEDURE pr_account
@@ -2304,7 +2303,7 @@ BEGIN
        and ep.ep_status    = 'C'
        and exists ( select
                            null
-                      from 
+                      from
                            fdr.fr_general_lookup fgl
                      where
                            fgl.lk_lkt_lookup_type_code  = 'EVENT_CLASS_PERIOD'
@@ -2315,7 +2314,7 @@ BEGIN
                                   then 1
                                   else 0
                               end ) > 0
-                  group by 
+                  group by
                            fgl.lk_match_key2
                          , fgl.lk_match_key3 ) ;
     /* close open periods */
@@ -2329,7 +2328,7 @@ BEGIN
        and ep.ep_status    = 'O'
        and not exists ( select
                            null
-                      from 
+                      from
                            fdr.fr_general_lookup fgl
                      where
                            fgl.lk_lkt_lookup_type_code  = 'EVENT_CLASS_PERIOD'
@@ -2340,7 +2339,7 @@ BEGIN
                                   then 1
                                   else 0
                               end ) > 0
-                  group by 
+                  group by
                            fgl.lk_match_key2
                          , fgl.lk_match_key3 ) ;
     end;
@@ -3066,24 +3065,24 @@ when not
 END pEVENT_CLASS_PERIODS;
 
 PROCEDURE pGENERATE_EBA_BOP_VALUES AS
-       
+
     v_ag_lp_dt      DATE;
     v_ag_process_dt DATE;
-       
-    BEGIN   
+
+    BEGIN
 
         EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP';
         EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP2';
         EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP3';
-                
-        v_ag_process_dt := SYSDATE; /*Get processing date*/     
-        
-             
-        /*Get the last date BOP was processed*/                
+
+        v_ag_process_dt := SYSDATE; /*Get processing date*/
+
+
+        /*Get the last date BOP was processed*/
         SELECT NVL(MAX(EDB_AMENDED_ON),TO_DATE('01/01/2000','MM/DD/YYYY') )INTO v_ag_lp_dt FROM SLR.SLR_EBA_BOP_AMOUNTS;
 
         /*Identify the balances updated and the earliest period for each*/
-        INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP2 
+        INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP2
         ( EDB_FAK_ID,
             EDB_EBA_ID,
             EDB_BALANCE_DATE,
@@ -3092,7 +3091,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
             EDB_EPG_ID,
             EDB_ID
         )
-        SELECT  
+        SELECT
              EDB_FAK_ID,
              EDB_EBA_ID,
              MIN(EDB_BALANCE_DATE),
@@ -3108,10 +3107,10 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
              EDB_ENTITY,
              EDB_EPG_ID,
              EDB_FAK_ID|| '\\'|| EDB_EBA_ID|| '\\'|| EDB_BALANCE_TYPE|| '\\'|| EDB_ENTITY|| '\\'|| EDB_EPG_ID;
-        
+
         COMMIT;
-        
-        /*Select the balances to be calculated.  Put in temp table inorder to "Post" Y/E cleardown entries to December.  These went to 1/1 of the new year*/         
+
+        /*Select the balances to be calculated.  Put in temp table inorder to "Post" Y/E cleardown entries to December.  These went to 1/1 of the new year*/
         INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP3 (EDB_FAK_ID
                                                 , EDB_EBA_ID
                                                 , EDB_BALANCE_DATE
@@ -3179,12 +3178,12 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                           AND EDB.EDB_BALANCE_TYPE = TMP2.EDB_BALANCE_TYPE
                           AND EDB.EDB_ENTITY = TMP2.EDB_ENTITY
                           AND EDB.EDB_EPG_ID = TMP2.EDB_EPG_ID)
-          
-                  ORDER BY 1,2,3;               
-                  
-        COMMIT;          
-                 
-        /*Flag the latest balance by year for each ID.  This is the record that will be update by the Y/E "posting"*/            
+
+                  ORDER BY 1,2,3;
+
+        COMMIT;
+
+        /*Flag the latest balance by year for each ID.  This is the record that will be update by the Y/E "posting"*/
         UPDATE SLR.SLR_EBA_BOP_AMOUNTS_TMP3
            SET LAST_IN_YR = 'Y'
          WHERE EDB_BALANCE_DATE =
@@ -3195,10 +3194,10 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                           AND A.EDB_ENTITY = SLR_EBA_BOP_AMOUNTS_TMP3.EDB_ENTITY
                           AND A.EDB_EPG_ID = SLR_EBA_BOP_AMOUNTS_TMP3.EDB_EPG_ID
                           AND A.YEAR = SLR_EBA_BOP_AMOUNTS_TMP3.YEAR);
-       
+
        COMMIT;
-       
-       /*Post the Y/E cleardown entries to the lastest record for each ID.  If no prior record, create one for December of the prior year*/                                 
+
+       /*Post the Y/E cleardown entries to the lastest record for each ID.  If no prior record, create one for December of the prior year*/
        MERGE INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP3 TMP3
                USING (
                         SELECT JL_FAK_ID,
@@ -3220,13 +3219,13 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                                   ON     JL.JL_FAK_ID = TMP2.EDB_FAK_ID
                                      AND JL.JL_EBA_ID = TMP2.EDB_EBA_ID
                                      AND JH.JH_JRNL_ENTITY = TMP2.EDB_ENTITY
-                                     AND JH.JH_JRNL_EPG_ID = TMP2.EDB_EPG_ID      
+                                     AND JH.JH_JRNL_EPG_ID = TMP2.EDB_EPG_ID
                          GROUP BY JL_FAK_ID,
                                JL_EBA_ID,
                                JL_EFFECTIVE_DATE,
                                JL_PERIOD_YEAR,
                                JL_EPG_ID,
-                               JH_JRNL_ENTITY                     
+                               JH_JRNL_ENTITY
                       ) TMP
                 ON (
                           TMP.JL_FAK_ID = TMP3.EDB_FAK_ID
@@ -3239,7 +3238,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                     )
               WHEN MATCHED
               THEN
-                 UPDATE            
+                 UPDATE
                    SET TMP3.EDB_TRAN_DAILY_MOVEMENT = TMP3.EDB_TRAN_DAILY_MOVEMENT + TMP.JL_TRAN_AMOUNT,
                        TMP3.EDB_TRAN_MTD_BALANCE = TMP3.EDB_TRAN_MTD_BALANCE + TMP.JL_TRAN_AMOUNT,
                        TMP3.EDB_TRAN_YTD_BALANCE = TMP3.EDB_TRAN_YTD_BALANCE + TMP.JL_TRAN_AMOUNT,
@@ -3253,7 +3252,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                        TMP3.EDB_LOCAL_YTD_BALANCE = TMP3.EDB_LOCAL_YTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
                        TMP3.EDB_LOCAL_LTD_BALANCE = TMP3.EDB_LOCAL_LTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
                        TMP3.EDB_AMENDED_ON = v_ag_process_dt
-          
+
               WHEN NOT MATCHED
               THEN
                  INSERT
@@ -3291,7 +3290,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                   VALUES
                   (
                       TMP.JL_FAK_ID
-                    , TMP.JL_EBA_ID  
+                    , TMP.JL_EBA_ID
                     , TMP.JL_EFFECTIVE_DATE - 1
                     , 50
                     , TMP.JL_TRAN_AMOUNT
@@ -3319,13 +3318,13 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'4'
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')
                     , 'I'
-                  );                
-                
-              
-       COMMIT; 
+                  );
+
+
+       COMMIT;
 
        /*SQL to calcuate prior balance for month, QTR and YTD - original code*/
-     
+
         INSERT INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP (EDB_FAK_ID,
                                                  EDB_EBA_ID,
                                                  EDB_BALANCE_DATE,
@@ -3378,7 +3377,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
 
             ORDER BY 1, 2, 3
         ),
-  
+
         MAX_MTH_DATES AS
         (
           SELECT AD.EDB_ID
@@ -3389,7 +3388,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                  AD.EDB_ID
                , AD.YEAR_MTH
         ),
-  
+
         MAX_MTH_DATE_AMTS AS
         (
           SELECT MMD.EDB_ID
@@ -3407,8 +3406,8 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
           ORDER BY
                 1,2 DESC
         ),
-  
-  
+
+
         MTD_BALANCES AS
         (
           SELECT   A.EDB_ID
@@ -3424,7 +3423,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
             AND    A.RANK_NBR = (B.RANK_NBR+1)
           ORDER BY 1,2
         ),
-  
+
         MAX_QTR_DATES AS
         (
           SELECT
@@ -3436,7 +3435,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                  AD.EDB_ID
                , AD.YEAR_QTR
         ),
-  
+
         MAX_QTR_DATE_AMTS AS
         (
           SELECT MQD.EDB_ID
@@ -3454,7 +3453,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
           ORDER BY
                 1,2 DESC
         ),
-  
+
         QTD_BALANCES AS
         (
           SELECT   A.EDB_ID
@@ -3470,7 +3469,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
             AND    A.RANK_NBR = (B.RANK_NBR+1)
           ORDER BY 1,2
         ),
-  
+
         MAX_YR_DATES AS
         (
           SELECT
@@ -3482,7 +3481,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                  AD.EDB_ID
                , AD.YEAR
         ),
-  
+
         MAX_YR_DATE_AMTS AS
         (
           SELECT MYD.EDB_ID
@@ -3500,7 +3499,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
           ORDER BY
                 1,2 DESC
         ),
-  
+
         YTD_BALANCES AS
         (
           SELECT   A.EDB_ID
@@ -3516,7 +3515,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
             AND    A.RANK_NBR = (B.RANK_NBR+1)
           ORDER BY 1,2
         )
-  
+
         SELECT  /*+ PARALLEL +*/
                    AD.EDB_FAK_ID
                  , AD.EDB_EBA_ID
@@ -3537,24 +3536,24 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                  , AD.EDB_PERIOD_LTD
                  , AD.EDB_AMENDED_ON
           FROM      ALL_DATA AD
-  
+
           LEFT JOIN MTD_BALANCES MB
             ON     AD.EDB_ID = MB.EDB_ID
             AND    AD.YEAR_MTH = MB.YEAR_MTH
-  
+
           LEFT JOIN QTD_BALANCES QB
             ON     AD.EDB_ID = QB.EDB_ID
             AND    AD.YEAR_QTR = QB.YEAR_QTR
-  
+
           LEFT JOIN YTD_BALANCES YB
             ON     AD.EDB_ID = YB.EDB_ID
             AND    AD.YEAR = YB.YEAR
-  
-        ORDER BY 1,2;       
-  
+
+        ORDER BY 1,2;
+
      COMMIT;
- 
-  
+
+
      /*Update the BOP balances with the new data or insert a record if new. Only need to go back as the earlest EBA record updated for each ID */
      MERGE INTO SLR.SLR_EBA_BOP_AMOUNTS BOP
        USING (
@@ -3585,9 +3584,9 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                           AND TMP.EDB_EBA_ID = TMP2.EDB_EBA_ID
                           AND TMP.EDB_BALANCE_TYPE = TMP2.EDB_BALANCE_TYPE
                           AND TMP.EDB_BALANCE_DATE >= TMP2.EDB_BALANCE_DATE)
-                  
-                  
-                  
+
+
+
               ) TMP
         ON (
                   TMP.EDB_FAK_ID = BOP.EDB_FAK_ID
@@ -3611,7 +3610,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                   , BOP.EDB_PERIOD_YEAR = TMP.EDB_PERIOD_YEAR
                   , BOP.EDB_PERIOD_LTD = TMP.EDB_PERIOD_LTD
                   , BOP.EDB_AMENDED_ON = v_ag_process_dt
-  
+
       WHEN NOT MATCHED
       THEN
          INSERT
@@ -3656,16 +3655,16 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
           , TMP.EDB_PERIOD_LTD
           , v_ag_process_dt
           );
-  
-      COMMIT; 
-      
+
+      COMMIT;
+
       EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP';
       EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP2';
       EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_EBA_BOP_AMOUNTS_TMP3';
-          
+
 
 END pGENERATE_EBA_BOP_VALUES;
-    
+
 PROCEDURE pGENERATE_FAK_BOP_VALUES AS
 
     v_ag_lp_dt      DATE;
@@ -3676,15 +3675,15 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
         EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP';
         EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP2';
         EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP3';
-                
-        v_ag_process_dt := SYSDATE; /*Get processing date*/     
-        
-             
-        /*Get the last date BOP was processed*/                
+
+        v_ag_process_dt := SYSDATE; /*Get processing date*/
+
+
+        /*Get the last date BOP was processed*/
         SELECT NVL(MAX(FDB_AMENDED_ON),TO_DATE('01/01/2000','MM/DD/YYYY') )INTO v_ag_lp_dt FROM SLR.SLR_FAK_BOP_AMOUNTS;
 
         /*Identify the balances updated and the earliest period for each*/
-        INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP2  
+        INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP2
         ( FDB_FAK_ID,
             FDB_BALANCE_DATE,
             FDB_BALANCE_TYPE,
@@ -3692,7 +3691,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
             FDB_EPG_ID,
             FDB_ID
         )
-        SELECT  
+        SELECT
              FDB_FAK_ID,
              MIN(FDB_BALANCE_DATE),
              FDB_BALANCE_TYPE,
@@ -3706,11 +3705,11 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
              FDB_ENTITY,
              FDB_EPG_ID,
              FDB_FAK_ID|| '\\'|| FDB_BALANCE_TYPE|| '\\'|| FDB_ENTITY|| '\\'|| FDB_EPG_ID;
-        
+
         COMMIT;
-        
-        
-        /*Select the balances to be calculated.  Put in temp table inorder to "Post" Y/E cleardown entries to December.  These went to 1/1 of the new year*/         
+
+
+        /*Select the balances to be calculated.  Put in temp table inorder to "Post" Y/E cleardown entries to December.  These went to 1/1 of the new year*/
         INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP3 (FDB_FAK_ID
                                                 , FDB_BALANCE_DATE
                                                 , FDB_BALANCE_TYPE
@@ -3776,12 +3775,12 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                           AND FDB.FDB_BALANCE_TYPE = TMP2.FDB_BALANCE_TYPE
                           AND FDB.FDB_ENTITY = TMP2.FDB_ENTITY
                           AND FDB.FDB_EPG_ID = TMP2.FDB_EPG_ID)
-          
-                  ORDER BY 1,2,3;               
-                  
-        COMMIT;          
-                 
-        /*Flag the latest balance by year for each ID.  This is the record that will be update by the Y/E "posting"*/            
+
+                  ORDER BY 1,2,3;
+
+        COMMIT;
+
+        /*Flag the latest balance by year for each ID.  This is the record that will be update by the Y/E "posting"*/
         UPDATE SLR.SLR_FAK_BOP_AMOUNTS_TMP3
            SET LAST_IN_YR = 'Y'
          WHERE FDB_BALANCE_DATE =
@@ -3791,10 +3790,10 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                           AND A.FDB_ENTITY = SLR_FAK_BOP_AMOUNTS_TMP3.FDB_ENTITY
                           AND A.FDB_EPG_ID = SLR_FAK_BOP_AMOUNTS_TMP3.FDB_EPG_ID
                           AND A.YEAR = SLR_FAK_BOP_AMOUNTS_TMP3.YEAR);
-       
+
        COMMIT;
-             
-       /*Post the Y/E cleardown entries to the lastest record for each ID.  If no prior record, create one for December of the prior year*/                                 
+
+       /*Post the Y/E cleardown entries to the lastest record for each ID.  If no prior record, create one for December of the prior year*/
        MERGE INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP3 TMP3
                USING (
                         SELECT JL_FAK_ID,
@@ -3805,13 +3804,13 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                                SUM(JL_TRAN_AMOUNT)  JL_TRAN_AMOUNT,
                                SUM(JL_BASE_AMOUNT)  JL_BASE_AMOUNT,
                                SUM(JL_LOCAL_AMOUNT) JL_LOCAL_AMOUNT
-                               
+
                           FROM SLR_JRNL_HEADERS JH
                                INNER JOIN SLR_JRNL_LINES JL
                                   ON     JH.JH_JRNL_DATE = JL.JL_EFFECTIVE_DATE
                                      AND JH.JH_JRNL_EPG_ID = JL.JL_EPG_ID
                                      AND JH.JH_JRNL_ID = JL.JL_JRNL_HDR_ID
-                                     AND JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y'  
+                                     AND JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y'
                                JOIN SLR.SLR_FAK_BOP_AMOUNTS_TMP2 TMP2
                                   ON     JL.JL_FAK_ID = TMP2.FDB_FAK_ID
                                      AND JH.JH_JRNL_ENTITY = TMP2.FDB_ENTITY
@@ -3820,7 +3819,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                                JL_EFFECTIVE_DATE,
                                JL_PERIOD_YEAR,
                                JL_EPG_ID,
-                               JH_JRNL_ENTITY                    
+                               JH_JRNL_ENTITY
                       ) TMP
                 ON (
                           TMP.JL_FAK_ID = TMP3.FDB_FAK_ID
@@ -3832,7 +3831,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                     )
               WHEN MATCHED
               THEN
-                 UPDATE            
+                 UPDATE
                    SET TMP3.FDB_TRAN_DAILY_MOVEMENT = TMP3.FDB_TRAN_DAILY_MOVEMENT + TMP.JL_TRAN_AMOUNT,
                        TMP3.FDB_TRAN_MTD_BALANCE = TMP3.FDB_TRAN_MTD_BALANCE + TMP.JL_TRAN_AMOUNT,
                        TMP3.FDB_TRAN_YTD_BALANCE = TMP3.FDB_TRAN_YTD_BALANCE + TMP.JL_TRAN_AMOUNT,
@@ -3846,7 +3845,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                        TMP3.FDB_LOCAL_YTD_BALANCE = TMP3.FDB_LOCAL_YTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
                        TMP3.FDB_LOCAL_LTD_BALANCE = TMP3.FDB_LOCAL_LTD_BALANCE + TMP.JL_LOCAL_AMOUNT,
                        TMP3.FDB_AMENDED_ON = v_ag_process_dt
-          
+
               WHEN NOT MATCHED
               THEN
                  INSERT
@@ -3910,13 +3909,13 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'4'
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')
                     , 'I'
-                  );                
-                
-              
-       COMMIT; 
-       
+                  );
+
+
+       COMMIT;
+
      /*SQL to calcuate prior balance for month, QTR and YTD - original code*/
-  
+
     INSERT INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP
      (     FDB_FAK_ID
          , FDB_BALANCE_DATE
@@ -4142,12 +4141,12 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
 
         LEFT JOIN YTD_BALANCES YB
           ON     AD.FDB_ID = YB.FDB_ID
-          AND    AD.YEAR = YB.YEAR  
+          AND    AD.YEAR = YB.YEAR
 
       ORDER BY 1,2;
 
    COMMIT;
-  
+
      /*Update the BOP balances with the new data or insert a record if new. Only need to go back as the earlest EBA record updated for each ID */
    MERGE INTO SLR.SLR_FAK_BOP_AMOUNTS BOP
      USING (
@@ -4175,7 +4174,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                    FROM SLR.SLR_FAK_BOP_AMOUNTS_TMP2 TMP2
                   WHERE     TMP.FDB_FAK_ID = TMP2.FDB_FAK_ID
                         AND TMP.FDB_BALANCE_TYPE = TMP2.FDB_BALANCE_TYPE
-                        AND TMP.FDB_BALANCE_DATE >= TMP2.FDB_BALANCE_DATE)              
+                        AND TMP.FDB_BALANCE_DATE >= TMP2.FDB_BALANCE_DATE)
             ) TMP
       ON (
                 TMP.FDB_FAK_ID = BOP.FDB_FAK_ID
@@ -4241,15 +4240,15 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
         , TMP.FDB_PERIOD_LTD
         , v_ag_process_dt
         );
-        
+
    COMMIT;
-        
+
    EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP';
    EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP2';
    EXECUTE IMMEDIATE 'TRUNCATE TABLE SLR.SLR_FAK_BOP_AMOUNTS_TMP3';
 
 
-END pGENERATE_FAK_BOP_VALUES;    
+END pGENERATE_FAK_BOP_VALUES;
 
 PROCEDURE pFX_REVAL( p_month IN NUMBER , p_year IN NUMBER , p_event_class IN VARCHAR2 , p_acc_basis IN VARCHAR2 ) AS
 
@@ -4261,12 +4260,12 @@ PROCEDURE pFX_REVAL( p_month IN NUMBER , p_year IN NUMBER , p_event_class IN VAR
   PRATESET     VARCHAR2(20);
   GPROCID      NUMBER;
   V_FX_DT      DATE;
-  
+
 BEGIN
 
 /* DEFINE AND SET MONTH-END DATE FOR FX RUN */
   V_FX_DT    := LAST_DAY(TO_DATE(TO_CHAR(LPAD(p_month||p_year,6,0)),'MMYYYY'));
-  
+
 /* SET ALL ENTITY ACCOUNTS THAT SHOULD BE REVALUED */
   update
          slr_entity_accounts  ea
@@ -4301,8 +4300,8 @@ BEGIN
   END IF;
 
 /* VALIDATE AND POST FX JOURNAL LINES */
-  SLR_UTILITIES_PKG.pRunValidateAndPost ( 'AG' , 'ENT_RATE_SET' , GPROCID ) ;  
-  
+  SLR_UTILITIES_PKG.pRunValidateAndPost ( 'AG' , 'ENT_RATE_SET' , GPROCID ) ;
+
 END pFX_REVAL;
 
 PROCEDURE pFX_REVAL_RULE0_USSTAT(v_date IN DATE) AS
@@ -4331,7 +4330,7 @@ BEGIN
 
 /* EXECUTE FXRULE0 RUN */
   SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
-  (  
+  (
         PPROCESS => PPROCESS,
         PENTPROCSET => PENTPROCSET,
         PCONFIG => PCONFIG,
@@ -4374,7 +4373,7 @@ BEGIN
 
 /* EXECUTE FXRULE2 RUN */
   SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
-  (  
+  (
         PPROCESS => PPROCESS,
         PENTPROCSET => PENTPROCSET,
         PCONFIG => PCONFIG,
@@ -4417,7 +4416,7 @@ BEGIN
 
 /* EXECUTE FXRULE0 RUN */
   SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
-  (  
+  (
         PPROCESS => PPROCESS,
         PENTPROCSET => PENTPROCSET,
         PCONFIG => PCONFIG,
@@ -4425,7 +4424,7 @@ BEGIN
         PBALANCEDATE => PBALANCEDATE,
         PRATESET => PRATESET,
         GPROCID => GPROCID
-  ); 
+  );
 
 /* UPDATE UNPOSTED JOURNAL LINES WITH FX ATTRIBUTES AND UPDATE FAK/EBA IDS */
   SLR.SLR_PKG.pFX_REVAL_UPDATE_UNPOSTED( V_FX_RULE , PRATESET , V_BASIS , GPROCID , PENTPROCSET );
@@ -4459,7 +4458,7 @@ BEGIN
 
 /* EXECUTE FXRULE2 RUN */
   SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
-  (  
+  (
         PPROCESS => PPROCESS,
         PENTPROCSET => PENTPROCSET,
         PCONFIG => PCONFIG,
@@ -4502,7 +4501,7 @@ BEGIN
 
 /* EXECUTE FXRULE0 RUN */
   SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
-  (  
+  (
         PPROCESS => PPROCESS,
         PENTPROCSET => PENTPROCSET,
         PCONFIG => PCONFIG,
@@ -4510,7 +4509,7 @@ BEGIN
         PBALANCEDATE => PBALANCEDATE,
         PRATESET => PRATESET,
         GPROCID => GPROCID
-  ); 
+  );
 
 /* UPDATE UNPOSTED JOURNAL LINES WITH FX ATTRIBUTES AND UPDATE FAK/EBA IDS */
   SLR.SLR_PKG.pFX_REVAL_UPDATE_UNPOSTED( V_FX_RULE , PRATESET , V_BASIS , GPROCID , PENTPROCSET );
@@ -4544,7 +4543,7 @@ BEGIN
 
 /* EXECUTE FXRULE2 RUN */
   SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess
-  (  
+  (
         PPROCESS => PPROCESS,
         PENTPROCSET => PENTPROCSET,
         PCONFIG => PCONFIG,
@@ -4575,7 +4574,7 @@ PROCEDURE pFX_REVAL_UPDATE_UNPOSTED( p_fx_rule     IN VARCHAR2
   V_FX_JLU_CT       NUMBER;
   V_FX_UPDATED_CT   NUMBER;
   pub_val_mismatch  EXCEPTION;
-  
+
 BEGIN
 
   lv_START_TIME    := DBMS_UTILITY.GET_TIME();
@@ -4603,7 +4602,7 @@ IF V_FX_JLU_CT > 0 THEN
   SLR_ADMIN_PKG.PerfInfo( 'FX journals generated. FX rule ' || V_BASIS || ' ' || V_FX_RULE || ' generated ' || V_FX_JLU_CT || ' unposted rows.');
 
   -- Update FAK/EBA attributes
-  merge into 
+  merge into
     slr.slr_jrnl_lines_unposted jlu
   using
     ( select
@@ -4633,7 +4632,7 @@ IF V_FX_JLU_CT > 0 THEN
          and jlu.jlu_jrnl_ent_rate_set   = V_FX_RATE_SET
          and jlu.jlu_jrnl_process_id     = GPROCID
          and jlu.jlu_segment_2           = V_BASIS ) tmp
-  on 
+  on
         ( tmp.jlu_jrnl_hdr_id      = jlu.jlu_jrnl_hdr_id
       and tmp.jlu_jrnl_line_number = jlu.jlu_jrnl_line_number )
   when matched then
@@ -4691,6 +4690,27 @@ as
   slr.slr_balance_movement_pkg.pBMRunBalanceMovementProcess (pProcess,pEntProcSet,pConfig,pSource,pBalanceDate,pRateSet,gProcId);
 
 end pYECleardown;
+
+PROCEDURE pYECleardownUpdateJLU as
+BEGIN
+	merge into slr.slr_jrnl_lines_unposted jlu
+   using 
+   ( select jl2.jl_attribute_1, jl2.jl_epg_id,
+             min(jl2.jl_reference_2) gross_stream_owner,
+             min(jl2.jl_reference_4) owner_entity,
+             min(jl2.jl_reference_7) int_ext_counterparty
+   	from slr.slr_jrnl_lines jl2
+   	group by jl2.jl_attribute_1, jl2.jl_epg_id
+   	) jl
+  	 on (jlu.jlu_attribute_1 = jl.jl_attribute_1 and jlu.jlu_epg_id = jl.jl_epg_id)
+	when matched 
+   then update 
+        set jlu.jlu_reference_2 = jl.gross_stream_owner,
+            jlu.jlu_reference_4 = jl.owner_entity,
+            jlu.jlu_reference_7 = jl.int_ext_counterparty;
+
+Commit;
+END pYECleardownUpdateJLU;
 
 
 END SLR_PKG;
