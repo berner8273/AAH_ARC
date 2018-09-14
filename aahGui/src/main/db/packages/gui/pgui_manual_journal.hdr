@@ -289,6 +289,13 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
 	PROCEDURE prui_rollback_err_slr_journals(epg_id IN VARCHAR2,journal_id_list IN VARCHAR2, rollback_all IN boolean :=FALSE);
     PROCEDURE prui_delete_gui_journals(journal_id_list IN VARCHAR2);
 
+   PROCEDURE pCombinationCheck_GJLU (
+        pinEPGID     in slr.slr_entity_proc_group.epg_id%TYPE,
+        pinProcessID in slr.slr_job_statistics.js_process_id%TYPE,
+        pinStatus    in CHAR
+    );
+
+
     /******************************************************************************************
     Declare private global variables
     ******************************************************************************************/

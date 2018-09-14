@@ -21,6 +21,7 @@ define unittest_login   = ~8
 
 conn ~gui_logon
 
+drop view gui.scv_combination_check_gjlu;
 delete from gui.ui_general_lookup;
 delete from gui.ui_input_field_value;
 delete from gui.ui_field;
