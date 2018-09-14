@@ -358,6 +358,7 @@ conn ~stn_logon
 @@grants/tables/stn/insurance_policy_tax_jurisd.sql
 @@grants/tables/stn/accounting_basis_ledger.sql
 @@grants/tables/stn/business_type.sql
+@@grants/tables/stn/business_event.sql
 @@grants/tables/stn/execution_type.sql
 @@grants/tables/stn/journal_line_premium_type.sql
 @@grants/tables/stn/journal_line.sql
