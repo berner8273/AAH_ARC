@@ -76,8 +76,9 @@ commit;
 @@views/gui/vw_ui_segment_6.sql
 @@views/gui/vw_ui_segment_7.sql
 @@views/gui/vw_ui_segment_8.sql
-
-
-
+@@views/gui/vw_ui_reference_2.sql
+@@views/gui/vw_ui_reference_4.sql
+@@views/gui/vw_ui_reference_5.sql
+@@views/gui/vw_ui_reference_7.sql
 
 exit
