@@ -249,6 +249,7 @@ AS
    PROCEDURE prui_log_posting_error (epg_id            IN VARCHAR2,
                                      journal_id_list   IN VARCHAR2,
                                      error_message     IN VARCHAR2);
+                                                                         
 
 
 
@@ -3619,8 +3620,13 @@ AS
    FUNCTION fnui_validate_journal_line (clear_errors BOOLEAN DEFAULT TRUE)
       RETURN CHAR
    IS
+
+      v_epg_id SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
+      lv_process_id NUMBER(30) := 0;
+         
       lvSuccess   CHAR;
 
+   
       CURSOR cur_lines
       IS
          SELECT jlu_created_by, jlu_amended_by
@@ -3629,6 +3635,24 @@ AS
                 AND user_session_id = gSessionId;
    BEGIN
       lvSuccess := gSTATE_OK;
+
+  FOR i IN
+      (
+        SELECT DISTINCT
+             ENT.ENT_RATE_SET,
+             ENT_PG.EPG_ID
+        FROM SLR_ENTITIES ENT,
+             SLR_ENTITY_PROC_GROUP ENT_PG
+        WHERE ENT.ENT_ENTITY = ENT_PG.EPG_ENTITY
+      )
+  LOOP
+
+    v_epg_id       := i.epg_id;
+    ----------------------------------------
+    -- Set processId for whole processing
+    ----------------------------------------
+    SELECT SEQ_PROCESS_NUMBER.NEXTVAL INTO lv_process_id  FROM DUAL;
+    
 
       IF gSessionId IS NULL
       THEN
@@ -3665,6 +3689,9 @@ AS
          prui_clear_errors (gJournalHeader.jhu_jrnl_id);
       END IF;
 
+      -- Combo Edit Check
+      pCombinationCheck_GJLU(v_epg_id, lv_process_id, 'M');
+  
       IF NOT fnui_get_entity
       THEN
          lvSuccess := gSTATE_CRITICAL;
@@ -3712,6 +3739,7 @@ AS
          RETURN gSTATE_CRITICAL;
       END IF;
 
+      
       -- Check mandatory fields
       IF NOT fnui_check_line_definitions
       THEN
@@ -3855,6 +3883,9 @@ AS
       END IF;
 
       RETURN lvSuccess;
+
+END LOOP;
+      
    EXCEPTION
       WHEN OTHERS
       THEN
@@ -14752,5 +14783,172 @@ AS
                    NULL,
                    NULL);
    END prui_log_posting_error;
+   
+Procedure pCombinationCheck_GJLU (
+  pinEPGID     in slr.slr_entity_proc_group.epg_id%TYPE,
+  pinProcessID in slr.slr_job_statistics.js_process_id%TYPE,
+  pinStatus    in CHAR
+)
+As
+
+lcUnitName        Constant all_procedures.procedure_name%TYPE := 'pCombinationCheck_GJLU';
+lcViewName        Constant all_views.view_name%TYPE := 'SCV_COMBINATION_CHECK_GJLU';
+lcErrorCode_Combo Constant slr.slr_error_message.em_error_code%TYPE := 'JL_COMBO';
+
+v_combo_check_errors Pls_Integer;
+
+Begin
+
+
+  dbms_application_info.set_module(
+    module_name => lcUnitName,
+    action_name => 'Start');
+  fdr.PG_COMMON.pLogDebug(pinMessage => 'Start Combo Check - GUI Unposted Journal Lines');
+
+  /* Configure the optimizer hints for Combination Checking. */
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboInput := '';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboError := '';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertInput      := '/*+ no_parallel */';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectInput      := '/*+ parallel */';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertComboError := '/*+ no_parallel */';
+  -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectComboError := '/*+ parallel */';
+
+  /* Call the Combination Check for those journals that are not in error yet - use the [sub-]partitioning key. */
+  fdr.PG_COMBINATION_CHECK.pCombinationCheck(
+    pinObjectName   =>  'gui.scv_combination_check_gjlu',
+    pinFilter       =>  NULL,
+    pinBusinessDate =>  NULL,
+    poutErrorCount  =>  v_combo_check_errors);
+
+  If v_combo_check_errors > 0 Then
+    dbms_application_info.set_action('Create GUI Journal Line Error');
+    Insert /*+ parallel */ into gui_jrnl_line_errors (
+      jle_jrnl_process_id,
+      jle_jrnl_hdr_id,
+      jle_jrnl_line_number,
+      jle_error_code,
+      jle_error_string,
+      jle_created_by,
+      jle_created_on,
+      jle_amended_by,
+      jle_amended_on)
+    Select /*+ parallel */
+           pinProcessID as jle_jrnl_process_id,
+           substr(ce_input_id,1,instr(ce_input_id,'_')-1) as jle_jrnl_hdr_id,
+           substr(ce_input_id,instr(ce_input_id,'_')+1) as jle_jrnl_line_number,
+           lcErrorCode_Combo as jle_error_code,
+           replace(replace(em_error_message,'%1',ce_rule),'%2',ce_attribute_name) as jle_error_string,
+           user as jle_created_by,
+           sysdate as jle_created_on,
+           user as jle_amended_by,
+           sysdate as jle_amended_on
+      from fdr.fr_combination_check_error
+      join slr.slr_error_message on 1 = 1
+     where em_error_code = lcErrorCode_Combo;
+
+    /* Update the corresponding journal line to Error. */
+    Merge /*+ parallel */ into slr_jrnl_lines_unposted a using (
+      Select /*+ parallel */ jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
+        from gui_jrnl_lines_unposted
+        join fdr.fr_combination_check_error on jlu_jrnl_hdr_id = substr(ce_input_id,1,instr(ce_input_id,'_')-1)
+                                           and jlu_jrnl_line_number = substr(ce_input_id,instr(ce_input_id,'_')+1)
+       where jlu_epg_id = pinEPGID
+         and jlu_jrnl_status = pinStatus
+       group by jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id) b
+      on (a.jlu_epg_id = b.jlu_epg_id
+          and a.jlu_jrnl_hdr_id = b.jlu_jrnl_hdr_id
+          and a.jlu_jrnl_line_number = b.jlu_jrnl_line_number)
+    When Matched Then Update
+      Set a.jlu_jrnl_status = 'E';
+      Commit;
+
+      dbms_application_info.set_action('Create Correlated GUI Journal Line Errors');
+    Insert /*+ parallel */ into gui_jrnl_line_errors (
+      jle_jrnl_process_id,
+      jle_jrnl_hdr_id,
+      jle_jrnl_line_number,
+      jle_error_code,
+      jle_error_string,
+      jle_created_by,
+      jle_created_on,
+      jle_amended_by,
+      jle_amended_on)
+    Select /*+ parallel */
+           pinProcessID as jle_jrnl_process_id,
+           JLU.JLU_JRNL_HDR_ID as jle_jrnl_hdr_id,
+           JLU.JLU_JRNL_LINE_NUMBER as jle_jrnl_line_number,
+           lcErrorCode_Combo as jle_error_code,
+           'Correlated GUI Journal Line Error' as jle_error_string,
+           user as jle_created_by,
+           sysdate as jle_created_on,
+           user as jle_amended_by,
+           sysdate as jle_amended_on
+      from (select distinct jle1.jle_jrnl_hdr_id from  gui.gui_jrnl_line_errors jle1
+                where JLE1.JLE_JRNL_PROCESS_ID = pinProcessID ) jle
+      --join slr.slr_error_message on 1 = 1
+      join GUI.GUI_JRNL_LINES_UNPOSTED jlu on jle.jle_jrnl_hdr_id = JLU.JLU_JRNL_HDR_ID
+     --where em_error_code = lcErrorCode_Combo;
+     where not exists (select NULL from slr_jrnl_line_errors jle2
+                        where JLE2.JLE_JRNL_HDR_ID = JLU.JLU_JRNL_HDR_ID
+                          and JLE2.JLE_JRNL_LINE_NUMBER = JLU.JLU_JRNL_LINE_NUMBER
+                          and JLE2.JLE_JRNL_PROCESS_ID = pinProcessID );
+
+    /* Update the corresponding journal line to Error. */
+    Merge /*+ parallel */ into gui_jrnl_lines_unposted a using (
+      Select /*+ parallel */ jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
+        from gui_jrnl_lines_unposted
+        join GUI.GUI_JRNL_LINE_ERRORS jle on jlu_jrnl_hdr_id = JLE.JLE_JRNL_HDR_ID
+                                           and jlu_jrnl_line_number = JLE.JLE_JRNL_LINE_NUMBER
+       where jlu_epg_id = pinEPGID
+         and jlu_jrnl_status = pinStatus
+       group by jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id) b
+      on (a.jlu_epg_id = b.jlu_epg_id
+          and a.jlu_jrnl_hdr_id = b.jlu_jrnl_hdr_id
+          and a.jlu_jrnl_line_number = b.jlu_jrnl_line_number)
+    When Matched Then Update
+      Set a.jlu_jrnl_status = 'E';
+
+
+  End If;
+
+  -- SLR.SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
+  /* Remove the combination input/error records and commit the journal error records. */
+  Commit;
+
+  fdr.PG_COMMON.pLogDebug(pinMessage => 'End Combo Check - GUI Unposted Journal Lines');
+  dbms_application_info.set_module(
+    module_name => NULL,
+    action_name => NULL);
+Exception
+When Others Then
+  /* Log the error. */
+  dbms_application_info.set_action('Unhandled Exception');
+  fdr.PR_Error (
+    a_type => fdr.PG_COMMON.gcErrorEventType_Error,
+    a_text => dbms_utility.format_error_backtrace,
+    a_category => fdr.PG_COMMON.gcErrorCategory_Tech,
+    a_error_source => lcUnitName,
+    a_error_table => 'GUI_JRNL_LINES_UNPOSTED',
+    a_row => NULL,
+    a_error_field => NULL,
+    a_stage => user,
+    a_technology => fdr.PG_COMMON.gcErrorTechnology_PLSQL,
+    a_value => NULL,
+    a_entity => NULL,
+    a_book => NULL,
+    a_security => NULL,
+    a_source_system => NULL,
+    a_client_key => NULL,
+    a_client_ver => NULL,
+    a_lpg_id => NULL
+  );
+
+  /* Raise the error. */
+  Raise;
+End pCombinationCheck_GJLU;
+
+   
+   
+   
 END pgui_manual_journal;
 /
