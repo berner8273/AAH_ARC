@@ -705,7 +705,7 @@ and exists    (
                                                                                 or pacd.business_unit         = 'ND~' )
                                                                             )
                    left join stn.cev_period_balances            pb       on (
-                                                                                   cev_data.stream_id                           = pb.stream_id
+                                                                                   to_char( cev_data.stream_id )                = to_char( pb.stream_id )
                                                                                and cev_data.business_unit                       = pb.business_unit
                                                                                and pacd.sub_account                             = pb.sub_account
                                                                                and cev_data.transaction_ccy                     = pb.currency
@@ -1966,7 +1966,7 @@ and exists    (
                                                                             or pacd.business_unit         = 'ND~' )
                                                                              )
                    left join stn.cev_period_balances              prpb   on (
-                                                                             cev_nid.stream_id                           = prpb.stream_id
+                                                                             to_char( cev_nid.stream_id )                = to_char( prpb.stream_id )
                                                                          and cev_nid.business_unit                       = prpb.business_unit
                                                                          and pacd.sub_account                            = prpb.sub_account
                                                                          and cev_nid.transaction_ccy                     = prpb.currency
@@ -1976,7 +1976,7 @@ and exists    (
                                                                          and trunc( add_months( cev_nid.vie_effective_dt , -1 ) , 'MONTH' ) = trunc( prpb.end_of_period , 'MONTH' )
                                                                              )
                    left join stn.cev_period_balances              cupb   on (
-                                                                             cev_nid.stream_id                           = cupb.stream_id
+                                                                             to_char( cev_nid.stream_id )                = to_char( cupb.stream_id )
                                                                          and cev_nid.business_unit                       = cupb.business_unit
                                                                          and pacd.sub_account                            = cupb.sub_account
                                                                          and cev_nid.transaction_ccy                     = cupb.currency
@@ -2035,12 +2035,12 @@ and exists    (
                       , pfc.fin_calc_cd
                    from
                         stn.hopper_cession_event           hce
-                   join stn.insurance_policy_reference     ipr      on hce.stream_id          = ipr.stream_id
-                   join     vie_event_cd                   vieec    on hce.stream_id          = vieec.stream_id
-                                                                   and hce.event_typ          = vieec.event_typ
-                   join stn.vie_code                       vc       on vieec.vie_cd           = vc.vie_cd
-                   join stn.event_type                     et       on hce.event_typ          = et.event_typ
-                   join stn.posting_accounting_basis       abasis   on hce.basis_cd           = abasis.basis_cd
+                   join stn.insurance_policy_reference     ipr      on to_char( hce.stream_id ) = to_char( ipr.stream_id )
+                   join     vie_event_cd                   vieec    on to_char( hce.stream_id ) = to_char( vieec.stream_id )
+                                                                   and hce.event_typ            = vieec.event_typ
+                   join stn.vie_code                       vc       on vieec.vie_cd             = vc.vie_cd
+                   join stn.event_type                     et       on hce.event_typ            = et.event_typ
+                   join stn.posting_accounting_basis       abasis   on hce.basis_cd             = abasis.basis_cd
                    join stn.vie_posting_method_ledger      vpml     on (
                                                                        abasis.basis_id        = vpml.input_basis_id
                                                                    and et.event_typ_id        = vpml.event_typ_id
