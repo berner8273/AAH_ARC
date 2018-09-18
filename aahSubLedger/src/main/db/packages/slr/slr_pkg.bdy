@@ -4690,27 +4690,31 @@ as
 
 end pYECleardown;
 
-PROCEDURE pYEJLU as
+
+
+PROCEDURE pYEJLU(pProcessId IN NUMBER)
+AS
+    
 BEGIN
-	merge into slr.slr_jrnl_lines_unposted jlu
+    merge into slr.slr_jrnl_lines_unposted jlu
    using 
    ( select jl2.jl_attribute_1, jl2.jl_epg_id,
              min(jl2.jl_reference_2) gross_stream_owner,
              min(jl2.jl_reference_4) owner_entity,
              min(jl2.jl_reference_7) int_ext_counterparty
-   	from slr.slr_jrnl_lines jl2
-   	group by jl2.jl_attribute_1, jl2.jl_epg_id
-   	) jl
-  	 on (jlu.jlu_attribute_1 = jl.jl_attribute_1 and jlu.jlu_epg_id = jl.jl_epg_id)
-	when matched 
+       from slr.slr_jrnl_lines jl2
+       group by jl2.jl_attribute_1, jl2.jl_epg_id
+       ) jl
+       on (jlu.jlu_attribute_1 = jl.jl_attribute_1 and jlu.jlu_epg_id = jl.jl_epg_id)
+    when matched 
    then update 
         set jlu.jlu_reference_2 = jl.gross_stream_owner,
             jlu.jlu_reference_4 = jl.owner_entity,
-            jlu.jlu_reference_7 = jl.int_ext_counterparty;
+            jlu.jlu_reference_7 = jl.int_ext_counterparty
+            where jlu.jlu_jrnl_process_id = pProcessId;
 
 Commit;
 END pYEJLU;
-
 
 END SLR_PKG;
 /
