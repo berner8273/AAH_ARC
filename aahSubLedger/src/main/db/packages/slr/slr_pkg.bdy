@@ -4690,7 +4690,7 @@ as
 
 end pYECleardown;
 
-PROCEDURE pYECleardownUpdateJLU as
+PROCEDURE pYEJLU as
 BEGIN
 	merge into slr.slr_jrnl_lines_unposted jlu
    using 
@@ -4709,7 +4709,7 @@ BEGIN
             jlu.jlu_reference_7 = jl.int_ext_counterparty;
 
 Commit;
-END pYECleardownUpdateJLU;
+END pYEJLU;
 
 
 END SLR_PKG;
