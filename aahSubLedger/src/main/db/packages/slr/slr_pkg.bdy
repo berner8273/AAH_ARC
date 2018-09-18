@@ -1459,25 +1459,24 @@ BEGIN
             fs8_amended_by,
             fs8_amended_on)
     SELECT  distinct seg8.ent_segment_8_set,
-            ext.iie_cover_signing_party,
-            substrb(ext.IIE_COVER_NOTE_DESCRIPTION,0,100) as IIE_COVER_NOTE_DESCRIPTION,
+            fiie.iie_cover_signing_party,
+            substrb(fiie.IIE_COVER_NOTE_DESCRIPTION,0,100) as IIE_COVER_NOTE_DESCRIPTION,
             'A',
             USER,
             TRUNC(SYSDATE),
             USER,
             TRUNC(SYSDATE)
-      FROM  fdr.fr_instrument frinstr
+      FROM  fdr.fr_instr_insure_extend fiie
             CROSS JOIN (SELECT  DISTINCT ent.ent_segment_8_set
                         FROM  slr.slr_entities ent
                         INNER JOIN fdr.fr_lpg_config frlpg
                           ON frlpg.lc_grp_code = ent.ent_entity
                           AND frlpg.lc_lpg_id = pLPG_ID
                         ) seg8
-            INNER JOIN fdr.fr_trade ft
-                  ON frinstr.i_instrument_id = ft.t_i_instrument_id
-            INNER JOIN fdr.fr_instr_insure_extend ext
-                  ON FRINSTR.I_INSTRUMENT_ID = ext.IIE_INSTRUMENT_ID
-            WHERE frinstr.i_it_instr_type_id = 'INSURANCE_POLICY';
+      join  fdr.fr_trade ft on fiie.iie_instrument_id = ft.t_i_instrument_id
+     where  ft.t_fdr_ver_no = ( select max( ft1.t_fdr_ver_no )
+                                  from fdr.fr_trade ft1 
+                                 where ft1.t_source_tran_no = ft.t_source_tran_no );
 
     SELECT  COUNT(*)
       INTO  v_records_processed
