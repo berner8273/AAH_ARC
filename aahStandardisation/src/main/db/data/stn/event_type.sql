@@ -195,7 +195,6 @@ insert into stn.event_type ( event_typ ) values ( 'VIEPC_PGAAP_UPR_IN' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPC_FV_UPR_INITIAL' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPF_FV_UPR_INITIAL' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPF_FV_UPR_CHANGE' );
-insert into stn.event_type ( event_typ ) values ( 'VIEPD_UPR_INTIAL' );
 insert into stn.event_type ( event_typ ) values ( 'VIEPD_FV_UPR' );
 insert into stn.event_type ( event_typ ) values ( 'VIECC_WP' );
 insert into stn.event_type ( event_typ ) values ( 'VIECF_CASHOFFSET' );

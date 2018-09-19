@@ -77,7 +77,6 @@ insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id f
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPC_FV_UPR_INITIAL' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_FV_UPR_INITIAL' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_FV_UPR_CHANGE' ) );
-insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_UPR_INTIAL' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_FV_UPR' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECC_WP' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_CASHOFFSET' ) );
