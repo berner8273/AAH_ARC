@@ -4690,8 +4690,6 @@ as
 
 end pYECleardown;
 
-
-
 PROCEDURE pYEJLU(pProcessId IN NUMBER)
 AS
     
