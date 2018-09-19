@@ -89,6 +89,7 @@ revoke select   on slr.slr_fak_bop_amounts     	 from rdr;
 revoke select   on slr.slr_entities            	 from rdr;
 revoke select   on slr.slr_jrnl_headers          from rdr;
 revoke select   on slr.slr_jrnl_headers_unposted from rdr;
+revoke select   on slr.slr_jrnl_lines_unposted   from rdr
 
 conn ~fdr_logon
 
@@ -99,8 +100,11 @@ revoke select   on fdr.fr_stan_raw_acc_event   from rdr;
 
 conn ~gui_logon
 
-revoke select   on gui.t_ui_role_tasks         from rdr;
-revoke select   on gui.t_ui_user_details       from rdr;
-revoke select   on gui.t_ui_user_roles         from rdr;
+revoke select   on gui.t_ui_role_tasks              from rdr;
+revoke select   on gui.t_ui_user_details            from rdr;
+revoke select   on gui.t_ui_user_roles              from rdr;
+revoke select   on gui.gui_jrnl_line_errors         from rdr;
+revoke select   on gui.gui_jrnl_lines_unposted      from rdr;
+revoke select   on gui.gui_jrnl_headers_unposted    from rdr;
 
 exit
