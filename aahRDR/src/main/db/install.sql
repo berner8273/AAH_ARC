@@ -50,6 +50,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_entities.sql
 @@grants/tables/slr/slr_jrnl_headers.sql
 @@grants/tables/slr/slr_jrnl_headers_unposted.sql
+@@grants/tables/slr/slr_jrnl_lines_unposted.sql
 
 conn ~fdr_logon
 
@@ -64,6 +65,8 @@ conn ~gui_logon
 @@grants/tables/gui/t_ui_role_tasks.sql
 @@grants/tables/gui/t_ui_user_details.sql
 @@grants/tables/gui/t_ui_user_roles.sql
+@@grants/tables/gui/gui_jrnl_line_errors.sql
+@@grants/tables/gui/gui_jrnl_lines_unposted.sql
 
 conn ~rdr_logon
 
