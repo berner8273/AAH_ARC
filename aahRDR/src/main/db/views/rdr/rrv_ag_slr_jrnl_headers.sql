@@ -84,7 +84,7 @@ jhu_amended_on as jh_amended_on,
 null as jh_bus_posting_date,
 NULL AS jh_jrnl_internal_period_flag,
 jhu_jrnl_ref_id,
-jhu_jrnl_rev_date,
+jhu_jrnl_rev_date
 from slr.slr_jrnl_headers_unposted
 union all
 select
