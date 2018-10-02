@@ -89,4 +89,22 @@ end;
 @@users/aah_report.sql report_password
 @@users/aah_ps.sql ps_password
 
+begin
+    for i in (
+                 select
+                        'alter tablespace FDR_DATA add datafile ''/oradata/APTQA/datafile/FDR_DATA_FILE_2.dbf'' size 512m autoextend on next 5m maxsize unlimited' add_datafile
+                   from
+                        dual
+                  where
+                        not exists ( select null
+                                       from dba_data_files
+                                      where tablespace_name = 'FDR_DATA'
+                                        and file_name       like '%FDR_DATA_FILE_2.dbf' )
+             )
+    loop
+        execute immediate i.add_datafile;
+    end loop;
+end;
+/
+
 exit 
