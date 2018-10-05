@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_JL AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_JL AS
     PROCEDURE pr_journal_line_idf
         (
             p_step_run_sid IN NUMBER,
@@ -82,7 +82,7 @@ and not exists (
               );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated event_status to X on discarded journal_line records', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_journal_line_sval
         (
             p_step_run_sid IN NUMBER
@@ -219,7 +219,7 @@ and not exists (
                 vdl.VALIDATION_CD = 'jl-transaction_sum';
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-transaction-sum', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_journal_line_rval
         (
             p_step_run_sid IN NUMBER
@@ -981,10 +981,11 @@ and not exists (
                           fdr.fr_instr_insure_extend fie
                     where
                          fie.iie_cover_signing_party = jl.POLICY_ID
-               );
+               )
+               and jl.stream_id is not null and jl.policy_id is not null;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-policy-stream', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_journal_line_bval
         (
             p_step_run_sid IN NUMBER
@@ -1358,7 +1359,7 @@ and not exists (
                );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-rval-balanced-headers-transaction-sum', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_journal_line_svs
         (
             p_no_validated_records OUT NUMBER
@@ -1399,7 +1400,7 @@ and     exists (
                );
         p_no_validated_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_journal_line_pub
         (
             p_total_no_published OUT NUMBER
@@ -1475,15 +1476,15 @@ and     exists (
                 INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
                 INNER JOIN journal_line_default jl_default ON 1 = 1
                 INNER JOIN fdr.FR_PARTY_LEGAL pl_le_id ON jl.LE_ID = to_number ( pl_le_id.PL_GLOBAL_ID )
-                INNER JOIN fdr.FR_PARTY_LEGAL pl_owner_le_id ON jl.OWNER_LE_ID = to_number ( pl_owner_le_id.PL_GLOBAL_ID )
-                INNER JOIN fdr.FR_PARTY_LEGAL pl_ultimate_parent_le_id ON jl.ULTIMATE_PARENT_LE_ID = to_number ( pl_ultimate_parent_le_id.PL_GLOBAL_ID )
+                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_owner_le_id ON jl.OWNER_LE_ID = to_number ( pl_owner_le_id.PL_GLOBAL_ID )
+                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_ultimate_parent_le_id ON jl.ULTIMATE_PARENT_LE_ID = to_number ( pl_ultimate_parent_le_id.PL_GLOBAL_ID )
                 LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_counter_party ON jl.COUNTERPARTY_LE_ID = to_number ( pl_counter_party.PL_GLOBAL_ID )
                 LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_affiliate ON jl.AFFILIATE_LE_ID = to_number ( pl_affiliate.PL_GLOBAL_ID )
             WHERE
                 jl.EVENT_STATUS = 'V';
         p_total_no_published := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_journal_line_sps
         (
             p_no_processed_records OUT NUMBER
@@ -1505,7 +1506,7 @@ and     exists (
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_journal_line_prc
         (
             p_step_run_sid IN NUMBER,

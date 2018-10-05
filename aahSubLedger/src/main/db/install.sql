@@ -58,6 +58,7 @@ conn ~slr_logon
 @@indices/slr/slr_eba_bop_amounts_tmp.sql
 @@indices/slr/slr_eba_bop_amounts_tmp2.sql
 @@indices/slr/slr_eba_bop_amounts_tmp3.sql
+@@indices/slr/slr_jl_slr_process.sql
 @@grants/tables/slr/slr_bm_entity_processing_set.sql
 
 delete from slr.slr_entity_proc_group;
