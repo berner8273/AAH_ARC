@@ -295,6 +295,7 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
         pinStatus    in CHAR
     );
 
+    PROCEDURE pCreateEliminations(journal_id IN SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE);
 
     /******************************************************************************************
     Declare private global variables
