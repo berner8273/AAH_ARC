@@ -176,7 +176,7 @@ AS
       attribute_1         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE DEFAULT NULL,
       attribute_2         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE DEFAULT NULL,
       attribute_3         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE DEFAULT NULL,
-      attribute_4         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE DEFAULT 'MANUAL',
+      attribute_4         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE DEFAULT 'MANUAL_ADJ',
       attribute_5         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE DEFAULT NULL,
       reference_1         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE DEFAULT NULL,
       reference_2         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE DEFAULT NULL,
@@ -9792,7 +9792,7 @@ END LOOP;
       attribute_1         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE DEFAULT NULL,
       attribute_2         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE DEFAULT NULL,
       attribute_3         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE DEFAULT NULL,
-      attribute_4         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE DEFAULT 'MANUAL',
+      attribute_4         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE DEFAULT 'MANUAL_ADJ',
       attribute_5         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE DEFAULT NULL,
       reference_1         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE DEFAULT NULL,
       reference_2         IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE DEFAULT NULL,
@@ -10234,7 +10234,7 @@ END LOOP;
                               /* jlu_attribute_3 */
                               NVL (attribute_3, 'NVS'),
                               /* jlu_attribute_4 */
-                              NVL (attribute_4, 'MANUAL'),
+                              NVL (attribute_4, 'MANUAL_ADJ'),
                               /* jlu_attribute_5 */
                               NVL (attribute_5, 'NVS'),
                               /* jlu_reference_1 */
@@ -10862,7 +10862,7 @@ END LOOP;
                    /* jlu_attribute_3 */
                    NVL (jlu_attribute_3, 'NVS'),
                    /* jlu_attribute_4 */
-                   NVL (jlu_attribute_4, 'MANUAL'),
+                   NVL (jlu_attribute_4, 'MANUAL_ADJ'),
                    /* jlu_attribute_5 */
                    NVL (jlu_attribute_5, 'NVS'),
                    /* jlu_reference_1 */
@@ -11032,7 +11032,7 @@ END LOOP;
                    /* jlu_attribute_3 */
                    NVL (jlu_attribute_3, 'NVS'),
                    /* jlu_attribute_4 */
-                   NVL (jlu_attribute_4, 'MANUAL'),
+                   NVL (jlu_attribute_4, 'MANUAL_ADJ'),
                    /* jlu_attribute_5 */
                    NVL (jlu_attribute_5, 'NVS'),
                    /* jlu_reference_1 */
@@ -11603,7 +11603,7 @@ END LOOP;
                            NVL (tsjlu.jlu_attribute_1, 'NVS'),
                            NVL (tsjlu.jlu_attribute_2, 'NVS'),
                            NVL (tsjlu.jlu_attribute_3, 'NVS'),
-                           NVL (tsjlu.jlu_attribute_4, 'MANUAL'),
+                           NVL (tsjlu.jlu_attribute_4, 'MANUAL_ADJ'),
                            NVL (tsjlu.jlu_attribute_5, 'NVS'),
                            tsjlu.jlu_reference_1,
                            tsjlu.jlu_reference_2,
@@ -11771,7 +11771,7 @@ END LOOP;
                    /* jlu_attribute_3 */
                    NVL (tsjlu.jlu_attribute_3, 'NVS'),
                    /* jlu_attribute_4 */
-                   NVL (tsjlu.jlu_attribute_4, 'MANUAL'),
+                   NVL (tsjlu.jlu_attribute_4, 'MANUAL_ADJ'),
                    /* jlu_attribute_5 */
                    NVL (tsjlu.jlu_attribute_5, 'NVS'),
                    /* jlu_reference_1 */
