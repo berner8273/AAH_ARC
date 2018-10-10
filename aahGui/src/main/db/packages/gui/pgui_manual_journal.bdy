@@ -14978,7 +14978,7 @@ select  journal_id                                            JLU_JRNL_HDR_ID,
         JLU.JLU_SEGMENT_2,
         JLU.JLU_SEGMENT_3,
         nvl2( PSMRE.REINS_LE_CD , null , JLU.JLU_SEGMENT_4 )      JLU_SEGMENT_4,
-        JLU.JLU_SEGMENT_5,
+        PSMRE.CHARTFIELD_CD                                       JLU_SEGMENT_5,
         JLU.JLU_SEGMENT_6,
         case
             when JLU.JLU_SEGMENT_4 = 'AGFPI'
