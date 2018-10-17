@@ -9,6 +9,7 @@ create table stn.legal_entity
 ,   is_ledger_entity        varchar2 ( 1 char ) default 'N'                                  not null
 ,   is_interco_elim_entity  varchar2 ( 1 char ) default 'N'                                  not null
 ,   is_vie_consol_entity    varchar2 ( 1 char ) default 'N'                                  not null
+,   is_standalone				    varchar2 ( 1 char ) 						                                 not null
 ,   rpt_cd                  varchar2 ( 20 char )
 ,   rpt_descr               varchar2 ( 100 char )
 ,   lpg_id                  number   ( 38 , 0 ) default 1                                    not null
