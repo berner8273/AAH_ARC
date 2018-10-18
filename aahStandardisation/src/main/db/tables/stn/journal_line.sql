@@ -14,7 +14,7 @@ create table stn.journal_line
 ,   counterparty_le_id     number(38)
 ,   dept_cd                varchar2(20 char)
 ,   business_event_typ     varchar2(20 char)                                     
-,   journal_descr          varchar2(50 char)                                     
+,   journal_descr          varchar2(50 byte)                                     
 ,   chartfield_1           varchar2(20 char)
 ,   accident_yr            number(4)
 ,   underwriting_yr        number(4)                                             
