@@ -84,10 +84,10 @@ end;
 @@roles/aah_read_only.sql
 @@roles/aah_rdr.sql
 @@roles/aah_glint.sql
-@@users/aah_ssis.sql ssis_password
-@@users/aah_read.sql read_password
-@@users/aah_report.sql report_password
-@@users/aah_ps.sql ps_password
+@@users/aah_ssis.sql ~ssis_password
+@@users/aah_read.sql ~read_password
+@@users/aah_report.sql ~report_password
+@@users/aah_ps.sql ~ps_password
 
 begin
     for i in (
