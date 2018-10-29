@@ -296,15 +296,24 @@ and exists    (
                                         then ppt.cession_event_premium_typ
                                         else cev.premium_typ
                                         end                                          premium_typ
-                                 , case
-                                        when ce_data.le_cd = 'FSAUK'
-                                         and cev.event_typ like 'PGAAP%'
-                                        then 'FSANY'
-                                        when cev.event_typ = 'DAC_CC_CONS_ADJUST'
-                                        then 'CA005'
-                                        else ce_data.le_cd
-                                   end                                               le_cd
-                                 , ce_data.parent_cession_le_cd
+																	, case
+																				when ce_data.le_cd = 'FSAUK'
+            														and cev.event_typ like 'PGAAP%'
+            														then 'FSANY'
+      																	when cev.event_typ = 'DAC_CC_CONS_ADJUST'
+																				and cev.business_typ in ('C','A','D','AA')
+            																then 'CA005'
+      																	else ce_data.le_cd
+																				end   																				le_cd
+																	, case
+																				when ce_data.parent_cession_le_cd = 'FSAUK'
+            														and cev.event_typ like 'PGAAP%'
+            														then 'FSANY'
+      																	when cev.event_typ = 'DAC_CC_CONS_ADJUST'
+																				and cev.business_typ in ('CA')
+            																then 'CA005'
+      																	else ce_data.parent_cession_le_cd
+																				end   																				parent_cession_le_cd
                                  , ce_data.owner_le_cd
                                  , ce_data.counterparty_le_cd
                                  , cev.transaction_amt
@@ -2204,8 +2213,13 @@ and exists    (
             (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP)
             SELECT
                 cep.BUSINESS_UNIT AS BUSINESS_UNIT,
-                cep.AFFILIATE AS AFFILIATE_LE_CD,
-                trunc(cep.ACCOUNTING_DT) AS ACCOUNTING_DT,
+            	  case
+									when cep.EVENT_TYP <> 'DAC_CC_CONS_ADJUST'
+										then cep.AFFILIATE
+									else null	
+								end
+ 								AS AFFILIATE_LE_CD,
+ 								trunc(cep.ACCOUNTING_DT) AS ACCOUNTING_DT,
                 cep.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
                 cep.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
                 cep.POLICY_ID AS POLICY_ID,
@@ -2299,8 +2313,13 @@ end AS VIE_BU_ACCOUNT_LOOKUP
             (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP)
             SELECT
                 cerhist.BUSINESS_UNIT AS BUSINESS_UNIT,
-                cerhist.AFFILIATE AS AFFILIATE_LE_CD,
-                trunc(cerhist.ACCOUNTING_DT) AS ACCOUNTING_DT,
+            		case
+									when cerhist.EVENT_TYP <> 'DAC_CC_CONS_ADJUST'
+										then cerhist.AFFILIATE
+									else null
+								end
+ 								AS AFFILIATE_LE_CD,
+ 								trunc(cerhist.ACCOUNTING_DT) AS ACCOUNTING_DT,
                 cerhist.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
                 cerhist.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
                 cerhist.POLICY_ID AS POLICY_ID,
@@ -2394,7 +2413,12 @@ end AS VIE_BU_ACCOUNT_LOOKUP
             (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP)
             SELECT
                 cercurr.BUSINESS_UNIT AS BUSINESS_UNIT,
-                cercurr.AFFILIATE AS AFFILIATE_LE_CD,
+	           		case
+									when cercurr.EVENT_TYP <> 'DAC_CC_CONS_ADJUST'
+										then cercurr.AFFILIATE
+									else null
+								end
+ 								AS AFFILIATE_LE_CD,
                 trunc(cercurr.ACCOUNTING_DT) AS ACCOUNTING_DT,
                 cercurr.POLICY_ACCIDENT_YR AS ACCIDENT_YR,
                 cercurr.POLICY_UNDERWRITING_YR AS UNDERWRITING_YR,
