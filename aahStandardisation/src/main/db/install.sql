@@ -369,6 +369,8 @@ conn ~stn_logon
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
 @@indices/stn/cev_valid.sql
+@@indices/stn/cev_data_comp1.sql
+@@indices/stn/cev_data_comp2.sql
 
 /*
  * Capture statistics across STN

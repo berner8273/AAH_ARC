@@ -22,4 +22,8 @@ insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_
 insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'FSANY' , 'AGCRP' , 'REIN4' , 'CARA1' );
 insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'FSAUK' , 'AGCRP' , 'REIN4' , 'CARA1' );
 insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'MBIU1' , 'AGCRP' , 'REIN4' , 'CARA1' );
+insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'CA005' , 'AGROL' , NULL , 'CA003' );
+insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'CA005' , 'AGREL' , NULL , 'CA003' );
+insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'CA005' , 'AGCRP' , NULL , 'CARA1' );
+
 commit;
