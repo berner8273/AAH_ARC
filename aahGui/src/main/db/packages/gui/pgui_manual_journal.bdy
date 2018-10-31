@@ -14854,7 +14854,7 @@ Begin
      where em_error_code = lcErrorCode_Combo;
 
     /* Update the corresponding journal line to Error. */
-    Merge /*+ parallel */ into slr_jrnl_lines_unposted a using (
+    Merge /*+ parallel */ into gui_jrnl_lines_unposted a using (
       Select /*+ parallel */ jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
         from gui_jrnl_lines_unposted
         join fdr.fr_combination_check_error on jlu_jrnl_hdr_id = substr(ce_input_id,1,instr(ce_input_id,'_')-1)
