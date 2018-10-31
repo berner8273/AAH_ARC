@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY SLR.slr_pkg AS
+CREATE OR REPLACE PACKAGE BODY slr.slr_pkg AS
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
@@ -581,31 +581,31 @@ BEGIN
             AE_GL_ENTITY AS JLU_ENTITY,
             AE_EPG_ID AS JLU_EPG_ID,
             AE_GL_ACCOUNT AS JLU_ACCOUNT,
-            AE_POSTING_SCHEMA AS JLU_SEGMENT_1,
-            AE_GAAP AS JLU_SEGMENT_2,
-            nvl(AE_DIMENSION_2,''NVS'') AS JLU_SEGMENT_3,
-            nvl(AE_DIMENSION_4,''NVS'') AS JLU_SEGMENT_4,
-            nvl(AE_DIMENSION_1,''NVS'') AS JLU_SEGMENT_5,
-            AE_DIMENSION_11 AS JLU_SEGMENT_6,
-            AE_DIMENSION_12 AS JLU_SEGMENT_7,
-            AE_DIMENSION_7 AS JLU_SEGMENT_8,
-            ''NVS'' AS JLU_SEGMENT_9,
-            ''NVS'' AS JLU_SEGMENT_10,
-            AE_DIMENSION_8 AS JLU_ATTRIBUTE_1,
-            AE_DIMENSION_9 AS JLU_ATTRIBUTE_2,
-            AE_DIMENSION_14 AS JLU_ATTRIBUTE_3,
-            AE_CLIENT_SPARE_ID4 AS JLU_ATTRIBUTE_4,
-            ''NVS'' AS JLU_ATTRIBUTE_5,
-            AE_DIMENSION_15 AS JLU_REFERENCE_1,
-            AE_CLIENT_SPARE_ID3 AS JLU_REFERENCE_2,
-            AE_DIMENSION_6 AS JLU_REFERENCE_3,
-            AE_DIMENSION_13 AS JLU_REFERENCE_4,
-            AE_CLIENT_SPARE_ID11 AS JLU_REFERENCE_5,
-            nvl(AE_DIMENSION_5,''NVS'') AS JLU_REFERENCE_6,
-            AE_DIMENSION_3 AS JLU_REFERENCE_7,
-            ''NVS'' AS JLU_REFERENCE_8,
-            ''NVS'' AS JLU_REFERENCE_9,
-            ''NVS'' AS JLU_REFERENCE_10,
+            AE_POSTING_SCHEMA                     AS JLU_SEGMENT_1,
+            nvl( AE_GAAP , ''NVS'' )              AS JLU_SEGMENT_2,
+            nvl( AE_DIMENSION_2 , ''NVS'' )       AS JLU_SEGMENT_3,
+            nvl( AE_DIMENSION_4 , ''NVS'' )       AS JLU_SEGMENT_4,
+            nvl( AE_DIMENSION_1 , ''NVS'' )       AS JLU_SEGMENT_5,
+            nvl( AE_DIMENSION_11 , ''NVS'' )      AS JLU_SEGMENT_6,
+            nvl( AE_DIMENSION_12 , ''NVS'' )      AS JLU_SEGMENT_7,
+            nvl( AE_DIMENSION_7 , ''NVS'' )       AS JLU_SEGMENT_8,
+            ''NVS''                               AS JLU_SEGMENT_9,
+            ''NVS''                               AS JLU_SEGMENT_10,
+            nvl( AE_DIMENSION_8 , ''NVS'' )       AS JLU_ATTRIBUTE_1,
+            nvl( AE_DIMENSION_9 , ''NVS'' )       AS JLU_ATTRIBUTE_2,
+            nvl( AE_DIMENSION_14 , ''NVS'' )      AS JLU_ATTRIBUTE_3,
+            nvl( AE_CLIENT_SPARE_ID4 , ''NVS'' )  AS JLU_ATTRIBUTE_4,
+            ''NVS''                               AS JLU_ATTRIBUTE_5,
+            nvl( AE_DIMENSION_15 , ''NVS'' )      AS JLU_REFERENCE_1,
+            nvl( AE_CLIENT_SPARE_ID3 , ''NVS'' )  AS JLU_REFERENCE_2,
+            nvl( AE_DIMENSION_6 , ''NVS'' )       AS JLU_REFERENCE_3,
+            nvl( AE_DIMENSION_13 , ''NVS'' )      AS JLU_REFERENCE_4,
+            nvl( AE_CLIENT_SPARE_ID11 , ''NVS'' ) AS JLU_REFERENCE_5,
+            nvl( AE_DIMENSION_5 , ''NVS'' )       AS JLU_REFERENCE_6,
+            nvl( AE_DIMENSION_3 , ''NVS'' )       AS JLU_REFERENCE_7,
+            ''NVS''                               AS JLU_REFERENCE_8,
+            ''NVS''                               AS JLU_REFERENCE_9,
+            ''NVS''                               AS JLU_REFERENCE_10,
             AE_ISO_CURRENCY_CODE AS JLU_TRAN_CCY,
             AE_AMOUNT AS JLU_TRAN_AMOUNT,
             AE_BASE_RATE AS JLU_BASE_RATE,
@@ -643,28 +643,28 @@ BEGIN
         JOIN SLR_ENTITIES
             ON ENT_ENTITY = AE_GL_ENTITY
         JOIN SLR_FAK_COMBINATIONS
-            ON NVL(AE_DIMENSION_11,''NVS'') = FC_SEGMENT_6
-            AND AE_GL_ACCOUNT = FC_ACCOUNT
+            ON AE_GL_ACCOUNT = FC_ACCOUNT
             AND AE_ISO_CURRENCY_CODE = FC_CCY
             AND AE_EPG_ID = FC_EPG_ID
             AND AE_GL_ENTITY = FC_ENTITY
-            AND AE_POSTING_SCHEMA = FC_SEGMENT_1
-            AND AE_GAAP = FC_SEGMENT_2
-            AND NVL(AE_DIMENSION_2,''NVS'') = FC_SEGMENT_3
-            AND NVL(AE_DIMENSION_4,''NVS'') = FC_SEGMENT_4
-            AND NVL(AE_DIMENSION_1,''NVS'') = FC_SEGMENT_5
-            AND NVL(AE_DIMENSION_12,''NVS'') = FC_SEGMENT_7
-            AND NVL(AE_DIMENSION_7,''NVS'') = FC_SEGMENT_8
-            AND ''NVS'' = FC_SEGMENT_9
-            AND ''NVS'' = FC_SEGMENT_10
+            AND AE_POSTING_SCHEMA                = FC_SEGMENT_1
+            AND NVL( AE_GAAP , ''NVS'' )         = FC_SEGMENT_2
+            AND NVL( AE_DIMENSION_2 , ''NVS'' )  = FC_SEGMENT_3
+            AND NVL( AE_DIMENSION_4 , ''NVS'' )  = FC_SEGMENT_4
+            AND NVL( AE_DIMENSION_1 , ''NVS'' )  = FC_SEGMENT_5
+            AND NVL( AE_DIMENSION_11 , ''NVS'' ) = FC_SEGMENT_6
+            AND NVL( AE_DIMENSION_12 , ''NVS'' ) = FC_SEGMENT_7
+            AND NVL( AE_DIMENSION_7 , ''NVS'' )  = FC_SEGMENT_8
+            AND ''NVS''                          = FC_SEGMENT_9
+            AND ''NVS''                          = FC_SEGMENT_10
         JOIN SLR_EBA_COMBINATIONS
-            ON NVL(AE_DIMENSION_8,''NVS'') = EC_ATTRIBUTE_1
-            AND EC_FAK_ID = FC_FAK_ID
-            AND NVL(AE_DIMENSION_9,''NVS'') = EC_ATTRIBUTE_2
-            AND NVL(AE_DIMENSION_14,''NVS'') = EC_ATTRIBUTE_3
-            AND NVL(AE_CLIENT_SPARE_ID4,''NVS'') = EC_ATTRIBUTE_4
-            AND ''NVS'' = EC_ATTRIBUTE_5
+            ON FC_FAK_ID = EC_FAK_ID
             AND AE_EPG_ID = EC_EPG_ID
+            AND NVL( AE_DIMENSION_8 , ''NVS'' )      = EC_ATTRIBUTE_1
+            AND NVL( AE_DIMENSION_9 , ''NVS'' )      = EC_ATTRIBUTE_2
+            AND NVL( AE_DIMENSION_14 , ''NVS'' )     = EC_ATTRIBUTE_3
+            AND NVL( AE_CLIENT_SPARE_ID4 , ''NVS'' ) = EC_ATTRIBUTE_4
+            AND ''NVS''                              = EC_ATTRIBUTE_5
         WHERE AE_EPG_ID = ''' || p_entity_proc_group || '''
             AND AE_POSTING_DATE <= :business_date___7
     ';
@@ -1073,13 +1073,13 @@ BEGIN
                 AE_GL_ACCOUNT,
                 AE_ISO_CURRENCY_CODE,
                 AE_POSTING_SCHEMA,
-                AE_GAAP,
-                NVL(AE_DIMENSION_2,''NVS'')    AE_DIMENSION_2,
-                NVL(AE_DIMENSION_4,''NVS'')    AE_DIMENSION_4,
-                NVL(AE_DIMENSION_1,''NVS'')    AE_DIMENSION_1,
-                NVL(AE_DIMENSION_11,''NVS'')   AE_DIMENSION_11,
-                NVL(AE_DIMENSION_12,''NVS'')   AE_DIMENSION_12,
-                NVL(AE_DIMENSION_7,''NVS'')    AE_DIMENSION_7
+                NVL( AE_GAAP , ''NVS'' )           AE_GAAP,
+                NVL( AE_DIMENSION_2 , ''NVS'' )    AE_DIMENSION_2,
+                NVL( AE_DIMENSION_4 , ''NVS'' )    AE_DIMENSION_4,
+                NVL( AE_DIMENSION_1 , ''NVS'' )    AE_DIMENSION_1,
+                NVL( AE_DIMENSION_11 , ''NVS'' )   AE_DIMENSION_11,
+                NVL( AE_DIMENSION_12 , ''NVS'' )   AE_DIMENSION_12,
+                NVL( AE_DIMENSION_7 , ''NVS'' )    AE_DIMENSION_7
             FROM FR_ACCOUNTING_EVENT
             WHERE AE_EPG_ID = ''' || p_epg_id || '''
                 AND AE_POSTING_DATE <= :business_date___1
@@ -1097,13 +1097,13 @@ BEGIN
             AE_GL_ACCOUNT,
             AE_ISO_CURRENCY_CODE,
             AE_POSTING_SCHEMA,
-            AE_GAAP,
-            NVL(AE_DIMENSION_2,''NVS''),
-            NVL(AE_DIMENSION_4,''NVS''),
-            NVL(AE_DIMENSION_1,''NVS''),
-            NVL(AE_DIMENSION_11,''NVS''),
-            NVL(AE_DIMENSION_12,''NVS''),
-            NVL(AE_DIMENSION_7,''NVS''),
+            NVL( AE_GAAP , ''NVS'' ),
+            NVL( AE_DIMENSION_2 , ''NVS'' ),
+            NVL( AE_DIMENSION_4 , ''NVS'' ),
+            NVL( AE_DIMENSION_1 , ''NVS'' ),
+            NVL( AE_DIMENSION_11 , ''NVS'' ),
+            NVL( AE_DIMENSION_12 , ''NVS'' ),
+            NVL( AE_DIMENSION_7 , ''NVS'') ,
             ''NVS'',
             ''NVS'',
             SEQ_SLR_FAK_COMBO_ID.NEXTVAL
@@ -1132,26 +1132,26 @@ BEGIN
             SELECT DISTINCT
                 AE_EPG_ID,
                 FC_FAK_ID,
-                NVL(AE_DIMENSION_8,''NVS'') AE_DIMENSION_8,
-                NVL(AE_DIMENSION_9,''NVS'') AE_DIMENSION_9,
-                NVL(AE_DIMENSION_14,''NVS'') AE_DIMENSION_14,
-                AE_CLIENT_SPARE_ID4
+                NVL(AE_DIMENSION_8,''NVS'')      AE_DIMENSION_8,
+                NVL(AE_DIMENSION_9,''NVS'')      AE_DIMENSION_9,
+                NVL(AE_DIMENSION_14,''NVS'')     AE_DIMENSION_14,
+                NVL(AE_CLIENT_SPARE_ID4,''NVS'') AE_CLIENT_SPARE_ID4
             FROM FR_ACCOUNTING_EVENT
             JOIN SLR_FAK_COMBINATIONS
               ON AE_GL_ACCOUNT = FC_ACCOUNT
                 AND AE_ISO_CURRENCY_CODE = FC_CCY
                 AND AE_EPG_ID = FC_EPG_ID
                 AND AE_GL_ENTITY = FC_ENTITY
-                AND AE_POSTING_SCHEMA = FC_SEGMENT_1
-                AND AE_GAAP = FC_SEGMENT_2
-                AND NVL(AE_DIMENSION_2,''NVS'') = FC_SEGMENT_3
-                AND NVL(AE_DIMENSION_4,''NVS'') = FC_SEGMENT_4
-                AND NVL(AE_DIMENSION_1,''NVS'') = FC_SEGMENT_5
-                AND NVL(AE_DIMENSION_11,''NVS'') = FC_SEGMENT_6
-                AND NVL(AE_DIMENSION_12,''NVS'') = FC_SEGMENT_7
-                AND NVL(AE_DIMENSION_7,''NVS'') = FC_SEGMENT_8
-                AND ''NVS'' = FC_SEGMENT_9
-                AND ''NVS'' = FC_SEGMENT_10
+                AND AE_POSTING_SCHEMA                = FC_SEGMENT_1
+                AND NVL( AE_GAAP , ''NVS'' )         = FC_SEGMENT_2
+                AND NVL( AE_DIMENSION_2 , ''NVS'' )  = FC_SEGMENT_3
+                AND NVL( AE_DIMENSION_4 , ''NVS'' )  = FC_SEGMENT_4
+                AND NVL( AE_DIMENSION_1 , ''NVS'' )  = FC_SEGMENT_5
+                AND NVL( AE_DIMENSION_11 , ''NVS'' ) = FC_SEGMENT_6
+                AND NVL( AE_DIMENSION_12 , ''NVS'' ) = FC_SEGMENT_7
+                AND NVL( AE_DIMENSION_7 , ''NVS'' )  = FC_SEGMENT_8
+                AND ''NVS''                          = FC_SEGMENT_9
+                AND ''NVS''                          = FC_SEGMENT_10
             WHERE AE_EPG_ID = ''' || p_epg_id || '''
                 AND AE_POSTING_DATE <= :business_date___1
             MINUS

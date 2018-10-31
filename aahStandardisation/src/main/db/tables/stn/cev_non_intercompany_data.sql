@@ -40,10 +40,13 @@ create global temporary table stn.cev_non_intercompany_data
 ,  chartfield_cd                  varchar2 ( 20 char )
 ,  transaction_ccy                varchar2 ( 3 char )
 ,  transaction_amt                number
+,  input_transaction_amt          number
 ,  functional_ccy                 varchar2 ( 3 char )
 ,  functional_amt                 number
+,  input_functional_amt           number
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  reporting_amt                  number
+,  input_reporting_amt            number
 ,  lpg_id                         number ( 38 )
 )
 on commit delete rows

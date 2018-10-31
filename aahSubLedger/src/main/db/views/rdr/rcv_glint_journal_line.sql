@@ -137,20 +137,37 @@ AS
           CAST (jl_tran_ccy AS VARCHAR2 (3)) AS jl_tran_ccy,
           ROUND (jl_tran_amount, 2) AS jl_tran_amount,
           jl_base_rate,
-          CAST (jl_base_ccy AS VARCHAR2 (3)) AS jl_base_ccy,
-          ROUND (jl_base_amount ,2) AS jl_base_amount,
+          CASE
+             WHEN JL_SEGMENT_1 = 'UKGAAP_ADJ'
+             THEN
+                CAST (jl_local_ccy AS VARCHAR2 (3))
+             ELSE
+                CAST (jl_base_ccy AS VARCHAR2 (3))
+          END
+             AS jl_base_ccy,
+          CASE
+             WHEN JL_SEGMENT_1 = 'UKGAAP_ADJ' THEN ROUND (jl_local_amount, 2)
+             ELSE ROUND (jl_base_amount, 2)
+          END
+             AS jl_base_amount,
           jl_local_rate,
           jl_local_ccy,
-          ROUND (jl_local_amount,2) AS jl_local_amount,
+          ROUND (jl_local_amount, 2) AS jl_local_amount,
           jl_created_by,
           jl_created_on,
           jl_amended_by,
           jl_amended_on,
           jl_recon_status,
           NVL (fgl.lk_lookup_value3, ' ') AS event_class,
-          CASE WHEN jl_tran_amount < 0 THEN ROUND(jl_tran_amount,2) ELSE NULL END
+          CASE
+             WHEN jl_tran_amount < 0 THEN ROUND (jl_tran_amount, 2)
+             ELSE NULL
+          END
              AS credit_amt,
-          CASE WHEN jl_tran_amount >= 0 THEN ROUND(jl_tran_amount,2) ELSE NULL END
+          CASE
+             WHEN jl_tran_amount >= 0 THEN ROUND (jl_tran_amount, 2)
+             ELSE NULL
+          END
              AS debit_amt,
           'U' AS event_status,
           jl.jl_jrnl_process_id,

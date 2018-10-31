@@ -1341,7 +1341,7 @@ and not exists ( select null
                 TO_CHAR(cs.ROW_SID) AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 TO_CHAR(cs.STREAM_ID) AS FINANCIAL_INSTRUMENT_ID,
-                TO_CHAR(cs.STREAM_ID) || ' - ' || pol.POLICY_ID || ' - ' || pol.POLICY_ABBR_NM AS POLICY_NAME_STREAM_ID,
+                pol.POLICY_ID || ' - ' || TO_CHAR(cs.STREAM_ID) || ' - ' || pol.POLICY_ABBR_NM AS POLICY_NAME_STREAM_ID,
                 NVL(pdtvn.t_fdr_ver_no, 0) + 1 AS POLICY_VERSION
             FROM
                 INSURANCE_POLICY pol

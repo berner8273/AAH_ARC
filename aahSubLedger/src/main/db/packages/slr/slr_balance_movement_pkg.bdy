@@ -369,7 +369,8 @@ CREATE OR REPLACE PACKAGE BODY SLR.slr_balance_movement_pkg as
   IS
   BEGIN
     RETURN case pMethod when 'LOCAL-BASE' THEN ',Round(sum(LOCAL_BALANCE) * max(br.ER_RATE),cast(nvl(max(bec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(BASE_BALANCE)' WHEN 'DEFAULT'
-    then ',Round(sum(TRAN_BALANCE) * max(br.ER_RATE),cast(nvl(max(bec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(BASE_BALANCE)' else ',0' end;
+    then ',Round(sum(TRAN_BALANCE) * max(br.ER_RATE),cast(nvl(max(bec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(BASE_BALANCE)' when 'TRANS-BASE'
+    THEN ',Round(sum(TRAN_BALANCE) * max(br.ER_RATE),cast(nvl(max(lec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(BASE_BALANCE)' else ',0' end;
   end getBaseAmountStmt;
 
  FUNCTION getLocalAmountStmt (pMethod IN VARCHAR2) RETURN VARCHAR2
@@ -1232,6 +1233,9 @@ CREATE OR REPLACE PACKAGE BODY SLR.slr_balance_movement_pkg as
     IF (gMethod = 'TRANS-LOCAL') THEN
         v_base_rate := ',0';
         v_local_rate := ',max(lr.ER_RATE)';
+    ELSIF (gMethod = 'TRANS-BASE') THEN
+        v_base_rate := ',max(br.ER_RATE)';
+        v_local_rate := ',0';
     ELSIF (gMethod = 'LOCAL-BASE') THEN
         v_base_rate := ',max(br.ER_RATE)';
         v_local_rate := ',0';

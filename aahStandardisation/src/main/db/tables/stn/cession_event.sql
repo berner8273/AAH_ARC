@@ -13,10 +13,10 @@ create table stn.cession_event
 ,   source_event_ts     timestamp                                          not null
 ,   transaction_ccy     varchar2 ( 3 char )                                not null
 ,   transaction_amt     number ( 38 , 9 )                                  not null
-,   functional_ccy      varchar2 ( 3 char )
-,   functional_amt      number ( 38 , 9 )
-,   reporting_ccy       varchar2 ( 3 char )
-,   reporting_amt       number ( 38 , 9 )
+,   functional_ccy      varchar2 ( 3 char )                                not null
+,   functional_amt      number ( 38 , 9 )                                  not null
+,   reporting_ccy       varchar2 ( 3 char )                                not null
+,   reporting_amt       number ( 38 , 9 )                                  not null
 ,   lpg_id              number   ( 38 , 0 ) default 2                      not null
 ,   event_status        varchar2 ( 1 char ) default 'U'                    not null
 ,   feed_uuid           raw ( 16 )                                         not null
