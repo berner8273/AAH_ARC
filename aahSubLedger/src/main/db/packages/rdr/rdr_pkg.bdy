@@ -9,7 +9,7 @@ AS
 
    UPDATE fdr.fr_general_lookup
    SET lk_lookup_value5 = 'N',
-       lk_lookup_value6 = SYSDATE
+       lk_lookup_value6 = CONCAT(CONCAT(TO_CHAR(SYSDATE, 'MM-DD-YYYY HH:MI:SS'), '  '), lk_input_by)
    WHERE   lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
    AND     lk_lookup_value5 = 'Y';
 
