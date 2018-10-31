@@ -307,6 +307,25 @@ conn ~fdr_logon
 
 conn ~slr_logon
 
+begin
+    for i in (
+                 select
+                        'alter table slr.slr_process_config drop constraint ' || upper ( constraint_name ) drop_stmt
+                   from
+                        all_constraints
+                  where
+                        lower ( owner )      = 'slr'
+                    and lower ( table_name ) = 'slr_process_config'
+                    and upper ( search_condition_vc ) like 'PC_METHOD%'
+             )
+    loop
+        execute immediate i.drop_stmt;
+    end loop;
+end;
+/
+
+alter table slr.slr_process_config add constraint ck_pc_method check (PC_METHOD IN ('DEFAULT', 'TRANS-LOCAL', 'LOCAL-BASE', 'TRANS-BASE'));
+
 @@data/slr/slr_process_config.sql
 @@data/slr/slr_process_config_detail.sql
 @@data/slr/slr_process_source.sql
