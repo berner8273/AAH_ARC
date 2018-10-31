@@ -1433,8 +1433,12 @@ and     exists (
                 jl.TRANSACTION_CCY AS transaction_ccy,
                 jl.TRANSACTION_AMT AS transaction_amt,
                 (CASE
-                    WHEN jl.TRANSACTION_AMT >= 0 THEN 'DR'
-                    ELSE 'CR'
+                      WHEN jl.TRANSACTION_AMT < 0 THEN 'CR'
+                      WHEN jl.TRANSACTION_AMT > 0 THEN 'DR'
+                      WHEN jl.REPORTING_AMT < 0 THEN 'CR'
+                      WHEN jl.REPORTING_AMT > 0 THEN 'DR'
+                      WHEN jl.FUNCTIONAL_AMT < 0 THEN 'CR'
+                      ELSE 'DR'
                 END) AS sra_ae_dr_cr,
                 jl.ACCOUNTING_DT AS accounting_dt,
                 pl_ultimate_parent_le_id.PL_PARTY_LEGAL_ID AS ultimate_parent_le_id,
