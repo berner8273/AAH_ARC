@@ -277,8 +277,8 @@ delete from fdr.fr_party_type                where pt_party_type_name           
 update fdr.fr_party_type fpt set fpt.pt_active = 'A' where fpt.pt_party_type_name in ( 'DEFAULT' , 'Counterparty' , 'Broker' , 'Governmental Agency' , 'Individual' , 'Clearing Agent' , 'Nostro Agent' , 'Business Unit' );
 delete from fdr.fr_city_lookup               where cil_ci_city_id                 = 'NVS';
 delete from fdr.fr_city                      where ci_city_id                     = 'NVS';
-delete from fdr.fr_general_codes             where gc_gct_code_type_id            in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' , 'POLICY_TAX' , 'USER_TASKS' ) or gc_gct_code_type_id like 'COMBO%';
-delete from fdr.fr_general_code_types        where gct_code_type_id               in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' , 'POLICY_TAX' , 'USER_TASKS' ) or gct_code_type_id    like 'COMBO%';
+delete from fdr.fr_general_codes             where gc_gct_code_type_id            in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' , 'POLICY_TAX' , 'USER_TASKS' , 'JOURNAL_STATUS' , 'PS_JOURNAL_STATUS' , 'GLINT_JOURNAL_STATUS' ) or gc_gct_code_type_id like 'COMBO%';
+delete from fdr.fr_general_code_types        where gct_code_type_id               in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' , 'POLICY_TAX' , 'USER_TASKS' , 'JOURNAL_STATUS' , 'PS_JOURNAL_STATUS' , 'GLINT_JOURNAL_STATUS' ) or gct_code_type_id    like 'COMBO%';
 delete from fdr.fr_org_hierarchy_type        where oht_org_hier_client_code       not in ( 'DEFAULT' );
 delete from fdr.fr_org_node_type             where ont_org_node_type_name         not in ( 'DEFAULT' );
 delete from fdr.is_groupuser                 where isgu_usr_ref                   != 3;
