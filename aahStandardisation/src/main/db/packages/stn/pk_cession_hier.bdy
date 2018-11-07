@@ -5,75 +5,6 @@ as
     as
         v_cession_rec stn.pk_cession_hier.le_cession_rec;
 
-        procedure pr_set_gc_stream_detail
-        (
-            p_feed_uuid            in  stn.insurance_policy.feed_uuid%type
-        ,   p_path_to_child_stream in  varchar2
-        ,   p_ceding_stream_id     out stn.cession.stream_id%type
-        ,   p_ledger_entity_le_id  out stn.legal_entity.le_id%type
-        ,   p_ledger_entity_le_cd  out stn.legal_entity.le_cd%type
-        )
-        as
-        begin
-
-            with
-                 cession_path
-              as (
-                         select
-                                level                                                           lvl
-                              , regexp_substr ( p_path_to_child_stream , '[^/]+' , 1 , level )  stream_id
-                           from
-                                dual
-                     connect by
-                                regexp_substr ( p_path_to_child_stream , '[^/]+' , 1 , level ) is not null
-                 )
-            select
-                   stream_id
-                 , ledger_entity_le_id
-                 , ledger_entity_le_cd
-                   into
-                   p_ceding_stream_id
-                 , p_ledger_entity_le_id
-                 , p_ledger_entity_le_cd
-              from (
-                       select
-                              cp.lvl
-                            , cp.stream_id
-                            , to_number ( pfpl.pl_global_id )                                            ledger_entity_le_id
-                            , pfpl.pl_party_legal_clicode                                                ledger_entity_le_cd
-                            , max ( case when cs.cession_typ = 'GP' then cp.lvl else null end ) over ( ) ceding_stream_lvl
-                         from
-                                   cession_path              cp
-                              join stn.cession               cs    on cp.stream_id                   = cs.stream_id
-                              join fdr.fr_party_legal        cfpl  on cs.le_id                       = to_number ( cfpl.pl_global_id ) 
-                              join fdr.fr_party_legal_lookup cfpll on cfpl.pl_party_legal_id         = cfpll.pll_pl_party_legal_id
-                              join fdr.fr_party_type         cfpt  on cfpl.pl_pt_party_type_id       = cfpt.pt_party_type_id
-                              join fdr.fr_org_network        cfon  on cfpl.pl_party_legal_id         = cfon.on_pl_party_legal_id
-                              join fdr.fr_org_node_structure fons  on cfon.on_org_node_id            = fons.ons_on_child_org_node_id
-                              join fdr.fr_org_hierarchy_type foht  on fons.ons_oht_org_hier_type_id  = foht.oht_org_hier_type_id
-                              join fdr.fr_org_network        pfon  on fons.ons_on_parent_org_node_id = pfon.on_org_node_id
-                              join fdr.fr_party_legal        pfpl  on pfon.on_pl_party_legal_id      = pfpl.pl_party_legal_id
-                              join fdr.fr_party_type         pfpt  on pfpl.pl_pt_party_type_id       = pfpt.pt_party_type_id
-                              join fdr.fr_party_legal_lookup pfpll on pfpl.pl_party_legal_id         = pfpll.pll_pl_party_legal_id
-                        where
-                              cs.feed_uuid                    = p_feed_uuid
-                          and cfpt.pt_party_type_name         = 'Internal'
-                          and pfpt.pt_party_type_name         = 'Ledger Entity'
-                          and foht.oht_org_hier_client_code   = 'SLR_LINK'
-                   )
-             where
-                   lvl = ceding_stream_lvl
-                 ;
-
-        exception
-            when no_data_found then
-                p_ceding_stream_id    := null;
-                p_ledger_entity_le_id := null;
-                p_ledger_entity_le_cd := null;
-            when others then
-                raise;
-        end pr_set_gc_stream_detail;
-
     begin
         for i in (
                         with
@@ -225,18 +156,9 @@ as
                                            where
                                                  fpt.pt_party_type_name = 'Ledger Entity'
                                       )
-                                                   ledger_entity on (
-                                                                            ct.child_le_id       = ledger_entity.ledger_entity_le_id
-                                                                        and ct.child_cession_typ not in ( 'GC' )
-                                                                    )
-                            left join le_slr_link  internal_le   on (
-                                                                           ct.child_le_id        = internal_le.child_le_id
-                                                                       and ct.child_cession_typ  not in ( 'GC' )
-                                                                    )
-                            left join le_slr_link  external_le   on (
-                                                                           ct.parent_le_id       = external_le.child_le_id
-                                                                       and ct.parent_cession_typ not in ( 'GC' )
-                                                                    )
+                                                   ledger_entity on        ct.child_le_id       = ledger_entity.ledger_entity_le_id
+                            left join le_slr_link  internal_le   on        ct.child_le_id       = internal_le.child_le_id
+                            left join le_slr_link  external_le   on        ct.parent_le_id      = external_le.child_le_id
                  )
         loop
 
@@ -253,13 +175,8 @@ as
             v_cession_rec.ultimate_parent_stream_id := i.ultimate_parent_stream_id;
             v_cession_rec.path_to_child_stream      := i.path_to_child_stream;
             v_cession_rec.hierarchy_level           := i.hierarchy_level;
-
-            if i.child_cession_typ = 'GC' then
-                pr_set_gc_stream_detail ( i.feed_uuid , i.path_to_child_stream , v_cession_rec.ceding_stream_id , v_cession_rec.ledger_entity_le_id , v_cession_rec.ledger_entity_le_cd );
-            else
-                v_cession_rec.ceding_stream_id    := i.parent_stream_id;
-                v_cession_rec.ledger_entity_le_id := i.ledger_entity_le_id;
-            end if;
+            v_cession_rec.ceding_stream_id          := i.parent_stream_id;
+            v_cession_rec.ledger_entity_le_id       := i.ledger_entity_le_id;
 
             if v_cession_rec.ledger_entity_le_id is not null then
                 pipe row ( v_cession_rec );
