@@ -2191,6 +2191,10 @@ end
                 ce_default.SYSTEM_INSTANCE AS SRAE_INSTR_SYS_INST_CODE,
                 (CASE
                     WHEN cep.TRANSACTION_AMT > 0 THEN 'POS'
+                    WHEN cep.TRANSACTION_AMT < 0 THEN 'NEG'
+                    WHEN cep.FUNCTIONAL_AMT > 0 THEN 'POS'
+                    WHEN cep.FUNCTIONAL_AMT < 0 THEN 'NEG'
+                    WHEN cep.REPORTING_AMT > 0 THEN 'POS'
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
@@ -2291,6 +2295,10 @@ end
                 ce_default.SYSTEM_INSTANCE AS SRAE_INSTR_SYS_INST_CODE,
                 (CASE
                     WHEN cerhist.TRANSACTION_AMT > 0 THEN 'POS'
+                    WHEN cerhist.TRANSACTION_AMT < 0 THEN 'NEG'
+                    WHEN cerhist.FUNCTIONAL_AMT > 0 THEN 'POS'
+                    WHEN cerhist.FUNCTIONAL_AMT < 0 THEN 'NEG'
+                    WHEN cerhist.REPORTING_AMT > 0 THEN 'POS'
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
@@ -2391,6 +2399,10 @@ end
                 ce_default.SYSTEM_INSTANCE AS SRAE_INSTR_SYS_INST_CODE,
                 (CASE
                     WHEN cercurr.TRANSACTION_AMT > 0 THEN 'POS'
+                    WHEN cercurr.TRANSACTION_AMT < 0 THEN 'NEG'
+                    WHEN cercurr.FUNCTIONAL_AMT > 0 THEN 'POS'
+                    WHEN cercurr.FUNCTIONAL_AMT < 0 THEN 'NEG'
+                    WHEN cercurr.REPORTING_AMT > 0 THEN 'POS'
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
