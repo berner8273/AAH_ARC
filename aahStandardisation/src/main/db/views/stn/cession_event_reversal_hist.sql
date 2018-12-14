@@ -45,6 +45,7 @@ select distinct
      , fsrae.srae_client_spare_id8 * -1  reporting_amt
      , fsrae.lpg_id                      lpg_id
      , fsrae.srae_client_spare_id16      reversal_indicator
+     , fsrae.srae_posting_date           original_posting_dt
   from
        fdr.fr_stan_raw_acc_event fsrae
  where exists (
