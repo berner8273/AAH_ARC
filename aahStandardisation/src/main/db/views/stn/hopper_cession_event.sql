@@ -54,6 +54,7 @@ select
      , fsrae.message_id                  message_id
      , fsrae.process_id                  process_id
      , fsrae.lpg_id                      lpg_id
+     , fsrae.srae_client_date2           original_posting_dt
   from
        fdr.fr_stan_raw_acc_event fsrae
      ;
