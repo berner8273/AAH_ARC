@@ -343,6 +343,7 @@ alter table slr.slr_process_config add constraint ck_pc_method check (PC_METHOD 
 @@views/slr/vbm_ag_retainedearningseba01.sql
 @@views/slr/vbm_ag_retainedearningseba02.sql
 @@views/slr/vbm_ag_retainedearningseba03.sql
+@@views/slr/v_ag_ye_clr_run.sql
 
 -- -----------------------------------------------------------------------------------------
 -- purpose : Begin Combo Edit installation

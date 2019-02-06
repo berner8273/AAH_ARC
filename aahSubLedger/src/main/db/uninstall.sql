@@ -206,6 +206,7 @@ revoke select on stn.execution_type     from slr;
 
 conn ~fdr_logon
 revoke select , insert , update on fdr.fr_general_lookup  from slr;
+revoke select on fdr.fr_general_lookup_aud  from slr;
 revoke update on fdr.fr_general_lookup  from rdr;
 
 -- -----------------------------------------------------------------------------------------
@@ -294,6 +295,7 @@ commit;
 drop view         slr.vbm_ag_retainedearningseba01;
 drop view         slr.vbm_ag_retainedearningseba02;
 drop view         slr.vbm_ag_retainedearningseba03;
+drop view         slr.v_ag_ye_clr_run;
 delete from       slr.slr_process_config_detail where pcd_pc_p_process = 'PLRETEARNINGS';
 delete from       slr.slr_process_config where pc_p_process = 'PLRETEARNINGS';
 delete from       slr.slr_process_source where upper(sps_source_name) like 'BMRETAINEDEARNINGSEBA%';

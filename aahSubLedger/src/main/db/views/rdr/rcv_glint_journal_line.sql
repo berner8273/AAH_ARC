@@ -59,14 +59,16 @@ create or replace view rdr.rcv_glint_journal_line
    DEBIT_AMT,
    EVENT_STATUS,
    SLR_PROCESS_ID,
-   MANUAL_JE
+   MANUAL_JE,
+   JH_JRNL_TYPE,
+   JH_JRNL_DESCRIPTION
 )
-   BEQUEATH DEFINER
+   
 AS
    SELECT jl_jrnl_hdr_id,
           CASE WHEN jt.ejt_madj_flag = 'Y' THEN jl_jrnl_hdr_id ELSE 0 END
              AS jl_jrnl_hdr_id2,
-          CAST (jl_jrnl_line_number AS NUMBER (5, 0)) AS jl_jrnl_line_number,
+          CAST (jl_jrnl_line_number AS NUMBER (12, 0)) AS jl_jrnl_line_number,
           jl_fak_id,
           jl_eba_id,
           jl_jrnl_status,
@@ -171,7 +173,16 @@ AS
              AS debit_amt,
           'U' AS event_status,
           jl.jl_jrnl_process_id,
-          jt.ejt_madj_flag
+          jt.ejt_madj_flag,
+          NVL (jh.jh_jrnl_type, ' ') AS jh_jrnl_type,
+          CASE
+             WHEN jt.ejt_madj_flag = 'Y'
+             THEN
+                NVL (jh.jh_jrnl_description, ' ')
+             ELSE
+                ' '
+          END
+             AS jh_jrnl_description
      FROM slr.slr_jrnl_lines jl
           LEFT JOIN fdr.fr_general_lookup fgl
              ON     jl.jl_attribute_4 = fgl.lk_match_key1

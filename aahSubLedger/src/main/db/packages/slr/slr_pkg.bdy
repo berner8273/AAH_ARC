@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY slr.slr_pkg AS
+CREATE OR REPLACE PACKAGE BODY SLR.slr_pkg AS
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
@@ -619,7 +619,7 @@ BEGIN
             :user___5 AS JLU_AMENDED_BY,
             :gp_todays_bus_date___6 AS JLU_AMENDED_ON,
             AE_JOURNAL_TYPE AS JLU_JRNL_TYPE,
-            NULL AS JLU_JRNL_DESCRIPTION,
+            AE_GL_NARRATIVE AS JLU_JRNL_DESCRIPTION,
             AE_SOURCE_SYSTEM AS JLU_JRNL_SOURCE,
             AE_ACC_EVENT_ID AS JLU_JRNL_SOURCE_JRNL_ID,
             ''SLR'' AS JLU_JRNL_AUTHORISED_BY,
@@ -1475,7 +1475,7 @@ BEGIN
                         ) seg8
       join  fdr.fr_trade ft on fiie.iie_instrument_id = ft.t_i_instrument_id
      where  ft.t_fdr_ver_no = ( select max( ft1.t_fdr_ver_no )
-                                  from fdr.fr_trade ft1 
+                                  from fdr.fr_trade ft1
                                  where ft1.t_source_tran_no = ft.t_source_tran_no );
 
     SELECT  COUNT(*)
@@ -2990,7 +2990,7 @@ merge
 using (
           select distinct
                  'EVENT_CLASS_PERIOD'                                       LK_LKT_LOOKUP_TYPE_CODE
-               , eg.event_group                                             LK_MATCH_KEY1
+               , eg.event_class                                             LK_MATCH_KEY1
                , to_char(ep.ep_bus_year)                                    LK_MATCH_KEY2
                , lpad(ep.ep_bus_period,2,'0')                               LK_MATCH_KEY3
                , to_char(ep.ep_bus_year)||'-'||lpad(ep.ep_bus_period,2,'0') LK_MATCH_KEY4
@@ -2998,13 +2998,15 @@ using (
                , to_char(ep.ep_bus_period_start,'DD-MON-YYYY')              LK_LOOKUP_VALUE2
                , to_char(ep.ep_bus_period_end,'DD-MON-YYYY')                LK_LOOKUP_VALUE3
                , 'N'                                                        LK_LOOKUP_VALUE5
+               , eg.event_class_order                                       LK_LOOKUP_VALUE10
                , to_date('01/01/2000','mm/dd/yyyy')                         LK_EFFECTIVE_FROM
                , to_date('01/01/2099','mm/dd/yyyy')                         LK_EFFECTIVE_TO
             from
                  slr_entity_periods ep
       cross join ( select distinct
-                          lk_match_key1    event_group
-                        , lk_lookup_value2 frequency_ind
+                          lk_match_key1     event_class
+                        , lk_lookup_value2  frequency_ind
+                        , lk_lookup_value10 event_class_order
                      from
                           fdr.fr_general_lookup
                     where
@@ -3028,9 +3030,10 @@ using (
       )
 when
       matched then update set
-                     gl.LK_MATCH_KEY2 = input.LK_MATCH_KEY2
-                   , gl.LK_MATCH_KEY3 = input.LK_MATCH_KEY3
-                   , gl.LK_MATCH_KEY4 = input.LK_MATCH_KEY4
+                     gl.LK_MATCH_KEY2     = input.LK_MATCH_KEY2
+                   , gl.LK_MATCH_KEY3     = input.LK_MATCH_KEY3
+                   , gl.LK_MATCH_KEY4     = input.LK_MATCH_KEY4
+                   , gl.LK_LOOKUP_VALUE10 = input.LK_LOOKUP_VALUE10
 when not
       matched then insert
                    (
@@ -3043,6 +3046,7 @@ when not
                     , gl.LK_LOOKUP_VALUE2
                     , gl.LK_LOOKUP_VALUE3
                     , gl.LK_LOOKUP_VALUE5
+                    , gl.LK_LOOKUP_VALUE10
                     , gl.LK_EFFECTIVE_FROM
                     , gl.LK_EFFECTIVE_TO
                    )
@@ -3057,6 +3061,7 @@ when not
                    ,   input.LK_LOOKUP_VALUE2
                    ,   input.LK_LOOKUP_VALUE3
                    ,   input.LK_LOOKUP_VALUE5
+                   ,   input.LK_LOOKUP_VALUE10
                    ,   input.LK_EFFECTIVE_FROM
                    ,   input.LK_EFFECTIVE_TO
                    )
@@ -4692,10 +4697,10 @@ end pYECleardown;
 
 PROCEDURE pYEJLU(pProcessId IN NUMBER)
 AS
-    
+
 BEGIN
     merge into slr.slr_jrnl_lines_unposted jlu
-   using 
+   using
    ( select jl2.jl_attribute_1, jl2.jl_epg_id,
              min(jl2.jl_reference_2) gross_stream_owner,
              min(jl2.jl_reference_4) owner_entity,
@@ -4704,8 +4709,8 @@ BEGIN
        group by jl2.jl_attribute_1, jl2.jl_epg_id
        ) jl
        on (jlu.jlu_attribute_1 = jl.jl_attribute_1 and jlu.jlu_epg_id = jl.jl_epg_id)
-    when matched 
-   then update 
+    when matched
+   then update
         set jlu.jlu_reference_2 = jl.gross_stream_owner,
             jlu.jlu_reference_4 = jl.owner_entity,
             jlu.jlu_reference_7 = jl.int_ext_counterparty
