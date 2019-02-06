@@ -1,0 +1,22 @@
+create or replace package stn.pk_posting_rules
+as
+   procedure pr_posting_rules_clear;
+   procedure pr_posting_rules_update;
+   procedure pr_posting_rules_compare ( p_no_load_eh    out number
+                                      , p_no_load_be    out number
+                                      , p_no_load_gc    out number
+                                      , p_no_load_pm    out number
+                                      , p_no_load_vp    out number
+                                      , p_no_load_pd    out number
+                                      , p_no_load_al    out number
+                                      , p_no_load_total out number
+                                      , p_no_diff_eh    out number
+                                      , p_no_diff_be    out number
+                                      , p_no_diff_gc    out number
+                                      , p_no_diff_pm    out number
+                                      , p_no_diff_vp    out number
+                                      , p_no_diff_pd    out number
+                                      , p_no_diff_al    out number
+                                      , p_no_diff_total out number );
+end pk_posting_rules;
+/
