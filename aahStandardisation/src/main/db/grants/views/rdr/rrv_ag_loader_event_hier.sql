@@ -1,0 +1,1 @@
+grant select on rdr.rrv_ag_loader_event_hier to stn with grant option;

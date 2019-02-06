@@ -1,0 +1,1 @@
+grant select on stn.vie_posting_method_prem_type to rdr with grant option;
