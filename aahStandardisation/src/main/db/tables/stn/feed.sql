@@ -9,6 +9,6 @@ create table stn.feed
 ,   loaded_ts       timestamp                                             not null
 ,   constraint pk_f     primary key ( feed_sid )
 ,   constraint uk_f     unique      ( feed_uuid )
-,   constraint uk_f_tet unique      ( feed_typ , effective_dt , loaded_ts )
+,   constraint uk_f_tet unique      ( feed_typ , effective_dt , system_cd , loaded_ts )
 ,   constraint ck_feed_effective_dt check ( effective_dt = trunc ( effective_dt ) )
 );
