@@ -11,9 +11,13 @@ select
      , fgl.lk_effective_from        effective_from
      , fgl.lk_effective_to          effective_to
      , fgl.lk_active                event_typ_sts
-     , gl.lk_lookup_value2          period_close_freq
-     from fdr.fr_general_lookup fgl
-        join fdr.fr_general_lookup gl on gl.lk_match_key1 = fgl.lk_lookup_value3
-            where gl.lk_lkt_lookup_type_code = 'EVENT_CLASS'        
-            and fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
+     , fglcls.lk_lookup_value2      period_close_freq
+  from
+       fdr.fr_general_lookup fgl
+  join fdr.fr_general_lookup fglcls on fgl.lk_lookup_value3 = fglcls.lk_match_key1
+                                   and 'EVENT_CLASS'        = fglcls.lk_lkt_lookup_type_code
+ where
+       fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
+   and sysdate between fgl.lk_effective_from    and fgl.lk_effective_to
+   and sysdate between fglcls.lk_effective_from and fglcls.lk_effective_to
 ;

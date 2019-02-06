@@ -46,6 +46,7 @@ select distinct
      , cep.event_typ
      , cep.business_event_typ
      , cep.business_unit
+     , cep.bu_lookup
      , cep.affiliate
      , cep.owner_le_cd
      , cep.counterparty_le_cd
