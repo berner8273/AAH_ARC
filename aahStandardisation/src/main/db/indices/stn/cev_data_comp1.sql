@@ -1,1 +1,0 @@
-create index stn.idx_cev_data_comp1 on stn.cev_data (premium_typ, correlation_uuid, event_typ);
