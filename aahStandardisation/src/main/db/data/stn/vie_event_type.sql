@@ -3,10 +3,10 @@ insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id f
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_WP' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_AR' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_FUT2CURR' ) );
-insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_CASHOFFSET' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_ACC' ) );
-insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_UN_CURR' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_UN_FUT' ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_UN_CURR' ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPF_CASHOFFSET' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_WP' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPD_AR' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIEPC_UPR_INITIAL' ) );
@@ -26,10 +26,10 @@ insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id f
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_CC' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_AR' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_FUT2CURR' ) );
-insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_CASHOFFSET' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_ACC' ) );
-insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_UN_CURR' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_UN_FUT' ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_UN_CURR' ) );
+insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECF_CASHOFFSET' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECD_WP' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECD_AR' ) );
 insert into stn.vie_event_type ( event_typ_id ) values ( ( select event_typ_id from stn.event_type where event_typ = 'VIECC_DAC_CAP_DEF' ) );
