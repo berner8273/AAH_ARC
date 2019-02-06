@@ -25,6 +25,7 @@ drop view rdr.rrv_ag_account_lookup;
 drop view rdr.rrv_ag_accounting_basis_ledger;
 drop view rdr.rrv_ag_accounting_event;
 drop view rdr.rrv_ag_accounting_event_imp;
+drop view rdr.rrv_ag_business_event;
 drop view rdr.rrv_ag_business_unit;
 drop view rdr.rrv_ag_combo_edit_rules;
 drop view rdr.rrv_ag_department;
@@ -62,6 +63,8 @@ drop view rdr.rrv_ag_glint_jrnl_lines;
 conn ~stn_logon
 
 revoke select   on stn.gl_account_hierarchy            from rdr;
+revoke select   on stn.business_event                  from rdr;
+revoke select   on stn.business_event_category         from rdr;
 revoke select   on stn.business_type                   from rdr;
 revoke select   on stn.execution_type                  from rdr;
 revoke select   on stn.cession_event_premium_type      from rdr;

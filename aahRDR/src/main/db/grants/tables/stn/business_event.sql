@@ -1,0 +1,1 @@
+grant select on stn.business_event to rdr with grant option;

@@ -46,6 +46,8 @@ select --In progress manual journals
      , null                       ps_filter
      , gjlu.jlu_created_by        created_by
      , null                       approved_by
+     , gjlu.jhu_jrnl_type         jh_jrnl_type
+     , gjlu.jhu_jrnl_description  jh_jrnl_description     
   from ( select
                 jlu_jrnl_hdr_id
               , case when jt.ejt_madj_flag = 'Y' then jlu_jrnl_hdr_id else 0 end                           jlu_jrnl_hdr_id2
@@ -114,6 +116,8 @@ select --In progress manual journals
               , case when jle.jle_jrnl_hdr_id is not null then 'E' else jl.jlu_jrnl_status end             event_status
               , jl.jlu_jrnl_process_id
               , jt.ejt_madj_flag
+              , jh.jhu_jrnl_type            
+              , jh.jhu_jrnl_description               
            from
                 gui.gui_jrnl_lines_unposted   jl
       left join fdr.fr_general_lookup         fgl   on jl.jlu_attribute_4          = fgl.lk_match_key1
@@ -136,4 +140,6 @@ select --In progress manual journals
      , gjlu.event_class
      , gjlu.event_status
      , gjlu.ejt_madj_flag
-     , gjlu.jlu_created_by;
+     , gjlu.jlu_created_by
+     , gjlu.jhu_jrnl_type            
+     , gjlu.jhu_jrnl_description;

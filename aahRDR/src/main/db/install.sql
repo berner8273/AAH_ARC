@@ -22,6 +22,8 @@ define unittest_login   = ~8
 conn ~stn_logon
 
 @@grants/tables/stn/gl_account_hierarchy.sql
+@@grants/tables/stn/business_event.sql
+@@grants/tables/stn/business_event_category.sql
 @@grants/tables/stn/business_type.sql
 @@grants/tables/stn/execution_type.sql
 @@grants/tables/stn/cession_event_premium_type.sql
@@ -75,6 +77,7 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_accounting_basis_ledger.sql
 @@views/rdr/rrv_ag_accounting_event.sql
 @@views/rdr/rrv_ag_accounting_event_imp.sql
+@@views/rdr/rrv_ag_business_event.sql
 @@views/rdr/rrv_ag_business_unit.sql
 @@views/rdr/rrv_ag_combo_edit_rules.sql
 @@views/rdr/rrv_ag_department.sql

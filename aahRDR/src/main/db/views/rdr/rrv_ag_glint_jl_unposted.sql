@@ -46,6 +46,8 @@ select --Posted SLR journals not yet GLINT processed
      , null                       ps_filter
      , gjl.jl_created_by          created_by
      , gjl.jh_jrnl_authorised_by  approved_by
+     , gjl.jh_jrnl_type
+     , gjl.jh_jrnl_description      
   from ( select
                 jl_jrnl_hdr_id
               , case when jt.ejt_madj_flag = 'Y' then jl_jrnl_hdr_id else 0 end                            jl_jrnl_hdr_id2
@@ -115,6 +117,8 @@ select --Posted SLR journals not yet GLINT processed
               , null                                                                                       event_status
               , jl.jl_jrnl_process_id
               , jt.ejt_madj_flag
+              , jh.jh_jrnl_type
+              , jh.jh_jrnl_description              
            from
                 slr.slr_jrnl_lines            jl
            join slr.slr_jrnl_headers          jh    on jl.jl_jrnl_hdr_id           = jh.jh_jrnl_id
@@ -143,4 +147,6 @@ select --Posted SLR journals not yet GLINT processed
      , gjl.ejt_madj_flag
      , gjl.jl_created_by
      , gjl.jh_jrnl_authorised_by
+     , gjl.jh_jrnl_type
+     , gjl.jh_jrnl_description       
 ;
