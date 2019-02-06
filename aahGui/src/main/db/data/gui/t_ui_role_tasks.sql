@@ -42,7 +42,6 @@ insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.v
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.static.data.acc.explorer.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.static.data.account.details.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.static.data.auths.view' );
-insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.static.data.books.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.static.data.det.balaces.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.static.data.drivers.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.static.data.fxrates.details.view' );
@@ -87,7 +86,6 @@ insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.c
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.authorise.updates' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.auths.update' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.auths.view' );
-insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.books.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.det.balaces.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.drivers.add' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.drivers.update' );

@@ -14,6 +14,7 @@ select aet_acc_event_type_id    as fdr_code,
       'Client Static'           as source_system_id,
        null                     as parent_id,
        null                     as entity
-from fdr.fr_acc_event_type
+from fdr.fr_acc_event_type faet
+     where faet.aet_active = 'A'
 ;
 
