@@ -403,7 +403,6 @@ conn ~rdr_logon
 @@views/rdr/rrv_combination_check_rule.sql
 @@views/rdr/rcv_combination_check_glint.sql
 @@tables/rdr/rr_glint_suspense_line.sql
-@@procedures/rdr/pcombinationcheck_glint.sql
 @@grants/tables/rdr/rcv_combination_check_glint.sql
 
 exit

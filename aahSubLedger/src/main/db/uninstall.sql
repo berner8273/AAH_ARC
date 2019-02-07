@@ -322,7 +322,6 @@ commit;
 
 conn ~rdr_logon
 
-drop procedure    rdr.pcombinationcheck_glint;
 drop table        rdr.rr_glint_suspense_line;
 drop view         rdr.rcv_combination_check_glint;
 drop view         rdr.rrv_combination_check_rule;
