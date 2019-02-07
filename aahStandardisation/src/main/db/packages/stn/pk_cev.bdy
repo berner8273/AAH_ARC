@@ -2817,6 +2817,7 @@ and exists (
                           stn.hopper_cession_event hce
                     where 
                           hce.correlation_uuid = ce.correlation_uuid
+                          and trunc(hce.accounting_dt,'MONTH') = trunc(ce.accounting_dt,'MONTH')
                );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-correlation-uuid-dup', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-correlation_uuid_error', NULL, NULL, NULL, NULL);
