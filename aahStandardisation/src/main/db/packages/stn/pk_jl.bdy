@@ -1521,7 +1521,7 @@ INSERT INTO stn.hopper_journal_line
         )
     AS
         lcUnitName CONSTANT VARCHAR2(50) DEFAULT 'pCombinationCheck_JLH';
-        lcViewName CONSTANT VARCHAR2(50) DEFAULT 'svc_combination_check_jlh';
+        lcViewName CONSTANT VARCHAR2(50) DEFAULT 'scv_combination_check_jlh';
         lcErrorCode_Combo CONSTANT VARCHAR2(50) DEFAULT 'JL_COMBO';
         v_combo_check_errors NUMBER(38, 9);
     BEGIN
