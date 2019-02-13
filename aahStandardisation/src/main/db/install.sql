@@ -369,7 +369,7 @@ conn ~stn_logon
 @@grants/tables/stn/cession_event.sql
 @@grants/tables/stn/posting_method_derivation_le.sql
 @@grants/tables/stn/vie_posting_method_prem_type.sql
-
+@@indices/stn/cession.sql
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
 @@indices/stn/cev_valid.sql
