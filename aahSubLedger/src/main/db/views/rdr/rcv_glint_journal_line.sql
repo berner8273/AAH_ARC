@@ -62,8 +62,7 @@ create or replace view rdr.rcv_glint_journal_line
    MANUAL_JE,
    JH_JRNL_TYPE,
    JH_JRNL_DESCRIPTION
-)
-   
+)   
 AS
    SELECT jl_jrnl_hdr_id,
           CASE WHEN jt.ejt_madj_flag = 'Y' THEN jl_jrnl_hdr_id ELSE 0 END
