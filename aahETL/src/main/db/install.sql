@@ -10,12 +10,12 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define sys_logon = ~1
-define ps_password = ~2
-define read_password = ~3
-define report_password = ~4
-define ssis_password = ~5
-define unittest_login = ~8
+define sys_logon=~1
+define ps_password=~2
+define read_password=~3
+define report_password=~4
+define ssis_password=~5
+define unittest_login=~8
 
 
 conn ~sys_logon as sysdba
