@@ -1708,7 +1708,7 @@ and not exists (
                       , etv.event_typ
                       , cev_nid.business_event_typ
                       , vle.vie_le_cd                                   business_unit
-                      , null                                            bu_lookup
+                      , cev_nid.bu_lookup                               bu_lookup
                       , null                                            affiliate
                       , cev_nid.owner_le_cd
                       , cev_nid.counterparty_le_cd
