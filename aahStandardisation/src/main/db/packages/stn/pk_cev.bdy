@@ -3002,10 +3002,10 @@ and exists (
                 INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
                 INNER JOIN (SELECT
                     cev.FEED_UUID AS FEED_UUID,
-                    COUNT(DISTINCT fgl.LK_MATCH_KEY6) AS COUNT_DISTINCT
+                    COUNT(DISTINCT fgl.LK_LOOKUP_VALUE3) AS COUNT_DISTINCT
                 FROM
                     CESSION_EVENT cev
-                    INNER JOIN fdr.FR_GENERAL_LOOKUP fgl ON cev.EVENT_TYP = fgl.LK_LOOKUP_VALUE1
+                    INNER JOIN fdr.FR_GENERAL_LOOKUP fgl ON cev.EVENT_TYP = fgl.LK_LOOKUP_VALUE1 AND fgl.LK_LKT_LOOKUP_TYPE_CODE = 'EVENT_HIERARCHY'
                 GROUP BY
                     cev.FEED_UUID) cevecd ON cev.FEED_UUID = cevecd.FEED_UUID
             WHERE
