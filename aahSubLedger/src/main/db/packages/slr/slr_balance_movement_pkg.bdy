@@ -217,6 +217,7 @@ CREATE OR REPLACE PACKAGE BODY SLR.slr_balance_movement_pkg as
             AND ED_DATE =  pBalanceDate
             AND ED_DATE BETWEEN b.ep_cal_period_start AND b.ep_cal_period_end
             AND (nvl(a.ed_status,'C') = 'C' OR nvl(b.ep_status,'C') = 'C')
+			AND pProcess <> 'PLRETEARNINGS'
             ;
 
             if v_count > 0 then
