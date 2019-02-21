@@ -2177,7 +2177,7 @@ when exists ( select
                      fal.al_lookup_3 = cep.bu_lookup
                  and sysdate between fal.al_valid_from and fal.al_valid_to
              )
-then cep. bu_lookup
+then cep.bu_lookup
 else 'NULL'
 end AS BU_ACCOUNT_LOOKUP,
                 case
@@ -2355,7 +2355,18 @@ end AS DEPT_CD,
                 cercurr.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cercurr.ACCOUNTING_DT )) AS EFFECTIVE_DT,
-                cercurr.BU_LOOKUP AS BU_ACCOUNT_LOOKUP,
+                case
+when exists ( select
+                     null
+                from
+                     fdr.fr_account_lookup fal
+               where
+                     fal.al_lookup_3 = cercurr.BU_LOOKUP
+                 and sysdate between fal.al_valid_from and fal.al_valid_to
+             )
+then cercurr.BU_LOOKUP
+else 'NULL'
+end AS BU_ACCOUNT_LOOKUP,
                 case
 when exists ( select
                      null
