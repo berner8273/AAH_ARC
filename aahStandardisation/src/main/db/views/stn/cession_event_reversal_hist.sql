@@ -1,6 +1,6 @@
-create or replace view stn.cession_event_reversal_hist
-as
-select distinct
+
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "STN"."CESSION_EVENT_REVERSAL_HIST" ("POSTING_TYPE", "CORRELATION_UUID", "EVENT_SEQ_ID", "ROW_SID", "SUB_EVENT", "ACCOUNTING_DT", "POLICY_ID", "JOURNAL_DESCR", "STREAM_ID", "BASIS_CD", "BUSINESS_TYP", "PREMIUM_TYP", "POLICY_PREMIUM_TYP", "POLICY_ACCIDENT_YR", "POLICY_UNDERWRITING_YR", "ULTIMATE_PARENT_LE_CD", "EXECUTION_TYP", "POLICY_TYP", "EVENT_TYP", "BUSINESS_EVENT_TYP", "BUSINESS_UNIT", "AFFILIATE", "OWNER_LE_CD", "COUNTERPARTY_LE_CD", "LEDGER_CD", "VIE_CD", "IS_MARK_TO_MARKET", "TAX_JURISDICTION_CD", "CHARTFIELD_CD", "TRANSACTION_CCY", "TRANSACTION_AMT", "FUNCTIONAL_CCY", "FUNCTIONAL_AMT", "REPORTING_CCY", "REPORTING_AMT", "LPG_ID", "REVERSAL_INDICATOR", "ORIGINAL_POSTING_DT", "BU_LOOKUP", "VIE_BU_LOOKUP") AS 
+  select distinct
        'REVERSE_REPOST'                  posting_type
      , fsrae.srae_client_spare_id14      correlation_uuid
      , fsrae.srae_client_spare_id12      event_seq_id
@@ -11,7 +11,7 @@ select distinct
           from stn.cession_event_posting        cep
          where fsrae.srae_acc_event_type                   = cep.event_typ
            and fsrae.srae_dimension_8                      = cep.stream_id
-           and fsrae.srae_dimension_14                     = cep.premium_typ
+           and nvl(fsrae.srae_dimension_14, 'NVS')         = nvl(cep.premium_typ,'NVS')
            and trunc( fsrae.srae_accevent_date , 'MONTH' ) = trunc( cep.accounting_dt , 'MONTH' )
         )                                accounting_dt
      , fsrae.srae_dimension_7            policy_id
@@ -55,7 +55,7 @@ select distinct
                   from stn.cession_event_posting    cep2
                  where fsrae.srae_acc_event_type                   = cep2.event_typ
                    and fsrae.srae_dimension_8                      = cep2.stream_id
-                   and fsrae.srae_dimension_14                     = cep2.premium_typ
+                   and nvl(fsrae.srae_dimension_14, 'NVS')         = nvl(cep2.premium_typ,'NVS')
                    and trunc( fsrae.srae_accevent_date , 'MONTH' ) = trunc( cep2.accounting_dt , 'MONTH' )
               )
    and fsrae.srae_client_spare_id14 not in ( select faei2.ae_client_spare_id14
@@ -75,5 +75,4 @@ select distinct
                 select null
                   from slr.slr_jrnl_lines sjl
                  where fsrae.srae_acc_event_id = sjl.jl_source_jrnl_id
-              )
-;
+              );
