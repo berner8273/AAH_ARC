@@ -1,0 +1,1 @@
+grant select on rdr.rrv_ag_loader_gaap_to_core to stn with grant option;

@@ -294,9 +294,16 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
         pinProcessID in slr.slr_job_statistics.js_process_id%TYPE,
         pinStatus    in CHAR
     );
+    
+   PROCEDURE pProcessEliminations (
+      journal_id_list    IN     VARCHAR2,
+      success               OUT CHAR,
+      lv_header_id_list IN OUT varchar2);
 
-    PROCEDURE pCreateEliminations(journal_id IN SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE);
+   PROCEDURE pCreateEliminations (journal_id IN  SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+      success              OUT CHAR, vHeaderId IN VARCHAR2);
 
+         
     /******************************************************************************************
     Declare private global variables
     ******************************************************************************************/

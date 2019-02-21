@@ -10,14 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logon=~1
+define gui_logon=~2
+define rdr_logon=~3
+define sla_logon=~4
+define slr_logon=~5
+define stn_logon=~6
+define sys_logon=~7
+define unittest_login=~8
 
 conn ~stn_logon
 @@grants/tables/stn/business_type.sql
@@ -343,6 +343,7 @@ alter table slr.slr_process_config add constraint ck_pc_method check (PC_METHOD 
 @@views/slr/vbm_ag_retainedearningseba01.sql
 @@views/slr/vbm_ag_retainedearningseba02.sql
 @@views/slr/vbm_ag_retainedearningseba03.sql
+@@views/slr/v_ag_ye_clr_run.sql
 
 -- -----------------------------------------------------------------------------------------
 -- purpose : Begin Combo Edit installation
@@ -402,7 +403,6 @@ conn ~rdr_logon
 @@views/rdr/rrv_combination_check_rule.sql
 @@views/rdr/rcv_combination_check_glint.sql
 @@tables/rdr/rr_glint_suspense_line.sql
-@@procedures/rdr/pcombinationcheck_glint.sql
 @@grants/tables/rdr/rcv_combination_check_glint.sql
 
 exit

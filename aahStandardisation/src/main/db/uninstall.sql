@@ -98,6 +98,8 @@ drop package body stn.pk_cev;
 drop package      stn.pk_cev;
 drop package body stn.pk_cession_hier;
 drop package      stn.pk_cession_hier;
+drop package body stn.pk_posting_rules;
+drop package      stn.pk_posting_rules;
 drop view  stn.feed_missing_record_count;
 drop view  stn.row_val_error_log_default;
 drop view  stn.set_val_error_log_default;
@@ -222,7 +224,15 @@ drop table stn.journal_line_premium_type;
 drop table stn.cession_event_premium_type;
 drop table stn.cession_hierarchy;
 drop table stn.business_event;
+drop table stn.business_event_category;
 drop table stn.init_stat;
+drop table stn.load_event_hierarchy;
+drop table stn.load_business_event;
+drop table stn.load_gaap_to_core;
+drop table stn.load_posting_method_derivation;
+drop table stn.load_vie_posting_method;
+drop table stn.load_fr_posting_driver;
+drop table stn.load_fr_account_lookup;
 
 conn ~gui_logon
 
@@ -297,10 +307,10 @@ drop index fdr.fbi_fsra_message_id;
 drop index fdr.fbi_pl_global_id;
 
 revoke select , insert , update          on fdr.fr_acc_event_type            from stn;
-revoke select                            on fdr.fr_account_lookup            from stn;
+revoke select , insert , update          on fdr.fr_account_lookup            from stn;
 revoke select ,                   delete on fdr.fr_fx_rate                   from stn;
 revoke select                            on fdr.fr_gaap                      from stn;
-revoke select ,          update          on fdr.fr_general_lookup            from stn;
+revoke select , insert , update          on fdr.fr_general_lookup            from stn;
 revoke select                            on fdr.fr_gl_account                from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_acc_event        from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_general_codes    from stn;
@@ -309,7 +319,7 @@ revoke select                            on fdr.fr_internal_proc_entity_type fro
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_node    from stn;
 revoke select , insert , update          on fdr.fr_stan_raw_org_hier_struc   from stn;
 revoke select                            on fdr.fr_party_legal               from stn;
-revoke select                            on fdr.fr_posting_driver            from stn;
+revoke select , insert , update          on fdr.fr_posting_driver            from stn;
 revoke select , insert , update          on fdr.fr_posting_schema            from stn;
 revoke select , insert , update          on fdr.fr_general_code_types        from stn;
 revoke select ,          update          on fdr.fr_general_codes             from stn;
@@ -349,5 +359,15 @@ revoke select                            on slr.slr_eba_combinations         fro
 revoke select                            on slr.slr_fak_combinations         from stn;
 revoke select                            on slr.slr_eba_daily_balances       from stn;
 revoke select                            on slr.slr_jrnl_lines               from stn;
+
+conn ~rdr_logon
+
+drop view rrv_ag_loader_account_lookup;
+drop view rrv_ag_loader_business_event;
+drop view rrv_ag_loader_event_hier;
+drop view rrv_ag_loader_gaap_to_core;
+drop view rrv_ag_loader_posting_driver;
+drop view rrv_ag_loader_posting_method;
+drop view rrv_ag_loader_vie_posting;
 
 exit

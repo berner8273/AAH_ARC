@@ -9,8 +9,9 @@ select
      , gjl.journal_id
      , gjl.journal_date
      , gjl.journal_line
+     , gjl.accounting_dt
   from
-       slr.slr_jrnl_lines             sjl
+       slr.slr_jrnl_lines sjl
   left join rdr.rr_glint_to_slr_ag    gts  on sjl.jl_jrnl_hdr_id      = gts.jl_jrnl_hdr_id
                                           and sjl.jl_jrnl_line_number = gts.jl_jrnl_line_number
   left join rdr.rr_glint_journal_line gjl  on gts.rgjl_id             = gjl.rgjl_id

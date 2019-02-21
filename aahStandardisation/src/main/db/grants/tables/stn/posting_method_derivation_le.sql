@@ -1,0 +1,1 @@
+grant select on stn.posting_method_derivation_le to rdr with grant option;

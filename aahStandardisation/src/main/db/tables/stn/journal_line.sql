@@ -5,6 +5,8 @@ create table stn.journal_line
 ,   correlation_id         varchar2(40 char)                                     
 ,   accounting_dt          date                                                   not null
 ,   le_id                  number(38)                                             not null
+,	journal_type		   varchar2(20 char)		
+,	jrnl_source			   varchar2(40 char)									  
 ,   acct_cd                varchar2(20 char)                                      not null
 ,   basis_cd               varchar2(20 char)                                      not null
 ,   ledger_cd              varchar2(20 char)                                      not null
@@ -13,7 +15,8 @@ create table stn.journal_line
 ,   affiliate_le_id        number(38)
 ,   counterparty_le_id     number(38)
 ,   dept_cd                varchar2(20 char)
-,   business_event_typ     varchar2(20 char)                                     
+,   business_event_typ     varchar2(20 char)															
+,		journal_line_desc    	 varchar2(100 char)                                 
 ,   journal_descr          varchar2(50 byte)                                     
 ,   chartfield_1           varchar2(20 char)
 ,   accident_yr            number(4)

@@ -46,6 +46,8 @@ select distinct
      , fsrae.lpg_id                      lpg_id
      , fsrae.srae_client_spare_id16      reversal_indicator
      , fsrae.srae_posting_date           original_posting_dt
+     , fsrae.srae_client_spare_id17      bu_lookup
+     , fsrae.srae_client_spare_id18      vie_bu_lookup
   from
        fdr.fr_stan_raw_acc_event fsrae
  where exists (

@@ -58,6 +58,7 @@ as
         , fsra.sra_ae_source_jrnl_id                        sra_ae_source_jrnl_id
         , fsra.sra_ae_event_audit_id                        sra_ae_event_audit_id
         , fsra.sra_ae_journal_type                          sra_ae_journal_type
+        , fsra.sra_ae_gl_narrative													sra_ae_gl_narrative
      from
           fdr.fr_stan_raw_adjustment fsra
         ;

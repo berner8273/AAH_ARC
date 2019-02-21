@@ -252,7 +252,6 @@ AS
 
 
 
-
    /******************************************************************************************
    Declare private global variables
    ******************************************************************************************/
@@ -2375,11 +2374,7 @@ AS
       gJournalVersion := journal_version;
 
       BEGIN
-      
-         /* create intercompany elimination records */
-         pCreateEliminations(journal_id);
-         
-         /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */         
+         /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
          prui_lock_journal (journal_id, updated_by);
 
          /* check journal version in case there were any changes since journal was displayed on the screen. Signals stale_journal_exception if journal version is different*/
@@ -3624,11 +3619,10 @@ AS
    FUNCTION fnui_validate_journal_line (clear_errors BOOLEAN DEFAULT TRUE)
       RETURN CHAR
    IS
+      v_epg_id        SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
+      lv_process_id   NUMBER (30) := 0;
 
-      v_epg_id SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
-      lv_process_id NUMBER(30) := 0;
-
-      lvSuccess   CHAR;
+      lvSuccess       CHAR;
 
 
       CURSOR cur_lines
@@ -3640,256 +3634,248 @@ AS
    BEGIN
       lvSuccess := gSTATE_OK;
 
-  FOR i IN
-      (
-        SELECT DISTINCT
-             ENT.ENT_RATE_SET,
-             ENT_PG.EPG_ID
-        FROM SLR_ENTITIES ENT,
-             SLR_ENTITY_PROC_GROUP ENT_PG
-        WHERE ENT.ENT_ENTITY = ENT_PG.EPG_ENTITY
-      )
-  LOOP
+      FOR i IN (SELECT DISTINCT ENT.ENT_RATE_SET, ENT_PG.EPG_ID
+                  FROM SLR_ENTITIES ENT, SLR_ENTITY_PROC_GROUP ENT_PG
+                 WHERE ENT.ENT_ENTITY = ENT_PG.EPG_ENTITY)
+      LOOP
+         v_epg_id := i.epg_id;
 
-    v_epg_id       := i.epg_id;
-    ----------------------------------------
-    -- Set processId for whole processing
-    ----------------------------------------
-    SELECT SEQ_PROCESS_NUMBER.NEXTVAL INTO lv_process_id  FROM DUAL;
+         ----------------------------------------
+         -- Set processId for whole processing
+         ----------------------------------------
+         SELECT SEQ_PROCESS_NUMBER.NEXTVAL INTO lv_process_id FROM DUAL;
 
 
-      IF gSessionId IS NULL
-      THEN
-         pr_error (1,
-                   SQLERRM,
-                   0,
-                   'prui_clear_errors',
-                   'fnui_validate_journal_line',
-                   NULL,
-                   NULL,
-                   gPackageName,
-                   'PL/SQL',
-                   NULL,
-                   NULL,
-                   NULL,
-                   NULL,
-                   NULL,
-                   NULL,
-                   NULL);
-         raise_application_error (-9001, 'Missing session id');
-      END IF;
+         IF gSessionId IS NULL
+         THEN
+            pr_error (1,
+                      SQLERRM,
+                      0,
+                      'prui_clear_errors',
+                      'fnui_validate_journal_line',
+                      NULL,
+                      NULL,
+                      gPackageName,
+                      'PL/SQL',
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL);
+            raise_application_error (-9001, 'Missing session id');
+         END IF;
 
-      --not used - no point in calling
-      -- Check if user can amend this journal
-      --        FOR rec IN cur_lines LOOP
-      --            IF NOT fnui_journal_edit_permission(rec.jlu_created_by, rec.jlu_amended_by) THEN
-      --               RETURN gSTATE_CRITICAL;
-      --            END IF;
-      --        END LOOP;
+         --not used - no point in calling
+         -- Check if user can amend this journal
+         --        FOR rec IN cur_lines LOOP
+         --            IF NOT fnui_journal_edit_permission(rec.jlu_created_by, rec.jlu_amended_by) THEN
+         --               RETURN gSTATE_CRITICAL;
+         --            END IF;
+         --        END LOOP;
 
-      -- Remove previous errors from the error table
-      IF clear_errors = TRUE
-      THEN
-         prui_clear_errors (gJournalHeader.jhu_jrnl_id);
-      END IF;
+         -- Remove previous errors from the error table
+         IF clear_errors = TRUE
+         THEN
+            prui_clear_errors (gJournalHeader.jhu_jrnl_id);
+         END IF;
 
-      -- Combo Edit Check
-      pCombinationCheck_GJLU(v_epg_id, lv_process_id, 'M');
+         -- Combo Edit Check
+         pCombinationCheck_GJLU (v_epg_id, lv_process_id, 'M');
 
-      IF NOT fnui_get_entity
-      THEN
-         lvSuccess := gSTATE_CRITICAL;
-      END IF;
+         IF NOT fnui_get_entity
+         THEN
+            lvSuccess := gSTATE_CRITICAL;
+         END IF;
 
-      IF NOT fnui_get_journal_type
-      THEN
-         lvSuccess := gSTATE_CRITICAL;
-      END IF;
+         IF NOT fnui_get_journal_type
+         THEN
+            lvSuccess := gSTATE_CRITICAL;
+         END IF;
 
-      IF NOT fnui_get_fak_definitions
-      THEN
-         lvSuccess := gSTATE_CRITICAL;
-      END IF;
+         IF NOT fnui_get_fak_definitions
+         THEN
+            lvSuccess := gSTATE_CRITICAL;
+         END IF;
 
-      IF NOT fnui_get_eba_definitions
-      THEN
-         lvSuccess := gSTATE_CRITICAL;
-      END IF;
+         IF NOT fnui_get_eba_definitions
+         THEN
+            lvSuccess := gSTATE_CRITICAL;
+         END IF;
 
-      IF NOT fnui_check_calendar
-      THEN
-         lvSuccess := gSTATE_CRITICAL;
-      END IF;
+         IF NOT fnui_check_calendar
+         THEN
+            lvSuccess := gSTATE_CRITICAL;
+         END IF;
 
-      -- Exit if not successful at this point
-      IF lvSuccess IN (gSTATE_CRITICAL)
-      THEN
-         prui_log_error (
-            gJournalHeader.jhu_jrnl_id,
-            0,
-            1001,
-            'Failed to initialise validation. Please check configuration');
-         RETURN gSTATE_CRITICAL;
-      END IF;
+         -- Exit if not successful at this point
+         IF lvSuccess IN (gSTATE_CRITICAL)
+         THEN
+            prui_log_error (
+               gJournalHeader.jhu_jrnl_id,
+               0,
+               1001,
+               'Failed to initialise validation. Please check configuration');
+            RETURN gSTATE_CRITICAL;
+         END IF;
 
-      -- Convert codes using coding convention
-      IF NOT fnui_decode_journal_lines
-      THEN
-         prui_log_error (
-            gJournalHeader.jhu_jrnl_id,
-            0,
-            1001,
-            'Could not translate source system codes. Please check configuration');
-         RETURN gSTATE_CRITICAL;
-      END IF;
+         -- Convert codes using coding convention
+         IF NOT fnui_decode_journal_lines
+         THEN
+            prui_log_error (
+               gJournalHeader.jhu_jrnl_id,
+               0,
+               1001,
+               'Could not translate source system codes. Please check configuration');
+            RETURN gSTATE_CRITICAL;
+         END IF;
 
 
-      -- Check mandatory fields
-      IF NOT fnui_check_line_definitions
-      THEN
-         lvSuccess := gSTATE_CRITICAL;
-      END IF;
+         -- Check mandatory fields
+         IF NOT fnui_check_line_definitions
+         THEN
+            lvSuccess := gSTATE_CRITICAL;
+         END IF;
 
-      -- Exit if not successful at this point
-      IF lvSuccess IN (gSTATE_CRITICAL)
-      THEN
-         prui_log_error (
-            gJournalHeader.jhu_jrnl_id,
-            0,
-            1001,
-            'Failed to complete all the validation checks on the journal lines');
-         RETURN gSTATE_CRITICAL;
-      END IF;
+         -- Exit if not successful at this point
+         IF lvSuccess IN (gSTATE_CRITICAL)
+         THEN
+            prui_log_error (
+               gJournalHeader.jhu_jrnl_id,
+               0,
+               1001,
+               'Failed to complete all the validation checks on the journal lines');
+            RETURN gSTATE_CRITICAL;
+         END IF;
 
-      -- Validate Processing Entity Group
-      IF NOT fnui_check_ent_proc_group_conf
-      THEN
-         prui_log_error (
-            gJournalHeader.jhu_jrnl_id,
-            0,
-            1001,
-            'Failed to validate entity processing group settings. Please check configuration.');
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         -- Validate Processing Entity Group
+         IF NOT fnui_check_ent_proc_group_conf
+         THEN
+            prui_log_error (
+               gJournalHeader.jhu_jrnl_id,
+               0,
+               1001,
+               'Failed to validate entity processing group settings. Please check configuration.');
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_line_dates
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_line_dates
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_periods
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_periods
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_account
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_account
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_ledger
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_ledger
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_check_currencies
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_check_currencies
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (1)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (1)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (2)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (2)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (3)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (3)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (4)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (4)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (5)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (5)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (6)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (6)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (7)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (7)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (8)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (8)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (9)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (9)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_segment_n (10)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_segment_n (10)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_attribute_n (1)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_attribute_n (1)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_attribute_n (2)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_attribute_n (2)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_attribute_n (3)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_attribute_n (3)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_attribute_n (4)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_attribute_n (4)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      IF NOT fnui_validate_attribute_n (5)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         IF NOT fnui_validate_attribute_n (5)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      -- Validate balances
-      IF NOT fnui_validate_balances
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         -- Validate balances
+         IF NOT fnui_validate_balances
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      -- Execute any custom validation
-      IF NOT pgui_jrnl_custom.fnui_validate_jrnl_line (
-                gJournalHeader.jhu_jrnl_id,
-                gSessionId)
-      THEN
-         lvSuccess := gSTATE_ERRORED;
-      END IF;
+         -- Execute any custom validation
+         IF NOT pgui_jrnl_custom.fnui_validate_jrnl_line (
+                   gJournalHeader.jhu_jrnl_id,
+                   gSessionId)
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
 
-      RETURN lvSuccess;
-
-END LOOP;
-
+         RETURN lvSuccess;
+      END LOOP;
    EXCEPTION
       WHEN OTHERS
       THEN
@@ -4311,6 +4297,80 @@ END LOOP;
           WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                 AND user_session_id = gSessionId
                 AND jlu_tran_ccy IS NULL;
+
+
+      -- Check base Currency
+      INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
+                                             user_session_id,
+                                             jle_jrnl_hdr_id,
+                                             jle_jrnl_line_number,
+                                             jle_error_code,
+                                             jle_error_string,
+                                             jle_created_by,
+                                             jle_created_on,
+                                             jle_amended_by,
+                                             jle_amended_on)
+         SELECT                                      /* jle_jrnl_process_id */
+               0,
+                /* user_session_id */
+                gSessionId,
+                /* jle_jrnl_hdr_id */
+                jlu_jrnl_hdr_id,
+                /* jle_jrnl_line_number */
+                jlu_jrnl_line_number,
+                /* jle_error_code */
+                'MADJ-1051',
+                /* jle_error_string */
+                'Base Currency is required.',
+                /* jle_created_by */
+                'SYSTEM',
+                /* jle_created_on */
+                SYSDATE,
+                /* jle_amended_by */
+                'SYSTEM',
+                /* jle_amended_on */
+                SYSDATE
+           FROM temp_gui_jrnl_lines_unposted
+          WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                AND user_session_id = gSessionId
+                AND jlu_base_ccy IS NULL;
+
+
+      -- Check local Currency
+      INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
+                                             user_session_id,
+                                             jle_jrnl_hdr_id,
+                                             jle_jrnl_line_number,
+                                             jle_error_code,
+                                             jle_error_string,
+                                             jle_created_by,
+                                             jle_created_on,
+                                             jle_amended_by,
+                                             jle_amended_on)
+         SELECT                                      /* jle_jrnl_process_id */
+               0,
+                /* user_session_id */
+                gSessionId,
+                /* jle_jrnl_hdr_id */
+                jlu_jrnl_hdr_id,
+                /* jle_jrnl_line_number */
+                jlu_jrnl_line_number,
+                /* jle_error_code */
+                'MADJ-1051',
+                /* jle_error_string */
+                'Local Currency is required.',
+                /* jle_created_by */
+                'SYSTEM',
+                /* jle_created_on */
+                SYSDATE,
+                /* jle_amended_by */
+                'SYSTEM',
+                /* jle_amended_on */
+                SYSDATE
+           FROM temp_gui_jrnl_lines_unposted
+          WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                AND user_session_id = gSessionId
+                AND jlu_local_ccy IS NULL;
 
       -- Check Tran Amount
 
@@ -7740,10 +7800,12 @@ END LOOP;
            INTO gEntityConfiguration
            FROM SLR_ENTITIES se
           WHERE     se.ent_entity = gJournalHeader.jhu_jrnl_entity
-                AND ent_status = 'A' and EXISTS (
-                SELECT NULL FROM FDR.FR_PARTY_LEGAL pl
-                WHERE PL.PL_PARTY_LEGAL_ID = se.ENT_ENTITY
-                AND PL.PL_CLIENT_TEXT7 = 'Y');
+                AND ent_status = 'A'
+                AND EXISTS
+                       (SELECT NULL
+                          FROM FDR.FR_PARTY_LEGAL pl
+                         WHERE     PL.PL_PARTY_LEGAL_ID = se.ENT_ENTITY
+                               AND PL.PL_CLIENT_TEXT7 = 'Y');
       EXCEPTION
          WHEN NO_DATA_FOUND
          THEN
@@ -8442,7 +8504,7 @@ END LOOP;
                                              jle_created_on,
                                              jle_amended_by,
                                              jle_amended_on)
-           VALUES (/* user_session_id */
+           VALUES (                                      /* user_session_id */
                    gSessionId,
                    /* jle_jrnl_process_id */
                    0,
@@ -9252,8 +9314,8 @@ END LOOP;
       description         IN VARCHAR2 DEFAULT NULL,
       coding_convention   IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE DEFAULT NULL,
       updated_by          IN SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE DEFAULT 'SYSTEM',
-      overwrite_details   IN CHAR DEFAULT 'Y'--pEntityProcGroup IN  VARCHAR2             DEFAULT NULL
-      )
+      overwrite_details   IN CHAR DEFAULT 'Y' --pEntityProcGroup IN  VARCHAR2             DEFAULT NULL
+                                             )
    IS
       lvJournalId         NUMBER := NULL;
       lvEntityProcGroup   SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
@@ -9439,7 +9501,7 @@ END LOOP;
                                                    db_state,
                                                    jhu_epg_id,
                                                    jhu_jrnl_rev_date)
-            VALUES (/* user_session_id */
+            VALUES (                                     /* user_session_id */
                     session_id,
                     /* jhu_jrnl_id */
                     NVL (journal_id, -1),
@@ -11365,8 +11427,8 @@ END LOOP;
                            jhu_epg_id,
                            jhu_version,
                            jhu_jrnl_rev_date)
-               SELECT /* jhu_jrnl_id */
-                      lvId,
+               SELECT                                        /* jhu_jrnl_id */
+                     lvId,
                       /* jhu_jrnl_type */
                       tsjhu.jhu_jrnl_type,
                       /* jhu_jrnl_date */
@@ -11721,8 +11783,8 @@ END LOOP;
                                               jlu_period_month,
                                               jlu_period_year,
                                               jlu_period_ltd)
-            SELECT /* jlu_jrnl_hdr_id */
-                   gJournalHeader.jhu_jrnl_id,
+            SELECT                                       /* jlu_jrnl_hdr_id */
+                  gJournalHeader.jhu_jrnl_id,
                    /* jlu_jrnl_line_number */
                    tsjlu.jlu_jrnl_line_number,
                    /* jlu_fak_id */
@@ -13657,6 +13719,7 @@ END LOOP;
 
    PROCEDURE prui_copy_journals_to_slr (epg_id            IN VARCHAR2,
                                         journal_id_list   IN VARCHAR2)
+
    IS
       TYPE jrnl_files_type IS REF CURSOR;
 
@@ -13682,7 +13745,7 @@ END LOOP;
           jhu_manual_flag,jhu_epg_id,jhu_jrnl_rev_date)
        SELECT
           gjhu.jhu_jrnl_id,
-          gjhu.jhu_jrnl_type,
+          nvl(gjhu.jhu_jrnl_type,''NVS''),
           gjhu.jhu_jrnl_date,
           gjhu.jhu_jrnl_entity,
           ''V'',
@@ -13710,8 +13773,7 @@ END LOOP;
 		  gjhu.jhu_jrnl_rev_date
         FROM gui_jrnl_headers_unposted gjhu
         WHERE gjhu.jhu_jrnl_id IN ('
-         || journal_id_list
-         || ')
+         || journal_id_list || ')
         and gjhu.jhu_jrnl_status = ''Q''';
 
       EXECUTE IMMEDIATE vSql;
@@ -13792,8 +13854,7 @@ END LOOP;
           FROM  gui_jrnl_lines_unposted gjlu, gui_jrnl_headers_unposted gjhu
           WHERE gjlu.jlu_jrnl_hdr_id = gjhu.jhu_jrnl_id
           and gjhu.jhu_jrnl_id in ('
-         || journal_id_list
-         || ')
+         || journal_id_list || ')
           and gjhu.jhu_jrnl_status = ''Q''';
 
       EXECUTE IMMEDIATE vSql;
@@ -13901,7 +13962,7 @@ END LOOP;
       lv_journal_id_list         VARCHAR2 (10000);
       lv_lock_handle             VARCHAR2 (100);
       lv_lock_result             INTEGER;
-
+      lv_header_id_list          VARCHAR2 (10000);
       epg_locked_exception       EXCEPTION;
       batch_critical_exception   EXCEPTION;
    BEGIN
@@ -13921,25 +13982,41 @@ END LOOP;
          RAISE epg_locked_exception;
       END IF;
 
-      BEGIN
-         prui_copy_journals_to_slr (epg_id, journal_id_list);
+      BEGIN                 
+      
+        -- process elimination records for each journal header
+        pProcessEliminations(journal_id_list,status, lv_header_id_list);
+
+        IF LENGTH(lv_header_id_list) > 1 THEN
+            lv_journal_id_list := journal_id_list || ',' || lv_header_id_list;
+        ELSE
+            lv_journal_id_list := journal_id_list;
+        END IF;
+
+         -- add list of elimination line id's for further processing
+         lv_journal_id_list := journal_id_list || ',' || lv_header_id_list ;
+               
+         prui_copy_journals_to_slr (epg_id, lv_journal_id_list);
+         
          COMMIT;
       EXCEPTION
          WHEN OTHERS
          THEN
-            prui_set_gui_jrnls_status (journal_id_list, 'E');
+            prui_set_gui_jrnls_status (lv_journal_id_list, 'E');
             COMMIT;
             lv_lock_result := DBMS_LOCK.RELEASE (lv_lock_handle);
             RETURN;
       END;
 
-      BEGIN
+      BEGIN      
+                                         
          --assign new processing id and status to all headers and lines for journals from the list
          SLR_UTILITIES_PKG.pAssignNewProcessIdAndStatus (epg_id,
-                                                         journal_id_list,
+                                                         lv_journal_id_list,
                                                          gSTATUS_VALIDATED,
                                                          gSTATUS_VALIDATED,
                                                          lv_process_id);
+
 
          --update journal lines with proper group, period details and other from header
          SLR_UTILITIES_PKG.pUpdateJrnlLinesUnposted (epg_id,
@@ -13949,7 +14026,7 @@ END LOOP;
          --assign FAK/EBA combinations
          SLR_UTILITIES_PKG.pUpdateFakEbaCombinations_Jlu (epg_id,
                                                           lv_process_id,
-                                                          gSTATUS_VALIDATED);
+                                                          gSTATUS_VALIDATED);                                                                                                                  
 
          COMMIT;
 
@@ -13959,6 +14036,8 @@ END LOOP;
                                                       gSTATUS_VALIDATED,
                                                       TRUE,
                                                       NULL);
+                                                     
+                                                      
       EXCEPTION
          WHEN OTHERS
          THEN
@@ -13983,13 +14062,13 @@ END LOOP;
 
       BEGIN
          prui_create_reversing_journal (epg_id,
-                                        journal_id_list,
+                                        lv_journal_id_list,
                                         lv_process_id,
                                         gSTATUS_VALIDATED);
          COMMIT;
          --mark future dated journals (set 'W' status)--
          prui_mark_future_dated_jrnls (epg_id,
-                                       journal_id_list,
+                                       lv_journal_id_list,
                                        gSTATUS_VALIDATED);
          COMMIT;
       EXCEPTION
@@ -13998,9 +14077,11 @@ END LOOP;
             RAISE batch_critical_exception;
       END;
 
-      IF fnui_anything_to_post (journal_id_list, gSTATUS_VALIDATED)
+
+      IF fnui_anything_to_post (lv_journal_id_list, gSTATUS_VALIDATED)
       THEN
          BEGIN
+         
             -- Set the flag used for Generating Last Balances for the current Bussiness date
             syn_ui_post_journals_pkg.pStatusGenLastBalForBD (
                gvSubLedgerGenLastBalForBD);
@@ -14035,7 +14116,6 @@ END LOOP;
          END;
       END IF;
 
-
       --delete journals that failed posting from slr unposted tables, update journal status and copy errors to gui.--
       prui_rollback_err_slr_journals (epg_id            => epg_id,
                                       journal_id_list   => journal_id_list,
@@ -14043,15 +14123,14 @@ END LOOP;
       COMMIT;
 
       --delete successfuly posted or future dated (awaiting posting 'W') journals from gui tables--
-      prui_delete_gui_journals (journal_id_list);
+      prui_delete_gui_journals (lv_journal_id_list);
+--      prui_delete_gui_journals (lv_header_id_list);
 
       COMMIT;
 
-
-
       BEGIN
          --execute custom procedure after posting--
-         PGUI_JRNL_CUSTOM.prui_post_queued_journals (epg_id, journal_id_list);
+         PGUI_JRNL_CUSTOM.prui_post_queued_journals (epg_id, lv_journal_id_list);
       EXCEPTION
          WHEN OTHERS
          THEN
@@ -14084,12 +14163,12 @@ END LOOP;
       WHEN batch_critical_exception
       THEN
          --delete all copied to slr journals, copy errors to gui--
-         prui_rollback_err_slr_journals (epg_id            => epg_id,
-                                         journal_id_list   => journal_id_list,
-                                         rollback_all      => TRUE);
+         prui_rollback_err_slr_journals (epg_id          => epg_id,
+                                         journal_id_list => lv_journal_id_list,
+                                         rollback_all    => TRUE);
          prui_log_posting_error (
             epg_id            => epg_id,
-            journal_id_list   => journal_id_list,
+            journal_id_list   => lv_journal_id_list,
             error_message     => 'There was an unexpected error during post to the subledger. Please inspect fr_log for details.');
          COMMIT;
          lv_lock_result := DBMS_LOCK.RELEASE (lv_lock_handle);
@@ -14116,7 +14195,7 @@ END LOOP;
                    NULL);
          prui_log_posting_error (
             epg_id            => epg_id,
-            journal_id_list   => journal_id_list,
+            journal_id_list   => lv_journal_id_list,
             error_message     => 'There was an unexpected error during post to the subledger. Please inspect fr_log for details.');
          COMMIT;
          status := 'E';
@@ -14790,463 +14869,522 @@ END LOOP;
                    NULL,
                    NULL);
    END prui_log_posting_error;
+
+   PROCEDURE pCombinationCheck_GJLU (
+      pinEPGID       IN slr.slr_entity_proc_group.epg_id%TYPE,
+      pinProcessID   IN slr.slr_job_statistics.js_process_id%TYPE,
+      pinStatus      IN CHAR)
+   AS
+      lcUnitName          CONSTANT all_procedures.procedure_name%TYPE
+                                      := 'pCombinationCheck_GJLU' ;
+      lcViewName          CONSTANT all_views.view_name%TYPE
+                                      := 'SCV_COMBINATION_CHECK_GJLU' ;
+      lcErrorCode_Combo   CONSTANT slr.slr_error_message.em_error_code%TYPE
+                                      := 'JL_COMBO' ;
+
+      v_combo_check_errors         PLS_INTEGER;
+   BEGIN
+      DBMS_APPLICATION_INFO.set_module (module_name   => lcUnitName,
+                                        action_name   => 'Start');
+      fdr.PG_COMMON.pLogDebug (
+         pinMessage   => 'Start Combo Check - GUI Unposted Journal Lines');
+
+      /* Configure the optimizer hints for Combination Checking. */
+      -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboInput := '';
+      -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboError := '';
+      -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertInput      := '/*+ no_parallel */';
+      -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectInput      := '/*+ parallel */';
+      -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertComboError := '/*+ no_parallel */';
+      -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectComboError := '/*+ parallel */';
+
+      /* Call the Combination Check for those journals that are not in error yet - use the [sub-]partitioning key. */
+      fdr.PG_COMBINATION_CHECK.pCombinationCheck (
+         pinObjectName     => 'gui.scv_combination_check_gjlu',
+         pinFilter         => NULL,
+         pinBusinessDate   => NULL,
+         poutErrorCount    => v_combo_check_errors);
+
+      IF v_combo_check_errors > 0
+      THEN
+         DBMS_APPLICATION_INFO.set_action ('Create GUI Journal Line Error');
+
+         INSERT /*+ parallel */
+               INTO  gui_jrnl_line_errors (jle_jrnl_process_id,
+                                           jle_jrnl_hdr_id,
+                                           jle_jrnl_line_number,
+                                           jle_error_code,
+                                           jle_error_string,
+                                           jle_created_by,
+                                           jle_created_on,
+                                           jle_amended_by,
+                                           jle_amended_on)
+            SELECT /*+ parallel */
+                  pinProcessID AS jle_jrnl_process_id,
+                   SUBSTR (ce_input_id, 1, INSTR (ce_input_id, '_') - 1)
+                      AS jle_jrnl_hdr_id,
+                   SUBSTR (ce_input_id, INSTR (ce_input_id, '_') + 1)
+                      AS jle_jrnl_line_number,
+                   lcErrorCode_Combo AS jle_error_code,
+                   REPLACE (REPLACE (em_error_message, '%1', ce_rule),
+                            '%2',
+                            ce_attribute_name)
+                      AS jle_error_string,
+                   USER AS jle_created_by,
+                   SYSDATE AS jle_created_on,
+                   USER AS jle_amended_by,
+                   SYSDATE AS jle_amended_on
+              FROM fdr.fr_combination_check_error
+                   JOIN slr.slr_error_message ON 1 = 1
+             WHERE em_error_code = lcErrorCode_Combo;
+
+         /* Update the corresponding journal line to Error. */
+         MERGE /*+ parallel */
+              INTO  gui_jrnl_lines_unposted a
+              USING (  SELECT /*+ parallel */
+                             jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
+                         FROM gui_jrnl_lines_unposted
+                              JOIN fdr.fr_combination_check_error
+                                 ON     jlu_jrnl_hdr_id =
+                                           SUBSTR (
+                                              ce_input_id,
+                                              1,
+                                              INSTR (ce_input_id, '_') - 1)
+                                    AND jlu_jrnl_line_number =
+                                           SUBSTR (
+                                              ce_input_id,
+                                              INSTR (ce_input_id, '_') + 1)
+                        WHERE     jlu_epg_id = pinEPGID
+                              AND jlu_jrnl_status = pinStatus
+                     GROUP BY jlu_jrnl_hdr_id,
+                              jlu_jrnl_line_number,
+                              jlu_epg_id) b
+                 ON (    a.jlu_epg_id = b.jlu_epg_id
+                     AND a.jlu_jrnl_hdr_id = b.jlu_jrnl_hdr_id
+                     AND a.jlu_jrnl_line_number = b.jlu_jrnl_line_number)
+         WHEN MATCHED
+         THEN
+            UPDATE SET a.jlu_jrnl_status = 'E';
+
+         COMMIT;
+
+         DBMS_APPLICATION_INFO.set_action (
+            'Create Correlated GUI Journal Line Errors');
+
+         INSERT /*+ parallel */
+               INTO  gui_jrnl_line_errors (jle_jrnl_process_id,
+                                           jle_jrnl_hdr_id,
+                                           jle_jrnl_line_number,
+                                           jle_error_code,
+                                           jle_error_string,
+                                           jle_created_by,
+                                           jle_created_on,
+                                           jle_amended_by,
+                                           jle_amended_on)
+            SELECT /*+ parallel */
+                  pinProcessID AS jle_jrnl_process_id,
+                   JLU.JLU_JRNL_HDR_ID AS jle_jrnl_hdr_id,
+                   JLU.JLU_JRNL_LINE_NUMBER AS jle_jrnl_line_number,
+                   lcErrorCode_Combo AS jle_error_code,
+                   'Correlated GUI Journal Line Error' AS jle_error_string,
+                   USER AS jle_created_by,
+                   SYSDATE AS jle_created_on,
+                   USER AS jle_amended_by,
+                   SYSDATE AS jle_amended_on
+              FROM (SELECT DISTINCT jle1.jle_jrnl_hdr_id
+                      FROM gui.gui_jrnl_line_errors jle1
+                     WHERE JLE1.JLE_JRNL_PROCESS_ID = pinProcessID) jle
+                   --join slr.slr_error_message on 1 = 1
+                   JOIN GUI.GUI_JRNL_LINES_UNPOSTED jlu
+                      ON jle.jle_jrnl_hdr_id = JLU.JLU_JRNL_HDR_ID
+             --where em_error_code = lcErrorCode_Combo;
+             WHERE NOT EXISTS
+                          (SELECT NULL
+                             FROM slr_jrnl_line_errors jle2
+                            WHERE     JLE2.JLE_JRNL_HDR_ID =
+                                         JLU.JLU_JRNL_HDR_ID
+                                  AND JLE2.JLE_JRNL_LINE_NUMBER =
+                                         JLU.JLU_JRNL_LINE_NUMBER
+                                  AND JLE2.JLE_JRNL_PROCESS_ID = pinProcessID);
+
+         /* Update the corresponding journal line to Error. */
+         MERGE /*+ parallel */
+              INTO  gui_jrnl_lines_unposted a
+              USING (  SELECT /*+ parallel */
+                             jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
+                         FROM gui_jrnl_lines_unposted
+                              JOIN GUI.GUI_JRNL_LINE_ERRORS jle
+                                 ON     jlu_jrnl_hdr_id = JLE.JLE_JRNL_HDR_ID
+                                    AND jlu_jrnl_line_number =
+                                           JLE.JLE_JRNL_LINE_NUMBER
+                        WHERE     jlu_epg_id = pinEPGID
+                              AND jlu_jrnl_status = pinStatus
+                     GROUP BY jlu_jrnl_hdr_id,
+                              jlu_jrnl_line_number,
+                              jlu_epg_id) b
+                 ON (    a.jlu_epg_id = b.jlu_epg_id
+                     AND a.jlu_jrnl_hdr_id = b.jlu_jrnl_hdr_id
+                     AND a.jlu_jrnl_line_number = b.jlu_jrnl_line_number)
+         WHEN MATCHED
+         THEN
+            UPDATE SET a.jlu_jrnl_status = 'E';
+      END IF;
+
+      -- SLR.SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
+      /* Remove the combination input/error records and commit the journal error records. */
+      COMMIT;
+
+      fdr.PG_COMMON.pLogDebug (
+         pinMessage   => 'End Combo Check - GUI Unposted Journal Lines');
+      DBMS_APPLICATION_INFO.set_module (module_name   => NULL,
+                                        action_name   => NULL);
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         /* Log the error. */
+         DBMS_APPLICATION_INFO.set_action ('Unhandled Exception');
+         fdr.PR_Error (
+            a_type            => fdr.PG_COMMON.gcErrorEventType_Error,
+            a_text            => DBMS_UTILITY.format_error_backtrace,
+            a_category        => fdr.PG_COMMON.gcErrorCategory_Tech,
+            a_error_source    => lcUnitName,
+            a_error_table     => 'GUI_JRNL_LINES_UNPOSTED',
+            a_row             => NULL,
+            a_error_field     => NULL,
+            a_stage           => USER,
+            a_technology      => fdr.PG_COMMON.gcErrorTechnology_PLSQL,
+            a_value           => NULL,
+            a_entity          => NULL,
+            a_book            => NULL,
+            a_security        => NULL,
+            a_source_system   => NULL,
+            a_client_key      => NULL,
+            a_client_ver      => NULL,
+            a_lpg_id          => NULL);
+
+         /* Raise the error. */
+         RAISE;
+   END pCombinationCheck_GJLU;
+
+
+   --********************************************************************************
+
+   PROCEDURE pProcessEliminations (journal_id_list   IN     VARCHAR2,
+                                   success              OUT CHAR,
+                                  lv_header_id_list IN OUT VARCHAR2 )
+   IS
+      list_count              NUMBER (12);
+      loop_count              NUMBER (12);
+      journal_list_in_error   VARCHAR2 (32700) := NULL;
+      lv_success              CHAR (1);
+      lv_failed_count         NUMBER (5) := 0;
+      lv_journal_id           NUMBER (12, 0);
+      lv_journal_version      NUMBER (5, 0);
+      ncount                  NUMBER;
+      vHeaderId               VARCHAR2(20);
+
+      vStartIdx binary_integer;
+      vEndIdx   binary_integer;
+      vCurValue varchar2(1000);
+
+      cursor v_cur is
+        select regexp_substr(journal_id_list,'[^,]+', 1, level) As str from dual
+        connect by regexp_substr(journal_id_list, '[^,]+', 1, level) is not null;
+      
+   BEGIN
+      success := 'S';
+
+    for i in v_cur loop
+    
+    vHeaderId := TO_CHAR (fnui_get_next_journal_id);
+
+    IF LENGTH(lv_header_id_list) > 1 THEN
+           lv_header_id_list := lv_header_id_list || ',' || vHeaderId;
+    ELSE
+           lv_header_id_list := vHeaderId; 
+    END IF;       
+
+    pCreateEliminations(i.str,lv_success,vHeaderId);
+    
+  end loop;
+
+  -- Call proc here for last part (or in case of single element)
+       
+
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         pr_error (1,
+                   SQLERRM,
+                   0,
+                   'pProcessEliminations',
+                   'gui_jrnl_headers_unposted',
+                   NULL,
+                   NULL,
+                   gPackageName,
+                   'PL/SQL',
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL);
+         success := 'F';
+   END pProcessEliminations;
+
+   --********************************************************************************
+
+
+   PROCEDURE pCreateEliminations (
+      journal_id    IN     SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+      success          OUT CHAR,
+      vHeaderId     IN VARCHAR2)
+   IS
+      lvID      NUMBER;
+      nCount    NUMBER;
+      nrcount   NUMBER;
+   BEGIN
+      success := 'S';
+
+      SELECT COUNT (*)
+        INTO nCount
+        FROM gui.gui_jrnl_lines_unposted
+       WHERE JLU_JRNL_HDR_ID = journal_id;
+
+
+      INSERT INTO gui.gui_jrnl_headers_unposted
+         SELECT TO_NUMBER (vHeaderId) jhu_jrnl_id,
+                jhu_jrnl_type,
+                jhu_jrnl_date,
+                ce.jlu_entity jhu_jrnl_entity,
+                jhu_epg_id,
+                jhu_jrnl_status,
+                jhu_jrnl_status_text,
+                jhu_jrnl_process_id,
+                'Test - Elim' ,
+                jhu_jrnl_source,
+                jhu_jrnl_source_jrnl_id,
+                jhu_jrnl_authorised_by,
+                jhu_jrnl_authorised_on,
+                jhu_jrnl_validated_by,
+                jhu_jrnl_validated_on,
+                jhu_jrnl_posted_by,
+                jhu_jrnl_posted_on,
+                jhu_jrnl_total_hash_debit,
+                jhu_jrnl_total_hash_credit,
+                jhu_jrnl_total_lines,
+                jhu_created_by,
+                jhu_created_on,
+                jhu_amended_by,
+                jhu_amended_on,
+                jhu_jrnl_pref_static_src,
+                jhu_jrnl_ref_id,
+                jhu_jrnl_rev_date,
+                jhu_manual_flag,
+                jhu_version
+           FROM gui.gui_jrnl_headers_unposted gu
+                CROSS JOIN
+                (SELECT DISTINCT
+                        jlu_jrnl_hdr_id jlu_jrnl_hdr_id,
+                        COALESCE (PSMRE.REINS_LE_CD, ELE.ELIMINATION_LE_CD)
+                           JLU_ENTITY
+                   FROM gui.gui_jrnl_lines_unposted jlu
+                        JOIN stn.elimination_legal_entity ele
+                           ON (    ELE.LE_1_CD = JLU.JLU_ENTITY
+                               AND ELE.LE_2_CD = JLU_SEGMENT_4)
+                        JOIN STN.POSTING_LEDGER PL
+                           ON PL.LEDGER_CD = JLU.JLU_SEGMENT_1
+                        JOIN stn.posting_method_derivation_ic pmd
+                           ON (    PMD.INPUT_LEDGER_ID = PL.LEDGER_ID
+                               AND PMD.LEGAL_ENTITY_LINK_TYP =
+                                      ELE.LEGAL_ENTITY_LINK_TYP)
+                        LEFT JOIN stn.posting_method_derivation_rein psmre
+                           ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
+                               AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+                  WHERE JLU.JLU_SEGMENT_7 IN ('AA', 'CA')) ce
+          WHERE     gu.jhu_jrnl_id = ce.jlu_jrnl_hdr_id
+                AND gu.jhu_jrnl_id = journal_id;
+
+
+      INSERT INTO gui.gui_jrnl_lines_unposted gjlu (
+                     gjlu.JLU_JRNL_HDR_ID,
+                     gjlu.JLU_JRNL_LINE_NUMBER,
+                     gjlu.JLU_FAK_ID,
+                     gjlu.JLU_EBA_ID,
+                     gjlu.JLU_JRNL_STATUS,
+                     gjlu.JLU_JRNL_STATUS_TEXT,
+                     gjlu.JLU_JRNL_PROCESS_ID,
+                     gjlu.JLU_DESCRIPTION,
+                     gjlu.JLU_SOURCE_JRNL_ID,
+                     gjlu.JLU_EFFECTIVE_DATE,
+                     gjlu.JLU_VALUE_DATE,
+                     gjlu.JLU_ENTITY,
+                     gjlu.JLU_EPG_ID,
+                     gjlu.JLU_account,
+                     gjlu.JLU_SEGMENT_1,
+                     gjlu.JLU_SEGMENT_2,
+                     gjlu.JLU_SEGMENT_3,
+                     gjlu.JLU_SEGMENT_4,
+                     gjlu.JLU_SEGMENT_5,
+                     gjlu.JLU_SEGMENT_6,
+                     gjlu.JLU_SEGMENT_7,
+                     gjlu.JLU_SEGMENT_8,
+                     gjlu.JLU_SEGMENT_9,
+                     gjlu.JLU_SEGMENT_10,
+                     gjlu.JLU_ATTRIBUTE_1,
+                     gjlu.JLU_ATTRIBUTE_2,
+                     gjlu.JLU_ATTRIBUTE_3,
+                     gjlu.JLU_ATTRIBUTE_4,
+                     gjlu.JLU_ATTRIBUTE_5,
+                     gjlu.JLU_REFERENCE_1,
+                     gjlu.JLU_REFERENCE_2,
+                     gjlu.JLU_REFERENCE_3,
+                     gjlu.JLU_REFERENCE_4,
+                     gjlu.JLU_REFERENCE_5,
+                     gjlu.JLU_REFERENCE_6,
+                     gjlu.JLU_REFERENCE_7,
+                     gjlu.JLU_REFERENCE_8,
+                     gjlu.JLU_REFERENCE_9,
+                     gjlu.JLU_REFERENCE_10,
+                     gjlu.JLU_TRAN_CCY,
+                     gjlu.JLU_TRAN_AMOUNT,
+                     gjlu.JLU_BASE_RATE,
+                     gjlu.JLU_BASE_CCY,
+                     gjlu.JLU_BASE_AMOUNT,
+                     gjlu.JLU_LOCAL_RATE,
+                     gjlu.JLU_LOCAL_CCY,
+                     gjlu.JLU_LOCAL_AMOUNT,
+                     gjlu.JLU_CREATED_BY,
+                     gjlu.JLU_CREATED_ON,
+                     gjlu.JLU_AMENDED_BY,
+                     gjlu.JLU_AMENDED_ON,
+                     gjlu.JLU_JRNL_TYPE,
+                     gjlu.JLU_JRNL_DATE,
+                     gjlu.JLU_JRNL_DESCRIPTION,
+                     gjlu.JLU_JRNL_SOURCE,
+                     gjlu.JLU_JRNL_SOURCE_JRNL_ID,
+                     gjlu.JLU_JRNL_AUTHORISED_BY,
+                     gjlu.JLU_JRNL_AUTHORISED_ON,
+                     gjlu.JLU_JRNL_VALIDATED_BY,
+                     gjlu.JLU_JRNL_VALIDATED_ON,
+                     gjlu.JLU_JRNL_POSTED_BY,
+                     gjlu.JLU_JRNL_POSTED_ON,
+                     gjlu.JLU_JRNL_TOTAL_HASH_DEBIT,
+                     gjlu.JLU_JRNL_TOTAL_HASH_CREDIT,
+                     gjlu.JLU_JRNL_PREF_STATIC_SRC,
+                     gjlu.JLU_JRNL_REF_ID,
+                     gjlu.JLU_JRNL_REV_DATE,
+                     gjlu.JLU_TRANSLATION_DATE,
+                     gjlu.JLU_PERIOD_MONTH,
+                     gjlu.JLU_PERIOD_YEAR,
+                     gjlu.JLU_PERIOD_LTD)
+         SELECT TO_NUMBER (vHeaderId) JLU_JRNL_HDR_ID,
+                  (SELECT NVL (MAX (JLU_JRNL_LINE_NUMBER), 0)
+                     FROM gui.gui_jrnl_lines_unposted jlu
+                    WHERE JLU.JLU_JRNL_HDR_ID = vHeaderId)
+                + ROWNUM
+                   AS JLU_JRNL_LINE_NUMBER,
+                JLU.JLU_FAK_ID,
+                JLU.JLU_EBA_ID,
+                JLU.JLU_JRNL_STATUS,
+                JLU.JLU_JRNL_STATUS_TEXT,
+                JLU.JLU_JRNL_PROCESS_ID,
+                'Test - Elim' || TO_CHAR (JLU.JLU_SOURCE_JRNL_ID)
+                   JLU_DESCRIPTION,
+                JLU.JLU_SOURCE_JRNL_ID,
+                JLU.JLU_EFFECTIVE_DATE,
+                JLU.JLU_VALUE_DATE,
+                COALESCE (PSMRE.REINS_LE_CD, ELE.ELIMINATION_LE_CD)
+                   JLU_ENTITY,
+                JLU.JLU_EPG_ID,
+                JLU.JLU_account,
+                JLU.JLU_SEGMENT_1,
+                JLU.JLU_SEGMENT_2,
+                JLU.JLU_SEGMENT_3,
+                NVL2 (PSMRE.REINS_LE_CD, 'NVS', JLU.JLU_SEGMENT_4)
+                   JLU_SEGMENT_4,
+                NVL (PSMRE.CHARTFIELD_CD, 'NVS') JLU_SEGMENT_5,
+                JLU.JLU_SEGMENT_6,
+                CASE
+                   WHEN     JLU.JLU_SEGMENT_4 = 'AGFPI'
+                        AND JLU.JLU_SEGMENT_7 = 'AA'
+                   THEN
+                      'D'
+                   ELSE
+                      JLU.JLU_SEGMENT_7
+                END
+                   JLU_SEGMENT_7,
+                JLU.JLU_SEGMENT_8,
+                JLU.JLU_SEGMENT_9,
+                JLU.JLU_SEGMENT_10,
+                JLU.JLU_ATTRIBUTE_1,
+                JLU.JLU_ATTRIBUTE_2,
+                JLU.JLU_ATTRIBUTE_3,
+                JLU.JLU_ATTRIBUTE_4,
+                JLU.JLU_ATTRIBUTE_5,
+                JLU.JLU_REFERENCE_1,
+                JLU.JLU_REFERENCE_2,
+                JLU.JLU_REFERENCE_3,
+                JLU.JLU_REFERENCE_4,
+                JLU.JLU_REFERENCE_5,
+                JLU.JLU_REFERENCE_6,
+                JLU.JLU_REFERENCE_7,
+                JLU.JLU_REFERENCE_8,
+                JLU.JLU_REFERENCE_9,
+                JLU.JLU_REFERENCE_10,
+                JLU.JLU_TRAN_CCY,
+                JLU.JLU_TRAN_AMOUNT * PMD.NEGATE_FLAG JLU_TRAN_AMOUNT,
+                JLU.JLU_BASE_RATE,
+                JLU.JLU_BASE_CCY,
+                JLU.JLU_BASE_AMOUNT * PMD.NEGATE_FLAG JLU_BASE_AMOUNT,
+                JLU.JLU_LOCAL_RATE,
+                JLU.JLU_LOCAL_CCY,
+                JLU.JLU_LOCAL_AMOUNT * PMD.NEGATE_FLAG JLU_LOCAL_AMOUNT,
+                JLU.JLU_CREATED_BY,
+                JLU.JLU_CREATED_ON,
+                JLU.JLU_AMENDED_BY,
+                JLU.JLU_AMENDED_ON,
+                JLU_JRNL_TYPE,
+                JLU_JRNL_DATE,
+                JLU_JRNL_DESCRIPTION,
+                JLU_JRNL_SOURCE,
+                JLU_JRNL_SOURCE_JRNL_ID,
+                JLU_JRNL_AUTHORISED_BY,
+                JLU_JRNL_AUTHORISED_ON,
+                JLU_JRNL_VALIDATED_BY,
+                JLU_JRNL_VALIDATED_ON,
+                JLU_JRNL_POSTED_BY,
+                JLU_JRNL_POSTED_ON,
+                JLU_JRNL_TOTAL_HASH_DEBIT,
+                JLU_JRNL_TOTAL_HASH_CREDIT,
+                JLU_JRNL_PREF_STATIC_SRC,
+                JLU_JRNL_REF_ID,
+                JLU_JRNL_REV_DATE,
+                JLU_TRANSLATION_DATE,
+                JLU_PERIOD_MONTH,
+                JLU_PERIOD_YEAR,
+                JLU_PERIOD_LTD
+           FROM gui.gui_jrnl_lines_unposted jlu
+                JOIN stn.elimination_legal_entity ele
+                   ON (    ELE.LE_1_CD = JLU.JLU_ENTITY
+                       AND ELE.LE_2_CD = JLU_SEGMENT_4)
+                JOIN STN.POSTING_LEDGER PL
+                   ON PL.LEDGER_CD = JLU.JLU_SEGMENT_1
+                JOIN stn.posting_method_derivation_ic pmd
+                   ON (    PMD.INPUT_LEDGER_ID = PL.LEDGER_ID
+                       AND PMD.LEGAL_ENTITY_LINK_TYP =
+                              ELE.LEGAL_ENTITY_LINK_TYP)
+                LEFT JOIN stn.posting_method_derivation_rein psmre
+                   ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
+                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+          WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
+                AND jlu.JLU_JRNL_HDR_ID = journal_id;
+
+      COMMIT;  
    
-Procedure pCombinationCheck_GJLU (
-  pinEPGID     in slr.slr_entity_proc_group.epg_id%TYPE,
-  pinProcessID in slr.slr_job_statistics.js_process_id%TYPE,
-  pinStatus    in CHAR
-)
-As
-
-lcUnitName        Constant all_procedures.procedure_name%TYPE := 'pCombinationCheck_GJLU';
-lcViewName        Constant all_views.view_name%TYPE := 'SCV_COMBINATION_CHECK_GJLU';
-lcErrorCode_Combo Constant slr.slr_error_message.em_error_code%TYPE := 'JL_COMBO';
-
-v_combo_check_errors Pls_Integer;
-
-Begin
-
-
-  dbms_application_info.set_module(
-    module_name => lcUnitName,
-    action_name => 'Start');
-  fdr.PG_COMMON.pLogDebug(pinMessage => 'Start Combo Check - GUI Unposted Journal Lines');
-
-  /* Configure the optimizer hints for Combination Checking. */
-  -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboInput := '';
-  -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboError := '';
-  -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertInput      := '/*+ no_parallel */';
-  -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectInput      := '/*+ parallel */';
-  -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertComboError := '/*+ no_parallel */';
-  -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectComboError := '/*+ parallel */';
-
-  /* Call the Combination Check for those journals that are not in error yet - use the [sub-]partitioning key. */
-  fdr.PG_COMBINATION_CHECK.pCombinationCheck(
-    pinObjectName   =>  'gui.scv_combination_check_gjlu',
-    pinFilter       =>  NULL,
-    pinBusinessDate =>  NULL,
-    poutErrorCount  =>  v_combo_check_errors);
-
-  If v_combo_check_errors > 0 Then
-    dbms_application_info.set_action('Create GUI Journal Line Error');
-    Insert /*+ parallel */ into gui_jrnl_line_errors (
-      jle_jrnl_process_id,
-      jle_jrnl_hdr_id,
-      jle_jrnl_line_number,
-      jle_error_code,
-      jle_error_string,
-      jle_created_by,
-      jle_created_on,
-      jle_amended_by,
-      jle_amended_on)
-    Select /*+ parallel */
-           pinProcessID as jle_jrnl_process_id,
-           substr(ce_input_id,1,instr(ce_input_id,'_')-1) as jle_jrnl_hdr_id,
-           substr(ce_input_id,instr(ce_input_id,'_')+1) as jle_jrnl_line_number,
-           lcErrorCode_Combo as jle_error_code,
-           replace(replace(em_error_message,'%1',ce_rule),'%2',ce_attribute_name) as jle_error_string,
-           user as jle_created_by,
-           sysdate as jle_created_on,
-           user as jle_amended_by,
-           sysdate as jle_amended_on
-      from fdr.fr_combination_check_error
-      join slr.slr_error_message on 1 = 1
-     where em_error_code = lcErrorCode_Combo;
-
-    /* Update the corresponding journal line to Error. */
-    Merge /*+ parallel */ into gui_jrnl_lines_unposted a using (
-      Select /*+ parallel */ jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
-        from gui_jrnl_lines_unposted
-        join fdr.fr_combination_check_error on jlu_jrnl_hdr_id = substr(ce_input_id,1,instr(ce_input_id,'_')-1)
-                                           and jlu_jrnl_line_number = substr(ce_input_id,instr(ce_input_id,'_')+1)
-       where jlu_epg_id = pinEPGID
-         and jlu_jrnl_status = pinStatus
-       group by jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id) b
-      on (a.jlu_epg_id = b.jlu_epg_id
-          and a.jlu_jrnl_hdr_id = b.jlu_jrnl_hdr_id
-          and a.jlu_jrnl_line_number = b.jlu_jrnl_line_number)
-    When Matched Then Update
-      Set a.jlu_jrnl_status = 'E';
-      Commit;
-
-      dbms_application_info.set_action('Create Correlated GUI Journal Line Errors');
-    Insert /*+ parallel */ into gui_jrnl_line_errors (
-      jle_jrnl_process_id,
-      jle_jrnl_hdr_id,
-      jle_jrnl_line_number,
-      jle_error_code,
-      jle_error_string,
-      jle_created_by,
-      jle_created_on,
-      jle_amended_by,
-      jle_amended_on)
-    Select /*+ parallel */
-           pinProcessID as jle_jrnl_process_id,
-           JLU.JLU_JRNL_HDR_ID as jle_jrnl_hdr_id,
-           JLU.JLU_JRNL_LINE_NUMBER as jle_jrnl_line_number,
-           lcErrorCode_Combo as jle_error_code,
-           'Correlated GUI Journal Line Error' as jle_error_string,
-           user as jle_created_by,
-           sysdate as jle_created_on,
-           user as jle_amended_by,
-           sysdate as jle_amended_on
-      from (select distinct jle1.jle_jrnl_hdr_id from  gui.gui_jrnl_line_errors jle1
-                where JLE1.JLE_JRNL_PROCESS_ID = pinProcessID ) jle
-      --join slr.slr_error_message on 1 = 1
-      join GUI.GUI_JRNL_LINES_UNPOSTED jlu on jle.jle_jrnl_hdr_id = JLU.JLU_JRNL_HDR_ID
-     --where em_error_code = lcErrorCode_Combo;
-     where not exists (select NULL from slr_jrnl_line_errors jle2
-                        where JLE2.JLE_JRNL_HDR_ID = JLU.JLU_JRNL_HDR_ID
-                          and JLE2.JLE_JRNL_LINE_NUMBER = JLU.JLU_JRNL_LINE_NUMBER
-                          and JLE2.JLE_JRNL_PROCESS_ID = pinProcessID );
-
-    /* Update the corresponding journal line to Error. */
-    Merge /*+ parallel */ into gui_jrnl_lines_unposted a using (
-      Select /*+ parallel */ jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
-        from gui_jrnl_lines_unposted
-        join GUI.GUI_JRNL_LINE_ERRORS jle on jlu_jrnl_hdr_id = JLE.JLE_JRNL_HDR_ID
-                                           and jlu_jrnl_line_number = JLE.JLE_JRNL_LINE_NUMBER
-       where jlu_epg_id = pinEPGID
-         and jlu_jrnl_status = pinStatus
-       group by jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id) b
-      on (a.jlu_epg_id = b.jlu_epg_id
-          and a.jlu_jrnl_hdr_id = b.jlu_jrnl_hdr_id
-          and a.jlu_jrnl_line_number = b.jlu_jrnl_line_number)
-    When Matched Then Update
-      Set a.jlu_jrnl_status = 'E';
-
-
-  End If;
-
-  -- SLR.SLR_ADMIN_PKG.PerfInfo( 'Combo Edit Checks. Check Combo failed record count: ' || v_combo_check_errors);
-  /* Remove the combination input/error records and commit the journal error records. */
-  Commit;
-
-  fdr.PG_COMMON.pLogDebug(pinMessage => 'End Combo Check - GUI Unposted Journal Lines');
-  dbms_application_info.set_module(
-    module_name => NULL,
-    action_name => NULL);
-Exception
-When Others Then
-  /* Log the error. */
-  dbms_application_info.set_action('Unhandled Exception');
-  fdr.PR_Error (
-    a_type => fdr.PG_COMMON.gcErrorEventType_Error,
-    a_text => dbms_utility.format_error_backtrace,
-    a_category => fdr.PG_COMMON.gcErrorCategory_Tech,
-    a_error_source => lcUnitName,
-    a_error_table => 'GUI_JRNL_LINES_UNPOSTED',
-    a_row => NULL,
-    a_error_field => NULL,
-    a_stage => user,
-    a_technology => fdr.PG_COMMON.gcErrorTechnology_PLSQL,
-    a_value => NULL,
-    a_entity => NULL,
-    a_book => NULL,
-    a_security => NULL,
-    a_source_system => NULL,
-    a_client_key => NULL,
-    a_client_ver => NULL,
-    a_lpg_id => NULL
-  );
-
-  /* Raise the error. */
-  Raise;
-End pCombinationCheck_GJLU;
-
-PROCEDURE pCreateEliminations (journal_id IN SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE)
-As
-
-Begin
-
-merge into gui.gui_jrnl_lines_unposted gjlu
-using (
-select  journal_id                                            JLU_JRNL_HDR_ID,
-        (SELECT NVL (MAX ( JLU_JRNL_LINE_NUMBER) , 1)
-            FROM gui.gui_jrnl_lines_unposted jlu
-          WHERE JLU.JLU_JRNL_HDR_ID = journal_id) + ROWNUM as JLU_JRNL_LINE_NUMBER,       
-        JLU.JLU_FAK_ID,
-        JLU.JLU_EBA_ID,
-        JLU.JLU_JRNL_STATUS,
-        JLU.JLU_JRNL_STATUS_TEXT,
-        JLU.JLU_JRNL_PROCESS_ID,
-        JLU.JLU_DESCRIPTION,
-        JLU.JLU_SOURCE_JRNL_ID,        
-        JLU.JLU_EFFECTIVE_DATE,                                    
-        JLU.JLU_VALUE_DATE,
-        coalesce( PSMRE.REINS_LE_CD , ELE.ELIMINATION_LE_CD )   JLU_ENTITY,        
-        JLU.JLU_EPG_ID,
-        JLU.JLU_account,
-        JLU.JLU_SEGMENT_1,
-        JLU.JLU_SEGMENT_2,
-        JLU.JLU_SEGMENT_3,
-        nvl2( PSMRE.REINS_LE_CD , null , JLU.JLU_SEGMENT_4 )      JLU_SEGMENT_4,
-        PSMRE.CHARTFIELD_CD                                       JLU_SEGMENT_5,
-        JLU.JLU_SEGMENT_6,
-        case
-            when JLU.JLU_SEGMENT_4 = 'AGFPI'
-              and JLU.JLU_SEGMENT_7 = 'AA'
-            then 'D'
-              else JLU.JLU_SEGMENT_7
-        end                                                     JLU_SEGMENT_7,                
-        JLU.JLU_SEGMENT_8,
-        JLU.JLU_SEGMENT_9,
-        JLU.JLU_SEGMENT_10,
-        JLU.JLU_ATTRIBUTE_1,
-        JLU.JLU_ATTRIBUTE_2,
-        JLU.JLU_ATTRIBUTE_3,
-        JLU.JLU_ATTRIBUTE_4,
-        JLU.JLU_ATTRIBUTE_5,        
-        JLU.JLU_REFERENCE_1,
-        JLU.JLU_REFERENCE_2,
-        JLU.JLU_REFERENCE_3,
-        JLU.JLU_REFERENCE_4,
-        JLU.JLU_REFERENCE_5,
-        JLU.JLU_REFERENCE_6,                                
-        JLU.JLU_REFERENCE_7,
-        JLU.JLU_REFERENCE_8,
-        JLU.JLU_REFERENCE_9,
-        JLU.JLU_REFERENCE_10, 
-        JLU.JLU_TRAN_CCY,
-        JLU.JLU_TRAN_AMOUNT  * PMD.NEGATE_FLAG                    JLU_TRAN_AMOUNT,
-        JLU.JLU_BASE_RATE,
-        JLU.JLU_BASE_CCY,
-        JLU.JLU_BASE_AMOUNT  * PMD.NEGATE_FLAG                    JLU_BASE_AMOUNT,
-        JLU.JLU_LOCAL_RATE,
-        JLU.JLU_LOCAL_CCY,
-        JLU.JLU_LOCAL_AMOUNT * PMD.NEGATE_FLAG                    JLU_LOCAL_AMOUNT,
-        JLU.JLU_CREATED_BY,
-        JLU.JLU_CREATED_ON,
-        JLU.JLU_AMENDED_BY,
-        JLU.JLU_AMENDED_ON,
-        JLU_JRNL_TYPE, 
-        JLU_JRNL_DATE, 
-        JLU_JRNL_DESCRIPTION, 
-        JLU_JRNL_SOURCE, 
-        JLU_JRNL_SOURCE_JRNL_ID, 
-        JLU_JRNL_AUTHORISED_BY, 
-        JLU_JRNL_AUTHORISED_ON, 
-        JLU_JRNL_VALIDATED_BY, 
-        JLU_JRNL_VALIDATED_ON, 
-        JLU_JRNL_POSTED_BY, 
-        JLU_JRNL_POSTED_ON, 
-        JLU_JRNL_TOTAL_HASH_DEBIT, 
-        JLU_JRNL_TOTAL_HASH_CREDIT, 
-        JLU_JRNL_PREF_STATIC_SRC, 
-        JLU_JRNL_REF_ID, 
-        JLU_JRNL_REV_DATE, 
-        JLU_TRANSLATION_DATE, 
-        JLU_PERIOD_MONTH, 
-        JLU_PERIOD_YEAR, 
-        JLU_PERIOD_LTD      
-from gui.gui_jrnl_lines_unposted jlu
-join stn.elimination_legal_entity ele 
-    on (ELE.LE_1_CD = JLU.JLU_ENTITY and ELE.LE_2_CD = JLU_SEGMENT_4)   
-join STN.POSTING_LEDGER PL on PL.LEDGER_CD = JLU.JLU_SEGMENT_1
-join stn.posting_method_derivation_ic pmd 
-    on (PMD.INPUT_LEDGER_ID = PL.LEDGER_ID and PMD.LEGAL_ENTITY_LINK_TYP = ELE.LEGAL_ENTITY_LINK_TYP)
-left join stn.posting_method_derivation_rein psmre 
-    on (JLU.JLU_ENTITY = PSMRE.LE_1_CD and JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
-where JLU.JLU_SEGMENT_7 in ('AA','CA') and jlu.JLU_JRNL_HDR_ID = journal_id 
-) input
-on (
-        trim(gjlu.JLU_SEGMENT_7)               = trim(input.JLU_SEGMENT_7)
-        and trim(gjlu.JLU_ATTRIBUTE_3)         = trim(input.JLU_ATTRIBUTE_3) 
-        and nvl(gjlu.JLU_JRNL_HDR_ID,0)        = nvl(input.JLU_JRNL_HDR_ID,0)  
-        and nvl(gjlu.JLU_FAK_ID,0)             = nvl(input.JLU_FAK_ID,0)
-        and nvl(gjlu.JLU_EBA_ID,0)             = nvl(input.JLU_EBA_ID,0)
-        and trim(gjlu.JLU_JRNL_STATUS)         = trim(input.JLU_JRNL_STATUS)
-        and trim(gjlu.JLU_JRNL_STATUS_TEXT)    = trim(input.JLU_JRNL_STATUS_TEXT)
-        and nvl(gjlu.JLU_JRNL_PROCESS_ID,0)    = nvl(input.JLU_JRNL_PROCESS_ID,0)
-        and trim(gjlu.JLU_DESCRIPTION)         = trim(input.JLU_DESCRIPTION)
-        and trim(gjlu.JLU_SOURCE_JRNL_ID)      = trim(to_char(journal_id))
-        and gjlu.JLU_EFFECTIVE_DATE            = input.JLU_EFFECTIVE_DATE
-        and gjlu.JLU_VALUE_DATE                = input.JLU_VALUE_DATE
-        and trim(gjlu.JLU_ENTITY)              = trim(input.JLU_ENTITY)                                            
-        and trim(gjlu.JLU_EPG_ID)              = trim(input.JLU_EPG_ID)
-        and trim(gjlu.JLU_account)             = trim(input.JLU_account)
-        and trim(gjlu.JLU_SEGMENT_1)           = trim(input.JLU_SEGMENT_1)
-        and trim(gjlu.JLU_SEGMENT_2)           = trim(input.JLU_SEGMENT_2)
-        and trim(gjlu.JLU_SEGMENT_3)           = trim(input.JLU_SEGMENT_3)
-        and trim(gjlu.JLU_SEGMENT_4)           = trim(input.JLU_SEGMENT_4)                                    
-        and trim(gjlu.JLU_SEGMENT_5)           = trim(input.JLU_SEGMENT_5)
-        and trim(gjlu.JLU_SEGMENT_6)           = trim(input.JLU_SEGMENT_6)
-        and trim(gjlu.JLU_SEGMENT_7)           = trim(input.JLU_SEGMENT_7)
-        and trim(gjlu.JLU_SEGMENT_8)           = trim(input.JLU_SEGMENT_8)
-        and trim(gjlu.JLU_SEGMENT_9)           = trim(input.JLU_SEGMENT_9)
-        and trim(gjlu.JLU_SEGMENT_10)          = trim(input.JLU_SEGMENT_10)
-        and trim(gjlu.JLU_ATTRIBUTE_1)         = trim(input.JLU_ATTRIBUTE_1)
-        and trim(gjlu.JLU_ATTRIBUTE_2)         = trim(input.JLU_ATTRIBUTE_2)
-        and trim(gjlu.JLU_ATTRIBUTE_3)         = trim(input.JLU_ATTRIBUTE_3)
-        and trim(gjlu.JLU_ATTRIBUTE_4)         = trim(input.JLU_ATTRIBUTE_4)
-        and trim(gjlu.JLU_ATTRIBUTE_5)         = trim(input.JLU_ATTRIBUTE_5)
-        and trim(gjlu.JLU_REFERENCE_1)         = trim(input.JLU_REFERENCE_1)
-        and trim(gjlu.JLU_REFERENCE_2)         = trim(input.JLU_REFERENCE_2)
-        and trim(gjlu.JLU_REFERENCE_3)         = trim(input.JLU_REFERENCE_3)
-        and trim(gjlu.JLU_REFERENCE_4)         = trim(input.JLU_REFERENCE_4)
-        and trim(gjlu.JLU_REFERENCE_5)         = trim(input.JLU_REFERENCE_5)
-        and trim(gjlu.JLU_REFERENCE_6)         = trim(input.JLU_REFERENCE_6)
-        and trim(gjlu.JLU_REFERENCE_7)         = trim(input.JLU_REFERENCE_7)
-        and trim(gjlu.JLU_REFERENCE_8)         = trim(input.JLU_REFERENCE_8)
-        and trim(gjlu.JLU_REFERENCE_9)         = trim(input.JLU_REFERENCE_9)
-        and trim(gjlu.JLU_REFERENCE_10)        = trim(input.JLU_REFERENCE_10)
-        and trim(gjlu.JLU_TRAN_CCY)            = trim(input.JLU_TRAN_CCY)
-        and nvl(gjlu.JLU_TRAN_AMOUNT,0)        = nvl(input.JLU_TRAN_AMOUNT,0)
-        and NVL(gjlu.JLU_BASE_RATE,0)          = nvl(input.JLU_BASE_RATE,0)                                            
-        and trim(gjlu.JLU_BASE_CCY)            = trim(input.JLU_BASE_CCY)
-        and nvl(gjlu.JLU_BASE_AMOUNT,0)        = nvl(input.JLU_BASE_AMOUNT,0)
-        and nvl(gjlu.JLU_LOCAL_RATE,0)         = nvl(input.JLU_LOCAL_RATE,0)                                           
-        and trim(gjlu.JLU_LOCAL_CCY)           = trim(input.JLU_LOCAL_CCY)
-        and nvl(gjlu.JLU_LOCAL_AMOUNT,0)       = nvl(input.JLU_LOCAL_AMOUNT,0)
- )
-when not
-    matched then insert (
-        gjlu.JLU_JRNL_HDR_ID,
-        gjlu.JLU_JRNL_LINE_NUMBER,
-        gjlu.JLU_FAK_ID,
-        gjlu.JLU_EBA_ID,
-        gjlu.JLU_JRNL_STATUS,
-        gjlu.JLU_JRNL_STATUS_TEXT,
-        gjlu.JLU_JRNL_PROCESS_ID,
-        gjlu.JLU_DESCRIPTION,
-        gjlu.JLU_SOURCE_JRNL_ID,        
-        gjlu.JLU_EFFECTIVE_DATE,                                    
-        gjlu.JLU_VALUE_DATE,
-        gjlu.JLU_ENTITY,        
-        gjlu.JLU_EPG_ID,
-        gjlu.JLU_account,
-        gjlu.JLU_SEGMENT_1,
-        gjlu.JLU_SEGMENT_2,
-        gjlu.JLU_SEGMENT_3,
-        gjlu.JLU_SEGMENT_4,
-        gjlu.JLU_SEGMENT_5,
-        gjlu.JLU_SEGMENT_6,
-        gjlu.JLU_SEGMENT_7,
-        gjlu.JLU_SEGMENT_8,
-        gjlu.JLU_SEGMENT_9,
-        gjlu.JLU_SEGMENT_10,
-        gjlu.JLU_ATTRIBUTE_1,
-        gjlu.JLU_ATTRIBUTE_2,
-        gjlu.JLU_ATTRIBUTE_3,                      
-        gjlu.JLU_ATTRIBUTE_4,
-        gjlu.JLU_ATTRIBUTE_5,        
-        gjlu.JLU_REFERENCE_1,
-        gjlu.JLU_REFERENCE_2,
-        gjlu.JLU_REFERENCE_3,
-        gjlu.JLU_REFERENCE_4,
-        gjlu.JLU_REFERENCE_5,
-        gjlu.JLU_REFERENCE_6,                                
-        gjlu.JLU_REFERENCE_7,
-        gjlu.JLU_REFERENCE_8,
-        gjlu.JLU_REFERENCE_9,
-        gjlu.JLU_REFERENCE_10, 
-        gjlu.JLU_TRAN_CCY,
-        gjlu.JLU_TRAN_AMOUNT,
-        gjlu.JLU_BASE_RATE,
-        gjlu.JLU_BASE_CCY,
-        gjlu.JLU_BASE_AMOUNT,
-        gjlu.JLU_LOCAL_RATE,
-        gjlu.JLU_LOCAL_CCY,
-        gjlu.JLU_LOCAL_AMOUNT,
-        gjlu.JLU_CREATED_BY,
-        gjlu.JLU_CREATED_ON,
-        gjlu.JLU_AMENDED_BY,
-        gjlu.JLU_AMENDED_ON,
-        gjlu.JLU_JRNL_TYPE, 
-        gjlu.JLU_JRNL_DATE, 
-        gjlu.JLU_JRNL_DESCRIPTION, 
-        gjlu.JLU_JRNL_SOURCE, 
-        gjlu.JLU_JRNL_SOURCE_JRNL_ID, 
-        gjlu.JLU_JRNL_AUTHORISED_BY, 
-        gjlu.JLU_JRNL_AUTHORISED_ON, 
-        gjlu.JLU_JRNL_VALIDATED_BY, 
-        gjlu.JLU_JRNL_VALIDATED_ON, 
-        gjlu.JLU_JRNL_POSTED_BY, 
-        gjlu.JLU_JRNL_POSTED_ON, 
-        gjlu.JLU_JRNL_TOTAL_HASH_DEBIT, 
-        gjlu.JLU_JRNL_TOTAL_HASH_CREDIT, 
-        gjlu.JLU_JRNL_PREF_STATIC_SRC, 
-        gjlu.JLU_JRNL_REF_ID, 
-        gjlu.JLU_JRNL_REV_DATE, 
-        gjlu.JLU_TRANSLATION_DATE, 
-        gjlu.JLU_PERIOD_MONTH, 
-        gjlu.JLU_PERIOD_YEAR, 
-        gjlu.JLU_PERIOD_LTD 
- )
-values (
-        input.JLU_JRNL_HDR_ID,
-        input.JLU_JRNL_LINE_NUMBER,
-        input.JLU_FAK_ID,
-        input.JLU_EBA_ID,
-        input.JLU_JRNL_STATUS,
-        input.JLU_JRNL_STATUS_TEXT,
-        input.JLU_JRNL_PROCESS_ID,
-        input.JLU_DESCRIPTION,
-        input.JLU_SOURCE_JRNL_ID,        
-        input.JLU_EFFECTIVE_DATE,                                    
-        input.JLU_VALUE_DATE,
-        input.JLU_ENTITY,        
-        input.JLU_EPG_ID,
-        input.JLU_account,
-        input.JLU_SEGMENT_1,
-        input.JLU_SEGMENT_2,
-        input.JLU_SEGMENT_3,
-        input.JLU_SEGMENT_4,
-        input.JLU_SEGMENT_5,
-        input.JLU_SEGMENT_6,
-        input.JLU_SEGMENT_7,
-        input.JLU_SEGMENT_8,
-        input.JLU_SEGMENT_9,
-        input.JLU_SEGMENT_10,
-        input.JLU_ATTRIBUTE_1,
-        input.JLU_ATTRIBUTE_2,
-        input.JLU_ATTRIBUTE_3,                      
-        input.JLU_ATTRIBUTE_4,
-        input.JLU_ATTRIBUTE_5,        
-        input.JLU_REFERENCE_1,
-        input.JLU_REFERENCE_2,
-        input.JLU_REFERENCE_3,
-        input.JLU_REFERENCE_4,
-        input.JLU_REFERENCE_5,
-        input.JLU_REFERENCE_6,                                
-        input.JLU_REFERENCE_7,
-        input.JLU_REFERENCE_8,
-        input.JLU_REFERENCE_9,
-        input.JLU_REFERENCE_10, 
-        input.JLU_TRAN_CCY,
-        input.JLU_TRAN_AMOUNT,
-        input.JLU_BASE_RATE,
-        input.JLU_BASE_CCY,
-        input.JLU_BASE_AMOUNT,
-        input.JLU_LOCAL_RATE,
-        input.JLU_LOCAL_CCY,
-        input.JLU_LOCAL_AMOUNT,
-        input.JLU_CREATED_BY,
-        input.JLU_CREATED_ON,
-        input.JLU_AMENDED_BY,
-        input.JLU_AMENDED_ON,
-        input.JLU_JRNL_TYPE, 
-        input.JLU_JRNL_DATE, 
-        input.JLU_JRNL_DESCRIPTION, 
-        input.JLU_JRNL_SOURCE, 
-        input.JLU_JRNL_SOURCE_JRNL_ID, 
-        input.JLU_JRNL_AUTHORISED_BY, 
-        input.JLU_JRNL_AUTHORISED_ON, 
-        input.JLU_JRNL_VALIDATED_BY, 
-        input.JLU_JRNL_VALIDATED_ON, 
-        input.JLU_JRNL_POSTED_BY, 
-        input.JLU_JRNL_POSTED_ON, 
-        input.JLU_JRNL_TOTAL_HASH_DEBIT, 
-        input.JLU_JRNL_TOTAL_HASH_CREDIT, 
-        input.JLU_JRNL_PREF_STATIC_SRC, 
-        input.JLU_JRNL_REF_ID, 
-        input.JLU_JRNL_REV_DATE, 
-        input.JLU_TRANSLATION_DATE, 
-        input.JLU_PERIOD_MONTH, 
-        input.JLU_PERIOD_YEAR, 
-        input.JLU_PERIOD_LTD );
-commit;
-EXCEPTION
+    return;
+    
+   EXCEPTION
       WHEN OTHERS
       THEN
          pr_error (1,
@@ -15265,9 +15403,9 @@ EXCEPTION
                    NULL,
                    NULL,
                    NULL);
+         success := 'F';
+
          RAISE;
-   
-END pCreateEliminations;           
-  
+   END pCreateEliminations;
 END pgui_manual_journal;
 /

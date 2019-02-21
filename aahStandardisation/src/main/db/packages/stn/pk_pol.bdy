@@ -922,9 +922,124 @@ and not exists (
 from fdr.fr_general_codes frgc
 where 
 frgc.gc_client_code = polt.TAX_JURISDICTION_CD
-	and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
+    and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
 );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  pol-tax-jurisdiction-cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-tax-jurisdiction-count', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                pol.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                pol.POLICY_ID AS ERROR_VALUE,
+                pol.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                pol.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                INSURANCE_POLICY pol
+                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                 vdl.VALIDATION_CD = 'pol-policy_tax_count'
+            and not exists ( 
+              select tj.policy_id from stn.insurance_policy_tax_jurisd tj 
+                     where tj.feed_uuid = pol.FEED_UUID
+                     and tj.policy_id = pol.POLICY_ID)
+;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  policy-validate-tax-jurisd-count', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : policy-validate-cession-count', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                pol.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                pol.POLICY_ID AS ERROR_VALUE,
+                pol.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                pol.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                INSURANCE_POLICY pol
+                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                        vdl.VALIDATION_CD = 'pol-cession_count'
+            and not exists ( 
+              select c.policy_id from stn.cession c 
+                     where c.feed_uuid = pol.FEED_UUID
+                     and c.policy_id = pol.POLICY_ID)
+;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  policy-validate-cession-count', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cession-validate-vie-calendar-yr', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                cs.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                'vie_acct_dt cannot be null' AS ERROR_VALUE,
+                cs.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                gp.GP_TODAYS_BUS_DATE AS TODAYS_BUSINESS_DT,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                cs.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                CESSION cs
+                INNER JOIN FEED fd ON cs.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cs.LPG_ID = gp.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN POL_DEFAULT pold ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'pol-cession_vie_date'
+and (
+        cs.VIE_STATUS   is not null
+    and to_char(cs.VIE_ACCT_DT,'yyyy') <> to_char(cs.VIE_EFFECTIVE_DT,'yyyy') 
+    )
+and  exists (
+                select
+                       null
+                  from
+                            stn.insurance_policy  pol
+                       join stn.identified_record idr on pol.row_sid = idr.row_sid
+                 where
+                       pol.policy_id = cs.policy_id
+                   and pol.feed_uuid = cs.FEED_UUID
+            )
+;
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cession-validate-vie-calendar-yr', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
     
     PROCEDURE pr_policy_svs

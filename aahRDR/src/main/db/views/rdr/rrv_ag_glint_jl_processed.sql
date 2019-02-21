@@ -46,5 +46,7 @@ select
      , gjl.ps_filter
      , null                       created_by
      , null                       approved_by
+     , gjl.jh_jrnl_type
+     , gjl.jh_jrnl_description     
   from
        rdr.rr_glint_journal_line gjl;

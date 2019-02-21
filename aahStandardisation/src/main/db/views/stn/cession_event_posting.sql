@@ -23,6 +23,7 @@ select
   , event_typ
   , business_event_typ
   , business_unit
+  , bu_lookup
   , affiliate
   , owner_le_cd
   , counterparty_le_cd
@@ -38,7 +39,7 @@ select
   , reporting_ccy
   , reporting_amt
   , lpg_id
-from
+ from
     stn.cev_non_intercompany_data
 union all
 select
@@ -64,6 +65,7 @@ select
   , event_typ
   , business_event_typ
   , business_unit
+  , bu_lookup
   , affiliate
   , owner_le_cd
   , counterparty_le_cd
@@ -105,6 +107,7 @@ select
   , event_typ
   , business_event_typ
   , business_unit
+  , bu_lookup
   , affiliate
   , owner_le_cd
   , counterparty_le_cd

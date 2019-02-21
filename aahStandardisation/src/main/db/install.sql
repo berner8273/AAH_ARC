@@ -10,14 +10,14 @@ whenever sqlerror exit failure
 set serveroutput on
 set define ~
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logon=~1
+define gui_logon=~2
+define rdr_logon=~3
+define sla_logon=~4
+define slr_logon=~5
+define stn_logon=~6
+define sys_logon=~7
+define unittest_login=~8
 
 conn ~slr_logon
 
@@ -117,6 +117,7 @@ conn ~stn_logon
 @@tables/stn/accounting_basis_ledger.sql
 @@tables/stn/broken_feed.sql
 @@tables/stn/business_event.sql
+@@tables/stn/business_event_category.sql
 @@tables/stn/business_type.sql
 @@tables/stn/cession.sql
 @@tables/stn/cession_event.sql
@@ -241,6 +242,7 @@ conn ~stn_logon
 @@views/stn/hopper_event_subgroup.sql
 @@views/stn/event_hierarchy_reference.sql
 @@ri_constraints/stn/accounting_basis_ledger.sql
+@@ri_constraints/stn/business_event.sql
 @@ri_constraints/stn/broken_feed.sql
 @@ri_constraints/stn/cession.sql
 @@ri_constraints/stn/cession_event.sql
@@ -274,6 +276,7 @@ conn ~stn_logon
 @@ri_constraints/stn/validation.sql
 @@ri_constraints/stn/validation_column.sql
 @@ri_constraints/stn/vie_posting_method_ledger.sql
+@@data/stn/business_event_category.sql
 @@data/stn/business_event.sql
 @@data/stn/business_type.sql
 @@data/stn/cession_link_type.sql
@@ -364,13 +367,41 @@ conn ~stn_logon
 @@grants/tables/stn/journal_line.sql
 @@grants/tables/stn/event_hierarchy_reference.sql
 @@grants/tables/stn/cession_event.sql
-
-
+@@grants/tables/stn/posting_method_derivation_le.sql
+@@grants/tables/stn/vie_posting_method_prem_type.sql
+@@indices/stn/cession.sql
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
 @@indices/stn/cev_valid.sql
-@@indices/stn/cev_data_comp1.sql
-@@indices/stn/cev_data_comp2.sql
+
+/* Posting rules loader */
+conn ~rdr_logon
+@@views/rdr/rrv_ag_loader_account_lookup.sql
+@@views/rdr/rrv_ag_loader_business_event.sql
+@@views/rdr/rrv_ag_loader_event_hier.sql
+@@views/rdr/rrv_ag_loader_gaap_to_core.sql
+@@views/rdr/rrv_ag_loader_posting_driver.sql
+@@views/rdr/rrv_ag_loader_posting_method.sql
+@@views/rdr/rrv_ag_loader_vie_posting.sql
+@@grants/views/rdr/rrv_ag_loader_account_lookup.sql
+@@grants/views/rdr/rrv_ag_loader_business_event.sql
+@@grants/views/rdr/rrv_ag_loader_event_hier.sql
+@@grants/views/rdr/rrv_ag_loader_gaap_to_core.sql
+@@grants/views/rdr/rrv_ag_loader_posting_driver.sql
+@@grants/views/rdr/rrv_ag_loader_posting_method.sql
+@@grants/views/rdr/rrv_ag_loader_vie_posting.sql
+
+conn ~stn_logon
+@@tables/stn/load_event_hierarchy.sql
+@@tables/stn/load_business_event.sql
+@@tables/stn/load_gaap_to_core.sql
+@@tables/stn/load_posting_method_derivation.sql
+@@tables/stn/load_vie_posting_method.sql
+@@tables/stn/load_fr_posting_driver.sql
+@@tables/stn/load_fr_account_lookup.sql
+@@packages/stn/pk_posting_rules.hdr
+@@packages/stn/pk_posting_rules.bdy
+
 
 /*
  * Capture statistics across STN
