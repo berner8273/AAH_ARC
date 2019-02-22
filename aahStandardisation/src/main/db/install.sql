@@ -308,8 +308,8 @@ conn ~stn_logon
 @@data/stn/event_type.sql
 @@data/stn/vie_event_type.sql
 @@data/stn/posting_accounting_basis.sql
---@@data/stn/posting_amount_derivation_type.sql
---@@data/stn/posting_amount_derivation.sql
+@@data/stn/posting_amount_derivation_type.sql
+@@data/stn/posting_amount_derivation.sql
 @@data/stn/posting_amount_negate_flag.sql
 @@data/stn/posting_financial_calc.sql
 @@data/stn/posting_ledger.sql
