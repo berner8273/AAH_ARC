@@ -80,6 +80,6 @@ commit;
 @@views/gui/vw_ui_reference_4.sql
 @@views/gui/vw_ui_reference_5.sql
 @@views/gui/vw_ui_reference_7.sql
-@@views/gui/scv_combination_check_gjlu.sql
+@@views/gui/svc_combination_check_gjlu.sql
 
 exit
