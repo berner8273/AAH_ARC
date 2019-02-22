@@ -69,7 +69,7 @@ conn ~gui_logon
 @@grants/tables/gui/t_ui_user_roles.sql
 @@grants/tables/gui/gui_jrnl_line_errors.sql
 @@grants/tables/gui/gui_jrnl_lines_unposted.sql
-@@grants/tables/gui/gui.gui_jrnl_headers_unposted.sql
+@@grants/tables/gui/gui_jrnl_headers_unposted.sql
 
 conn ~rdr_logon
 
