@@ -32,7 +32,7 @@ delete from fdr.fr_account_lookup_param;
 @@data/fdr/fr_account_lookup_param.sql
 @@data/fdr/fr_financial_amount.sql
 @@data/fdr/fr_posting_driver.sql
---@@data/fdr/fr_account_lookup.sql
+@@data/fdr/fr_account_lookup.sql
 @@data/fdr/fr_acc_event_type.sql
 @@data/fdr/fr_gl_account.sql
 @@grants/tables/fdr/fr_general_lookup.sql
