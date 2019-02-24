@@ -228,6 +228,7 @@ conn ~stn_logon
 @@views/stn/cession_event_reversal_curr.sql
 @@views/stn/cession_event_reversal_hist.sql
 @@views/stn/cev_period_balances.sql
+@@views/stn/cev_vie_period_balances.sql
 @@views/stn/period_status.sql
 @@views/stn/gce_default.sql
 @@views/stn/hopper_cession_event.sql
