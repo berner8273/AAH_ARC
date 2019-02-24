@@ -64,7 +64,7 @@ commit;
 @@data/fdr/fr_general_lookup.sql
 @@data/fdr/fr_general_code_types.sql
 @@data/fdr/fr_general_codes.sql
-@@data/fdr/fr_account_lookup.sql
+-- @@data/fdr/fr_account_lookup.sql
 @@data/fdr/fr_org_hierarchy_type.sql
 @@data/fdr/fr_org_node_type.sql
 @@data/fdr/fr_global_parameter.sql
