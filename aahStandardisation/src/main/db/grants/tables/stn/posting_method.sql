@@ -1,0 +1,1 @@
+grant select on posting_method to rdr with grant option;
