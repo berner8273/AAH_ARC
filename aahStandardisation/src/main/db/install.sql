@@ -9,7 +9,7 @@ whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
-
+set echo on
 define fdr_logon=~1
 define gui_logon=~2
 define rdr_logon=~3
@@ -395,27 +395,93 @@ commit;
 @@packages/stn/pk_jl.bdy
 @@packages/stn/pk_cev.hdr
 @@packages/stn/pk_cev.bdy
+insert into stn.build_log (description) values('7'); 
+commit;
+
 @@grants/tables/stn/insurance_policy.sql
+insert into stn.build_log (description) values('7 1'); 
+commit;
+
 @@grants/tables/stn/cession.sql
+insert into stn.build_log (description) values('7 2'); 
+commit;
+
 @@grants/tables/stn/cession_link.sql
+insert into stn.build_log (description) values('7 3'); 
+commit;
+
 @@grants/tables/stn/insurance_policy_fx_rate.sql
+insert into stn.build_log (description) values('7 4'); 
+commit;
+
 @@grants/tables/stn/insurance_policy_tax_jurisd.sql
+insert into stn.build_log (description) values('7 5'); 
+commit;
+
 @@grants/tables/stn/accounting_basis_ledger.sql
+insert into stn.build_log (description) values('7 6'); 
+commit;
+
 @@grants/tables/stn/business_type.sql
+insert into stn.build_log (description) values('7 7'); 
+commit;
+
 @@grants/tables/stn/business_event.sql
+insert into stn.build_log (description) values('7 8'); 
+commit;
+
 @@grants/tables/stn/business_event_category.sql
+insert into stn.build_log (description) values('7 9'); 
+commit;
+
 @@grants/tables/stn/execution_type.sql
+insert into stn.build_log (description) values('7 10'); 
+commit;
+
 @@grants/tables/stn/journal_line_premium_type.sql
+insert into stn.build_log (description) values('7 11'); 
+commit;
+
 @@grants/tables/stn/journal_line.sql
+insert into stn.build_log (description) values('7 12'); 
+commit;
+
 @@grants/tables/stn/event_hierarchy_reference.sql
+insert into stn.build_log (description) values('7 13'); 
+commit;
+
 @@grants/tables/stn/cession_event.sql
+insert into stn.build_log (description) values('7 14'); 
+commit;
+
 @@grants/tables/stn/posting_method_derivation_le.sql
+insert into stn.build_log (description) values('7 15'); 
+commit;
+
 @@grants/tables/stn/posting_method_derivation_mtm.sql
+insert into stn.build_log (description) values('7 16'); 
+commit;
+
 @@grants/tables/stn/posting_method.sql
+insert into stn.build_log (description) values('7 17'); 
+commit;
+
 @@grants/tables/stn/posting_accounting_basis.sql
+insert into stn.build_log (description) values('7 18'); 
+commit;
+
 @@grants/tables/stn/vie_posting_method_ledger.sql
+insert into stn.build_log (description) values('7 19'); 
+commit;
+
 @@grants/tables/stn/event_type.sql
+insert into stn.build_log (description) values('7 20'); 
+commit;
+
 @@grants/tables/stn/posting_financial_calc.sql
+insert into stn.build_log (description) values('7 21'); 
+commit;
+
 insert into stn.build_log (description) values('8'); 
 commit;
 @@indices/stn/cession.sql

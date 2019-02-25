@@ -9,6 +9,7 @@ whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
+set echo on
 
 define fdr_logon=~1
 define gui_logon=~2
