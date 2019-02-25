@@ -40,6 +40,8 @@ update fdr.fr_acc_event_type
 set aet_active = 'I'
 where aet_input_by = 'SPS';
 commit;
+insert into stn.build_log (description) values('15'); 
+commit;
 
 
 conn ~slr_logon
@@ -60,7 +62,8 @@ conn ~slr_logon
 @@indices/slr/slr_eba_bop_amounts_tmp3.sql
 @@indices/slr/slr_jl_slr_process.sql
 @@grants/tables/slr/slr_bm_entity_processing_set.sql
-
+insert into stn.build_log (description) values('16'); 
+commit;
 delete from slr.slr_entity_proc_group;
 commit;
 
@@ -72,6 +75,9 @@ update slr.slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type in ('MADJ
 update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE prior to open period' where ejt_type = 'MADJPERB';
 update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE open period'  where ejt_type = 'MADJBDPPE';
 update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE rev open period' where ejt_type = 'MADJREVPE';
+commit;
+
+insert into stn.build_log (description) values('17'); 
 commit;
 
 @@data/slr/slr_ledgers.sql
@@ -90,7 +96,8 @@ commit;
 /*Replace slr_balances_movement_pkg with custom version*/
 @@packages/slr/slr_balance_movement_pkg.hdr
 @@packages/slr/slr_balance_movement_pkg.bdy
-
+insert into stn.build_log (description) values('18'); 
+commit;
 
 /*Begin SLR QTD modifications*/
 
@@ -155,7 +162,8 @@ ALTER TABLE SLR.SLR_LAST_BALANCES
     LB_BASE_QTD_BALANCE NUMBER(38,3) NOT NULL, 
     LB_LOCAL_QTD_BALANCE NUMBER(38,3) NOT NULL, 
     LB_PERIOD_QTR NUMBER(1,0) NOT NULL);
-
+insert into stn.build_log (description) values('19'); 
+commit;
 comment on column slr.slr_eba_balances_rollback.edb_tran_qtd_balance is 'Custom AG';
 comment on column slr.slr_eba_balances_rollback.edb_base_qtd_balance is 'Custom AG';
 comment on column slr.slr_eba_balances_rollback.edb_local_qtd_balance is 'Custom AG';
@@ -189,6 +197,8 @@ comment on column slr.slr_last_balances.lb_period_qtr is 'Custom AG';
 commit;
 
 --Backup and replace with modified package
+insert into stn.build_log (description) values('20'); 
+commit;
 
 declare ddl clob;
 begin
@@ -214,6 +224,8 @@ end;
 --End SLR QTD modifications
 
 /*RECOMPILE SLR PACKAGES AND VIEWS*/
+insert into stn.build_log (description) values('21'); 
+commit;
 
 BEGIN
   FOR cur_rec IN (SELECT owner,
@@ -255,6 +267,8 @@ conn ~fdr_logon
 @@grants/packages/fdr/pg_common.sql
 @@data/fdr/fr_general_code_types.sql
 @@data/fdr/fr_general_codes.sql
+insert into stn.build_log (description) values('22'); 
+commit;
 
 conn ~rdr_logon
 @@sequences/rdr/sqrr_glint_batch_control.sql
@@ -275,7 +289,8 @@ conn ~rdr_logon
 @@views/rdr/rcv_glint_journal_line.sql
 @@views/rdr/rcv_glint_journal.sql
 @@tables/rdr/rr_glint_to_slr_ag.sql
-
+insert into stn.build_log (description) values('23'); 
+commit;
 @@packages/rdr/pg_glint.hdr
 @@packages/rdr/pg_glint.bdy
 @@grants/packages/rdr/pg_glint.sql
@@ -290,6 +305,8 @@ update slr.slr_ext_jrnl_types set ejt_client_flag1 = 0 where ejt_client_flag1 is
 commit;
 
 conn ~gui_logon
+insert into stn.build_log (description) values('24'); 
+commit;
 
 @@data/gui/ui_component.sql
 @@data/gui/ui_input_field_value.sql
@@ -325,6 +342,8 @@ end;
 /
 
 alter table slr.slr_process_config add constraint ck_pc_method check (PC_METHOD IN ('DEFAULT', 'TRANS-LOCAL', 'LOCAL-BASE', 'TRANS-BASE'));
+insert into stn.build_log (description) values('25'); 
+commit;
 
 @@data/slr/slr_process_config.sql
 @@data/slr/slr_process_config_detail.sql
@@ -344,6 +363,9 @@ alter table slr.slr_process_config add constraint ck_pc_method check (PC_METHOD 
 @@views/slr/vbm_ag_retainedearningseba02.sql
 @@views/slr/vbm_ag_retainedearningseba03.sql
 @@views/slr/v_ag_ye_clr_run.sql
+
+insert into stn.build_log (description) values('26'); 
+commit;
 
 -- -----------------------------------------------------------------------------------------
 -- purpose : Begin Combo Edit installation
@@ -371,6 +393,9 @@ conn ~fdr_logon
 @@grants/tables/fdr/fcv_combination_check_data.sql
 @@grants/tables/fdr/fcv_combination_check_suspense.sql
 
+insert into stn.build_log (description) values('27'); 
+commit;
+
 conn ~gui_logon
 
 @@views/gui/ucv_combination_check_jlu.sql
@@ -396,6 +421,8 @@ delete from slr.slr_error_message where em_error_code = 'JL_COMBO';
 @@grants/packages/slr/fnslr_getheaderid.sql
 alter table slr.slr_jrnl_line_errors enable all triggers;
 commit;
+insert into stn.build_log (description) values('28'); 
+commit;
 
 conn ~rdr_logon
 
@@ -404,5 +431,8 @@ conn ~rdr_logon
 @@views/rdr/rcv_combination_check_glint.sql
 @@tables/rdr/rr_glint_suspense_line.sql
 @@grants/tables/rdr/rcv_combination_check_glint.sql
+
+insert into stn.build_log (description) values('29 finished SLR'); 
+commit;
 
 exit

@@ -19,6 +19,27 @@ define stn_logon=~6
 define sys_logon=~7
 define unittest_login=~8
 
+/* set up log table for debugging */
+conn ~~stn_logon
+DECLARE
+  vCount number := 0;  
+BEGIN
+
+  Select count(*) into vCount
+    from user_tables
+    where upper(table_name) = 'BUILD_LOG';
+  if (vCount = 0) then
+      execute immediate 'create table stn.build_log (description varchar2 ( 50 char ))' ;
+	  execute immediate 'grant insert, select on build_log to fdr,slr,rdr,gui' ;
+  end if;
+END;
+/
+
+delete from build_log;
+
+
+
+
 conn ~slr_logon
 
 @@grants/tables/slr/slr_entity_periods.sql
@@ -28,7 +49,11 @@ conn ~slr_logon
 @@grants/tables/slr/slr_jrnl_lines.sql
 @@grants/tables/slr/slr_jrnl_headers.sql
 @@grants/tables/slr/slr_entities.sql
-@@grants/tables/slr/slr_journal_lines_unposted.sql
+@@grants/tables/slr/slr_jrnl_lines_unposted.sql
+
+insert into stn.build_log (description) values('1'); 
+commit;
+
 
 conn ~gui_logon
 
@@ -41,6 +66,9 @@ conn ~gui_logon
 
 @@packages/gui/gui_pkg.hdr
 @@packages/gui/gui_pkg.bdy
+
+insert into stn.build_log (description) values('2'); 
+commit;
 
 conn ~fdr_logon
 
@@ -112,6 +140,9 @@ commit;
 @@indices/fdr/fr_stan_raw_party_legal.sql
 @@indices/fdr/fr_stan_raw_adjustment.sql
 @@indices/fdr/fr_party_legal.sql
+
+insert into stn.build_log (description) values('3'); 
+commit;
 
 conn ~stn_logon
 
@@ -203,6 +234,8 @@ conn ~stn_logon
 @@tables/stn/vie_event_type.sql
 @@tables/stn/vie_posting_method_ledger.sql
 @@tables/stn/tax_jurisdiction.sql
+insert into stn.build_log (description) values('4'); 
+commit;
 @@views/stn/dept_default.sql
 @@views/stn/feed_missing_record_count.sql
 @@views/stn/fxr_default.sql
@@ -243,6 +276,8 @@ conn ~stn_logon
 @@views/stn/hopper_event_group.sql
 @@views/stn/hopper_event_subgroup.sql
 @@views/stn/event_hierarchy_reference.sql
+insert into stn.build_log (description) values('5'); 
+commit;
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/business_event.sql
 @@ri_constraints/stn/broken_feed.sql
@@ -278,6 +313,8 @@ conn ~stn_logon
 @@ri_constraints/stn/validation.sql
 @@ri_constraints/stn/validation_column.sql
 @@ri_constraints/stn/vie_posting_method_ledger.sql
+insert into stn.build_log (description) values('6'); 
+commit;
 @@data/stn/business_event_category.sql
 @@data/stn/business_event.sql
 @@data/stn/business_type.sql
@@ -323,6 +360,8 @@ conn ~stn_logon
 @@data/stn/posting_method_derivation_rein.sql
 @@data/stn/posting_method_ledger.sql
 @@data/stn/vie_posting_method_ledger.sql
+insert into stn.build_log (description) values('7'); 
+commit;
 @@procedures/stn/pr_publish_log.sql
 @@packages/stn/pk_eh.hdr
 @@packages/stn/pk_eh.bdy
@@ -377,7 +416,8 @@ conn ~stn_logon
 @@grants/tables/stn/vie_posting_method_ledger.sql
 @@grants/tables/stn/event_type.sql
 @@grants/tables/stn/posting_financial_calc.sql
-
+insert into stn.build_log (description) values('8'); 
+commit;
 @@indices/stn/cession.sql
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
@@ -399,7 +439,8 @@ conn ~rdr_logon
 @@grants/views/rdr/rrv_ag_loader_posting_driver.sql
 @@grants/views/rdr/rrv_ag_loader_posting_method.sql
 @@grants/views/rdr/rrv_ag_loader_vie_posting.sql
-
+insert into stn.build_log (description) values('9'); 
+commit;
 conn ~stn_logon
 @@tables/stn/load_event_hierarchy.sql
 @@tables/stn/load_business_event.sql
@@ -410,7 +451,8 @@ conn ~stn_logon
 @@tables/stn/load_fr_account_lookup.sql
 @@packages/stn/pk_posting_rules.hdr
 @@packages/stn/pk_posting_rules.bdy
-
+insert into stn.build_log (description) values('10'); 
+commit;
 
 /*
  * Capture statistics across STN
@@ -436,7 +478,8 @@ exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_LE_DATA'                    , 'GL
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_NON_INTERCOMPANY_DATA'      , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_INTERCOMPANY_DATA'          , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
 exec dbms_stats.set_table_prefs ( 'STN' , 'CEV_VIE_DATA'                   , 'GLOBAL_TEMP_TABLE_STATS' , 'SESSION');
-
+insert into stn.build_log (description) values('11'); 
+commit;
 exec dbms_stats.create_stat_table   ( ownname => user , stattab => 'INIT_STAT' );
 @@data/stn/init_stat.sql
 @@grants/tables/stn/init_stat.sql
@@ -457,5 +500,7 @@ exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_G
 
 /* Increment fdr.sqfr_trade sequence */
 select fdr.sqfr_trade.nextval from dual;
+insert into stn.build_log (description) values('12 - finished STN'); 
+commit;
 
 exit
