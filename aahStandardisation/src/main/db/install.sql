@@ -28,6 +28,7 @@ conn ~slr_logon
 @@grants/tables/slr/slr_jrnl_lines.sql
 @@grants/tables/slr/slr_jrnl_headers.sql
 @@grants/tables/slr/slr_entities.sql
+@@grants/tables/slr/slr_journal_lines_unposted.sql
 
 conn ~gui_logon
 
@@ -377,7 +378,6 @@ conn ~stn_logon
 @@grants/tables/stn/event_type.sql
 @@grants/tables/stn/posting_financial_calc.sql
 
--- @@grants/tables/stn/vie_posting_method_prem_type.sql
 @@indices/stn/cession.sql
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
