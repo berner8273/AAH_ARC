@@ -1,0 +1,1 @@
+grant select on stn.posting_accounting_basis to rdr with grant option;
