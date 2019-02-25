@@ -372,6 +372,9 @@ conn ~stn_logon
 @@grants/tables/stn/posting_method_derivation_le.sql
 @@grants/tables/stn/posting_method_derivation_mtm.sql
 @@grants/tables/stn/vie_posting_method_ledger.sql
+@@grants/tables/stn/event_type.sql
+@@grants/tables/stn/posting_financial_calc.sql
+
 -- @@grants/tables/stn/vie_posting_method_prem_type.sql
 @@indices/stn/cession.sql
 @@indices/stn/cession_event.sql
