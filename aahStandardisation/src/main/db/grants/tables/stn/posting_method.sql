@@ -1,1 +1,1 @@
-grant select on posting_method to rdr with grant option;
+grant select on stn.posting_method to rdr with grant option;
