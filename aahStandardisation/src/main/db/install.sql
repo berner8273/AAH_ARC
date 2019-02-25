@@ -416,9 +416,10 @@ conn ~stn_logon
  * Capture statistics across STN
  */
 
--- Commented out per user story 26774
---exec dbms_stats.gather_schema_stats ( ownname => 'STN' , cascade => true );
-
+/* Commented out per user story 26774
+ * exec dbms_stats.gather_schema_stats ( ownname => 'STN' , cascade => true );
+ */
+  
 /*
  * Lie to the optimiser by shipping statistics at build time
  */
@@ -442,9 +443,9 @@ exec dbms_stats.create_stat_table   ( ownname => user , stattab => 'INIT_STAT' )
 
 conn ~fdr_logon
 
--- Commented out per user story 26774
---exec dbms_stats.gather_schema_stats ( ownname => 'FDR' , cascade => true );
-
+/*	Commented out per user story 26774
+ * exec dbms_stats.gather_schema_stats ( ownname => 'FDR' , cascade => true );
+ */
 exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_INSURANCE_POLICY' , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
 exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_FX_RATE'          , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
 exec dbms_stats.import_table_stats ( ownname => user , tabname => 'FR_STAN_RAW_GENERAL_CODES'    , statown => 'STN', stattab => 'INIT_STAT' , cascade => true );
