@@ -121,6 +121,9 @@ commit;
 @@views/rdr/rrv_ag_posting_derivation.sql
 @@views/rdr/rrv_ag_glint_jrnl_lines.sql
 @@views/rdr/rrv_ag_glint_to_ps.sql
+@@views/rdr/rrv_ag_glint_jl_manual.sql
+@@views/rdr/rrv_ag_glint_jl_processed.sql
+@@views/rdr/rrv_ag_glint_jl_unposted.sql
 insert into stn.build_log (description) values('34 finished RDR'); 
 commit;
 
