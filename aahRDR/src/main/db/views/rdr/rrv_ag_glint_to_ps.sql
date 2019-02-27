@@ -4,6 +4,7 @@ select
        sjl.jl_jrnl_hdr_id
      , sjl.jl_jrnl_line_number
      , gjl.rgjl_id
+     , gjl.rgjl_rgj_rgbc_id
      , gjl.rgjl_rgj_id
      , gjl.business_unit_gl
      , gjl.journal_id
