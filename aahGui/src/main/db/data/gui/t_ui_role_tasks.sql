@@ -9,6 +9,8 @@ insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.a
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.administrator' , 'task.usermgt.users.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.administrator' , 'task.static.data.ticket.audit.detail.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.administrator' , 'task.static.data.ticket.audit.view' );
+insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.administrator' , 'task.madj.journal.delete' );
+insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.administrator' , 'task.madj.journal.line.delete' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.reference.data.user' , 'task.static.data.general.code.add' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.reference.data.user' , 'task.static.data.general.code.update' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.reference.data.user' , 'task.static.data.general.lookups.add' );
@@ -25,9 +27,13 @@ insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.u
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.user' , 'task.madj.journal.line.add' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.user' , 'task.madj.journal.line.update' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.user' , 'task.madj.journal.update' );
+insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.user' , 'task.madj.journal.delete' );
+insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.user' , 'task.madj.journal.line.delete' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.user' , 'task.usermgt.users.change.password' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.manager' , 'task.madj.journal.authorise' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.manager' , 'task.madj.journal.reject' );
+insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.manager' , 'task.madj.journal.delete' );
+insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.manager' , 'task.madj.journal.line.delete' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.error.details.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.error.text.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.viewer' , 'task.error.value.view' );
@@ -81,6 +87,8 @@ insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.c
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.madj.journal.search.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.madj.journal.update' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.madj.journal.view' );
+insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.madj.journal.delete' );
+insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.madj.journal.line.delete' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.acc.explorer.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.account.details.view' );
 insert into gui.t_ui_role_tasks ( role_id , task_id ) values ( 'role.subledger.configurator' , 'task.static.data.authorise.updates' );
