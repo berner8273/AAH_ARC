@@ -1,4 +1,4 @@
-create or replace view rdr.rcv_glint_journal_line 
+create or replace view rdr.rcv_glint_journal_line
 (
    JL_JRNL_HDR_ID,
    MAN_JE_ID,
@@ -62,7 +62,7 @@ create or replace view rdr.rcv_glint_journal_line
    MANUAL_JE,
    JH_JRNL_TYPE,
    JH_JRNL_DESCRIPTION
-)   
+)
 AS
    SELECT jl_jrnl_hdr_id,
           CASE WHEN jt.ejt_madj_flag = 'Y' THEN jl_jrnl_hdr_id ELSE 0 END
@@ -186,6 +186,9 @@ AS
           LEFT JOIN fdr.fr_general_lookup fgl
              ON     jl.jl_attribute_4 = fgl.lk_match_key1
                 AND fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
+                AND (   (    jl.jl_segment_1 = 'UKGAAP_ADJ'
+                         AND fgl.lk_lookup_value5 = 'N')
+                     OR jl.jl_segment_1 <> 'UKGAAP_ADJ')
           LEFT JOIN fdr.fr_gl_account gl
              ON jl.jl_account = gl.ga_account_code
           LEFT JOIN slr.slr_jrnl_headers jh
