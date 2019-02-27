@@ -129,7 +129,10 @@ select --Posted SLR journals not yet GLINT processed
           where
                 jl.jl_jrnl_hdr_id              not in ( select gjh.jl_jrnl_hdr_id
                                                           from rdr.rr_glint_to_slr_ag  gjh )
-            and jh.jh_jrnl_internal_period_flag = 'N'  ) gjl
+            and jh.jh_jrnl_internal_period_flag = 'N'  
+            
+            and ((jl.jl_segment_1 = 'UKGAAP_ADJ' and fgl.lk_lookup_value5 = 'N')
+                 or jl.jl_segment_1 <> 'UKGAAP_ADJ') ) gjl
  group by
        gjl.jl_entity
      , gjl.jl_segment_1
