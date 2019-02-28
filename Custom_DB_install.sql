@@ -17,7 +17,7 @@ set echo on
 --Install Scripts
 
 	--Running the Custom Step Trigger Install script
-		--@@aahStepTrigger/src/main/db/install.sql
+		@@aahStepTrigger/src/main/db/install.sql
 		
 	--Running the Custom Step Trigger Install script
 		--@@aahStandardisation/src/main/db/install.sql
@@ -29,6 +29,6 @@ set echo on
 		--@@aahSubLedger/src/main/db/install.sql
 		
 	--Running the Custom Step Trigger Install script
-		@@aahRDR/src/main/db/install.sql
+		--@@aahRDR/src/main/db/install.sql
 
 exit
