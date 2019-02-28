@@ -89,18 +89,7 @@ commit;
 @@data/slr/slr_fak_segment_6.sql
 @@data/slr/slr_fak_segment_7.sql
 @@data/slr/slr_fak_segment_8.sql
-@@packages/slr/slr_pkg.hdr
-@@packages/slr/slr_pkg.bdy
-@@packages/slr/slr_validate_journals_pkg.hdr
-@@packages/slr/slr_validate_journals_pkg.bdy
 
-/*Replace slr_balances_movement_pkg with custom version*/
-@@packages/slr/slr_balance_movement_pkg.hdr
-@@packages/slr/slr_balance_movement_pkg.bdy
-insert into stn.build_log (description) values('18'); 
-commit;
-
-/*Begin SLR QTD modifications*/
 
 --Backup and replace with modified view
 @@views/slr/v_slr_jrnl_lines_unposted_bak.sql
@@ -196,66 +185,6 @@ comment on column slr.slr_last_balances.lb_base_qtd_balance is 'Custom AG';
 comment on column slr.slr_last_balances.lb_local_qtd_balance is 'Custom AG';
 comment on column slr.slr_last_balances.lb_period_qtr is 'Custom AG';
 commit;
-
---Backup and replace with modified package
-insert into stn.build_log (description) values('20'); 
-commit;
-
-declare ddl clob;
-begin
-  ddl := dbms_metadata.get_ddl
-    (object_type => 'PACKAGE_SPEC'
-    ,name => 'SLR_POST_JOURNALS_PKG'
-    );
-  ddl := REPLACE(ddl, UPPER('SLR_POST_JOURNALS_PKG'), UPPER('SLR_POST_JOURNALS_PKG_BAK'));
-  ddl := REPLACE(ddl, LOWER('SLR_POST_JOURNALS_PKG'), LOWER('SLR_POST_JOURNALS_PKG_BAK'));
-  EXECUTE IMMEDIATE ddl;
-  ddl := dbms_metadata.get_ddl
-    (object_type => 'PACKAGE_BODY'
-    ,name => 'SLR_POST_JOURNALS_PKG');
-  ddl := REPLACE(ddl, UPPER('SLR_POST_JOURNALS_PKG'), UPPER('SLR_POST_JOURNALS_PKG_BAK'));
-  ddl := REPLACE(ddl, LOWER('SLR_POST_JOURNALS_PKG'), LOWER('SLR_POST_JOURNALS_PKG_BAK'));
-  EXECUTE IMMEDIATE ddl;
-end;
-/
-
-@@packages/slr/slr_post_journals_pkg.hdr
-@@packages/slr/slr_post_journals_pkg.bdy
-
---End SLR QTD modifications
-
-/*RECOMPILE SLR PACKAGES AND VIEWS*/
-insert into stn.build_log (description) values('21'); 
-commit;
-
-BEGIN
-  FOR cur_rec IN (SELECT owner,
-                         object_name,
-                         object_type,
-                         DECODE(object_type, 'PACKAGE', 1,
-                                             'PACKAGE BODY', 2,
-                                             'VIEW', 3, 4) AS recompile_order
-                  FROM   dba_objects
-                  WHERE  object_type IN ('PACKAGE', 'PACKAGE BODY', 'VIEW')
-                  AND    owner = 'SLR'
-                  ORDER BY 4)
-  LOOP
-    BEGIN
-      IF cur_rec.object_type in ('PACKAGE','VIEW') THEN
-        EXECUTE IMMEDIATE 'ALTER ' || cur_rec.object_type || 
-            ' "' || cur_rec.owner || '"."' || cur_rec.object_name || '" COMPILE';
-      ElSE
-        EXECUTE IMMEDIATE 'ALTER PACKAGE "' || cur_rec.owner || 
-            '"."' || cur_rec.object_name || '" COMPILE BODY';
-      END IF;
-    EXCEPTION
-      WHEN OTHERS THEN
-        DBMS_OUTPUT.put_line(cur_rec.object_type || ' : ' || cur_rec.owner || 
-                             ' : ' || cur_rec.object_name);
-    END;
-  END LOOP;
-END;
-/
 
 -- -----------------------------------------------------------------------------------------
 -- purpose : Begin GLINT installation
@@ -434,6 +363,79 @@ conn ~rdr_logon
 @@grants/tables/rdr/rcv_combination_check_glint.sql
 
 insert into stn.build_log (description) values('29 finished SLR'); 
+commit;
+
+
+--End SLR QTD modifications
+
+/*RECOMPILE SLR PACKAGES AND VIEWS*/
+insert into stn.build_log (description) values('21'); 
+commit;
+
+BEGIN
+  FOR cur_rec IN (SELECT owner,
+                         object_name,
+                         object_type,
+                         DECODE(object_type, 'PACKAGE', 1,
+                                             'PACKAGE BODY', 2,
+                                             'VIEW', 3, 4) AS recompile_order
+                  FROM   dba_objects
+                  WHERE  object_type IN ('PACKAGE', 'PACKAGE BODY', 'VIEW')
+                  AND    owner = 'SLR'
+                  ORDER BY 4)
+  LOOP
+    BEGIN
+      IF cur_rec.object_type in ('PACKAGE','VIEW') THEN
+        EXECUTE IMMEDIATE 'ALTER ' || cur_rec.object_type || 
+            ' "' || cur_rec.owner || '"."' || cur_rec.object_name || '" COMPILE';
+      ElSE
+        EXECUTE IMMEDIATE 'ALTER PACKAGE "' || cur_rec.owner || 
+            '"."' || cur_rec.object_name || '" COMPILE BODY';
+      END IF;
+    EXCEPTION
+      WHEN OTHERS THEN
+        DBMS_OUTPUT.put_line(cur_rec.object_type || ' : ' || cur_rec.owner || 
+                             ' : ' || cur_rec.object_name);
+    END;
+  END LOOP;
+END;
+/
+
+--Backup and replace with modified package
+insert into stn.build_log (description) values('20'); 
+commit;
+
+conn ~slr_logon
+
+declare ddl clob;
+begin
+  ddl := dbms_metadata.get_ddl
+    (object_type => 'PACKAGE_SPEC'
+    ,name => 'SLR_POST_JOURNALS_PKG'
+    );
+  ddl := REPLACE(ddl, UPPER('SLR_POST_JOURNALS_PKG'), UPPER('SLR_POST_JOURNALS_PKG_BAK'));
+  ddl := REPLACE(ddl, LOWER('SLR_POST_JOURNALS_PKG'), LOWER('SLR_POST_JOURNALS_PKG_BAK'));
+  EXECUTE IMMEDIATE ddl;
+  ddl := dbms_metadata.get_ddl
+    (object_type => 'PACKAGE_BODY'
+    ,name => 'SLR_POST_JOURNALS_PKG');
+  ddl := REPLACE(ddl, UPPER('SLR_POST_JOURNALS_PKG'), UPPER('SLR_POST_JOURNALS_PKG_BAK'));
+  ddl := REPLACE(ddl, LOWER('SLR_POST_JOURNALS_PKG'), LOWER('SLR_POST_JOURNALS_PKG_BAK'));
+  EXECUTE IMMEDIATE ddl;
+end;
+/
+
+@@packages/slr/slr_post_journals_pkg.hdr
+@@packages/slr/slr_post_journals_pkg.bdy
+@@packages/slr/slr_pkg.hdr
+@@packages/slr/slr_pkg.bdy
+@@packages/slr/slr_validate_journals_pkg.hdr
+@@packages/slr/slr_validate_journals_pkg.bdy
+
+/*Replace slr_balances_movement_pkg with custom version*/
+@@packages/slr/slr_balance_movement_pkg.hdr
+@@packages/slr/slr_balance_movement_pkg.bdy
+insert into stn.build_log (description) values('18'); 
 commit;
 
 exit
