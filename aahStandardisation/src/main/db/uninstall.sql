@@ -9,15 +9,16 @@ whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
+set echo on
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logon=~1
+define gui_logon=~2
+define rdr_logon=~3
+define sla_logon=~4
+define slr_logon=~5
+define stn_logon=~6
+define sys_logon=~7
+define unittest_login=~8
 
 conn ~sys_logon as sysdba
 
@@ -233,6 +234,8 @@ drop table stn.load_posting_method_derivation;
 drop table stn.load_vie_posting_method;
 drop table stn.load_fr_posting_driver;
 drop table stn.load_fr_account_lookup;
+drop table stn.cev_vie_data;
+drop table stn.journal_line_source_type;
 
 conn ~gui_logon
 
@@ -300,39 +303,10 @@ commit;
 
 drop index fdr.fbi_fsrga_message_id;
 drop index fdr.fbi_fsrb_message_id;
-drop index fdr.fbi_fsrgc_message_id;
 drop index fdr.fbi_fsrohs_message_id;
 drop index fdr.fbi_fsrpl_message_id;
 drop index fdr.fbi_fsra_message_id;
 drop index fdr.fbi_pl_global_id;
-
-revoke select , insert , update          on fdr.fr_acc_event_type            from stn;
-revoke select , insert , update          on fdr.fr_account_lookup            from stn;
-revoke select ,                   delete on fdr.fr_fx_rate                   from stn;
-revoke select                            on fdr.fr_gaap                      from stn;
-revoke select , insert , update          on fdr.fr_general_lookup            from stn;
-revoke select                            on fdr.fr_gl_account                from stn;
-revoke select , insert , update          on fdr.fr_stan_raw_acc_event        from stn;
-revoke select , insert , update          on fdr.fr_stan_raw_general_codes    from stn;
-revoke select , insert , update          on fdr.fr_stan_raw_general_lookup   from stn;
-revoke select                            on fdr.fr_internal_proc_entity_type from stn;
-revoke select , insert , update          on fdr.fr_stan_raw_org_hier_node    from stn;
-revoke select , insert , update          on fdr.fr_stan_raw_org_hier_struc   from stn;
-revoke select                            on fdr.fr_party_legal               from stn;
-revoke select , insert , update          on fdr.fr_posting_driver            from stn;
-revoke select , insert , update          on fdr.fr_posting_schema            from stn;
-revoke select , insert , update          on fdr.fr_general_code_types        from stn;
-revoke select ,          update          on fdr.fr_general_codes             from stn;
-revoke select , insert , update          on fdr.is_user                      from stn;
-revoke select , insert , update          on fdr.is_groupuser                 from stn;
-revoke select                            on fdr.is_group                     from stn;
-revoke          insert                   on fdr.fr_rate_type                 from stn;
-revoke select                            on fdr.fr_accounting_event_imp      from stn;
-revoke select                            on fdr.fr_acc_event_type            from gui;
-revoke select                            on fdr.fr_general_codes             from gui;
-revoke select                            on fdr.fr_general_lookup            from gui;
-revoke select                            on fdr.fr_instr_insure_extend       from gui;
-revoke select                            on fdr.fr_party_type                from gui;
 
 conn ~gui_logon
 
@@ -345,21 +319,6 @@ delete from gui.t_ui_user_entities;
 delete from gui.t_ui_user_details            where user_name                      != 'fdr_user';
 delete from gui.t_ui_departments             where department_id                  != 'DEFAULT';
 
-revoke select , insert , update          on gui.t_ui_user_details            from stn;
-revoke select , insert , update          on gui.t_ui_user_departments        from stn;
-revoke select , insert , update , delete on gui.t_ui_user_roles              from stn;
-revoke select , insert , update          on gui.t_ui_user_entities           from stn;
-revoke select , insert , update          on gui.t_ui_departments             from stn;
-revoke select                            on gui.t_ui_roles                   from stn;
-
-conn ~slr_logon
-
-revoke select                            on slr.slr_entity_periods           from stn;
-revoke select                            on slr.slr_eba_combinations         from stn;
-revoke select                            on slr.slr_fak_combinations         from stn;
-revoke select                            on slr.slr_eba_daily_balances       from stn;
-revoke select                            on slr.slr_jrnl_lines               from stn;
-
 conn ~rdr_logon
 
 drop view rrv_ag_loader_account_lookup;
@@ -369,5 +328,3 @@ drop view rrv_ag_loader_gaap_to_core;
 drop view rrv_ag_loader_posting_driver;
 drop view rrv_ag_loader_posting_method;
 drop view rrv_ag_loader_vie_posting;
-
-exit

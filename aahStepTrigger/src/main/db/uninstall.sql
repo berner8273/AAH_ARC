@@ -9,15 +9,16 @@ whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
+set echo on
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logon=~1
+define gui_logon=~2
+define rdr_logon=~3
+define sla_logon=~4
+define slr_logon=~5
+define stn_logon=~6
+define sys_logon=~7
+define unittest_login=~8
 
 conn ~stn_logon
 
@@ -44,5 +45,3 @@ conn ~fdr_logon
 
 delete from fdr.fr_batch_schedule;
 commit;
-
-exit

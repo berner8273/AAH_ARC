@@ -9,15 +9,16 @@ whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
+set echo on
 
-define fdr_logon    = ~1
-define gui_logon    = ~2
-define rdr_logon    = ~3
-define sla_logon    = ~4
-define slr_logon    = ~5
-define stn_logon    = ~6
-define sys_logon    = ~7
-define unittest_login   = ~8
+define fdr_logon=~1
+define gui_logon=~2
+define rdr_logon=~3
+define sla_logon=~4
+define slr_logon=~5
+define stn_logon=~6
+define sys_logon=~7
+define unittest_login=~8
 
 conn ~fdr_logon
 
@@ -199,16 +200,6 @@ commit;
 
 commit;
 
-conn ~stn_logon
-revoke select on stn.business_type      from slr;
-revoke select on stn.insurance_policy   from slr;
-revoke select on stn.execution_type     from slr;
-
-conn ~fdr_logon
-revoke select , insert , update on fdr.fr_general_lookup  from slr;
-revoke select on fdr.fr_general_lookup_aud  from slr;
-revoke update on fdr.fr_general_lookup  from rdr;
-
 -- -----------------------------------------------------------------------------------------
 -- purpose : Begin GLINT uninstall
 -- -----------------------------------------------------------------------------------------
@@ -232,8 +223,6 @@ drop package body rdr.rdr_pkg;
 drop package      rdr.rdr_pkg;
 drop package body rdr.pgc_glint;
 drop package      rdr.pgc_glint;
-revoke execute on rdr.pg_glint from gui;
-revoke execute on rdr.pg_glint from fdr;
 drop package body rdr.pg_glint;
 drop package      rdr.pg_glint;
 drop view         rdr.rcv_glint_journal;
@@ -260,12 +249,9 @@ commit;
 conn ~fdr_logon
 delete from       fdr.fr_general_codes where gc_gct_code_type_id = 'GL';
 delete from       fdr.fr_general_code_types where gct_code_type_id = 'GL';
-revoke execute on fdr.pg_common from STN;
-revoke execute on fdr.pg_common from SLR;
-revoke execute on fdr.pg_common from RDR;
-revoke execute on fdr.pg_common from GUI;
 drop package body fdr.pg_common;
 drop package      fdr.pg_common;
+drop index 		  fdr.idxfr_stan_raw_general_codes;
 commit;
 
 -- -----------------------------------------------------------------------------------------
@@ -282,6 +268,7 @@ drop view         slr.vbmfxreval_eba_ag_r0_usstat;
 drop view         slr.vbmfxreval_eba_ag_r0_ukgaap;
 drop view         slr.v_slr_fxreval_parameters;
 drop view         slr.v_slr_fxreval_run_values;
+drop index 		  slr.idx_jrnl_lines_slrprocess;
 delete from       slr.slr_process_source             where upper(sps_db_object_name) like 'VBMFXREVAL_EBA_AG%';
 delete from       slr.slr_process_config_detail      where pcd_pc_p_process = 'FXREVALUE' and pcd_pc_config <> 'FXREVALUE';
 delete from       slr.slr_process_config             where pc_p_process = 'FXREVALUE' and pc_config <> 'FXREVALUE';
@@ -299,9 +286,6 @@ drop view         slr.v_ag_ye_clr_run;
 delete from       slr.slr_process_config_detail where pcd_pc_p_process = 'PLRETEARNINGS';
 delete from       slr.slr_process_config where pc_p_process = 'PLRETEARNINGS';
 delete from       slr.slr_process_source where upper(sps_source_name) like 'BMRETAINEDEARNINGSEBA%';
-commit;
-
-revoke select, insert on  slr.slr_bm_entity_processing_set from FDR;
 commit;
 
 conn ~fdr_logon
@@ -329,8 +313,6 @@ drop view         rdr.rrv_combination_check_app_rule;
 
 conn ~slr_logon
 
-revoke execute on slr.fnslr_getheaderid from RDR;
-revoke select on slr.scv_combination_check_jlu from FDR;
 delete from slr.slr_error_message where em_error_code = 'JL_COMBO';
 drop procedure    slr.pcombinationcheck_jlu;
 drop view         slr.srv_combination_check_jte;
@@ -347,8 +329,6 @@ delete from gui.ui_input_field_value where uif_category_code like 'COMBO%';
 delete from gui.ui_gen_lookup_type_properties where ugltp_lookup_type_code = 'COMBO_SUSPENSE';
 delete from gui.ui_general_lookup where ugl_lkt_lookup_type_code like 'COMBO%';
 delete from gui.ui_field where uf_id between 20000 and 20078;
-revoke select , insert , delete on gui.gui_jrnl_headers_unposted from RDR;
-revoke select , insert , delete on gui.gui_jrnl_lines_unposted from RDR;
 drop function     gui.fcombinationcheck_jlu;
 drop view         gui.ucv_combination_check_jlu;
 delete from gui.ui_component where uc_id in (10000, 20000);
@@ -356,20 +336,6 @@ commit;
 
 conn ~fdr_logon
 
-revoke select                   on fdr.fcv_combination_check_suspense from RDR;
-revoke select                   on fdr.fcv_combination_check_suspense from SLR;
-revoke select                   on fdr.fcv_combination_check_data     from RDR;
-revoke select                   on fdr.fcv_combination_check_data     from SLR;
-revoke select , insert , delete on fdr.fr_combination_check_error     from GUI;
-revoke select , insert , delete on fdr.fr_combination_check_error     from SLR;
-revoke select , insert , delete on fdr.fr_combination_check_error     from RDR;
-revoke select , insert , delete on fdr.fr_combination_check_input     from GUI;
-revoke select , insert , delete on fdr.fr_combination_check_input     from SLR;
-revoke select , insert , delete on fdr.fr_combination_check_input     from RDR;
-revoke select                   on fdr.fr_gaap                        from SLR;
-revoke execute on fdr.pg_combination_check from GUI;
-revoke execute on fdr.pg_combination_check from SLR;
-revoke execute on fdr.pg_combination_check from RDR;
 delete from       fdr.fr_general_lookup_type where lkt_lookup_type_code = 'COMBO_SUSPENSE';
 drop procedure    fdr.pcombinationcheck_hopper;
 drop package body fdr.pg_combination_check;
@@ -380,6 +346,3 @@ drop view         fdr.fcv_combination_check_data;
 drop table        fdr.fr_combination_check_error;
 drop table        fdr.fr_combination_check_input;
 commit;
-
-
-exit
