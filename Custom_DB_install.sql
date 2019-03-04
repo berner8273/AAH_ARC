@@ -4,7 +4,7 @@ set serveroutput on
 set echo on
 
 
---Define Connections
+--Define all other Connections
 	define 1 = 'FDR/bJGeTSP2PbMikw4d@Oraaptci-bubble1:1521:aptci'
 	define 2 = 'GUI/KWDfdtQqoa3A2nE5@Oraaptci-bubble1:1521:aptci'
 	define 3 = 'RDR/HuJJnYnTr8LRwJqL@Oraaptci-bubble1:1521:aptci'
@@ -20,15 +20,30 @@ set echo on
 		@@aahStepTrigger/src/main/db/install.sql
 		
 	--Running the Custom Step Trigger Install script
-		--@@aahStandardisation/src/main/db/install.sql
+		@@aahStandardisation/src/main/db/install.sql
 		
 	--Running the Custom Step Trigger Install script
-		--@@aahGui/src/main/db/install.sql
+		@@aahGui/src/main/db/install.sql
 		
 	--Running the Custom Step Trigger Install script
-		--@@aahSubLedger/src/main/db/install.sql
+		@@aahSubLedger/src/main/db/install.sql
 		
 	--Running the Custom Step Trigger Install script
-		--@@aahRDR/src/main/db/install.sql
+		@@aahRDR/src/main/db/install.sql
+		
+		
+--Define ETL Connections
+	define 1 = 'SYS/ZMaz8DjieATJoxgM@Oraaptci-bubble1:1521:aptci'
+	define 2 = 'rzj4rUD5XuG3cMNC'
+	define 3 = 'aahReadPassword'
+	define 4 = 'oAPnsamjBDWvE6de'
+	define 5 = 'hCkT85v3mckVbTwT'
+	define 6 = 'STN/NZ784FBLUJesbJvA@Oraaptci-bubble1:1521:aptci'
+	define 7 = 'SYS/ZMaz8DjieATJoxgM@Oraaptci-bubble1:1521:aptci'
+	define 8 = ''
+
+	--Running the Custom Step Trigger Install script	
+		@@aahETL/src/main/db/install.sql	
+
 
 exit

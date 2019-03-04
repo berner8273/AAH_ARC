@@ -126,5 +126,3 @@ commit;
 @@views/rdr/rrv_ag_glint_jl_unposted.sql
 insert into stn.build_log (description) values('34 finished RDR'); 
 commit;
-
-exit

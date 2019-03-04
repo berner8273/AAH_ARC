@@ -69,5 +69,3 @@ conn ~fdr_logon
 delete from fdr.fr_batch_schedule;
 commit;
 @@data/fdr/fr_batch_schedule.sql
-
-exit

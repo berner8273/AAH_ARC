@@ -438,5 +438,3 @@ end;
 @@packages/slr/slr_balance_movement_pkg.bdy
 insert into stn.build_log (description) values('18'); 
 commit;
-
-exit

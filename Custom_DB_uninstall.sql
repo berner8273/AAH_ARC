@@ -30,5 +30,9 @@ set echo on
 		
 	--Running the Custom SubLedger Uninstall script
 		@@aahSubLedger/src/main/db/uninstall.sql
+		
+	--Running the Custom Step Trigger Install script	
+		@@aahETL/src/main/db/uninstall.sql
+		
 
 exit

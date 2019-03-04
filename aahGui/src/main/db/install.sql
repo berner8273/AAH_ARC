@@ -85,5 +85,3 @@ commit;
 @@views/gui/svc_combination_check_gjlu.sql
 insert into stn.build_log (description) values('14 - finished GUI'); 
 commit;
-
-exit
