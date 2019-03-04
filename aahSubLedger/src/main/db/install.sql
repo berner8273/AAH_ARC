@@ -73,9 +73,10 @@ update slr.slr_ext_jrnl_types set ejt_madj_flag = 'N' where ejt_type not in ('MA
 update slr.slr_ext_jrnl_types set ejt_madj_flag = 'Y' where ejt_type in ('MADJPERB','MADJBDPPE','MADJREVPE');
 update slr.slr_ext_jrnl_types set ejt_active_flag = 'I' where ejt_type not in ('MADJPERB','MADJBDPPE','MADJREVPE','PERC','FXREVALUE','PLRETEARNINGS');
 update slr.slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type in ('MADJPERB','MADJBDPPE','MADJREVPE','PERC','FXREVALUE','PLRETEARNINGS');
-update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE prior to open period' where ejt_type = 'MADJPERB';
+update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE prior period' where ejt_type = 'MADJPERB';
 update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE open period'  where ejt_type = 'MADJBDPPE';
 update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE rev open period' where ejt_type = 'MADJREVPE';
+update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE current period' where ejt_type = 'MADJPERC';
 commit;
 
 insert into stn.build_log (description) values('17'); 
