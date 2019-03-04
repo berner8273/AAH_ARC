@@ -7,3 +7,6 @@ grant delete on fdr.fr_combination_check_input to slr;
 grant select on fdr.fr_combination_check_input to gui;
 grant insert on fdr.fr_combination_check_input to gui;
 grant delete on fdr.fr_combination_check_input to gui;
+grant select on fdr.fr_combination_check_input to stn;
+grant insert on fdr.fr_combination_check_input to stn;
+grant delete on fdr.fr_combination_check_input to stn;
