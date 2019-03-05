@@ -53,7 +53,7 @@ drop table slr.slr_eba_bop_amounts_tmp3;
 commit;
 
 conn ~slr_logon
-/*Begin removal of SLR QTD modifications*/
+--Begin removal of SLR QTD modifications
 
 --Replace with baseline package
 
@@ -178,12 +178,14 @@ BEGIN
 END;
 /
 
-/*End removal of SLR QTD modifications*/
+--End removal of SLR QTD modifications
 
 drop package body slr.slr_pkg;
 drop package      slr.slr_pkg;
 
+delete from slr.slr_bm_entity_processing_set;
 delete from slr.slr_entities;
+
 delete from slr.slr_eba_definitions;
 delete from slr.slr_fak_definitions;
 delete from slr.slr_fak_definitions;
@@ -273,7 +275,6 @@ delete from       slr.slr_process_source             where upper(sps_db_object_n
 delete from       slr.slr_process_config_detail      where pcd_pc_p_process = 'FXREVALUE' and pcd_pc_config <> 'FXREVALUE';
 delete from       slr.slr_process_config             where pc_p_process = 'FXREVALUE' and pc_config <> 'FXREVALUE';
 delete from       slr.slr_entity_rates               where er_entity_set in ( 'FX_RULE0' , 'FX_RULE1' , 'FX_RULE2' );
-delete from       slr.slr_bm_entity_processing_set;
 delete from       slr.slr_process_errors             where spe_p_process = 'FXREVALUE';
 delete from       slr.slr_hints_sets                 where hs_statement in ( 'FX_REVALUATION_ADJUST' , 'PL_REPATRIATION' , 'PL_RETAINED_EARNINGS' );
 commit;

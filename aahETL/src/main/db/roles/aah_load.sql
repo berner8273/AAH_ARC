@@ -25,3 +25,5 @@ grant insert , select          on stn.journal_line                to aah_load;
 grant insert , select          on stn.tax_jurisdiction            to aah_load;
 grant          select          on stn.event_type                  to aah_load;
 grant insert , select          on stn.event_hierarchy             to aah_load;
+grant 		   select 		   on stn.elimination_legal_entity 	  to aah_load;
+grant 		   select 		   on stn.posting_method_derivation_rein to aah_load;

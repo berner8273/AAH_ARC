@@ -482,9 +482,6 @@ commit;
 insert into stn.build_log (description) values('7 21'); 
 commit;
 
-@@grants/tables/stn/posting_method_derivation_rein.sql
-@@grants/tables/stn/elimination_legal_entity.sql
-
 insert into stn.build_log (description) values('8'); 
 commit;
 @@indices/stn/cession.sql

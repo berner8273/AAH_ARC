@@ -1,1 +1,0 @@
-grant select on stn.posting_method_derivation_rein to aah_load;
