@@ -15,7 +15,6 @@ define ps_password=~2
 define read_password=~3
 define report_password=~4
 define ssis_password=~5
-define stn_logon=~6
 define unittest_login=~8
 
 
@@ -89,7 +88,3 @@ end;
 @@users/aah_read.sql ~read_password
 @@users/aah_report.sql ~report_password
 @@users/aah_ps.sql ~ps_password
-
-conn ~stn_logon
-@@grants/tables/stn/posting_method_derivation_rein.sql
-@@grants/tables/stn/elimination_legal_entity.sql
