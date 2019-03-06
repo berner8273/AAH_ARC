@@ -425,4 +425,8 @@ insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_match_key2 , lk_match_key3 , lk_match_key4 , lk_match_key5 , lk_lookup_value1 ) values ( 'COMBO_APPLICABLE' , 'CLOSED'   , 'ci_attribute_3' , 'IN'       , 'SET' ,'COMBO_CLOSED_ACCT'    , 'FAIL'  );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_match_key2 , lk_match_key3 , lk_match_key4 , lk_match_key5 , lk_lookup_value1 ) values ( 'COMBO_CHECK'      , 'CLOSED'   , 'ci_attribute_3' , 'NOT NULL' , null  , null                  , 'FAIL'  );
 insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_match_key2 , lk_match_key3 , lk_match_key4 , lk_match_key5 , lk_lookup_value1 ) values ( 'COMBO_APPLICABLE' , 'NON_GAAP' , 'ci_attribute_3' , 'IN'       , 'SET' , 'COMBO_NON_GAAP_ACCT' , 'CHECK' );
+/* EVENT CLASS PERIOD */
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_match_key2 , lk_match_key3 , lk_match_key4 , lk_lookup_value1 , lk_lookup_value2 , lk_lookup_value3 , lk_lookup_value5 , lk_lookup_value10 ) values ( 'EVENT_CLASS_PERIOD' , 'BALANCE_OTHERS' , '2017' , '12' , '2017-12' , 'O', '01-DEC-2017', '31-DEC-2017', 'N' , '8000' );
+insert into fdr.fr_general_lookup ( lk_lkt_lookup_type_code , lk_match_key1 , lk_match_key2 , lk_match_key3 , lk_match_key4 , lk_lookup_value1 , lk_lookup_value2 , lk_lookup_value3 , lk_lookup_value5 , lk_lookup_value10 ) values ( 'EVENT_CLASS_PERIOD' , 'BALANCE_OTHERS' , '2018' , '10' , '2018-10' , 'O', '01-OCT-2018', '31-OCT-2018', 'N' , '8000' );
+
 commit;
