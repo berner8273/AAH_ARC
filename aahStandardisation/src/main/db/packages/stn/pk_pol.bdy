@@ -1027,7 +1027,7 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                     vdl.VALIDATION_CD = 'pol-cession_vie_date'
 and (
         cs.VIE_STATUS   is not null
-    and to_char(cs.VIE_ACCT_DT,'yyyy') = to_char(cs.VIE_EFFECTIVE_DT,'yyyy') 
+    and to_char(cs.VIE_ACCT_DT,'yyyy') <> to_char(cs.VIE_EFFECTIVE_DT,'yyyy') 
     )
 and  exists (
                 select
