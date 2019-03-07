@@ -839,6 +839,7 @@ and (
     );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cl-stream_policies', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id-slr_link', NULL, NULL, NULL, NULL);
+        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , cascade => true );
         INSERT INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
@@ -922,7 +923,7 @@ and not exists (
 from fdr.fr_general_codes frgc
 where 
 frgc.gc_client_code = polt.TAX_JURISDICTION_CD
-    and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
+	and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
 );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  pol-tax-jurisdiction-cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-tax-jurisdiction-count', NULL, NULL, NULL, NULL);
@@ -1026,7 +1027,7 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                     vdl.VALIDATION_CD = 'pol-cession_vie_date'
 and (
         cs.VIE_STATUS   is not null
-    and to_char(cs.VIE_ACCT_DT,'yyyy') <> to_char(cs.VIE_EFFECTIVE_DT,'yyyy') 
+    and to_char(cs.VIE_ACCT_DT,'yyyy') = to_char(cs.VIE_EFFECTIVE_DT,'yyyy') 
     )
 and  exists (
                 select
