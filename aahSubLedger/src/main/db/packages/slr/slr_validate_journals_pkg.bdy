@@ -435,7 +435,7 @@ BEGIN
 
 
   -- Event Class Periods
-  
+
     lv_sql := '
             SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
         DISTINCT JLU_EFFECTIVE_DATE, fgl_hier.LK_LOOKUP_VALUE3
@@ -446,12 +446,20 @@ BEGIN
             AND JLU_JRNL_STATUS = ''' || p_status || '''
         AND NOT EXISTS
         (
-            SELECT NULL from fdr.fr_general_lookup fgl_period 
-            where fgl_period.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_CLASS_PERIOD''
-            AND FGL_HIER.LK_LOOKUP_VALUE3 = FGL_PERIOD.LK_MATCH_KEY1
-            AND JLU_EFFECTIVE_DATE BETWEEN TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE2,''DD-MON-YYYY'') and TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE3,''DD-MON-YYYY'') 
-            --AND JLU_EFFECTIVE_DATE BETWEEN TO_DATE(''01-DEC-2017'',''DD-MON-YYYY'') and TO_DATE(''31-DEC-2017'',''DD-MON-YYYY'') 
-            AND FGL_PERIOD.LK_LOOKUP_VALUE1 = ''O''
+            SELECT NULL from fdr.fr_general_lookup fgl_period
+                                left join fdr.fr_general_lookup fgl_cls
+                                    ON fgl_cls.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_CLASS''
+                                    AND fgl_cls.LK_MATCH_KEY1 = fgl_period.LK_MATCH_KEY1
+                    where fgl_period.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_CLASS_PERIOD''
+                        AND FGL_HIER.LK_LOOKUP_VALUE3 = FGL_PERIOD.LK_MATCH_KEY1
+                        AND JLU_EFFECTIVE_DATE BETWEEN 
+                                (CASE WHEN FGL_CLS.LK_LOOKUP_VALUE2 = ''Q''
+                                      THEN ADD_MONTHS(TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE2,''DD-MON-YYYY''),-2)
+                                      ELSE TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE2,''DD-MON-YYYY'') 
+                                      END)
+                        AND TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE3,''DD-MON-YYYY'')
+                        --AND JLU_EFFECTIVE_DATE BETWEEN TO_DATE(''01-DEC-2017'',''DD-MON-YYYY'') and TO_DATE(''31-DEC-2017'',''DD-MON-YYYY'')
+                        AND FGL_PERIOD.LK_LOOKUP_VALUE1 = ''O''
         )
     ';
        
