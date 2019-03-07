@@ -33,6 +33,7 @@ delete from gui.ui_gen_lookup_type_properties;
 delete from gui.t_ui_jrnl_line_meta;
 delete from gui.t_ui_role_tasks         where role_id in ( 'role.subledger.administrator' , 'role.reference.data.user' , 'role.reference.data.approver' , 'role.subledger.user' , 'role.subledger.manager' , 'role.subledger.viewer' , 'role.subledger.configurator' );
 delete from gui.t_ui_roles              where role_id in ( 'role.subledger.administrator' , 'role.reference.data.user' , 'role.reference.data.approver' , 'role.subledger.user' , 'role.subledger.manager' , 'role.subledger.viewer' , 'role.subledger.configurator' );
+drop view gui.vw_ui_madj_source_system.sql;
 commit;
 
 update gui.t_ui_gui_parameters set guiparam_value = '500' where guiparam_name = 'data.max.rows.returned';
