@@ -249,7 +249,7 @@ drop package      fdr.pk_legal_entity;
 
 delete from fdr.fr_db_upgrade_history        where dbuh_description                = 'Assured Guaranty';
 delete from fdr.fr_global_parameter          where lpg_id = 2;
-update fr_global_parameter set gp_ca_processing_cal_name = null;
+update fdr.fr_global_parameter set gp_ca_processing_cal_name = null;
 delete from fdr.fr_trade                     where t_fdr_tran_no             not in ( 'DEFAULT' );
 delete from fdr.fr_instrument                where i_instrument_id                != '1';
 delete from fdr.fr_instr_type_lookup         where itl_lookup_key                 != 'DEFAULT';
@@ -321,10 +321,10 @@ delete from gui.t_ui_departments             where department_id                
 
 conn ~rdr_logon
 
-drop view rrv_ag_loader_account_lookup;
-drop view rrv_ag_loader_business_event;
-drop view rrv_ag_loader_event_hier;
-drop view rrv_ag_loader_gaap_to_core;
-drop view rrv_ag_loader_posting_driver;
-drop view rrv_ag_loader_posting_method;
-drop view rrv_ag_loader_vie_posting;
+drop view rdr.rrv_ag_loader_account_lookup;
+drop view rdr.rrv_ag_loader_business_event;
+drop view rdr.rrv_ag_loader_event_hier;
+drop view rdr.rrv_ag_loader_gaap_to_core;
+drop view rdr.rrv_ag_loader_posting_driver;
+drop view rdr.rrv_ag_loader_posting_method;
+drop view rdr.rrv_ag_loader_vie_posting;
