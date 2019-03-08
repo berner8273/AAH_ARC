@@ -321,10 +321,10 @@ delete from gui.t_ui_departments             where department_id                
 
 conn ~rdr_logon
 
-drop view rrv_ag_loader_account_lookup;
-drop view rrv_ag_loader_business_event;
-drop view rrv_ag_loader_event_hier;
-drop view rrv_ag_loader_gaap_to_core;
-drop view rrv_ag_loader_posting_driver;
-drop view rrv_ag_loader_posting_method;
-drop view rrv_ag_loader_vie_posting;
+drop view rdr.rrv_ag_loader_account_lookup;
+drop view rdr.rrv_ag_loader_business_event;
+drop view rdr.rrv_ag_loader_event_hier;
+drop view rdr.rrv_ag_loader_gaap_to_core;
+drop view rdr.rrv_ag_loader_posting_driver;
+drop view rdr.rrv_ag_loader_posting_method;
+drop view rdr.rrv_ag_loader_vie_posting;
