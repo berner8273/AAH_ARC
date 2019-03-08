@@ -147,7 +147,7 @@ drop view slr.v_slr_journal_lines;
 
 --Restore baseline view and drop modified view
 drop view slr.v_slr_jrnl_lines_unposted_jt;
-rename slr.v_slr_jrnl_lines_unposted_bak to slr.v_slr_jrnl_lines_unposted_jt;
+rename v_slr_jrnl_lines_unposted_bak to v_slr_jrnl_lines_unposted_jt;
 
 BEGIN
   FOR cur_rec IN (SELECT owner,
