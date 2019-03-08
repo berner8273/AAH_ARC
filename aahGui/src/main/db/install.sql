@@ -84,5 +84,6 @@ commit;
 @@views/gui/vw_ui_reference_7.sql
 @@views/gui/svc_combination_check_gjlu.sql
 @@views/gui/vw_ui_madj_source_system.sql
+@@grants/views/vw_ui_madj_source_system.sql
 insert into stn.build_log (description) values('14 - finished GUI'); 
 commit;
