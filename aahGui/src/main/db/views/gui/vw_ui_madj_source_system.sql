@@ -1,6 +1,4 @@
-﻿DROP VIEW GUI.VW_UI_MADJ_SOURCE_SYSTEM;
-
-/* Formatted on 3/5/2019 3:16:14 PM (QP5 v5.252.13127.32847) */
+﻿/* Formatted on 3/5/2019 3:16:14 PM (QP5 v5.252.13127.32847) */
 CREATE OR REPLACE FORCE VIEW GUI.VW_UI_MADJ_SOURCE_SYSTEM
 (
    SI_SYS_INST_ID,
@@ -34,8 +32,3 @@ AS
             WHERE     si_active = 'A'
                   AND si_sys_inst_id != '1'
                   AND si_sys_inst_id != 'Client Static');
-
-
-GRANT SELECT ON GUI.VW_UI_MADJ_SOURCE_SYSTEM TO AAH_READ_ONLY;
-
-GRANT SELECT ON GUI.VW_UI_MADJ_SOURCE_SYSTEM TO FDR WITH GRANT OPTION;
