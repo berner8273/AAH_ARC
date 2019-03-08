@@ -20,7 +20,7 @@ define sys_logon=~7
 define unittest_login=~8
 
 /* set up log table for debugging */
-conn ~~stn_logon
+conn ~stn_logon
 DECLARE
   vCount number := 0;  
 BEGIN
