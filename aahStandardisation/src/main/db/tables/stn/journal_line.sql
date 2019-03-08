@@ -5,8 +5,8 @@ create table stn.journal_line
 ,   correlation_id         varchar2(40 char)                                     
 ,   accounting_dt          date                                                   not null
 ,   le_id                  number(38)                                             not null
-,	journal_type		   varchar2(20 char)		
-,	jrnl_source			   varchar2(40 char)									  
+,	journal_type		   varchar2(20 char)		                              not null
+,	jrnl_source			   varchar2(40 char)									  not null
 ,   acct_cd                varchar2(20 char)                                      not null
 ,   basis_cd               varchar2(20 char)                                      not null
 ,   ledger_cd              varchar2(20 char)                                      not null
