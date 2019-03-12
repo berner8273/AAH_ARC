@@ -41,8 +41,6 @@ delete from gui.ui_gen_lookup_type_properties;
 @@data/gui/ui_field.sql
 @@data/gui/ui_input_field_value.sql
 @@data/gui/ui_general_lookup.sql
-insert into stn.build_log (description) values('13'); 
-commit;
 update gui.t_ui_gui_parameters set guiparam_value = '25000' where guiparam_name = 'data.max.rows.returned';
 commit;
 
@@ -85,5 +83,3 @@ commit;
 @@views/gui/svc_combination_check_gjlu.sql
 @@views/gui/vw_ui_madj_source_system.sql
 @@grants/views/vw_ui_madj_source_system.sql
-insert into stn.build_log (description) values('14 - finished GUI'); 
-commit;

@@ -809,8 +809,8 @@ and ( (jl.LE_ID = jl.AFFILIATE_LE_ID) OR (jl.LE_ID = jl.COUNTERPARTY_LE_ID) OR (
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
                 INNER JOIN event_hierarchy_reference er ON er.event_typ = jl.EVENT_TYP
             WHERE
-                vdl.VALIDATION_CD = 'jl-accounting_dt' and 
-            (not exists 
+                    vdl.VALIDATION_CD = 'jl-accounting_dt'
+and    (not exists 
                     ( select null 
                             from stn.event_hierarchy_reference ehr, stn.period_status ps
                                 where  ehr.event_class = ps.event_class
@@ -1410,86 +1410,86 @@ and     exists (
         )
     AS
     BEGIN
-INSERT INTO stn.hopper_journal_line
-    (le_id, acct_cd, ledger_cd, basis_cd, book_cd, affiliate_le_id, accident_yr, underwriting_yr, policy_id, stream_id, tax_jurisdiction_cd, posting_schema, counterparty_le_id, dept_cd, chartfield_1, execution_typ, business_typ, owner_le_id, premium_typ, journal_descr, transaction_ccy, transaction_amt, sra_ae_dr_cr, accounting_dt, ultimate_parent_le_id, event_typ, functional_ccy, functional_amt, reporting_ccy, reporting_amt, business_event_typ, event_seq_id, sra_ae_source_system, sra_ae_itsc_inst_typ_sclss_cd, event_status, lpg_id, process_id, message_id, sra_ae_posting_date, sra_ae_instr_type_map_code, sra_si_account_sys_inst_code, sra_si_instr_sys_inst_code, sra_si_party_sys_inst_code, sra_si_static_sys_inst_code, sra_ae_ipe_int_entity_code, sra_ae_pbu_ext_party_code, sra_ae_aet_acc_event_type_code, sra_ae_cu_local_currency_code, sra_ae_cu_base_currency_code, sra_ae_i_instrument_clicode, sra_ae_it_instr_type_code, sra_ae_itc_inst_typ_cls_code, sra_ae_pe_person_code, sra_ae_gl_instrument_id, sra_ae_event_audit_id, sra_ae_journal_type, sra_ae_source_jrnl_id, sra_ae_gl_narrative)
-    SELECT
-        pl_le_id.PL_PARTY_LEGAL_ID AS le_id,
-        jl.ACCT_CD AS acct_cd,
-        jl.LEDGER_CD AS ledger_cd,
-        jl.BASIS_CD AS basis_cd,
-        pl_le_id.PL_PARTY_LEGAL_ID AS book_cd,
-        pl_affiliate.PL_PARTY_LEGAL_ID AS affiliate_le_id,
-        jl.ACCIDENT_YR AS accident_yr,
-        jl.UNDERWRITING_YR AS underwriting_yr,
-        jl.POLICY_ID AS policy_id,
-        jl.STREAM_ID AS stream_id,
-        jl.TAX_JURISDICTION_CD AS tax_jurisdiction_cd,
-        jl.LEDGER_CD AS posting_schema,
-        pl_counter_party.PL_PARTY_LEGAL_ID AS counterparty_le_id,
-        jl.DEPT_CD AS dept_cd,
-        jl.CHARTFIELD_1 AS chartfield_1,
-        jl.EXECUTION_TYP AS execution_typ,
-        jl.BUSINESS_TYP AS business_typ,
-        pl_owner_le_id.PL_PARTY_LEGAL_ID AS owner_le_id,
-        NVL(jl.PREMIUM_TYP, 'NVS') AS premium_typ,
-        jl.JOURNAL_DESCR AS journal_descr,
-        jl.TRANSACTION_CCY AS transaction_ccy,
-        jl.TRANSACTION_AMT AS transaction_amt,
-        (CASE
-            WHEN jl.TRANSACTION_AMT < 0 THEN 'CR'
-            WHEN jl.TRANSACTION_AMT > 0 THEN 'DR'
-            WHEN jl.REPORTING_AMT < 0 THEN 'CR'
-            WHEN jl.REPORTING_AMT > 0 THEN 'DR'
-            WHEN jl.FUNCTIONAL_AMT < 0 THEN 'CR'
-            ELSE 'DR'
-        END) AS sra_ae_dr_cr,
-        jl.ACCOUNTING_DT AS accounting_dt,
-        pl_ultimate_parent_le_id.PL_PARTY_LEGAL_ID AS ultimate_parent_le_id,
-        jl.EVENT_TYP AS event_typ,
-        jl.FUNCTIONAL_CCY AS functional_ccy,
-        jl.FUNCTIONAL_AMT AS functional_amt,
-        jl.REPORTING_CCY AS reporting_ccy,
-        jl.REPORTING_AMT AS reporting_amt,
-        jl.BUSINESS_EVENT_TYP AS business_event_typ,
-        jl.EVENT_SEQ_ID AS event_seq_id,
-        jl.JRNL_SOURCE AS sra_ae_source_system,
-        jl_default.SRA_AE_ITSC_INST_TYP_SCLSS_CD AS sra_ae_itsc_inst_typ_sclss_cd,
-        'U' AS event_status,
-        jl.LPG_ID AS lpg_id,
-        TO_CHAR(jl.STEP_RUN_SID) AS process_id,
-        TO_CHAR(jl.ROW_SID) AS message_id,
-        jl.ACCOUNTING_DT AS sra_ae_posting_date,
-        jl_default.SRA_AE_INSTR_TYPE_MAP_CODE AS sra_ae_instr_type_map_code,
-        jl_default.SRA_SI_ACCOUNT_SYS_INST_CODE AS sra_si_account_sys_inst_code,
-        jl_default.SRA_SI_INSTR_SYS_INST_CODE AS sra_si_instr_sys_inst_code,
-        jl_default.SRA_SI_PARTY_SYS_INST_CODE AS sra_si_party_sys_inst_code,
-        jl_default.SRA_SI_STATIC_SYS_INST_CODE AS sra_si_static_sys_inst_code,
-        jl_default.SRA_AE_IPE_INT_ENTITY_CODE AS sra_ae_ipe_int_entity_code,
-        pl_counter_party.PL_PARTY_LEGAL_ID AS sra_ae_pbu_ext_party_code,
-        jl.EVENT_TYP AS sra_ae_aet_acc_event_type_code,
-        jl_default.SRA_AE_CU_LOCAL_CURRENCY_CODE AS sra_ae_cu_local_currency_code,
-        jl_default.SRA_AE_CU_BASE_CURRENCY_CODE AS sra_ae_cu_base_currency_code,
-        jl_default.SRA_AE_I_INSTRUMENT_CLICODE AS sra_ae_i_instrument_clicode,
-        jl_default.SRA_AE_IT_INSTR_TYPE_CODE AS sra_ae_it_instr_type_code,
-        jl_default.SRA_AE_ITC_INST_TYP_CLS_CODE AS sra_ae_itc_inst_typ_cls_code,
-        jl_default.SRA_AE_PE_PERSON_CODE AS sra_ae_pe_person_code,
-        jl_default.SRA_AE_GL_INSTRUMENT_ID AS sra_ae_gl_instrument_id,
-        jl.CORRELATION_ID AS sra_ae_event_audit_id,
-        jl.JOURNAL_TYPE AS sra_ae_journal_type,
-        to_char(jl.row_sid) AS sra_ae_source_jrnl_id,
-        jl.JOURNAL_LINE_DESC AS sra_ae_gl_narrative
-    FROM
-        stn.journal_line jl
-        INNER JOIN stn.IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
-        INNER JOIN stn.FEED fd ON jl.FEED_UUID = fd.FEED_UUID
-        INNER JOIN stn.journal_line_default jl_default ON 1 = 1
-        INNER JOIN fdr.FR_PARTY_LEGAL pl_le_id ON jl.LE_ID = to_number ( pl_le_id.PL_GLOBAL_ID )
-        LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_owner_le_id ON jl.OWNER_LE_ID = to_number ( pl_owner_le_id.PL_GLOBAL_ID )
-        LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_ultimate_parent_le_id ON jl.ULTIMATE_PARENT_LE_ID = to_number ( pl_ultimate_parent_le_id.PL_GLOBAL_ID )
-        LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_counter_party ON jl.COUNTERPARTY_LE_ID = to_number ( pl_counter_party.PL_GLOBAL_ID )
-        LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_affiliate ON jl.AFFILIATE_LE_ID = to_number ( pl_affiliate.PL_GLOBAL_ID )
-    WHERE
-        jl.EVENT_STATUS = 'V';        
+        INSERT INTO hopper_journal_line
+            (le_id, acct_cd, ledger_cd, basis_cd, book_cd, affiliate_le_id, accident_yr, underwriting_yr, policy_id, stream_id, tax_jurisdiction_cd, posting_schema, counterparty_le_id, dept_cd, chartfield_1, execution_typ, business_typ, owner_le_id, premium_typ, journal_descr, transaction_ccy, transaction_amt, sra_ae_dr_cr, accounting_dt, ultimate_parent_le_id, event_typ, functional_ccy, functional_amt, reporting_ccy, reporting_amt, business_event_typ, event_seq_id, sra_ae_source_system, sra_ae_itsc_inst_typ_sclss_cd, event_status, lpg_id, process_id, message_id, sra_ae_posting_date, sra_ae_instr_type_map_code, sra_si_account_sys_inst_code, sra_si_instr_sys_inst_code, sra_si_party_sys_inst_code, sra_si_static_sys_inst_code, sra_ae_ipe_int_entity_code, sra_ae_pbu_ext_party_code, sra_ae_aet_acc_event_type_code, sra_ae_cu_local_currency_code, sra_ae_cu_base_currency_code, sra_ae_i_instrument_clicode, sra_ae_it_instr_type_code, sra_ae_itc_inst_typ_cls_code, sra_ae_pe_person_code, sra_ae_gl_instrument_id, sra_ae_event_audit_id, sra_ae_journal_type, sra_ae_source_jrnl_id, sra_ae_gl_narrative)
+            SELECT
+                pl_le_id.PL_PARTY_LEGAL_ID AS le_id,
+                jl.ACCT_CD AS acct_cd,
+                jl.LEDGER_CD AS ledger_cd,
+                jl.BASIS_CD AS basis_cd,
+                pl_le_id.PL_PARTY_LEGAL_ID AS book_cd,
+                pl_affiliate.PL_PARTY_LEGAL_ID AS affiliate_le_id,
+                jl.ACCIDENT_YR AS accident_yr,
+                jl.UNDERWRITING_YR AS underwriting_yr,
+                jl.POLICY_ID AS policy_id,
+                jl.STREAM_ID AS stream_id,
+                jl.TAX_JURISDICTION_CD AS tax_jurisdiction_cd,
+                jl.LEDGER_CD AS posting_schema,
+                pl_counter_party.PL_PARTY_LEGAL_ID AS counterparty_le_id,
+                jl.DEPT_CD AS dept_cd,
+                jl.CHARTFIELD_1 AS chartfield_1,
+                jl.EXECUTION_TYP AS execution_typ,
+                jl.BUSINESS_TYP AS business_typ,
+                pl_owner_le_id.PL_PARTY_LEGAL_ID AS owner_le_id,
+                NVL(jl.PREMIUM_TYP, 'NVS') AS premium_typ,
+                jl.JOURNAL_DESCR AS journal_descr,
+                jl.TRANSACTION_CCY AS transaction_ccy,
+                jl.TRANSACTION_AMT AS transaction_amt,
+                (CASE
+                    WHEN jl.TRANSACTION_AMT < 0 THEN 'CR'
+                    WHEN jl.TRANSACTION_AMT > 0 THEN 'DR'
+                    WHEN jl.REPORTING_AMT < 0 THEN 'CR'
+                    WHEN jl.REPORTING_AMT > 0 THEN 'DR'
+                    WHEN jl.FUNCTIONAL_AMT < 0 THEN 'CR'
+                    ELSE 'DR'
+                END) AS sra_ae_dr_cr,
+                jl.ACCOUNTING_DT AS accounting_dt,
+                pl_ultimate_parent_le_id.PL_PARTY_LEGAL_ID AS ultimate_parent_le_id,
+                jl.EVENT_TYP AS event_typ,
+                jl.FUNCTIONAL_CCY AS functional_ccy,
+                jl.FUNCTIONAL_AMT AS functional_amt,
+                jl.REPORTING_CCY AS reporting_ccy,
+                jl.REPORTING_AMT AS reporting_amt,
+                jl.BUSINESS_EVENT_TYP AS business_event_typ,
+                jl.EVENT_SEQ_ID AS event_seq_id,
+                jl.JRNL_SOURCE AS sra_ae_source_system,
+                jl_default.SRA_AE_ITSC_INST_TYP_SCLSS_CD AS sra_ae_itsc_inst_typ_sclss_cd,
+                'U' AS event_status,
+                jl.LPG_ID AS lpg_id,
+                TO_CHAR(jl.STEP_RUN_SID) AS process_id,
+                TO_CHAR(jl.ROW_SID) AS message_id,
+                jl.ACCOUNTING_DT AS sra_ae_posting_date,
+                jl_default.SRA_AE_INSTR_TYPE_MAP_CODE AS sra_ae_instr_type_map_code,
+                jl_default.SRA_SI_ACCOUNT_SYS_INST_CODE AS sra_si_account_sys_inst_code,
+                jl_default.SRA_SI_INSTR_SYS_INST_CODE AS sra_si_instr_sys_inst_code,
+                jl_default.SRA_SI_PARTY_SYS_INST_CODE AS sra_si_party_sys_inst_code,
+                jl_default.SRA_SI_STATIC_SYS_INST_CODE AS sra_si_static_sys_inst_code,
+                jl_default.SRA_AE_IPE_INT_ENTITY_CODE AS sra_ae_ipe_int_entity_code,
+                pl_counter_party.PL_PARTY_LEGAL_ID AS sra_ae_pbu_ext_party_code,
+                jl.EVENT_TYP AS sra_ae_aet_acc_event_type_code,
+                jl_default.SRA_AE_CU_LOCAL_CURRENCY_CODE AS sra_ae_cu_local_currency_code,
+                jl_default.SRA_AE_CU_BASE_CURRENCY_CODE AS sra_ae_cu_base_currency_code,
+                jl_default.SRA_AE_I_INSTRUMENT_CLICODE AS sra_ae_i_instrument_clicode,
+                jl_default.SRA_AE_IT_INSTR_TYPE_CODE AS sra_ae_it_instr_type_code,
+                jl_default.SRA_AE_ITC_INST_TYP_CLS_CODE AS sra_ae_itc_inst_typ_cls_code,
+                jl_default.SRA_AE_PE_PERSON_CODE AS sra_ae_pe_person_code,
+                jl_default.SRA_AE_GL_INSTRUMENT_ID AS sra_ae_gl_instrument_id,
+                jl.CORRELATION_ID AS sra_ae_event_audit_id,
+                jl.JOURNAL_TYPE AS sra_ae_journal_type,
+                to_char(jl.ROW_SID) AS sra_ae_source_jrnl_id,
+                jl.JOURNAL_LINE_DESC AS sra_ae_gl_narrative
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN journal_line_default jl_default ON 1 = 1
+                INNER JOIN fdr.FR_PARTY_LEGAL pl_le_id ON jl.LE_ID = to_number ( pl_le_id.PL_GLOBAL_ID )
+                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_owner_le_id ON jl.OWNER_LE_ID = to_number ( pl_owner_le_id.PL_GLOBAL_ID )
+                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_ultimate_parent_le_id ON jl.ULTIMATE_PARENT_LE_ID = to_number ( pl_ultimate_parent_le_id.PL_GLOBAL_ID )
+                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_counter_party ON jl.COUNTERPARTY_LE_ID = to_number ( pl_counter_party.PL_GLOBAL_ID )
+                LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_affiliate ON jl.AFFILIATE_LE_ID = to_number ( pl_affiliate.PL_GLOBAL_ID )
+            WHERE
+                jl.EVENT_STATUS = 'V';
         p_total_no_published := SQL%ROWCOUNT;
     END;
     
@@ -1525,7 +1525,139 @@ INSERT INTO stn.hopper_journal_line
         lcErrorCode_Combo CONSTANT VARCHAR2(50) DEFAULT 'JL_COMBO';
         v_combo_check_errors NUMBER(38, 9);
     BEGIN
-        NULL;
+         dbms_application_info.set_module(
+            module_name => lcUnitName,
+            action_name => 'Start');
+          fdr.PG_COMMON.pLogDebug(pinMessage => 'Start Combo Check - GUI Unposted Journal Lines');
+        
+          /* Configure the optimizer hints for Combination Checking. */
+          -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboInput := '';
+          -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboError := '';
+          -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertInput      := '/*+ no_parallel */';
+          -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectInput      := '/*+ parallel */';
+          -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertComboError := '/*+ no_parallel */';
+          -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectComboError := '/*+ parallel */';
+        
+          /* Call the Combination Check for those journals that are not in error yet - use the [sub-]partitioning key. */
+          fdr.PG_COMBINATION_CHECK.pCombinationCheck(
+            pinObjectName   =>  'stn.scv_combination_check_jlh',
+            pinFilter       =>  NULL,
+            pinBusinessDate =>  NULL,
+            poutErrorCount  =>  v_combo_check_errors);
+        
+        IF v_combo_check_errors > 0 THEN
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Combo Check Validations : journal-line Combo failure begin logging', 'sql%rowcount', NULL, sql%rowcount, NULL);
+            INSERT INTO STANDARDISATION_LOG
+                (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, EVENT_TEXT, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
+                SELECT
+                    vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                    jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                    jl.ACCT_CD AS ERROR_VALUE,
+                    jl.LPG_ID AS LPG_ID,
+                    'COMBO_EDIT' AS EVENT_TEXT,
+                    cce.ce_attribute_name AS FIELD_IN_ERROR_NAME,
+                    rveld.EVENT_TYPE AS EVENT_TYPE,
+                    rveld.ERROR_STATUS AS ERROR_STATUS,
+                    rveld.CATEGORY_ID AS CATEGORY_ID,
+                    rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                    rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                    cce.ce_rule AS RULE_IDENTITY,
+                    vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                    jl.STEP_RUN_SID AS STEP_RUN_SID,
+                    fd.FEED_SID AS FEED_SID
+                FROM
+                    journal_line jl
+                    INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                    INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                    INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                    INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+                    INNER JOIN fdr.fr_combination_check_error cce ON to_char(jl.ROW_SID) = cce.ce_input_id
+                WHERE
+                    vdl.VALIDATION_CD = 'jl-prc_cd';
+            v_combo_check_errors := SQL%ROWCOUNT;
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Combo Edit Failures: Logged Errors', 'sql%rowcount', NULL, sql%rowcount, NULL);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Combo Edit Failures: Logging any correlated rorror', 'sql%rowcount', NULL, sql%rowcount, NULL);
+            INSERT INTO STANDARDISATION_LOG
+                (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+                SELECT
+                    vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                    jl2.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                    jl2.ACCT_CD AS ERROR_VALUE,
+                    jl2.LPG_ID AS LPG_ID,
+                    SubQuery.error_value AS FIELD_IN_ERROR_NAME,
+                    rveld.EVENT_TYPE AS EVENT_TYPE,
+                    rveld.ERROR_STATUS AS ERROR_STATUS,
+                    rveld.CATEGORY_ID AS CATEGORY_ID,
+                    rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                    rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                    SubQuery.error_rule AS RULE_IDENTITY,
+                    vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                    jl2.STEP_RUN_SID AS STEP_RUN_SID,
+                    'COMBO EDIT Correlated' AS EVENT_TEXT,
+                    fd.FEED_SID AS FEED_SID
+                FROM
+                    journal_line jl2
+                    INNER JOIN IDENTIFIED_RECORD idr ON jl2.ROW_SID = idr.ROW_SID
+                    INNER JOIN FEED fd ON jl2.FEED_UUID = fd.FEED_UUID
+                    INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                    INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+                    LEFT OUTER JOIN fdr.fr_combination_check_error cce ON to_char(jl2.ROW_SID) = cce.ce_input_id
+                    INNER JOIN (SELECT
+                        j.ROW_SID AS ROW_SID
+                    FROM
+                        journal_line j
+                        INNER JOIN (SELECT
+                            jl.ACCOUNTING_DT AS ACCOUNTING_DT,
+                            jl.CORRELATION_ID AS CORRELATION_ID,
+                            jl.LE_ID AS LE_ID,
+                            SUM(jl.TRANSACTION_AMT) AS TRANSACTION_AMT
+                        FROM
+                            journal_line jl
+                            INNER JOIN fdr.fr_combination_check_error ce ON 1 = 1
+                        WHERE
+                            to_char(jl.ROW_SID) <> ce.ce_input_id
+                        GROUP BY
+                            jl.CORRELATION_ID,
+                            jl.ACCOUNTING_DT,
+                            jl.LE_ID
+                        HAVING
+                            SUM (nvl(jl.transaction_amt,0)+nvl(jl.functional_amt,0)+nvl(jl.reporting_amt,0)) <> 0) jl ON j.CORRELATION_ID = jl.CORRELATION_ID AND j.ACCOUNTING_DT = jl.ACCOUNTING_DT AND j.LE_ID = jl.LE_ID
+                    WHERE
+                        NOT EXISTS
+(SELECT NULL FROM fdr.fr_combination_check_error e   WHERE E.ce_input_id = j.ROW_SID)) jl3 ON jl2.ROW_SID = jl3.ROW_SID
+                    INNER JOIN (SELECT
+                        jle.ce_attribute_name AS error_value,
+                        jle.ce_rule AS error_rule,
+                        jl.ACCOUNTING_DT AS ACCOUNTING_DT,
+                        jl.CORRELATION_ID AS CORRELATION_ID,
+                        jl.LE_ID AS LE_ID,
+                        jl.ROW_SID AS ROW_SID
+                    FROM
+                        journal_line jl
+                        INNER JOIN (SELECT
+                            jl.ACCOUNTING_DT AS jl_ACCOUNTING_DT_1,
+                            jl.CORRELATION_ID AS jl_CORRELATION_ID_1,
+                            jl.LE_ID AS jl_LE_ID_1
+                        FROM
+                            journal_line jl
+                            INNER JOIN fdr.fr_combination_check_error ce ON 1 = 1
+                        WHERE
+                            to_char(jl.ROW_SID) <> ce.ce_input_id
+                        GROUP BY
+                            jl.CORRELATION_ID,
+                            jl.ACCOUNTING_DT,
+                            jl.LE_ID) j ON jl.CORRELATION_ID = j.jl_CORRELATION_ID_1 AND jl.ACCOUNTING_DT = j.jl_ACCOUNTING_DT_1 AND jl.LE_ID = j.jl_LE_ID_1
+                        INNER JOIN fdr.fr_combination_check_error jle ON to_number(jle.ce_input_id)=jl.ROW_SID
+                    WHERE
+                        EXISTS 
+(SELECT jle.ce_input_id FROM fdr.fr_combination_check_error je WHERE je.ce_input_id = jl.ROW_SID)) SubQuery ON jl2.CORRELATION_ID = SubQuery.CORRELATION_ID AND jl2.ACCOUNTING_DT = SubQuery.ACCOUNTING_DT AND jl2.LE_ID = SubQuery.LE_ID
+                WHERE
+                    vdl.VALIDATION_CD = 'jl-prc_cd'
+AND NOT EXISTS (SELECT cce.ce_input_id FROM fdr.fr_combination_check_error je2 WHERE je2.ce_input_id = jl2.ROW_SID);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Combo Edit Failures: Logged any correlated errorsr', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        ELSE
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed Combo Edit Checks: No Failures', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        END IF;
     END;
     
     PROCEDURE pr_journal_line_prc
@@ -1547,12 +1679,12 @@ INSERT INTO stn.hopper_journal_line
         pr_journal_line_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
         IF v_no_identified_records > 0 THEN
-            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set level validate journal line records' );
-            pr_journal_line_sval(p_step_run_sid);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed set level validations', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Process Combo Edit checks on journal line records' );
             pr_journal_line_pce(p_step_run_sid);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed combo edit checks', NULL, NULL, NULL, NULL);
+            dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set level validate journal line records' );
+            pr_journal_line_sval(p_step_run_sid);
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed set level validations', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate journal line records' );
             pr_journal_line_rval(p_step_run_sid);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed journal line row level validations', NULL, NULL, NULL, NULL);

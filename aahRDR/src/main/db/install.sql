@@ -21,8 +21,6 @@ define sys_logon=~7
 define unittest_login=~8
 
 conn ~stn_logon
-insert into stn.build_log (description) values('30'); 
-commit;
 
 @@grants/tables/stn/gl_account_hierarchy.sql
 @@grants/tables/stn/business_event.sql
@@ -44,8 +42,6 @@ commit;
 @@grants/tables/stn/vie_posting_method_ledger.sql
 
 conn ~slr_logon
-insert into stn.build_log (description) values('31'); 
-commit;
 
 @@grants/tables/slr/slr_fak_combinations.sql
 @@grants/tables/slr/slr_eba_combinations.sql
@@ -66,8 +62,6 @@ conn ~fdr_logon
 @@grants/tables/fdr/fr_posting_schema.sql
 @@grants/tables/fdr/fr_stan_raw_acc_event.sql
 @@grants/tables/fdr/fr_org_hier_levels.sql
-insert into stn.build_log (description) values('32'); 
-commit;
 
 conn ~gui_logon
 
@@ -96,8 +90,6 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_insurance_policy.sql
 @@views/rdr/rrv_ag_insurance_policy_fx.sql
 @@views/rdr/rrv_ag_ledger.sql
-insert into stn.build_log (description) values('33'); 
-commit;
 @@views/rdr/rrv_ag_legal_entity_ledger.sql
 @@views/rdr/rrv_ag_lookup_types.sql
 @@views/rdr/rrv_ag_posting_driver.sql
@@ -124,5 +116,3 @@ commit;
 @@views/rdr/rrv_ag_glint_jl_manual.sql
 @@views/rdr/rrv_ag_glint_jl_processed.sql
 @@views/rdr/rrv_ag_glint_jl_unposted.sql
-insert into stn.build_log (description) values('34 finished RDR'); 
-commit;
