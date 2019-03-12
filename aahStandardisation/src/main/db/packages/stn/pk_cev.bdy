@@ -300,25 +300,26 @@ and not exists (
                                         when cev.premium_typ = 'X'
                                         then ppt.cession_event_premium_typ
                                         else cev.premium_typ
-                                        end                                        premium_typ
+                                        end premium_typ
+                                
                                  , case
-                                        when ce_data.owner_le_cd = 'FSAU'
-                                         and cev.event_typ like 'PGAAP%'
-                                        then 'FSANY'
-                                        when cev.event_typ = 'DAC_CC_CONS_ADJUST'
-                                         and cev.business_typ in ('C','A','D','AA')
-                                        then 'CA005'
+                                        when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('C','CA') and ce_data.counterparty_le_cd = 'FSAU')
+                                              or (cev.event_typ like 'PGAAP%' and cev.business_typ in ('A','AA','D') and ce_data.owner_le_cd = 'FSAU')
+                                            then 'FSANY'
+                                        when cev.event_typ = 'DAC_CC_CONS_ADJUST' and cev.business_typ in ('C','A','D','AA')
+                                            then 'CA005'
                                         else ce_data.le_cd
-                                   end                                             le_cd
+                                    end le_cd
+                                           
                                  , case
-                                        when ce_data.counterparty_le_cd = 'FSAU'
-                                         and cev.event_typ like 'PGAAP%'
-                                        then 'FSANY'
-                                        when cev.event_typ = 'DAC_CC_CONS_ADJUST'
-                                            and cev.business_typ in ('CA')
-                                        then 'CA005'
-                                            else ce_data.parent_cession_le_cd
-                                        end                                       parent_cession_le_cd
+                                        when (cev.event_typ like 'PGAAP%' and cev.business_typ ='CA' and ce_data.counterparty_le_cd = 'FSAU')
+                                              or (cev.event_typ like 'PGAAP%' and cev.business_typ ='AA' and ce_data.owner_le_cd = 'FSAU')
+                                            then 'FSANY'
+                                        when cev.event_typ = 'DAC_CC_CONS_ADJUST' and cev.business_typ in ('CA')
+                                            then 'CA005'
+                                        else ce_data.parent_cession_le_cd
+                                    end parent_cession_le_cd
+        
                                  , ce_data.owner_le_cd
                                  , ce_data.counterparty_le_cd
                                  , cev.transaction_amt
@@ -699,7 +700,11 @@ and not exists (
                               , cev_data.parent_stream_id
                               , abasis.basis_typ
                               , abasis.basis_cd
-                              , pldgr.ledger_cd
+                              , case
+                                    when pmdle.le_cd is not null
+                                        then 'CORE'
+                                    else pldgr.ledger_cd
+                                end as ledger_cd
                               , cev_data.event_typ
                               , cev_data.business_event_typ
                               , cev_data.is_mark_to_market
@@ -764,22 +769,21 @@ and not exists (
                               , cev_data.input_reporting_amt
                               , 0 partner_reporting_amt
                               , cev_data.lpg_id
-                           from
-                                     stn.cev_data                      cev_data
-                                join stn.posting_method                psm      on ( psm.psm_cd = 'GAAP_FUT_ACCTS'
-                                                                                 or  psm.psm_cd = 'GAAP_TO_CORE' )
-                                join stn.posting_method_ledger         pml      on (
-                                                                                           psm.psm_id            = pml.psm_id
-                                                                                       and cev_data.input_basis_id = pml.input_basis_id
-                                                                                   )
-                                join stn.posting_ledger                pldgr    on pml.ledger_id       = pldgr.ledger_id
-                                join stn.posting_accounting_basis      abasis   on pml.output_basis_id = abasis.basis_id
-                                join stn.posting_financial_calc        fincalc  on pml.fin_calc_id     = fincalc.fin_calc_id
-                          where cev_data.gaap_fut_accts_flag = 'Y'
-                            and exists (
+                              from
+                                        stn.cev_data                      cev_data
+                                   join stn.posting_method                psm      on (psm.psm_cd = 'GAAP_FUT_ACCTS'
+                                                                                       or  psm.psm_cd = 'GAAP_TO_CORE')
+                                   join stn.posting_method_ledger         pml      on (psm.psm_id = pml.psm_id
+                                                                                       and cev_data.input_basis_id = pml.input_basis_id)
+                                   join stn.posting_ledger                pldgr    on pml.ledger_id       = pldgr.ledger_id
+                                   join stn.posting_accounting_basis      abasis   on pml.output_basis_id = abasis.basis_id
+                                   join stn.posting_financial_calc        fincalc  on pml.fin_calc_id     = fincalc.fin_calc_id
+                                   left join stn.posting_method_derivation_le  pmdle    on pmdle.le_cd    = cev_data.business_unit
+                                where cev_data.gaap_fut_accts_flag = 'Y'
+                                and exists (
                                          select null
                                            from cev_data                cev3
-                                          where cev3.correlation_uuid = cev_data.correlation_uuid
+                                         where cev3.correlation_uuid = cev_data.correlation_uuid
                                             and cev3.premium_typ      in ( 'M' , 'I' )
                                        )
                             --and cev_data.le_flag             = 'N'
