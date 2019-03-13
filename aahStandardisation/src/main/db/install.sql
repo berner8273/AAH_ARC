@@ -62,7 +62,9 @@ commit;
 @@data/fdr/fr_party_legal.sql
 @@data/fdr/fr_internal_proc_entity_type.sql
 @@data/fdr/fr_internal_proc_entity.sql
+
 @@data/fdr/fr_general_lookup_type.sql
+
 @@data/fdr/fr_general_lookup.sql
 @@data/fdr/fr_general_code_types.sql
 @@data/fdr/fr_general_codes.sql
@@ -76,6 +78,7 @@ commit;
 @@data/fdr/fr_instr_type_class.sql
 @@data/fdr/fr_instrument_type.sql
 @@data/fdr/fr_instrument.sql
+@@data/fdr/fr_financial_amount.sql
 
 update fdr.fr_general_codes set gc_active = 'A' where gc_gct_code_type_id = '12' and gc_client_code in ('B','P'); 
 commit;
@@ -109,6 +112,8 @@ commit;
 @@grants/tables/fdr/fr_party_type.sql
 @@packages/fdr/pk_legal_entity.hdr
 @@packages/fdr/pk_legal_entity.bdy
+
+conn ~fdr_logon 
 @@indices/fdr/fr_stan_raw_book.sql
 @@indices/fdr/fr_stan_raw_general_codes.sql
 @@indices/fdr/fr_stan_raw_gl_account.sql
@@ -282,8 +287,8 @@ conn ~stn_logon
 @@ri_constraints/stn/validation.sql
 @@ri_constraints/stn/validation_column.sql
 @@ri_constraints/stn/vie_posting_method_ledger.sql
+
 @@data/stn/business_event_category.sql
-@@data/stn/business_event.sql
 @@data/stn/business_type.sql
 @@data/stn/cession_link_type.sql
 @@data/stn/cession_type.sql
@@ -311,22 +316,99 @@ conn ~stn_logon
 @@data/stn/policy_premium_type.sql
 @@data/stn/execution_type.sql
 @@data/stn/vie_code.sql
-@@data/stn/event_type.sql
-@@data/stn/vie_event_type.sql
 @@data/stn/posting_accounting_basis.sql
 @@data/stn/posting_amount_derivation_type.sql
-@@data/stn/posting_amount_derivation.sql
-@@data/stn/posting_amount_negate_flag.sql
+@@data/stn/posting_method.sql
 @@data/stn/posting_financial_calc.sql
 @@data/stn/posting_ledger.sql
-@@data/stn/posting_method.sql
+
+conn ~stn_logon
+@@tables/stn/load_event_hierarchy.sql
+@@tables/stn/load_business_event.sql
+@@tables/stn/load_gaap_to_core.sql
+@@tables/stn/load_posting_method_derivation.sql
+@@tables/stn/load_vie_posting_method.sql
+@@tables/stn/load_fr_posting_driver.sql
+@@tables/stn/load_fr_account_lookup.sql
+
+@@grants/tables/stn/insurance_policy.sql
+@@grants/tables/stn/cession.sql
+@@grants/tables/stn/cession_link.sql
+@@grants/tables/stn/insurance_policy_fx_rate.sql
+@@grants/tables/stn/insurance_policy_tax_jurisd.sql
+@@grants/tables/stn/accounting_basis_ledger.sql
+@@grants/tables/stn/business_type.sql
+@@grants/tables/stn/business_event.sql
+@@grants/tables/stn/business_event_category.sql
+@@grants/tables/stn/execution_type.sql
+@@grants/tables/stn/journal_line_premium_type.sql
+@@grants/tables/stn/journal_line.sql
+@@grants/tables/stn/event_hierarchy_reference.sql
+@@grants/tables/stn/cession_event.sql
+@@grants/tables/stn/posting_method_derivation_le.sql
+@@grants/tables/stn/posting_method_derivation_mtm.sql
+@@grants/tables/stn/posting_method.sql
+@@grants/tables/stn/posting_accounting_basis.sql
+@@grants/tables/stn/vie_posting_method_ledger.sql
+@@grants/tables/stn/event_type.sql
+@@grants/tables/stn/posting_financial_calc.sql
+
+conn ~rdr_logon
+@@views/rdr/rrv_ag_loader_account_lookup.sql
+@@views/rdr/rrv_ag_loader_business_event.sql
+@@views/rdr/rrv_ag_loader_event_hier.sql
+@@views/rdr/rrv_ag_loader_gaap_to_core.sql
+@@views/rdr/rrv_ag_loader_posting_driver.sql
+@@views/rdr/rrv_ag_loader_posting_method.sql
+@@views/rdr/rrv_ag_loader_vie_posting.sql
+@@grants/views/rdr/rrv_ag_loader_account_lookup.sql
+@@grants/views/rdr/rrv_ag_loader_business_event.sql
+@@grants/views/rdr/rrv_ag_loader_event_hier.sql
+@@grants/views/rdr/rrv_ag_loader_gaap_to_core.sql
+@@grants/views/rdr/rrv_ag_loader_posting_driver.sql
+@@grants/views/rdr/rrv_ag_loader_posting_method.sql
+@@grants/views/rdr/rrv_ag_loader_vie_posting.sql
+
+--Logic for clearing/loading the AAH Posting Rules Data Loader from FIDO
+conn ~stn_logon
+@@packages/stn/pk_posting_rules.hdr
+@@packages/stn/pk_posting_rules.bdy
+
+
+conn ~fdr_logon
+delete from fdr.fr_posting_driver;
+delete from fdr.fr_account_lookup;
+delete from fdr.fr_general_lookup where lk_lkt_lookup_type_code IN 
+    ('EVENT_HIERARCHY',
+     'EVENT_CLASS', 
+     'EVENT_GROUP',
+     'EVENT_SUBGROUP',
+     'EVENT_CATEGORY');
+delete from fdr.fr_acc_event_type where aet_input_by NOT IN ('SPS', 'FDR Create');
+commit;
+
+conn ~stn_logon
+delete from stn.business_event;
+delete from stn.posting_method_derivation_le;
+delete from stn.posting_method_derivation_mtm;
+delete from stn.vie_posting_method_ledger;
+delete from stn.vie_event_type;
+delete from stn.event_type;
+commit;
+
+Insert into STN.EVENT_TYPE (EVENT_TYP) values ('IN_POLCY');
+commit;
+
+@@data/fdr/aah_posting_rules_data_loader.sql
+--end aah posting rule loader
+
+@@data/stn/posting_amount_derivation.sql
+@@data/stn/posting_amount_negate_flag.sql
 @@data/stn/posting_method_derivation_gfa.sql
 @@data/stn/posting_method_derivation_ic.sql
-@@data/stn/posting_method_derivation_le.sql
-@@data/stn/posting_method_derivation_mtm.sql
 @@data/stn/posting_method_derivation_rein.sql
 @@data/stn/posting_method_ledger.sql
-@@data/stn/vie_posting_method_ledger.sql
+
 @@procedures/stn/pr_publish_log.sql
 @@packages/stn/pk_eh.hdr
 @@packages/stn/pk_eh.bdy
@@ -360,58 +442,12 @@ conn ~stn_logon
 @@packages/stn/pk_jl.bdy
 @@packages/stn/pk_cev.hdr
 @@packages/stn/pk_cev.bdy
-@@grants/tables/stn/insurance_policy.sql
-@@grants/tables/stn/cession.sql
-@@grants/tables/stn/cession_link.sql
-@@grants/tables/stn/insurance_policy_fx_rate.sql
-@@grants/tables/stn/insurance_policy_tax_jurisd.sql
-@@grants/tables/stn/accounting_basis_ledger.sql
-@@grants/tables/stn/business_type.sql
-@@grants/tables/stn/business_event.sql
-@@grants/tables/stn/business_event_category.sql
-@@grants/tables/stn/execution_type.sql
-@@grants/tables/stn/journal_line_premium_type.sql
-@@grants/tables/stn/journal_line.sql
-@@grants/tables/stn/event_hierarchy_reference.sql
-@@grants/tables/stn/cession_event.sql
-@@grants/tables/stn/posting_method_derivation_le.sql
-@@grants/tables/stn/posting_method_derivation_mtm.sql
-@@grants/tables/stn/posting_method.sql
-@@grants/tables/stn/posting_accounting_basis.sql
-@@grants/tables/stn/vie_posting_method_ledger.sql
-@@grants/tables/stn/event_type.sql
-@@grants/tables/stn/posting_financial_calc.sql
 @@indices/stn/cession.sql
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
 @@indices/stn/cev_valid.sql
 
-/* Posting rules loader */
-conn ~rdr_logon
-@@views/rdr/rrv_ag_loader_account_lookup.sql
-@@views/rdr/rrv_ag_loader_business_event.sql
-@@views/rdr/rrv_ag_loader_event_hier.sql
-@@views/rdr/rrv_ag_loader_gaap_to_core.sql
-@@views/rdr/rrv_ag_loader_posting_driver.sql
-@@views/rdr/rrv_ag_loader_posting_method.sql
-@@views/rdr/rrv_ag_loader_vie_posting.sql
-@@grants/views/rdr/rrv_ag_loader_account_lookup.sql
-@@grants/views/rdr/rrv_ag_loader_business_event.sql
-@@grants/views/rdr/rrv_ag_loader_event_hier.sql
-@@grants/views/rdr/rrv_ag_loader_gaap_to_core.sql
-@@grants/views/rdr/rrv_ag_loader_posting_driver.sql
-@@grants/views/rdr/rrv_ag_loader_posting_method.sql
-@@grants/views/rdr/rrv_ag_loader_vie_posting.sql
-conn ~stn_logon
-@@tables/stn/load_event_hierarchy.sql
-@@tables/stn/load_business_event.sql
-@@tables/stn/load_gaap_to_core.sql
-@@tables/stn/load_posting_method_derivation.sql
-@@tables/stn/load_vie_posting_method.sql
-@@tables/stn/load_fr_posting_driver.sql
-@@tables/stn/load_fr_account_lookup.sql
-@@packages/stn/pk_posting_rules.hdr
-@@packages/stn/pk_posting_rules.bdy
+
 
 /*
  * Capture statistics across STN

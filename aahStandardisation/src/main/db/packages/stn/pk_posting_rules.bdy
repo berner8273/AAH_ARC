@@ -1,4 +1,4 @@
-create or replace package body stn.pk_posting_rules
+create or replace package body     pk_posting_rules
 as
 
 procedure pr_posting_rules_clear
@@ -568,8 +568,8 @@ begin
            , eh_load.is_core_earning_event
            , eh_load.event_category
            , 'EVENT_HIERARCHY'              lk_lkt_lookup_type_code
-           , sysdate                        lk_effective_from
-           , '31-DEC-2099'                  lk_effective_to
+           , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                        lk_effective_from
+           , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')  lk_effective_to
            , 'A'                            lk_active
         from
              stn.load_event_hierarchy  eh_load ) eh_new
@@ -624,8 +624,8 @@ begin
            , min( eh_load.event_class_descr )       event_class_descr
            , min( eh_load.event_class_period_freq ) event_class_period_freq
            , 'EVENT_CLASS'                          lk_lkt_lookup_type_code
-           , sysdate                                lk_effective_from
-           , '31-DEC-2099'                          lk_effective_to
+           , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                          lk_effective_from
+           , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')                          lk_effective_to
            , 'A'                                    lk_active
         from
              stn.load_event_hierarchy  eh_load
@@ -666,8 +666,8 @@ begin
              eh_load.event_grp
            , min( eh_load.event_grp_descr ) event_grp_descr
            , 'EVENT_GROUP'                  lk_lkt_lookup_type_code
-           , sysdate                        lk_effective_from
-           , '31-DEC-2099'                  lk_effective_to
+           , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                  lk_effective_from
+           , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')                  lk_effective_to
            , 'A'                            lk_active
         from
              stn.load_event_hierarchy  eh_load
@@ -705,8 +705,8 @@ begin
              eh_load.event_subgrp
            , min( eh_load.event_subgrp_descr ) event_subgrp_descr
            , 'EVENT_SUBGROUP'                  lk_lkt_lookup_type_code
-           , sysdate                           lk_effective_from
-           , '31-DEC-2099'                     lk_effective_to
+           , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                     lk_effective_from
+           , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')                     lk_effective_to
            , 'A'                               lk_active
         from
              stn.load_event_hierarchy  eh_load
@@ -744,8 +744,8 @@ begin
              eh_load.event_category
            , min( eh_load.event_category_descr ) event_category_descr
            , 'EVENT_CATEGORY'                    lk_lkt_lookup_type_code
-           , sysdate                             lk_effective_from
-           , '31-DEC-2099'                       lk_effective_to
+           , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                       lk_effective_from
+           , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')                       lk_effective_to
            , 'A'                                 lk_active
         from
              stn.load_event_hierarchy  eh_load
@@ -802,8 +802,8 @@ begin
              eh_load.event_typ
            , eh_load.event_typ_descr
            , 'A'                            aet_active
-           , sysdate                        aet_valid_from
-           , '31-DEC-2099'                  aet_valid_to
+           , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                  aet_valid_from
+           , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')                  aet_valid_to
         from
              stn.load_event_hierarchy  eh_load ) eh_new
       on ( faet.aet_acc_event_type_id  = eh_new.event_typ )
@@ -849,7 +849,8 @@ begin
            , be_load.business_event_seq_id
         from
              stn.load_business_event            be_load
-        join stn.business_event_category        bec        on be_load.business_event_category_descr = bec.business_event_category_descr ) be_new
+        join stn.business_event_category        bec        
+            on be_load.business_event_category_descr = bec.business_event_category_cd) be_new
       on ( be.business_event_cd =  be_new.business_event_cd )
       when matched then
         update
@@ -1134,7 +1135,7 @@ begin
             , fpd_new.pd_local_convert_flag
             , fpd_new.pd_comment
             , fpd_new.pd_account_type
-            , greatest( trunc( sysdate ) , fpd_new.pd_valid_from )
+            , fpd_new.pd_valid_from
             , fpd_new.pd_valid_to
             , fpd_new.pd_active
             , fpd_new.pd_action
@@ -1267,7 +1268,7 @@ begin
             , fal_new.al_lookup_20
             , fal_new.al_ccy
             , fal_new.al_account
-            , greatest( trunc( sysdate ) , fal_new.al_valid_from )
+            , fal_new.al_valid_from
             , fal_new.al_valid_to
             , fal_new.al_active
             , fal_new.al_action

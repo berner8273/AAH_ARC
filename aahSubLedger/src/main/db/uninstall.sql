@@ -5,7 +5,7 @@
 --         :
 -- -----------------------------------------------------------------------------------------
 
-whenever sqlerror exit failure
+--whenever sqlerror exit failure
 
 set serveroutput on
 set define ~
@@ -22,15 +22,22 @@ define unittest_login=~8
 
 conn ~fdr_logon
 
+--deletes required for AAH Posting Rules Loader
+delete from fdr.fr_posting_driver;
+delete from fdr.fr_account_lookup;
+delete from fdr.fr_general_lookup where lk_lkt_lookup_type_code IN 
+    ('EVENT_HIERARCHY',
+     'EVENT_CLASS', 
+     'EVENT_GROUP',
+     'EVENT_SUBGROUP',
+     'EVENT_CATEGORY');
+delete from fdr.fr_acc_event_type where aet_input_by NOT IN ('SPS', 'FDR Create');
 delete from fdr.fr_entity_schema;
 delete from fdr.fr_gaap;
 delete from fdr.fr_posting_schema;
 delete from fdr.fr_lpg_config;
 delete from fdr.fr_account_lookup_param;
-delete from fdr.fr_account_lookup;
-delete from fdr.fr_posting_driver;
 delete from fdr.fr_financial_amount;
-delete from fdr.fr_acc_event_type    where aet_input_by not in ( 'FDR Create' , 'SPS' );
 delete from fdr.fr_gl_account_lookup where gal_ga_lookup_key != '1';
 delete from fdr.fr_gl_account        where ga_account_code   != '1';
 commit;

@@ -1,4 +1,4 @@
-whenever sqlerror exit failure
+--whenever sqlerror exit failure
 
 set define on
 set serveroutput on
