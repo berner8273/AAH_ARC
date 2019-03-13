@@ -403,3 +403,25 @@ end;
 /*Replace slr_balances_movement_pkg with custom version*/
 @@packages/slr/slr_balance_movement_pkg.hdr
 @@packages/slr/slr_balance_movement_pkg.bdy
+
+
+--Add compile statements to created packages
+
+conn ~slr_logon
+alter package slr.slr_calendar_pkg compile;
+alter package slr.slr_client_procedures_pkg compile;
+alter package slr.slr_fdr_procedures_pkg compile;
+alter package slr.slr_pkg compile;
+alter package slr.slr_post_journals_pkg compile;
+alter package slr.slr_post_journals_pkg_bak compile;
+alter package slr.slr_reconciliation_pkg compile;
+alter package slr.slr_translate_journals_pkg compile;
+alter package slr.slr_utilities_pkg compile;
+alter package slr.slr_validate_journals_pkg compile;
+
+conn ~fdr_logon
+alter package fdr.pk_legal_entity compile;
+
+conn ~stn_logon
+alter package stn.pk_jl compile;
+alter package stn.pk_cev compile;
