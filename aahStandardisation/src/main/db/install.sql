@@ -252,6 +252,7 @@ conn ~stn_logon
 @@views/stn/hopper_event_group.sql
 @@views/stn/hopper_event_subgroup.sql
 @@views/stn/event_hierarchy_reference.sql
+@@views/stn/scv_combination_check_jlh.sql
 @@ri_constraints/stn/accounting_basis_ledger.sql
 @@ri_constraints/stn/business_event.sql
 @@ri_constraints/stn/broken_feed.sql
@@ -352,7 +353,7 @@ conn ~stn_logon
 @@grants/tables/stn/vie_posting_method_ledger.sql
 @@grants/tables/stn/event_type.sql
 @@grants/tables/stn/posting_financial_calc.sql
-
+@@grants/views/stn/scv_combination_check.jlh.sql
 conn ~rdr_logon
 @@views/rdr/rrv_ag_loader_account_lookup.sql
 @@views/rdr/rrv_ag_loader_business_event.sql
