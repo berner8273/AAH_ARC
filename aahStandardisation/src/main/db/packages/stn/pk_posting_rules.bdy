@@ -801,9 +801,14 @@ begin
      select distinct
              eh_load.event_typ
            , eh_load.event_typ_descr
-           , 'A'                            aet_active
-           , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                  aet_valid_from
-           , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')                  aet_valid_to
+           , 'A'             aet_active
+           , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS') aet_valid_from
+           , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS') aet_valid_to
+           , 'Client Static' aet_si_sys_inst_id
+           , 'STN'           aet_auth_by
+           , 'A'             aet_auth_status
+           , 'N'             aet_cancel_flag
+           , 'N'             aet_leg_flag
         from
              stn.load_event_hierarchy  eh_load ) eh_new
       on ( faet.aet_acc_event_type_id  = eh_new.event_typ )
@@ -818,13 +823,23 @@ begin
             , faet.aet_acc_event_type_name
             , faet.aet_active
             , faet.aet_valid_from
-            , faet.aet_valid_to )
+            , faet.aet_valid_to 
+            , faet.aet_si_sys_inst_id
+            , faet.aet_auth_by
+            , faet.aet_auth_status
+            , faet.aet_cancel_flag
+            , faet.aet_leg_flag)
         values
             ( eh_new.event_typ
             , eh_new.event_typ_descr
             , eh_new.aet_active
             , eh_new.aet_valid_from
-            , eh_new.aet_valid_to )
+            , eh_new.aet_valid_to 
+            , eh_new.aet_si_sys_inst_id
+            , eh_new.aet_auth_by
+            , eh_new.aet_auth_status
+            , eh_new.aet_cancel_flag
+            , eh_new.aet_leg_flag)
     ;
     v_no_merge_eh_et1 := SQL%ROWCOUNT;
     p_no_update_eh := v_no_merge_eh
