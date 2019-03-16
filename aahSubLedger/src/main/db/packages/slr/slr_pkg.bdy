@@ -3814,11 +3814,12 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                                   ON     JH.JH_JRNL_DATE = JL.JL_EFFECTIVE_DATE
                                      AND JH.JH_JRNL_EPG_ID = JL.JL_EPG_ID
                                      AND JH.JH_JRNL_ID = JL.JL_JRNL_HDR_ID
-                                     AND JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y'
+                                     --AND JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y'
                                JOIN SLR.SLR_FAK_BOP_AMOUNTS_TMP2 TMP2
                                   ON     JL.JL_FAK_ID = TMP2.FDB_FAK_ID
                                      AND JH.JH_JRNL_ENTITY = TMP2.FDB_ENTITY
                                      AND JH.JH_JRNL_EPG_ID = TMP2.FDB_EPG_ID
+                          WHERE JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y' AND 1=1
                           GROUP BY JL_FAK_ID,
                                JL_EFFECTIVE_DATE,
                                JL_PERIOD_YEAR,
