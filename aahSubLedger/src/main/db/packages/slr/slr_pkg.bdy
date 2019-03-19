@@ -3202,39 +3202,37 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
        COMMIT;
 
        /*Post the Y/E cleardown entries to the lastest record for each ID.  If no prior record, create one for December of the prior year*/
-       MERGE INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP3 TMP3
+       MERGE /*+parallel*/ INTO SLR.SLR_EBA_BOP_AMOUNTS_TMP3 TMP3
                USING (
-                        SELECT JL_FAK_ID,
+                        SELECT /*+parallel*/ JL_FAK_ID,
                                JL_EBA_ID,
                                JL_EFFECTIVE_DATE,
                                JL_PERIOD_YEAR,
                                JL_EPG_ID,
-                               JH_JRNL_ENTITY,
+                               JL_ENTITY,
                                SUM(JL_TRAN_AMOUNT)  JL_TRAN_AMOUNT,
                                SUM(JL_BASE_AMOUNT)  JL_BASE_AMOUNT,
                                SUM(JL_LOCAL_AMOUNT) JL_LOCAL_AMOUNT
                           FROM SLR_JRNL_HEADERS JH
                                INNER JOIN SLR_JRNL_LINES JL
-                                  ON     JH.JH_JRNL_DATE = JL.JL_EFFECTIVE_DATE
-                                     AND JH.JH_JRNL_EPG_ID = JL.JL_EPG_ID
-                                     AND JH.JH_JRNL_ID = JL.JL_JRNL_HDR_ID
-                                     AND JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y'
+                                  ON JH.JH_JRNL_ID = JL.JL_JRNL_HDR_ID
                                JOIN SLR.SLR_EBA_BOP_AMOUNTS_TMP2 TMP2
                                   ON     JL.JL_FAK_ID = TMP2.EDB_FAK_ID
                                      AND JL.JL_EBA_ID = TMP2.EDB_EBA_ID
-                                     AND JH.JH_JRNL_ENTITY = TMP2.EDB_ENTITY
-                                     AND JH.JH_JRNL_EPG_ID = TMP2.EDB_EPG_ID
-                         GROUP BY JL_FAK_ID,
+                                     AND JL.JL_ENTITY = TMP2.EDB_ENTITY
+                                     AND JL.JL_EPG_ID = TMP2.EDB_EPG_ID
+						WHERE JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y'
+                        GROUP BY JL_FAK_ID,
                                JL_EBA_ID,
                                JL_EFFECTIVE_DATE,
                                JL_PERIOD_YEAR,
                                JL_EPG_ID,
-                               JH_JRNL_ENTITY
+                               JL_ENTITY
                       ) TMP
                 ON (
                           TMP.JL_FAK_ID = TMP3.EDB_FAK_ID
                       AND TMP.JL_EBA_ID = TMP3.EDB_EBA_ID
-                      AND TMP.JH_JRNL_ENTITY = TMP3.EDB_ENTITY
+                      AND TMP.JL_ENTITY = TMP3.EDB_ENTITY
                       AND TMP.JL_EPG_ID = TMP3.EDB_EPG_ID
                       AND TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY') = TMP3.YEAR
                       AND TMP3.LAST_IN_YR = 'Y'
@@ -3242,7 +3240,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                     )
               WHEN MATCHED
               THEN
-                 UPDATE
+                 UPDATE /*+parallel*/
                    SET TMP3.EDB_TRAN_DAILY_MOVEMENT = TMP3.EDB_TRAN_DAILY_MOVEMENT + TMP.JL_TRAN_AMOUNT,
                        TMP3.EDB_TRAN_MTD_BALANCE = TMP3.EDB_TRAN_MTD_BALANCE + TMP.JL_TRAN_AMOUNT,
                        TMP3.EDB_TRAN_YTD_BALANCE = TMP3.EDB_TRAN_YTD_BALANCE + TMP.JL_TRAN_AMOUNT,
@@ -3259,7 +3257,7 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
 
               WHEN NOT MATCHED
               THEN
-                 INSERT
+                 INSERT /*+parallel*/
                   (
                       EDB_FAK_ID
                     , EDB_EBA_ID
@@ -3315,9 +3313,9 @@ PROCEDURE pGENERATE_EBA_BOP_VALUES AS
                     , 1
                     , 1
                     , v_ag_process_dt
-                    , TMP.JH_JRNL_ENTITY
+                    , TMP.JL_ENTITY
                     , TMP.JL_EPG_ID
-                    , TMP.JL_FAK_ID||'\\'||TMP.JL_EBA_ID ||'\\'||'50'||'\\'||TMP.JH_JRNL_ENTITY||'\\'||TMP.JL_EPG_ID
+                    , TMP.JL_FAK_ID||'\\'||TMP.JL_EBA_ID ||'\\'||'50'||'\\'||TMP.JL_ENTITY||'\\'||TMP.JL_EPG_ID
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'12'
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'4'
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')
@@ -3798,36 +3796,34 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
        COMMIT;
 
        /*Post the Y/E cleardown entries to the lastest record for each ID.  If no prior record, create one for December of the prior year*/
-       MERGE INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP3 TMP3
+       MERGE /*+parallel*/ INTO SLR.SLR_FAK_BOP_AMOUNTS_TMP3 TMP3
                USING (
-                        SELECT JL_FAK_ID,
+                        SELECT /*+parallel*/ JL_FAK_ID,
                                JL_EFFECTIVE_DATE,
                                JL_PERIOD_YEAR,
                                JL_EPG_ID,
-                               JH_JRNL_ENTITY,
+                               JL_ENTITY,
                                SUM(JL_TRAN_AMOUNT)  JL_TRAN_AMOUNT,
                                SUM(JL_BASE_AMOUNT)  JL_BASE_AMOUNT,
                                SUM(JL_LOCAL_AMOUNT) JL_LOCAL_AMOUNT
 
                           FROM SLR_JRNL_HEADERS JH
                                INNER JOIN SLR_JRNL_LINES JL
-                                  ON     JH.JH_JRNL_DATE = JL.JL_EFFECTIVE_DATE
-                                     AND JH.JH_JRNL_EPG_ID = JL.JL_EPG_ID
-                                     AND JH.JH_JRNL_ID = JL.JL_JRNL_HDR_ID
+                                  ON JH.JH_JRNL_ID = JL.JL_JRNL_HDR_ID
                                JOIN SLR.SLR_FAK_BOP_AMOUNTS_TMP2 TMP2
                                   ON     JL.JL_FAK_ID = TMP2.FDB_FAK_ID
-                                     AND JH.JH_JRNL_ENTITY = TMP2.FDB_ENTITY
-                                     AND JH.JH_JRNL_EPG_ID = TMP2.FDB_EPG_ID
+                                     AND JL.JL_ENTITY = TMP2.FDB_ENTITY
+                                     AND JL.JL_EPG_ID = TMP2.FDB_EPG_ID
                           WHERE JH.JH_JRNL_INTERNAL_PERIOD_FLAG = 'Y' AND 1=1
                           GROUP BY JL_FAK_ID,
                                JL_EFFECTIVE_DATE,
                                JL_PERIOD_YEAR,
                                JL_EPG_ID,
-                               JH_JRNL_ENTITY
+                               JL_ENTITY
                       ) TMP
                 ON (
                           TMP.JL_FAK_ID = TMP3.FDB_FAK_ID
-                      AND TMP.JH_JRNL_ENTITY = TMP3.FDB_ENTITY
+                      AND TMP.JL_ENTITY = TMP3.FDB_ENTITY
                       AND TMP.JL_EPG_ID = TMP3.FDB_EPG_ID
                       AND TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY') = TMP3.YEAR
                       AND TMP3.LAST_IN_YR = 'Y'
@@ -3835,7 +3831,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                     )
               WHEN MATCHED
               THEN
-                 UPDATE
+                 UPDATE /*+parallel*/
                    SET TMP3.FDB_TRAN_DAILY_MOVEMENT = TMP3.FDB_TRAN_DAILY_MOVEMENT + TMP.JL_TRAN_AMOUNT,
                        TMP3.FDB_TRAN_MTD_BALANCE = TMP3.FDB_TRAN_MTD_BALANCE + TMP.JL_TRAN_AMOUNT,
                        TMP3.FDB_TRAN_YTD_BALANCE = TMP3.FDB_TRAN_YTD_BALANCE + TMP.JL_TRAN_AMOUNT,
@@ -3852,7 +3848,7 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
 
               WHEN NOT MATCHED
               THEN
-                 INSERT
+                 INSERT /*+parallel*/
                   (
                       FDB_FAK_ID
                     , FDB_BALANCE_DATE
@@ -3906,9 +3902,9 @@ PROCEDURE pGENERATE_FAK_BOP_VALUES AS
                     , 1
                     , 1
                     , v_ag_process_dt
-                    , TMP.JH_JRNL_ENTITY
+                    , TMP.JL_ENTITY
                     , TMP.JL_EPG_ID
-                    , TMP.JL_FAK_ID||'\\'||'50'||'\\'||TMP.JH_JRNL_ENTITY||'\\'||TMP.JL_EPG_ID
+                    , TMP.JL_FAK_ID||'\\'||'50'||'\\'||TMP.JL_ENTITY||'\\'||TMP.JL_EPG_ID
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'12'
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')||'4'
                     , TO_CHAR(TMP.JL_EFFECTIVE_DATE - 1, 'YYYY')

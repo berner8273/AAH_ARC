@@ -278,6 +278,9 @@ drop view         slr.vbmfxreval_eba_ag_r0_ukgaap;
 drop view         slr.v_slr_fxreval_parameters;
 drop view         slr.v_slr_fxreval_run_values;
 drop index 		  slr.idx_jrnl_lines_slrprocess;
+drop index 		  SLR.IDX_JH_JRNL_INTPRD_FLAG;
+alter table 	  SLR.SLR_JRNL_HEADERS DROP CONSTRAINT PK_JRNL_HDR_P;
+
 delete from       slr.slr_process_source             where upper(sps_db_object_name) like 'VBMFXREVAL_EBA_AG%';
 delete from       slr.slr_process_config_detail      where pcd_pc_p_process = 'FXREVALUE' and pcd_pc_config <> 'FXREVALUE';
 delete from       slr.slr_process_config             where pc_p_process = 'FXREVALUE' and pc_config <> 'FXREVALUE';
