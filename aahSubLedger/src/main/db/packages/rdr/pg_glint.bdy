@@ -1,4 +1,4 @@
-create or replace package body rdr.pg_glint AS
+create or replace package body     pg_glint AS
 /* Package Body for GL Interface. */
 
 
@@ -47,7 +47,7 @@ Begin
       pupString := 'to_char(' || pupString || ',' ||  sys.dbms_assert.enquote_literal(pinDateFormat) || ')';
     Elsif pinTargetLen >= FDR.PG_COMMON.gcMaxSize_Timestamp Then
       /* Target is big enough so cast directly. */
-      pupString := 'cast(' || pupString || ' as ' || FDR.PG_COMMON.gcDataType_Varchar || '(' || pinTargetLen || ')';  
+      pupString := 'cast(' || pupString || ' as ' || FDR.PG_COMMON.gcDataType_Varchar || '(' || pinTargetLen || ')';
     Else
       sys.dbms_standard.raise_application_error(-20000,'Cannot convert ' || pinSourceType || ' to ' || pinTargetType || '. Target column size not compatible for source : ID=' || to_char(pinLookupKeyID),False);
     End If;
@@ -210,10 +210,10 @@ Begin
      For manual runs:
        Collect only the journals that have been authorised (we assume these newly created journals have not yet been sent).
        Filter out any that are marked as deferred (until the batch run). */
-  mySQL_JT := 'Insert ' || mySQLHintTempInsert || ' into rr_glint_temp_journal (jh_jrnl_id,jh_jrnl_date,jh_jrnl_entity,jh_jrnl_epg_id,previous_flag,lkt_lookup_type_code)'
-           || ' Select ' || mySQLHintTempSelect || ' jh.jh_jrnl_id,jh.jh_jrnl_date,jh.jh_jrnl_entity,jh.jh_jrnl_epg_id,jh.previous_flag,lkt_lookup_type_code'
+  mySQL_JT := 'Insert ' || mySQLHintTempInsert || ' into rr_glint_temp_journal (jh_jrnl_id,jh_jrnl_date,jh_jrnl_entity,jh_jrnl_epg_id,jh_jrnl_type,jh_jrnl_internal_period_flag,jh_jrnl_description,previous_flag,lkt_lookup_type_code)'
+           || ' Select ' || mySQLHintTempSelect || ' jh.jh_jrnl_id,jh.jh_jrnl_date,jh.jh_jrnl_entity,jh.jh_jrnl_epg_id,jh.jh_jrnl_type,jh.jh_jrnl_internal_period_flag,jh.jh_jrnl_description,jh.previous_flag,lkt_lookup_type_code'
            || ' from ('
-           || ' Select jh_jrnl_id,jh_jrnl_date,jh_jrnl_entity,jh_jrnl_epg_id,jh_jrnl_type,' || sys.dbms_assert.enquote_literal(FDR.PG_COMMON.gcYesOrNo_No) || ' as previous_flag'
+           || ' Select jh_jrnl_id,jh_jrnl_date,jh_jrnl_entity,jh_jrnl_epg_id,jh_jrnl_type,jh_jrnl_internal_period_flag,jh_jrnl_description,' || sys.dbms_assert.enquote_literal(FDR.PG_COMMON.gcYesOrNo_No) || ' as previous_flag'
            || '   from rcv_glint_journal';
   If pinEPGID is not null Then
     mySQL_JT := mySQL_JT
@@ -233,7 +233,7 @@ Begin
              || '                    where jh_jrnl_id = rgjm_input_jrnl_id)'
              || ' Union All'
              /* If the configuration is (probably wrongly) setup to split a GL journal across batches (and therefore AAH journals), ensure that this only collects the distinct AAH journals. */
-             || ' Select jh_jrnl_id, max(jh_jrnl_date),max(jh_jrnl_entity), max(jh_jrnl_epg_id) ,max(jh_jrnl_type),' || sys.dbms_assert.enquote_literal(FDR.PG_COMMON.gcYesOrNo_Yes) || ' as previous_flag'
+             || ' Select jh_jrnl_id, max(jh_jrnl_date),max(jh_jrnl_entity), max(jh_jrnl_epg_id),max(jh_jrnl_type),max(jh_jrnl_internal_period_flag),max(jh_jrnl_description),' || sys.dbms_assert.enquote_literal(FDR.PG_COMMON.gcYesOrNo_Yes) || ' as previous_flag'
              || '   from rcv_glint_journal'
              || '   join rr_glint_journal_mapping on jh_jrnl_id = rgjm_input_jrnl_id'
              || '   join rr_glint_journal on rgj_id = rgjm_rgj_id'
@@ -264,12 +264,12 @@ Begin
     FDR.PG_COMMON.pExecuteSQL(pinSQL => 'Begin ' || sys.dbms_assert.sql_object_name(lcPackage_Custom || '.' || pinCustomProcess) || '(pinControlID => ' || PG_GLINT.lgControlID || '); End;');
   End If;
 
-  /* Collect the distinct mapping structures to use from the pending journals that were written to the temporary table. */ 
+  /* Collect the distinct mapping structures to use from the pending journals that were written to the temporary table. */
   dbms_application_info.set_action(NULL);
   For cRec1 in (Select distinct(lkt_lookup_type_code) as lkt_lookup_type_code
                   from rr_glint_temp_journal) Loop
     dbms_application_info.set_action('Generating SQL for '||cRec1.lkt_lookup_type_code);
-    /* For each mapping structure, collect each of the configuration records to be able to 
+    /* For each mapping structure, collect each of the configuration records to be able to
        construct the dynamic SQL that will insert into the various interface tables as follows:
          rr_glint_temp_journal_line (configurable mappings defined in fr_general_lookup - not including those attributes that are sourced from the GLINT tables)
          rr_glint_batch_control (hard-coded from temp table with some configuration mappings defined in fr_general_lookup)
@@ -478,7 +478,7 @@ Begin
       /* Ensure that in the case of multiple configs of source/target, that only one of them is added to the relevant part of the Journal Line SQL statements.
          The difference for these will be mapping the same source attribute to different batch control attributes. */
       If cRec2."order_target" = 1 Then
-      
+
         /* Determine whether the mapping attribute is from a parent entity and add to the relevant part of the SQL.
            For the temporary journal line insert, these columns are omitted from the SQL as it is too early for those. */
         If upper(cRec2.lk_match_key2) not in (upper(lcEntity_GLINTBatch), upper(lcEntity_GLINTJournal)) Then
@@ -495,7 +495,7 @@ Begin
 
           /* Journal Line Select. */
           mySelect_JL := mySelect_JL || 'rr_glint_temp_journal_line.' || sys.dbms_assert.enquote_name(cRec2.lk_lookup_value3) || ',';
-          
+
           /* Determine whether to select for an aggregate query. */
           If cRec2.lk_match_key7 = FDR.PG_COMMON.gcYesOrNo_No Then
             mySelect_JLT_Agg := mySelect_JLT_Agg || myTemp2;
@@ -514,14 +514,14 @@ Begin
             myGroup_JL := myGroup_JL || sys.dbms_assert.enquote_name(cRec2.lk_lookup_value3) || ',';
           End If;
           mySelect_JLT_Agg := mySelect_JLT_Agg || ' as ' || sys.dbms_assert.enquote_name(cRec2.lk_lookup_value3) || ',';
-        
-        Else  
+
+        Else
           If cRec2.lk_match_key7 is not null Then
             sys.dbms_standard.raise_application_error(-20000,'Cannot aggregate by an attribute for a parent output table : ID=' || to_char(cRec2.lk_lookup_key_id),False);
           End If;
           /* Journal Line Insert. */
           mySQL_JL := mySQL_JL || sys.dbms_assert.enquote_name(cRec2.lk_lookup_value3) || ',';
-        
+
           /* Journal Line Select - Attribute is from a parent table. */
           mySelect_JL := mySelect_JL || myTemp || ' as ' || sys.dbms_assert.enquote_name(cRec2.lk_lookup_value3) || ',';
         End If;
@@ -539,7 +539,7 @@ Begin
           myHaving_JL := myHaving_JL || ' and ' || sys.dbms_assert.enquote_name(cRec2.lk_lookup_value3) || ' ' || cRec2.lk_match_key6;
         Else
           /* Not a grouping attribute, therefore add to the "where" clause to filter out the source records before writing to the temp journal line table. */
-          myWhere_JLT := myWhere_JLT || ' and ' || cRec2.lk_match_key6;  
+          myWhere_JLT := myWhere_JLT || ' and ' || cRec2.lk_match_key6;
         End If;
       End If;
 
@@ -549,7 +549,7 @@ Begin
         myWhere_JLT_In := myWhere_JLT_In ||' and not (' || cRec2.lk_match_key8 || ')';
       End If;
 
-      /* Batch Control. */     
+      /* Batch Control. */
       If cRec2.lk_lookup_value4 is not null and cRec2.lk_lookup_value5 is null Then
         sys.dbms_standard.raise_application_error(-20000,'The batch target key has been provided without a batch target column : ID=' || to_char(cRec2.lk_lookup_key_id),False);
       End If;
@@ -736,7 +736,7 @@ Begin
              || ' from (';
     If Not(myAggregation) or (myAggregation and myWhere_JLT_Ex is not null) Then
       /* When aggregating journal lines, only include this non-aggregated query if there are exceptions (myWhere_JLT_Ex). */
-      mySQL_BC := mySQL_BC           
+      mySQL_BC := mySQL_BC
                || 'Select rgbc_id,rgbc_process_type,rgbc_load_type,'
                || mySelect_BC_NonAgg
                || ' from rr_glint_temp_journal_line'
@@ -879,7 +879,7 @@ Begin
 
   FDR.PG_COMMON.pLogDebug(pinMessage => 'End GL Interface');
   dbms_application_info.set_action(NULL);
-  
+
 Exception
 When Others Then
   Rollback;
@@ -919,5 +919,4 @@ When Others Then
 End pProcess;
 
 End pg_glint;
-
 /
