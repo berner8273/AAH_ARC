@@ -1,15 +1,15 @@
 create or replace view rdr.rrv_ag_glint_jl_manual
 as
 select --In progress manual journals
-       gjlu.jlu_jrnl_hdr_id       rgjl_id
+       null				          rgjl_id
      , null                       rgjl_rgj_id
      , gjlu.jlu_entity            business_unit_gl
      , null                       journal_id
      , null                       journal_date
      , null                       journal_line
      , null                       rgjl_rgj_rgbc_id
-     , null                       rgjl_aah_journal
-     , null                       rgjl_aah_journal_line
+     , gjlu.jlu_jrnl_hdr_id       rgjl_aah_journal
+     , gjlu.jlu_jrnl_line_number  rgjl_aah_journal_line
      , null                       input_time
      , null                       input_user
      , null                       modified_time
@@ -127,8 +127,9 @@ select --In progress manual journals
       left join gui.gui_jrnl_line_errors      jle   on jl.jlu_jrnl_hdr_id          = jle.jle_jrnl_hdr_id
       left join slr.slr_ext_jrnl_types        jt    on jt.ejt_type                 = jh.jhu_jrnl_type       ) gjlu
  group by
- 			 gjlu.jlu_jrnl_hdr_id
-     , gjlu.jlu_entity
+ 	   gjlu.jlu_jrnl_hdr_id
+     , gjlu.jlu_jrnl_line_number
+	 , gjlu.jlu_entity
      , gjlu.jlu_segment_1
      , gjlu.jlu_effective_date
      , gjlu.jlu_tran_ccy
