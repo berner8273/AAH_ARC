@@ -249,6 +249,8 @@ drop table        rdr.rr_interface_control;
 drop table        rdr.rr_glint_temp_journal;
 drop index        rdr.xie1gl_previous_flag;
 drop table        rdr.rr_glint_temp_journal_line;
+drop index 		  rdr.idx_rr_glint_to_slr_ag_hdr;
+alter table		  rdr.rr_glint_to_slr_ag drop constraint "xpk_rr_glint_to_slr_ag";
 drop table        rdr.rr_glint_to_slr_ag;
 drop sequence     rdr.sqrr_glint_journal_line;
 drop sequence     rdr.sqrr_interface_control;
