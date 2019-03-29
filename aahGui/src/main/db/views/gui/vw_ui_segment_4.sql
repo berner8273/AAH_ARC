@@ -16,5 +16,6 @@ as
           null as "ENTITY"
      from fdr.fr_party_legal pl
     where pl.pl_pt_party_type_id in 
-    (select pt_party_type_id from fdr.fr_party_type where pt_party_type_name = 'Ledger Entity')        
+    (select pt_party_type_id from fdr.fr_party_type 
+    where pt_party_type_name = 'Ledger Entity' and pl_client_text7='Y')        
 ;
