@@ -61,17 +61,6 @@ conn ~slr_logon
 delete from slr.slr_entity_proc_group;
 commit;
 
--- update journal type descriptions for manual journal entries by gui
-update slr.slr_ext_jrnl_types set ejt_madj_flag = 'N' where ejt_type not in ('MADJPERB','MADJBDPPE','MADJREVPE');
-update slr.slr_ext_jrnl_types set ejt_madj_flag = 'Y' where ejt_type in ('MADJPERB','MADJBDPPE','MADJREVPE');
-update slr.slr_ext_jrnl_types set ejt_active_flag = 'I' where ejt_type not in ('MADJPERB','MADJBDPPE','MADJREVPE','PERC','FXREVALUE','PLRETEARNINGS');
-update slr.slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type in ('MADJPERB','MADJBDPPE','MADJREVPE','PERC','FXREVALUE','PLRETEARNINGS');
-update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE prior period' where ejt_type = 'MADJPERB';
-update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE open period'  where ejt_type = 'MADJBDPPE';
-update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE rev open period' where ejt_type = 'MADJREVPE';
-update slr_ext_jrnl_types set ejt_short_desc = 'Manual JE current period' where ejt_type = 'MADJPERC';
-commit;
-
 
 @@data/slr/slr_ledgers.sql
 @@data/slr/slr_entity_sets.sql
@@ -81,6 +70,7 @@ commit;
 @@data/slr/slr_fak_segment_6.sql
 @@data/slr/slr_fak_segment_7.sql
 @@data/slr/slr_fak_segment_8.sql
+@@data/slr/slr_ext_jrnl_types.sql
 
 
 --Backup and replace with modified view
