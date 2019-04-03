@@ -166,7 +166,7 @@ and not exists (
            --and padt.amount_typ_descr   in ( 'DERIVED' , 'DERIVED_PLUS' )
              
         
-        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'POSTING_ACCOUNT_DERIVATION' );
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'POSTING_ACCOUNT_DERIVATION' );
         insert into stn.vie_posting_account_derivation
         select distinct
                fpd.pd_posting_schema     posting_schema
@@ -194,7 +194,7 @@ and not exists (
                          where et.event_typ = fpd.pd_aet_event_type )
              ;
         
-        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'VIE_POSTING_ACCOUNT_DERIVATION' );
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'VIE_POSTING_ACCOUNT_DERIVATION' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed posting_account_derivation', NULL, NULL, NULL, NULL);
         insert into stn.cev_data
         with
@@ -602,7 +602,7 @@ and not exists (
                    )
         ;
         
-        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_PREMIUM_TYP_OVERRIDE' );
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_PREMIUM_TYP_OVERRIDE' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_premium_typ_override', NULL, NULL, NULL, NULL);
         insert into stn.cev_mtm_data
                  select /*+ parallel*/
@@ -680,7 +680,7 @@ and not exists (
         
         v_no_cev_mtm_data := sql%rowcount;
         
-        --dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_MTM_DATA' );
+        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_MTM_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_mtm_data', 'v_no_cev_mtm_data', NULL, v_no_cev_mtm_data, NULL);
         insert into stn.cev_gaap_fut_accts_data
         with gfa_1 as
@@ -778,7 +778,7 @@ and not exists (
                                    join stn.posting_ledger                pldgr    on pml.ledger_id       = pldgr.ledger_id
                                    join stn.posting_accounting_basis      abasis   on pml.output_basis_id = abasis.basis_id
                                    join stn.posting_financial_calc        fincalc  on pml.fin_calc_id     = fincalc.fin_calc_id
-                                   left join stn.posting_method_derivation_le  pmdle    on pmdle.le_cd    = cev_data.business_unit
+                                   left join stn.posting_method_derivation_le  pmdle    on pmdle.le_cd         = cev_data.business_unit
                                 where cev_data.gaap_fut_accts_flag = 'Y'
                                 and exists (
                                          select null
@@ -888,7 +888,7 @@ and not exists (
         
         v_no_cev_gaap_fut_accts_data := sql%rowcount;
         
-        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_GAAP_FUT_ACCTS_DATA' );
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_GAAP_FUT_ACCTS_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_gaap_fut_accts_data', 'v_no_cev_gaap_fut_accts_data', NULL, v_no_cev_gaap_fut_accts_data, NULL);
         -- Derived plus logic no longer needed in cession event standardisation
         -- UPR change logic is done in upstream system
@@ -1253,7 +1253,7 @@ and not exists (
         
         v_no_cev_non_intercompany_data := sql%rowcount;
         
-        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_NON_INTERCOMPANY_DATA' );
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_NON_INTERCOMPANY_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_non_intercompany_data', 'v_no_cev_non_intercompany_data', NULL, v_no_cev_non_intercompany_data, NULL);
         insert into stn.cev_intercompany_data
         with intercompany_data
@@ -1627,7 +1627,7 @@ and not exists (
         
         v_no_cev_intercompany_data := sql%rowcount;
         
-        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_INTERCOMPANY_DATA' );
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_INTERCOMPANY_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_intercompany_data', 'v_no_cev_intercompany_data', NULL, v_no_cev_intercompany_data, NULL);
         insert into stn.cev_vie_data
         with vie_event_cd
@@ -2098,7 +2098,7 @@ and not exists (
         
         v_no_cev_vie_data := sql%rowcount;
         
-        --dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_VIE_DATA' );
+        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_VIE_DATA' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_vie_data', 'v_no_cev_vie_data', NULL, v_no_cev_vie_data, NULL);
         INSERT INTO HOPPER_CESSION_EVENT
             (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP)
