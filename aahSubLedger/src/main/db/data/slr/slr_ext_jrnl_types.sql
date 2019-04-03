@@ -10,16 +10,26 @@ update slr.slr_ext_jrnl_types set ejt_short_desc = 'MADJ Rev AcctDt = System Dat
 update slr.slr_ext_jrnl_types set ejt_short_desc = 'MADJ Rev AcctDt < System Date' where ejt_type = 'MADJREVOD';
 commit;
 
-INSERT INTO slr.slr_ext_jrnl_types (ejt_type, ejt_description, ejt_short_desc, ejt_jt_type, ejt_balance_type_1, ejt_balance_type_2,
-    ejt_madj_flag, ejt_requires_authorisation, ejt_eff_ejtr_code, ejt_rev_ejtr_code, ejt_rev_validation_flag, ejt_client_flag1,
-    ejt_active_flag, ejt_created_by, ejt_created_on, ejt_amended_by, ejt_amended_on) 
-    VALUES ('MADJ_NONREVERSING', 'Non-Reversing Manual JE', 'MADJ non-reversing', 'Permanent', 50, 20, 'Y', 'Y', 'NONE',
-    'NONE', 'N', 0, 'A', 'SLR', '03-APR-2019', 'SLR', '03-APR-2019');
-commit;
+declare
+  count_madj integer;
+begin
+    select count(*) into count_madj from slr.slr_ext_jrnl_types where ejt_type = 'MADJ_NONREVERSING';
+    if count_madj < 1 then
+        INSERT INTO slr.slr_ext_jrnl_types (ejt_type, ejt_description, ejt_short_desc, ejt_jt_type, ejt_balance_type_1, ejt_balance_type_2,
+            ejt_madj_flag, ejt_requires_authorisation, ejt_eff_ejtr_code, ejt_rev_ejtr_code, ejt_rev_validation_flag, ejt_client_flag1,
+            ejt_active_flag, ejt_created_by, ejt_created_on, ejt_amended_by, ejt_amended_on) 
+            VALUES ('MADJ_NONREVERSING', 'Non-Reversing Manual JE', 'MADJ non-reversing', 'Permanent', 50, 20, 'Y', 'Y', 'NONE',
+            'NONE', 'N', 0, 'A', 'SLR', '03-APR-2019', 'SLR', '03-APR-2019');
+    end if;  
 
-INSERT INTO slr.slr_ext_jrnl_types ( ejt_type, ejt_description,ejt_short_desc, ejt_jt_type, ejt_balance_type_1, ejt_balance_type_2,
-    ejt_madj_flag, ejt_requires_authorisation, ejt_eff_ejtr_code, ejt_rev_ejtr_code, ejt_rev_validation_flag, ejt_client_flag1,
-    ejt_active_flag, ejt_created_by, ejt_created_on, ejt_amended_by, ejt_amended_on) 
-    VALUES ( 'MADJ_REVERSING', 'Auto-Reversing Manual JE', 'MADJ auto-reversing', 'Reversing', 50, 20, 'Y', 'Y', 'NONE',
-    'NONE', 'N', 0, 'A', 'SLR', '03-APR-2019','SLR', '03-APR-2019');
+    select count(*) into count_madj from slr.slr_ext_jrnl_types where ejt_type = 'MADJ_REVERSING';
+    if count_madj < 1 then
+        INSERT INTO slr.slr_ext_jrnl_types ( ejt_type, ejt_description,ejt_short_desc, ejt_jt_type, ejt_balance_type_1, ejt_balance_type_2,
+            ejt_madj_flag, ejt_requires_authorisation, ejt_eff_ejtr_code, ejt_rev_ejtr_code, ejt_rev_validation_flag, ejt_client_flag1,
+            ejt_active_flag, ejt_created_by, ejt_created_on, ejt_amended_by, ejt_amended_on) 
+            VALUES ( 'MADJ_REVERSING', 'Auto-Reversing Manual JE', 'MADJ auto-reversing', 'Reversing', 50, 20, 'Y', 'Y', 'NONE',
+            'NONE', 'N', 0, 'A', 'SLR', '03-APR-2019','SLR', '03-APR-2019');
+    end if;            
+end;
+/    
 commit;
