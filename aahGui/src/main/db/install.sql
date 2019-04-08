@@ -84,3 +84,6 @@ commit;
 @@views/gui/vw_ui_madj_source_system.sql
 @@views/gui/uiv_journal_types.sql
 @@grants/views/vw_ui_madj_source_system.sql
+@@packages/gui/pgui_manual_journal.bdy
+@@packages/gui/pgui_manual_journal.hdr
+
