@@ -411,10 +411,6 @@ alter package slr.slr_translate_journals_pkg compile;
 alter package slr.slr_utilities_pkg compile;
 alter package slr.slr_validate_journals_pkg compile;
 
-conn ~gui_logon
-@@packages/gui/pgui_manual_journal.hdr
-@@packages/gui/pgui_manual_journal.bdy
-
 conn ~fdr_logon
 alter package fdr.pk_legal_entity compile;
 
