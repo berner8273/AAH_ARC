@@ -303,6 +303,8 @@ conn ~gui_logon
 @@grants/tables/gui/gui_jrnl_headers_unposted.sql
 @@data/gui/ui_general_lookup.sql
 @@data/gui/ui_gen_lookup_type_properties.sql
+@@packages/gui/pgui_manual_journal.hdr
+@@packages/gui/pgui_manual_journal.bdy
 
 conn ~slr_logon
 
@@ -417,3 +419,4 @@ alter package fdr.pk_legal_entity compile;
 conn ~stn_logon
 alter package stn.pk_jl compile;
 alter package stn.pk_cev compile;
+
