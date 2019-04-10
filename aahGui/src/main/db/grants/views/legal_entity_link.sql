@@ -1,0 +1,1 @@
+﻿grant select on stn.legal_entity_link to gui with grant option;
