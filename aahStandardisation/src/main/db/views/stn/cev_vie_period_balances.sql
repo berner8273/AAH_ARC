@@ -1,4 +1,4 @@
-CREATE OR REPLACE FORCE EDITIONABLE VIEW "STN"."CEV_VIE_PERIOD_BALANCES" ("TRANSACTION_BALANCE", "REPORTING_BALANCE", "FUNCTIONAL_BALANCE", "STREAM_ID", "BUSINESS_UNIT", "SUB_ACCOUNT", "CURRENCY", "BASIS_CD", "END_OF_PERIOD") AS 
+create or replace view stn.cev_vie_period_balances as
   SELECT 
     SUM (transaction_balance) transaction_balance,
     SUM (reporting_balance) reporting_balance,
@@ -32,7 +32,6 @@ FROM (
                     JOIN slr.slr_eba_combinations sec
                         ON sedb.edb_eba_id = sec.ec_eba_id
                 WHERE sfc.fc_segment_2 IN ('US_STAT', 'US_GAAP'))
- 
         SELECT
             LAST_DAY(ADD_MONTHS((SELECT TRUNC(MIN(eb.balance_date),'MONTH') FROM edb_bal), rownum -1)) AS balance_date,
             eb.stream_id,
@@ -48,9 +47,7 @@ FROM (
         WHERE ROWNUM <= MONTHS_BETWEEN((SELECT TRUNC(MAX(max_agg_date),'MONTH') FROM edb_bal),(SELECT TRUNC(MIN(balance_date),'MONTH') FROM edb_bal))+1
             AND eb.date_rank = 1 
             AND eb.max_agg_date > balance_date
-        
         UNION
-        
         SELECT
             eb2.balance_date,
             eb2.stream_id,
