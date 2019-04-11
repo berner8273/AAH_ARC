@@ -25,7 +25,6 @@ FROM (
                     sedb.edb_tran_ltd_balance transaction_balance,
                     sedb.edb_base_ltd_balance reporting_balance,
                     sedb.edb_local_ltd_balance functional_balance
-            
                 FROM slr.slr_eba_daily_balances sedb
                     JOIN slr.slr_fak_combinations sfc
                         ON sedb.edb_fak_id = sfc.fc_fak_id
