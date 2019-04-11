@@ -1,71 +1,68 @@
-create or replace view stn.cev_vie_period_balances
-(
-   transaction_balance,
-   reporting_balance,
-   functional_balance,
-   stream_id,
-   business_unit,
-   sub_account,
-   currency,
-   basis_cd,
-   period_month,
-   period_year,
-   end_of_period
-)
-as
-   with period_detail_gaap
-        as (select sedb.edb_balance_date balance_date,
-                   sec.ec_attribute_1 stream_id,
-                   sfc.fc_entity business_unit,
-                   sfc.fc_account sub_account,
-                   sfc.fc_ccy currency,
-                   'US_GAAP' basis_cd,
-                   sedb.edb_tran_ltd_balance transaction_balance,
-                   sedb.edb_base_ltd_balance reporting_balance,
-                   sedb.edb_local_ltd_balance functional_balance,
-                   sedb.edb_period_month period_month,
-                   sedb.edb_period_year period_year
-              from slr.slr_eba_daily_balances sedb
-                   join slr.slr_fak_combinations sfc
-                      on sedb.edb_fak_id = sfc.fc_fak_id
-                   join slr.slr_eba_combinations sec
-                      on sedb.edb_eba_id = sec.ec_eba_id
-             where     sfc.fc_segment_2 in ('US_STAT', 'US_GAAP')
-                   and (select max (sedb2.edb_balance_date) max_period_date
-                          from slr.slr_eba_daily_balances sedb2
-                               join slr.slr_fak_combinations sfc2
-                                  on sedb2.edb_fak_id = sfc2.fc_fak_id
-                               join slr.slr_eba_combinations sec2
-                                  on sedb2.edb_eba_id = sec2.ec_eba_id
-                         where     sec2.ec_attribute_1 = sec.ec_attribute_1
-                               and sfc2.fc_entity = sfc.fc_entity
-                               and sfc2.fc_account = sfc.fc_account
-                               and sfc2.fc_ccy = sfc.fc_ccy
-                               and sec2.ec_attribute_3 = sec.ec_attribute_3
-                               and sfc2.fc_segment_2 = sfc.fc_segment_2
-                               and sec2.ec_attribute_4 = sec.ec_attribute_4
-                               and sedb2.edb_period_month =
-                                      sedb.edb_period_month
-                               and sedb2.edb_period_year =
-                                      sedb.edb_period_year) =
-                          sedb.edb_balance_date)
-     select sum (pds.transaction_balance) transaction_balance,
-            sum (pds.reporting_balance) reporting_balance,
-            sum (pds.functional_balance) functional_balance,
-            stream_id,
-            business_unit,
-            sub_account,
-            currency,
-            basis_cd,
-            period_month,
-            period_year,
-            last_day (balance_date) end_of_period
-       from period_detail_gaap pds
-   group by stream_id,
-            business_unit,
-            sub_account,
-            currency,
-            basis_cd,
-            period_month,
-            period_year,
-            last_day (balance_date);
+create or replace view stn.cev_vie_period_balances as
+  SELECT 
+    SUM (transaction_balance) transaction_balance,
+    SUM (reporting_balance) reporting_balance,
+    SUM (functional_balance) functional_balance,
+    stream_id,
+    business_unit,
+    sub_account,
+    currency,
+    basis_cd,
+    balance_date end_of_period
+FROM (
+        WITH edb_bal AS (
+                SELECT
+                    RANK() OVER (PARTITION BY sedb.edb_eba_id, sedb.edb_fak_id ORDER BY sedb.edb_balance_date DESC) AS date_rank,
+                    MAX(sedb.edb_balance_date) OVER (PARTITION BY sec.ec_attribute_1, sfc.fc_entity, sfc.fc_account) AS max_agg_date,
+                    sedb.edb_eba_id,
+                    sedb.edb_fak_id,
+                    sedb.edb_balance_date balance_date,
+                    sec.ec_attribute_1 stream_id,
+                    sfc.fc_entity business_unit,
+                    sfc.fc_account sub_account,
+                    sfc.fc_ccy currency,
+                    'US_GAAP' basis_cd,
+                    sedb.edb_tran_ltd_balance transaction_balance,
+                    sedb.edb_base_ltd_balance reporting_balance,
+                    sedb.edb_local_ltd_balance functional_balance
+                FROM slr.slr_eba_daily_balances sedb
+                    JOIN slr.slr_fak_combinations sfc
+                        ON sedb.edb_fak_id = sfc.fc_fak_id
+                    JOIN slr.slr_eba_combinations sec
+                        ON sedb.edb_eba_id = sec.ec_eba_id
+                WHERE sfc.fc_segment_2 IN ('US_STAT', 'US_GAAP'))
+        SELECT
+            LAST_DAY(ADD_MONTHS((SELECT TRUNC(MIN(eb.balance_date),'MONTH') FROM edb_bal), rownum -1)) AS balance_date,
+            eb.stream_id,
+            eb.business_unit,
+            eb.sub_account,
+            eb.currency,
+            eb.basis_cd,
+            eb.transaction_balance,
+            eb.reporting_balance,
+            eb.functional_balance
+        FROM edb_bal eb
+            JOIN all_objects on 1=1
+        WHERE ROWNUM <= MONTHS_BETWEEN((SELECT TRUNC(MAX(max_agg_date),'MONTH') FROM edb_bal),(SELECT TRUNC(MIN(balance_date),'MONTH') FROM edb_bal))+1
+            AND eb.date_rank = 1 
+            AND eb.max_agg_date > balance_date
+        UNION
+        SELECT
+            eb2.balance_date,
+            eb2.stream_id,
+            eb2.business_unit,
+            eb2.sub_account,
+            eb2.currency,
+            eb2.basis_cd,
+            eb2.transaction_balance,
+            eb2.reporting_balance,
+            eb2.functional_balance
+        FROM edb_bal eb2
+) 
+GROUP BY 
+    stream_id,
+    business_unit,
+    sub_account,
+    currency,
+    basis_cd,
+    balance_date;
