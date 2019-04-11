@@ -25,4 +25,4 @@ as
     where pl.pl_active = 'A'
       and pl.pl_pt_party_type_id ='10'
       and fons.ons_oht_org_hier_type_id = '6'
-    order by pl.pl_party_legal_clicod;
+    order by pl.pl_party_legal_clicode;
