@@ -1726,28 +1726,61 @@ and not exists (
                       , cev_nid.functional_ccy
                       , cev_nid.functional_amt                          orig_functional_amt
                       , cev_nid.reporting_ccy
-                      , cev_nid.reporting_amt                           orig_reporting_amt
-                      , ( case
-                             when pfc.fin_calc_cd = 'BOP'                  then prpb.transaction_balance
-                             when pfc.fin_calc_cd = 'EOP'                  then cupb.transaction_balance
-                             when vc.vie_cd      in ( '2' , '3' , '6' )
-                              and pfc.fin_calc_cd = 'MONTHLY'              then cev_nid.input_transaction_amt
-                             else null
-                        end ) * vpml.negate_flag                        transaction_amt
-                      , ( case
-                             when pfc.fin_calc_cd = 'BOP'                  then prpb.functional_balance
-                             when pfc.fin_calc_cd = 'EOP'                  then cupb.functional_balance
-                             when vc.vie_cd      in ( '2' , '3' , '6' )
-                              and pfc.fin_calc_cd = 'MONTHLY'              then cev_nid.input_functional_amt
-                             else null
-                        end ) * vpml.negate_flag                        functional_amt
-                      , ( case
-                             when pfc.fin_calc_cd = 'BOP'                  then prpb.reporting_balance
-                             when pfc.fin_calc_cd = 'EOP'                  then cupb.reporting_balance
-                             when vc.vie_cd      in ( '2' , '3' , '6' )
-                              and pfc.fin_calc_cd = 'MONTHLY'              then cev_nid.input_reporting_amt
-                             else null
-                        end ) * vpml.negate_flag                        reporting_amt
+                      , cev_nid.reporting_amt                           orig_reporting_amt     
+                      , ( case 
+                            when pfc.fin_calc_cd = 'BOP'
+                                then prpb.transaction_balance
+                            when pfc.fin_calc_cd = 'EOP'
+                                then cupb.transaction_balance
+                            when  pfc.fin_calc_cd = 'MONTHLY' 
+                                    and (   vc.vie_cd in ('2','6')
+                                        or (vc.vie_cd ='3' and cev_nid.vie_acct_dt < cev_nid.vie_effective_dt)
+                                        or (vc.vie_cd ='5' and cev_nid.vie_acct_dt = cev_nid.vie_effective_dt)
+                                        )
+                                then cev_nid.input_transaction_amt       
+                            when pfc.fin_calc_cd = 'MONTHLY' 
+                                    and (   vc.vie_cd ='4' 
+                                        or (vc.vie_cd ='5' and cev_nid.vie_acct_dt < cev_nid.vie_effective_dt)
+                                        )
+                                then 0
+                                else null 
+                                end) * vpml.negate_flag   transaction_amt
+                      , ( case 
+                            when pfc.fin_calc_cd = 'BOP'
+                                then prpb.functional_balance
+                            when pfc.fin_calc_cd = 'EOP'
+                                then cupb.functional_balance
+                            when  pfc.fin_calc_cd = 'MONTHLY' 
+                                    and (   vc.vie_cd in ('2','6')
+                                        or (vc.vie_cd ='3' and cev_nid.vie_acct_dt < cev_nid.vie_effective_dt)
+                                        or (vc.vie_cd ='5' and cev_nid.vie_acct_dt = cev_nid.vie_effective_dt)
+                                        )
+                                then cev_nid.input_functional_amt       
+                            when pfc.fin_calc_cd = 'MONTHLY' 
+                                    and (   vc.vie_cd ='4' 
+                                        or (vc.vie_cd ='5' and cev_nid.vie_acct_dt < cev_nid.vie_effective_dt)
+                                        )
+                                then 0
+                                else null 
+                                end ) * vpml.negate_flag   functional_amt
+                      , ( case 
+                            when pfc.fin_calc_cd = 'BOP'
+                                then prpb.reporting_balance
+                            when pfc.fin_calc_cd = 'EOP'
+                                then cupb.reporting_balance
+                            when  pfc.fin_calc_cd = 'MONTHLY' 
+                                    and (   vc.vie_cd in ('2','6')
+                                        or (vc.vie_cd ='3' and cev_nid.vie_acct_dt < cev_nid.vie_effective_dt)
+                                        or (vc.vie_cd ='5' and cev_nid.vie_acct_dt = cev_nid.vie_effective_dt)
+                                        )
+                                then cev_nid.input_reporting_amt       
+                            when pfc.fin_calc_cd = 'MONTHLY' 
+                                    and (   vc.vie_cd ='4' 
+                                        or (vc.vie_cd ='5' and cev_nid.vie_acct_dt < cev_nid.vie_effective_dt)
+                                        )
+                                then 0
+                            else null 
+                            end ) * vpml.negate_flag   reporting_amt
                       , cev_nid.lpg_id
                    from
                              stn.cev_non_intercompany_data      cev_nid
