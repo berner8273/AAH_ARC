@@ -15289,8 +15289,7 @@ AS
                 JLU.JLU_JRNL_STATUS,
                 JLU.JLU_JRNL_STATUS_TEXT,
                 JLU.JLU_JRNL_PROCESS_ID,
-                'Test - Elim' || TO_CHAR (JLU.JLU_SOURCE_JRNL_ID)
-                   JLU_DESCRIPTION,
+                JLU.JLU_DESCRIPTION,
                 JLU.JLU_SOURCE_JRNL_ID,
                 JLU.JLU_EFFECTIVE_DATE,
                 JLU.JLU_VALUE_DATE,
@@ -15298,7 +15297,7 @@ AS
                    JLU_ENTITY,
                 JLU.JLU_EPG_ID,
                 JLU.JLU_account,
-                JLU.JLU_SEGMENT_1,
+                pl2.LEDGER_CD AS JLU_SEGMENT_1,                
                 JLU.JLU_SEGMENT_2,
                 JLU.JLU_SEGMENT_3,
                 NVL2 (PSMRE.REINS_LE_CD, 'NVS', JLU.JLU_SEGMENT_4)
@@ -15377,6 +15376,8 @@ AS
                 LEFT JOIN stn.posting_method_derivation_rein psmre
                    ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
                        AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+                LEFT JOIN STN.POSTING_LEDGER pl2 on (
+                    pl2.ledger_id = pmd.OUTPUT_LEDGER_ID )                                              
           WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
                 AND jlu.JLU_JRNL_HDR_ID = journal_id;
 
