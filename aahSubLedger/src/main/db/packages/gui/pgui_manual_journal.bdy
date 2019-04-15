@@ -15161,7 +15161,7 @@ AS
                 jhu_jrnl_status,
                 jhu_jrnl_status_text,
                 jhu_jrnl_process_id,
-                'Test - Elim' ,
+                jhu_jrnl_description,
                 jhu_jrnl_source,
                 jhu_jrnl_source_jrnl_id,
                 jhu_jrnl_authorised_by,
