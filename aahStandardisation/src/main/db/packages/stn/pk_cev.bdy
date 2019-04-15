@@ -1726,45 +1726,45 @@ and not exists (
                       , cev_nid.functional_ccy
                       , cev_nid.functional_amt                          orig_functional_amt
                       , cev_nid.reporting_ccy
-                      , cev_nid.reporting_amt                           orig_reporting_amt     
-                      , ( case 
+                      , cev_nid.reporting_amt                           orig_reporting_amt
+                      , ( case
                             when pfc.fin_calc_cd = 'BOP'
                                 then prpb.transaction_balance
                             when pfc.fin_calc_cd = 'EOP'
                                 then cupb.transaction_balance
-                            when  pfc.fin_calc_cd = 'MONTHLY' 
+                            when  pfc.fin_calc_cd = 'MONTHLY'
                                     and (   vc.vie_cd in ('2','6')
                                         or (vc.vie_cd ='3' and cev_nid.vie_acct_dt > cev_nid.vie_effective_dt)
                                         or (vc.vie_cd ='5' and cev_nid.vie_acct_dt = cev_nid.vie_effective_dt)
-                                        )
-                                then cev_nid.input_transaction_amt       
-                            else null 
+                                         )
+                                then cev_nid.input_transaction_amt
+                            else null
                             end) * vpml.negate_flag   transaction_amt
-                      , ( case 
+                      , ( case
                             when pfc.fin_calc_cd = 'BOP'
                                 then prpb.functional_balance
                             when pfc.fin_calc_cd = 'EOP'
                                 then cupb.functional_balance
-                            when  pfc.fin_calc_cd = 'MONTHLY' 
+                            when  pfc.fin_calc_cd = 'MONTHLY'
                                     and (   vc.vie_cd in ('2','6')
                                         or (vc.vie_cd ='3' and cev_nid.vie_acct_dt > cev_nid.vie_effective_dt)
                                         or (vc.vie_cd ='5' and cev_nid.vie_acct_dt = cev_nid.vie_effective_dt)
                                         )
-                                then cev_nid.input_functional_amt       
-                            else null 
+                                then cev_nid.input_functional_amt
+                            else null
                             end ) * vpml.negate_flag   functional_amt
-                      , ( case 
+                      , ( case
                             when pfc.fin_calc_cd = 'BOP'
                                 then prpb.reporting_balance
                             when pfc.fin_calc_cd = 'EOP'
                                 then cupb.reporting_balance
-                            when  pfc.fin_calc_cd = 'MONTHLY' 
+                            when  pfc.fin_calc_cd = 'MONTHLY'
                                     and (   vc.vie_cd in ('2','6')
                                         or (vc.vie_cd ='3' and cev_nid.vie_acct_dt > cev_nid.vie_effective_dt)
                                         or (vc.vie_cd ='5' and cev_nid.vie_acct_dt = cev_nid.vie_effective_dt)
                                         )
-                                then cev_nid.input_reporting_amt       
-                            else null 
+                                then cev_nid.input_reporting_amt
+                            else null
                             end ) * vpml.negate_flag   reporting_amt
                       , cev_nid.lpg_id
                    from
@@ -1824,6 +1824,7 @@ and not exists (
                                                                              to_char( cev_nid.stream_id )                = to_char( prpb.stream_id )
                                                                          and cev_nid.business_unit                       = prpb.business_unit
                                                                          and pacd.sub_account                            = prpb.sub_account
+                                                                         and cev_nid.tax_jurisdiction_cd                 = prpb.tax_jurisdiction
                                                                          and cev_nid.transaction_ccy                     = prpb.currency
                                                                          and abasis.basis_cd                             = prpb.basis_cd
                                                                          and trunc( add_months( cev_nid.vie_effective_dt , -1 ) , 'MONTH' ) = trunc( prpb.end_of_period , 'MONTH' )
@@ -1832,6 +1833,7 @@ and not exists (
                                                                              to_char( cev_nid.stream_id )                = to_char( cupb.stream_id )
                                                                          and cev_nid.business_unit                       = cupb.business_unit
                                                                          and pacd.sub_account                            = cupb.sub_account
+                                                                         and cev_nid.tax_jurisdiction_cd                 = cupb.tax_jurisdiction
                                                                          and cev_nid.transaction_ccy                     = cupb.currency
                                                                          and abasis.basis_cd                             = cupb.basis_cd
                                                                          and trunc( cev_nid.vie_effective_dt , 'MONTH' ) = trunc( cupb.end_of_period , 'MONTH' )
