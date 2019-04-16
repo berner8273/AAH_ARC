@@ -125,6 +125,7 @@ select --In progress manual journals
       left join fdr.fr_gl_account             gl    on jl.jlu_account              = gl.ga_account_code
       left join gui.gui_jrnl_headers_unposted jh    on jh.jhu_jrnl_id              = jl.jlu_jrnl_hdr_id
       left join gui.gui_jrnl_line_errors      jle   on jl.jlu_jrnl_hdr_id          = jle.jle_jrnl_hdr_id
+												   and jl.jlu_jrnl_line_number     = jle.jle_jrnl_line_number
       left join slr.slr_ext_jrnl_types        jt    on jt.ejt_type                 = jh.jhu_jrnl_type       ) gjlu
  group by
  	   gjlu.jlu_jrnl_hdr_id
