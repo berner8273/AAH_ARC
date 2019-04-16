@@ -7,4 +7,5 @@ select aet_acc_event_type_id,
        aet_acc_event_type_name
 from fdr.fr_acc_event_type faet
      where faet.aet_active = 'A'
+	 order by aet_acc_event_type_name
 ;

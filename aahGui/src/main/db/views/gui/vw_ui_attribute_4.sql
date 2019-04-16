@@ -16,5 +16,6 @@ select aet_acc_event_type_id    as fdr_code,
        null                     as entity
 from fdr.fr_acc_event_type faet
      where faet.aet_active = 'A'
+	 order by aet_acc_event_type_name
 ;
 
