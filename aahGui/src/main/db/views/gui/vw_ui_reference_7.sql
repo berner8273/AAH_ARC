@@ -10,7 +10,7 @@ create or replace view gui.vw_ui_reference_7
 as
        select
         pl.pl_party_legal_clicode as "FDR_CODE",
-        pl.pl_full_legal_name as "FDR_DESCRIPTION",
+        pl.pl_party_legal_clicode || ' - ' || pl.pl_full_legal_name as "FDR_DESCRIPTION",
         pl.pl_party_legal_clicode as "LOOKUP_KEY",
         pl.pl_si_sys_inst_id as "SOURCE_SYSTEM_ID",
         null as "PARENT_ID",
@@ -28,7 +28,7 @@ as
 union
     select
         pl.pl_party_legal_clicode as "FDR_CODE",
-        pl.pl_full_legal_name as "FDR_DESCRIPTION",
+        pl.pl_party_legal_clicode || ' - ' || pl.pl_full_legal_name as "FDR_DESCRIPTION",
         pl.pl_party_legal_clicode as "LOOKUP_KEY",
         pl.pl_si_sys_inst_id as "SOURCE_SYSTEM_ID",
         null as "PARENT_ID",
