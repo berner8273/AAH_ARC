@@ -113,7 +113,7 @@ select --In progress manual journals
               , nvl( substr( fgl.lk_lookup_value3 , 1 , 50 ) , ' ' )                                       event_class
               , case when jlu_tran_amount < 0 then round( jlu_tran_amount , 2 ) else null end              credit_amt
               , case when jlu_tran_amount >= 0 then round( jlu_tran_amount , 2 ) else null end             debit_amt
-              , case when jle.jle_jrnl_hdr_id is not null then 'E' else jl.jlu_jrnl_status end             event_status
+              , jl.jlu_jrnl_status   event_status
               , jl.jlu_jrnl_process_id
               , jt.ejt_madj_flag
               , jh.jhu_jrnl_type            
