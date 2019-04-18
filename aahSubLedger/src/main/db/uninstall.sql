@@ -344,6 +344,9 @@ delete from gui.ui_general_lookup where ugl_lkt_lookup_type_code like 'COMBO%';
 delete from gui.ui_field where uf_id between 20000 and 20078;
 drop function     gui.fcombinationcheck_jlu;
 drop view         gui.ucv_combination_check_jlu;
+drop package body gui.pgui_manual_journal;
+drop package      gui.pgui_manual_journal;
+
 delete from gui.ui_component where uc_id in (10000, 20000);
 commit;
 
