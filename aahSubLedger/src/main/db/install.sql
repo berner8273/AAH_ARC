@@ -401,6 +401,12 @@ end;
 
 --Add compile statements to created packages
 
+conn ~gui_logon
+alter package gui.pgui_manual_journal compile;
+
+conn ~rdr_logon
+alter package rdr.pgrr_report_slr compile;
+
 conn ~slr_logon
 alter package slr.slr_calendar_pkg compile;
 alter package slr.slr_client_procedures_pkg compile;
@@ -415,6 +421,7 @@ alter package slr.slr_validate_journals_pkg compile;
 
 conn ~fdr_logon
 alter package fdr.pk_legal_entity compile;
+alter package fdr.fdr_custom_archiving_pkg compile;
 
 conn ~stn_logon
 alter package stn.pk_jl compile;
