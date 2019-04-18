@@ -1,3 +1,4 @@
+insert into stn.posting_method ( psm_id, psm_cd , psm_descr ) values (-1,'DEFAULT','Used for Filtering');
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'MTM'               , 'Mark-to-market method' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'NON_MTM'           , 'Non mark-to-market method' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'NON_MTM_PLUS'      , 'Non mark-to-market plus method' );

@@ -3,13 +3,13 @@ execute stn.pk_posting_rules.pr_posting_rules_clear;
 -- Populate table Ledger Methods
 -- Populate table LOAD_EVENT_HIERARCHY
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('BALANCE_OTHERS','Balance & Others','N','BALANCE','Balance','BALANCE_OTHERS','Balance & Others','BEG_BALANCE','Beginning Balance',210,'N',NULL);
+  VALUES ('BALANCE_OTHERS','Balance & Others','N','BALANCE','Balance','BALANCE_OTHERS','Balance & Others','BEG_BALANCE','Beginning Balance',212,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('BALANCE_OTHERS','Balance & Others','N','BALANCE','Balance','BALANCE_OTHERS','Balance & Others','CONV_BALANCE','Data Conversion Balance',211,'N',NULL);
+  VALUES ('BALANCE_OTHERS','Balance & Others','N','BALANCE','Balance','BALANCE_OTHERS','Balance & Others','CONV_BALANCE','Data Conversion Balance',213,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('BALANCE_OTHERS','Balance & Others','N','BALANCE','Balance','BALANCE_OTHERS','Balance & Others','ENDING_BALANCE','Ending Balance',213,'N',NULL);
+  VALUES ('BALANCE_OTHERS','Balance & Others','N','BALANCE','Balance','BALANCE_OTHERS','Balance & Others','ENDING_BALANCE','Ending Balance',215,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('BALANCE_OTHERS','Balance & Others','N','BALANCE','Balance','BALANCE_OTHERS','Balance & Others','VIE_CONV_BALANCE','Data Conversion Balance (VIEs)',212,'N',NULL);
+  VALUES ('BALANCE_OTHERS','Balance & Others','N','BALANCE','Balance','BALANCE_OTHERS','Balance & Others','VIE_CONV_BALANCE','Data Conversion Balance (VIEs)',214,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('CONT_RSRV','Contingency Reserves','Q','CONT_RSRV','Contingency Reserves','CONT_RSRV','Contingency Reserves','CNTGY_RESERVE_ADJUST','Contingency Reserves - Quarterly Adjustments',123,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
@@ -19,35 +19,35 @@ INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_C
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('CONT_RSRV','Contingency Reserves','Q','CONT_RSRV','Contingency Reserves','CONT_RSRV','Contingency Reserves','FX_CNTGY_RESERVE','Contingency Reserves - FX Differences',122,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_IBNR_RESERVES','FX Gain/Loss on IBNR Reserves',183,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_IBNR_RESERVES','FX Gain/Loss on IBNR Reserves',185,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_LAE_RESERVES','FX Gain/Loss on LAE Reserves',181,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_LAE_RESERVES','FX Gain/Loss on LAE Reserves',183,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_LAE_SALV_RES','FX Gain/Loss on LAE Salvage Reserves',182,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_LAE_SALV_RES','FX Gain/Loss on LAE Salvage Reserves',184,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_LOSS_RESERVES','FX Gain/Loss on Loss Reserves',179,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_LOSS_RESERVES','FX Gain/Loss on Loss Reserves',181,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_LOSS_SALV_RES','FX Gain/Loss on Loss Salvage Reserves',180,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_LOSS_SALV_RES','FX Gain/Loss on Loss Salvage Reserves',182,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_OTHR_TECH_PROV','FX Gain/Loss on Unexpired Risk Provision',184,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','FX_LOSS_RSRV','FX Reval - Loss Reserves','FX_OTHR_TECH_PROV','FX Gain/Loss on Unexpired Risk Provision',186,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','IBNR_RESERVES','IBNR Reserves',173,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','IBNR_RESERVES','IBNR Reserves',175,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LAE_INCOME_STMT','LAE Income Statement',175,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LAE_INCOME_STMT','LAE Income Statement',177,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LAE_RESERVES','LAE Reserves',170,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LAE_RESERVES','LAE Reserves',172,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LOSS_SAL_RECLASS','Loss Salvage Reclass',176,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LOSS_SAL_RECLASS','Loss Salvage Reclass',178,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LAE_SAL_RECLASS','LAE Salvage Reclass',177,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LAE_SAL_RECLASS','LAE Salvage Reclass',179,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LOSS_INCOME_STMT','Loss Income Statement',174,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LOSS_INCOME_STMT','Loss Income Statement',176,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LOSS_RESERVES','Loss Reserves',169,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LOSS_RESERVES','Loss Reserves',171,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LOSS_SALVAGE_RESERVE','Loss Salvage & Subrogation Reserves',171,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','LOSS_SALVAGE_RESERVE','Loss Salvage & Subrogation Reserves',173,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','OTHR_TECH_PROVISIONS','Other Technical Provisions (Unexpired Risk Provision)',178,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSS_RSRV','Loss Reserves','LOSS_RSRV','Loss Reserves ','OTHR_TECH_PROVISIONS','Other Technical Provisions (Unexpired Risk Provision)',180,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('LOSSES','Losses & Loss Reserves','M','LOSSES_PAID_REC','Losses Paid, Recoveries and Loss Mitigation','FX_LOSSES_PAID','FX Reval - Losses','FX_LAE_RECPAY','FX Gain/Loss on LAE Rec/Pay',138,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
@@ -89,7 +89,7 @@ INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_C
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('LOSSES','Losses & Loss Reserves','M','LOSSES_PAID_REC','Losses Paid, Recoveries and Loss Mitigation','SALVAGES_REC','Salvage & Recoveries','LAE_RECOVERY_CONTRA','LAE Recovered Contra',142,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSSES_PAID_REC','Losses Paid, Recoveries and Loss Mitigation','SALVAGES_REC','Salvage & Recoveries','LAE_SALVAGE_RESERVES','LAE Salvage & Subrogation Reserves',172,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','LOSSES_PAID_REC','Losses Paid, Recoveries and Loss Mitigation','SALVAGES_REC','Salvage & Recoveries','LAE_SALVAGE_RESERVES','LAE Salvage & Subrogation Reserves',174,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('LOSSES','Losses & Loss Reserves','M','LOSSES_PAID_REC','Losses Paid, Recoveries and Loss Mitigation','SALVAGES_REC','Salvage & Recoveries','LOSS_CNTR_RECLASS_SS','Contra Paid Salvage',141,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
@@ -101,27 +101,27 @@ INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_C
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('LOSSES','Losses & Loss Reserves','M','LOSSES_PAID_REC','Losses Paid, Recoveries and Loss Mitigation','SALVAGES_REC','Salvage & Recoveries','OTHR_INC_STAT','Excess Recovery - Other Income (STAT)',143,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_IBNR_RES','VIE FX Gain/Loss on IBNR Reserves',201,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_IBNR_RES','VIE FX Gain/Loss on IBNR Reserves',203,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_LAE_RES','VIE FX Gain/Loss on LAE Reserves',199,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_LAE_RES','VIE FX Gain/Loss on LAE Reserves',201,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_LAESALV_RES','VIE FX Gain/Loss on LAE Salvage Reserves',200,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_LAESALV_RES','VIE FX Gain/Loss on LAE Salvage Reserves',202,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_LOSS_RES','VIE FX Gain/Loss on Loss Reserves',197,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_LOSS_RES','VIE FX Gain/Loss on Loss Reserves',199,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_LOSSSAL_RES','VIE FX Gain/Loss on Loss Salvage Reserves',198,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_FX_LOSS_RSRV','VIE - FX Reval - Loss Reserves','VIELF_FX_LOSSSAL_RES','VIE FX Gain/Loss on Loss Salvage Reserves',200,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELC_CASE','VIE Cons - Loss Reserves',185,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELC_CASE','VIE Cons - Loss Reserves',187,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELC_LAE','VIE Cons - LAE Reserves',186,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELC_LAE','VIE Cons - LAE Reserves',188,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELD_CASE','VIE Decon - Loss Reserves',193,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELD_CASE','VIE Decon - Loss Reserves',195,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELD_LAE','VIE Decon - LAE Reserves',194,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELD_LAE','VIE Decon - LAE Reserves',196,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELF_CASE','VIE Activity - Loss Reserves',189,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELF_CASE','VIE Activity - Loss Reserves',191,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELF_LAE','VIE Activity - LAE Reserves',190,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSS_RSRV','VIE - Loss Reserves','VIE_LOSS_RSRV','VIE - Loss Reserves','VIELF_LAE','VIE Activity - LAE Reserves',192,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELC_CNLM','VIE Cons - Loss Mitigation Contra',155,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
@@ -129,53 +129,57 @@ INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_C
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELC_CNSS','VIE Cons - Loss Recovery Contra',154,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELD_CNLM','VIE Decon - Loss Mitigation Contra',168,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELC_OTHRINC_GAAP','VIE Cons - Other Income (GAAP)',156,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELD_CNPL','VIE Decon - Losses Paid Contra',166,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELD_CNLM','VIE Decon - Loss Mitigation Contra',169,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELD_CNSS','VIE Decon - Loss Recovery Contra',167,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELD_CNPL','VIE Decon - Losses Paid Contra',167,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_CNLM','VIE Activity - Loss Mitigation Contra',163,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELD_CNSS','VIE Decon - Loss Recovery Contra',168,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_CNPL','VIE Activity - Losses Paid Contra',156,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELD_OTHRINC_GAAP','VIE Decon - Other Income (GAAP)',170,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_CNSS','VIE Activity - Loss Recovery Contra',159,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_CNLM','VIE Activity - Loss Mitigation Contra',164,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_LMI','VIE Activity - Loss Mitigation Recovered',162,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_CNPL','VIE Activity - Losses Paid Contra',157,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_LMP','VIE Activity - Loss Mitigation Paid',164,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_CNSS','VIE Activity - Loss Recovery Contra',160,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_OTHR','VIE Activity - Other Income GAAP',165,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_LMI','VIE Activity - Loss Mitigation Recovered',163,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_PAID','VIE Activity - Losses Paid',157,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_LMP','VIE Activity - Loss Mitigation Paid',165,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_PDL','VIE Activity - LAE Paid',158,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_OTHR','VIE Activity - Other Income GAAP',166,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_PDLS','VIE Activity - LAE Recoveries',161,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_PAID','VIE Activity - Losses Paid',158,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_REC','VIE Activity - Loss Recoveries',160,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_PDL','VIE Activity - LAE Paid',159,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELC_LAES','VIE Cons - LAE Salvage Reserves',188,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_PDLS','VIE Activity - LAE Recoveries',162,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELC_SAL','VIE Cons - Loss Salvage Reserve',187,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIELF_REC','VIE Activity - Loss Recoveries',161,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELD_LAES','VIE Decon - LAE Salvage Reserves',196,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELC_LAES','VIE Cons - LAE Salvage Reserves',190,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELD_SAL','VIE Decon - Loss Salvage Reserve',195,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELC_SAL','VIE Cons - Loss Salvage Reserve',189,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELF_LAES','VIE Activity - LAE Salvage Reserves',192,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELD_LAES','VIE Decon - LAE Salvage Reserves',198,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELF_SAL','VIE Activity - Loss Salvage Reserve',191,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELD_SAL','VIE Decon - Loss Salvage Reserve',197,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('MANUAL_ADJ','Manual Adjustments','M','MANUAL_ADJ','Manual Adjustments','MANUAL_ADJ','Manual Adjustments','MANUAL_ADJ','Manual Adjustments',205,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELF_LAES','VIE Activity - LAE Salvage Reserves',194,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('OTHERS','Other Accounting Events','M','OTHERS','Other Accounting Events','OTHERS','Other Accounting Events','COMMUTATION_GAINLOSS','Commutation Gain/Loss',209,'N',NULL);
+  VALUES ('LOSSES','Losses & Loss Reserves','M','VIE_LOSSES_PAID_REC','VIE - Losses Paid, Recoveries and Loss Mitigation','VIE_SALVAGES_REC','VIE - Salvage Reserves','VIELF_SAL','VIE Activity - Loss Salvage Reserve',193,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('OTHERS','Other Accounting Events','M','OTHERS','Other Accounting Events','OTHERS','Other Accounting Events','CONSOLIDATING_ADJ','Consolidating Adjustment',208,'N',NULL);
+  VALUES ('MANUAL_ADJ','Manual Adjustments','M','MANUAL_ADJ','Manual Adjustments','MANUAL_ADJ','Manual Adjustments','MANUAL_ADJ','Manual Adjustments',207,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('OTHERS','Other Accounting Events','M','OTHERS','Other Accounting Events','OTHERS','Other Accounting Events','RECLASS','Reclass',206,'N',NULL);
+  VALUES ('OTHERS','Other Accounting Events','M','OTHERS','Other Accounting Events','OTHERS','Other Accounting Events','COMMUTATION_GAINLOSS','Commutation Gain/Loss',211,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('OTHERS','Other Accounting Events','M','OTHERS','Other Accounting Events','OTHERS','Other Accounting Events','STOP_LOSS','Stop Loss',207,'N',NULL);
+  VALUES ('OTHERS','Other Accounting Events','M','OTHERS','Other Accounting Events','OTHERS','Other Accounting Events','CONSOLIDATING_ADJ','Consolidating Adjustment',210,'N',NULL);
+INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
+  VALUES ('OTHERS','Other Accounting Events','M','OTHERS','Other Accounting Events','OTHERS','Other Accounting Events','RECLASS','Reclass',208,'N',NULL);
+INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
+  VALUES ('OTHERS','Other Accounting Events','M','OTHERS','Other Accounting Events','OTHERS','Other Accounting Events','STOP_LOSS','Stop Loss',209,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('OVERHEAD_TAX','Overhead and Premium Tax','M','OVERHEAD_TAX','Overhead and Premium Tax','DAC_OVERHEAD','DAC - Overhead ','DAC_OVH_CAP','DAC Written (Overheads)',124,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
@@ -423,11 +427,11 @@ INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_C
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
   VALUES ('PREM_COMM','Premium & Commissions ','M','VIE_PREM_COMM','VIE - Premium & Commissions','VIE_UPR','VIE - UPR','VIEPF_UPR_INITIAL','VIE Activity - UPR Written',77,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('PROFIT_COMM','Profit Commissions ','M','PROFIT_COMM','Profit Commissions ','PROFIT_COMM','Profit Commissions ','CASH_OFFSET_PC','Cash Offset - Profit Comm',204,'Y',NULL);
+  VALUES ('PROFIT_COMM','Profit Commissions ','M','PROFIT_COMM','Profit Commissions ','PROFIT_COMM','Profit Commissions ','CASH_OFFSET_PC','Cash Offset - Profit Comm',206,'Y',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('PROFIT_COMM','Profit Commissions ','M','PROFIT_COMM','Profit Commissions ','PROFIT_COMM','Profit Commissions ','PC_RECEIPT_PAYMENT','Profit Commission Receipts and Payments',202,'N',NULL);
+  VALUES ('PROFIT_COMM','Profit Commissions ','M','PROFIT_COMM','Profit Commissions ','PROFIT_COMM','Profit Commissions ','PC_RECEIPT_PAYMENT','Profit Commission Receipts and Payments',204,'N',NULL);
 INSERT INTO stn.load_event_hierarchy ("EVENT_CLASS","EVENT_CLASS_DESCR","EVENT_CLASS_PERIOD_FREQ","EVENT_GRP","EVENT_GRP_DESCR","EVENT_SUBGRP","EVENT_SUBGRP_DESCR","EVENT_TYP","EVENT_TYP_DESCR","EVENT_TYP_SEQ_ID","IS_CASH_EVENT","IS_CORE_EARNING_EVENT")
-  VALUES ('PROFIT_COMM','Profit Commissions ','M','PROFIT_COMM','Profit Commissions ','PROFIT_COMM','Profit Commissions ','PC_RESERVES','Profit Commission Reserves',203,'N',NULL);
+  VALUES ('PROFIT_COMM','Profit Commissions ','M','PROFIT_COMM','Profit Commissions ','PROFIT_COMM','Profit Commissions ','PC_RESERVES','Profit Commission Reserves',205,'N',NULL);
 
 -- Populate table LOAD_BUSINESS_EVENT
 INSERT INTO stn.load_business_event ("BUSINESS_EVENT_SEQ_ID","BUSINESS_EVENT_CD","BUSINESS_EVENT_DESCR","BUSINESS_EVENT_CATEGORY_DESCR")
@@ -671,19 +675,15 @@ INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET",
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CC_INCOME_EXPENSE','N','I','US_STAT','STAT_ONLY');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('CC_INCOME_EXPENSE','N','I','US_GAAP','STAT_ONLY');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CC_INCOME_EXPENSE','N','I','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CC_INCOME_EXPENSE','N','M','US_STAT','STAT_ONLY');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('CC_INCOME_EXPENSE','N','M','US_GAAP','STAT_ONLY');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CC_INCOME_EXPENSE','N','M','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CC_INCOME_EXPENSE','N','U','US_STAT','STAT_TO_CORE');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('CC_INCOME_EXPENSE','N','U','US_GAAP','STAT_TO_CORE');
+  VALUES ('CC_INCOME_EXPENSE','N','U','US_GAAP','DEFAULT');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CC_INCOME_EXPENSE','N','U','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
@@ -1867,134 +1867,6 @@ INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET",
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('UPR_INITIAL','Y','U','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_IBNR_RES','N','NVS','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_IBNR_RES','N','NVS','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_LAESALV_RES','N','NVS','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_LAESALV_RES','N','NVS','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_LAE_RES','N','NVS','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_LAE_RES','N','NVS','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_LOSSSAL_RES','N','NVS','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_LOSSSAL_RES','N','NVS','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_LOSS_RES','N','NVS','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIELF_FX_LOSS_RES','N','NVS','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_BEG_BAL','N','I','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_BEG_BAL','N','I','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_BEG_BAL','N','M','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_BEG_BAL','N','M','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_BEG_BAL','N','U','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_BEG_BAL','N','U','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT2CURR','N','I','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT2CURR','N','I','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT2CURR','N','M','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT2CURR','N','M','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT2CURR','N','U','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT2CURR','N','U','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT_INST','N','I','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT_INST','N','I','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT_INST','N','M','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT_INST','N','M','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT_INST','N','U','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXAR_FUT_INST','N','U','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCACCRN_AM','N','I','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCACCRN_AM','N','I','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCACCRN_AM','N','M','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCACCRN_AM','N','M','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCACCRN_AM','N','U','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCACCRN_AM','N','U','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCRECPAY_FUT','N','I','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCRECPAY_FUT','N','I','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCRECPAY_FUT','N','M','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCRECPAY_FUT','N','M','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCRECPAY_FUT','N','U','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCRECPAY_FUT','N','U','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCWRTOFF_FUT','N','I','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCWRTOFF_FUT','N','I','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCWRTOFF_FUT','N','M','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCWRTOFF_FUT','N','M','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCWRTOFF_FUT','N','U','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCCWRTOFF_FUT','N','U','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCC_BEG_BAL','N','I','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCC_BEG_BAL','N','I','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCC_BEG_BAL','N','M','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCC_BEG_BAL','N','M','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCC_BEG_BAL','N','U','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXCC_BEG_BAL','N','U','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPACCRN_AM','N','I','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPACCRN_AM','N','I','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPACCRN_AM','N','M','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPACCRN_AM','N','M','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPACCRN_AM','N','U','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPACCRN_AM','N','U','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPWRTOFF_FUT','N','I','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPWRTOFF_FUT','N','I','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPWRTOFF_FUT','N','M','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPWRTOFF_FUT','N','M','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPWRTOFF_FUT','N','U','US_STAT','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('VIEPF_FXWPWRTOFF_FUT','N','U','US_GAAP','NON_MTM');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('WP_ACCRN_AMORT','N','I','US_STAT','GAAP_ONLY');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('WP_ACCRN_AMORT','N','I','US_GAAP','GAAP_ONLY');
@@ -2117,19 +1989,15 @@ INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET",
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('WRITTEN_PREMIUM','N','I','US_STAT','STAT_ONLY');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('WRITTEN_PREMIUM','N','I','US_GAAP','STAT_ONLY');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('WRITTEN_PREMIUM','N','I','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('WRITTEN_PREMIUM','N','M','US_STAT','STAT_ONLY');
-INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('WRITTEN_PREMIUM','N','M','US_GAAP','STAT_ONLY');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('WRITTEN_PREMIUM','N','M','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('WRITTEN_PREMIUM','N','U','US_STAT','STAT_TO_CORE');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
-  VALUES ('WRITTEN_PREMIUM','N','U','US_GAAP','STAT_TO_CORE');
+  VALUES ('WRITTEN_PREMIUM','N','U','US_GAAP','DEFAULT');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('WRITTEN_PREMIUM','N','U','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
@@ -2361,21 +2229,25 @@ INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
 INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
   VALUES ('WRITTEN_PREMIUM','VIEPF_WP','Monthly');
 INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
-  VALUES ('ADAC_CC_CAP_DEF','VIECC_ADAC_CAP_DEF','Consol Balance');
+  VALUES ('ADAC_CC_CAP_DEF','VIECC_ADAC_CAP_DEF','Consol balance');
 INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
-  VALUES ('ADAC_CC_CAP_DEF','VIECD_ADAC_CAP_DEF','Deconsol Balance');
+  VALUES ('ADAC_CC_CAP_DEF','VIECD_ADAC_CAP_DEF','Deconsol balance');
 INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
   VALUES ('ADAC_CC_CAP_DEF','VIECF_ADAC_CAP_DEF','Monthly');
 INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
-  VALUES ('FV_DAC_CC_CAP_DEF','VIECC_FVDAC_CAP_DEF','Consol Balance');
+  VALUES ('FV_DAC_CC_CAP_DEF','VIECC_FVDAC_CAP_DEF','Consol balance');
 INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
-  VALUES ('FV_DAC_CC_CAP_DEF','VIECD_FVDAC_CAP_DEF','Deconsol Balance');
+  VALUES ('FV_DAC_CC_CAP_DEF','VIECD_FVDAC_CAP_DEF','Deconsol balance');
 INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
   VALUES ('FV_DAC_CC_CAP_DEF','VIECF_FVDAC_CAP_DEF','Monthly');
 INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
   VALUES ('ADAC_AMORT','VIECF_ADAC_AMORT','Monthly');
 INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
   VALUES ('FV_DAC_AMORT','VIECF_FVDAC_AMORT','Monthly');
+INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
+  VALUES ('OTHR_INC_GAAP','VIELC_OTHRINC_GAAP','Consol balance');
+INSERT INTO stn.load_vie_posting_method ("EVENT_TYP","VIE_EVENT_TYP","VIE_TYP")
+  VALUES ('OTHR_INC_GAAP','VIELD_OTHRINC_GAAP','Deconsol balance');
 
 -- Populate table LOAD_FR_POSTING_DRIVER
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -3059,21 +2931,21 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (340,'GO_CONSOL','VIECF_CASHOFFSET','NULL','POS','VIECF_CC','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (341,'GO_CONSOL','VIELC_CASE','NULL','POS','VIELC_CASE','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (341,'GO_CONSOL','VIELC_CASE','NULL','POS','VIELC_CASE','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (342,'GO_CONSOL','VIELC_CASE','NULL','POS','VIE_CONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (342,'GO_CONSOL','VIELC_CASE','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (343,'GO_CONSOL','VIELC_CNLM','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (343,'GO_CONSOL','VIELC_CNLM','NULL','POS','VIE_CONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (344,'GO_CONSOL','VIELC_CNLM','NULL','POS','CONTRA_GROSS_WRAPPED_BOND','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (344,'GO_CONSOL','VIELC_CNLM','NULL','POS','CONTRA_GROSS_WRAPPED_BOND','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (345,'GO_CONSOL','VIELC_CNPL','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (346,'GO_CONSOL','VIELC_CNPL','NULL','POS','CONTRA_ASSUMED_PAID_LOSSES','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (347,'GO_CONSOL','VIELC_LAE','NULL','POS','VIELC_LAE','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (347,'GO_CONSOL','VIELC_LAE','NULL','POS','VIELC_LAE','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (348,'GO_CONSOL','VIELC_LAE','NULL','POS','VIE_CONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (348,'GO_CONSOL','VIELC_LAE','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (349,'GO_CONSOL','VIELC_LAES','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -3147,9 +3019,9 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (384,'GO_CONSOL','VIEPF_CASHOFFSET','NULL','POS','VIE_OTHER_EXPENSES','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (385,'GO_CONSOL','VIEPC_UPR_INITIAL','NULL','POS','VIEPC_UPR','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (385,'GO_CONSOL','VIEPC_UPR_INITIAL','NULL','POS','VIEPC_UPR','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (386,'GO_CONSOL','VIEPC_UPR_INITIAL','NULL','POS','VIE_CONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (386,'GO_CONSOL','VIEPC_UPR_INITIAL','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (387,'GO_CONSOL','VIEPF_UPR_INITIAL','NULL','POS','VIEPF_UPR','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -3171,13 +3043,13 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (396,'GO_CONSOL','VIEPF_CASHOFFSET','NULL','NEG','VIE_OTHER_EXPENSES','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (397,'GO_CONSOL','VIECC_AR','NULL','POS','VIECC_AR','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (397,'GO_CONSOL','VIECC_AR','NULL','POS','VIECC_AR','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (398,'GO_CONSOL','VIECC_AR','NULL','POS','VIE_CONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (398,'GO_CONSOL','VIECC_AR','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (399,'GO_CONSOL','VIECC_WP','NULL','POS','VIECC_WP','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (399,'GO_CONSOL','VIECC_WP','NULL','POS','VIECC_WP','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (400,'GO_CONSOL','VIECC_WP','NULL','POS','VIE_CONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (400,'GO_CONSOL','VIECC_WP','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (401,'GO_CONSOL','VIELF_CNSS','NULL','POS','VIELF_CNSS','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -3219,13 +3091,13 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (420,'GO_CONSOL','VIECF_CASHOFFSET','DECONSOL','POS','VIECF_CC','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (421,'GO_CONSOL','VIELD_CASE','DECONSOL','POS','VIE_DECONSOL_DAC','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (421,'GO_CONSOL','VIELD_CASE','DECONSOL','POS','VIE_DECONSOL_DAC','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (422,'GO_CONSOL','VIELD_CASE','DECONSOL','POS','VIELD_CASE','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (422,'GO_CONSOL','VIELD_CASE','DECONSOL','POS','VIELD_CASE','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (423,'GO_CONSOL','VIELD_CNLM','DECONSOL','POS','CONTRA_GROSS_WRAPPED_BOND','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (423,'GO_CONSOL','VIELD_CNLM','DECONSOL','POS','CONTRA_GROSS_WRAPPED_BOND','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (424,'GO_CONSOL','VIELD_CNLM','DECONSOL','POS','VIE_DECONSOL_DAC','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (424,'GO_CONSOL','VIELD_CNLM','DECONSOL','POS','VIE_DECONSOL_DAC','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (425,'GO_CONSOL','VIELD_CNPL','DECONSOL','POS','CONTRA_ASSUMED_PAID_LOSSES','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -4079,13 +3951,13 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (850,'GAAP_ADJ','RECLASS_CONTRA_PAID','NULL','NEG','RECLASS_CONTRA_CONTRA_PAID_LOSS','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (851,'GO_CONSOL','VIEPD_UPR_INITIAL','DECONSOL','POS','VIE_DECONSOL_DAC','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (851,'GO_CONSOL','VIEPD_UPR_INITIAL','DECONSOL','POS','VIE_DECONSOL_DAC','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (852,'GO_CONSOL','VIEPD_UPR_INITIAL','DECONSOL','POS','VIEPD_UPR','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (852,'GO_CONSOL','VIEPD_UPR_INITIAL','DECONSOL','POS','VIEPD_UPR','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (853,'GO_CONSOL','VIEPD_PGAAP_UPR','DECONSOL','POS','VIE_DECONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (853,'GO_CONSOL','VIEPD_PGAAP_UPR','DECONSOL','POS','VIE_DECONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (854,'GO_CONSOL','VIEPD_PGAAP_UPR','DECONSOL','POS','PGAAP_UPR','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (854,'GO_CONSOL','VIEPD_PGAAP_UPR','DECONSOL','POS','PGAAP_UPR','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (855,'GO_CONSOL','VIEPF_PGAAP_UPR_IN','DECONSOL','POS','PGAAP_UPR','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -4111,13 +3983,13 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (866,'GO_CONSOL','VIECD_AR','DECONSOL','POS','VIECD_AR','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (867,'GO_CONSOL','VIECD_WP','DECONSOL','POS','VIE_DECONSOL_DAC','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (867,'GO_CONSOL','VIECD_WP','DECONSOL','POS','VIE_DECONSOL_DAC','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (868,'GO_CONSOL','VIECD_WP','DECONSOL','POS','VIECD_WP','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (868,'GO_CONSOL','VIECD_WP','DECONSOL','POS','VIECD_WP','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (869,'GO_CONSOL','VIELD_CNSS','DECONSOL','POS','VIE_DECONSOL_DAC','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (869,'GO_CONSOL','VIELD_CNSS','DECONSOL','POS','VIE_DECONSOL_DAC','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (870,'GO_CONSOL','VIELD_CNSS','DECONSOL','POS','CONTRA_GROSS_PAID_LOSSES','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (870,'GO_CONSOL','VIELD_CNSS','DECONSOL','POS','CONTRA_GROSS_PAID_LOSSES','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (871,'GO_CONSOL','VIECF_UN_FUT','DECONSOL','POS','OTH_INC_ASSUMED_AFF_COMM_WRITEOFF','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -4175,21 +4047,21 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (898,'GO_CONSOL','VIECF_CASHOFFSET','NULL','NEG','VIECF_CC','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (899,'GO_CONSOL','VIELC_CASE','NULL','NEG','VIELC_CASE','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (899,'GO_CONSOL','VIELC_CASE','NULL','NEG','VIELC_CASE','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (900,'GO_CONSOL','VIELC_CASE','NULL','NEG','VIE_CONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (900,'GO_CONSOL','VIELC_CASE','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (901,'GO_CONSOL','VIELC_CNLM','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (901,'GO_CONSOL','VIELC_CNLM','NULL','NEG','VIE_CONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (902,'GO_CONSOL','VIELC_CNLM','NULL','NEG','CONTRA_GROSS_WRAPPED_BOND','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (902,'GO_CONSOL','VIELC_CNLM','NULL','NEG','CONTRA_GROSS_WRAPPED_BOND','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (903,'GO_CONSOL','VIELC_CNPL','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (904,'GO_CONSOL','VIELC_CNPL','NULL','NEG','CONTRA_ASSUMED_PAID_LOSSES','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (905,'GO_CONSOL','VIELC_LAE','NULL','NEG','VIELC_LAE','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (905,'GO_CONSOL','VIELC_LAE','NULL','NEG','VIELC_LAE','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (906,'GO_CONSOL','VIELC_LAE','NULL','NEG','VIE_CONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (906,'GO_CONSOL','VIELC_LAE','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (907,'GO_CONSOL','VIELC_LAES','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -4259,9 +4131,9 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (940,'GO_CONSOL','VIEPF_FUT2CURR','NULL','NEG','VIEPF_WP','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (941,'GO_CONSOL','VIEPC_UPR_INITIAL','NULL','NEG','VIEPC_UPR','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (941,'GO_CONSOL','VIEPC_UPR_INITIAL','NULL','NEG','VIEPC_UPR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (942,'GO_CONSOL','VIEPC_UPR_INITIAL','NULL','NEG','VIE_CONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (942,'GO_CONSOL','VIEPC_UPR_INITIAL','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (943,'GO_CONSOL','VIEPF_UPR_INITIAL','NULL','NEG','VIEPF_UPR','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -4279,13 +4151,13 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (950,'GO_CONSOL','VIEPF_UPR_CHANGE','NULL','NEG','VIEPF_UPR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (951,'GO_CONSOL','VIECC_AR','NULL','NEG','VIECC_AR','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (951,'GO_CONSOL','VIECC_AR','NULL','NEG','VIECC_AR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (952,'GO_CONSOL','VIECC_AR','NULL','NEG','VIE_CONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (952,'GO_CONSOL','VIECC_AR','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (953,'GO_CONSOL','VIECC_WP','NULL','NEG','VIECC_WP','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (953,'GO_CONSOL','VIECC_WP','NULL','NEG','VIECC_WP','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (954,'GO_CONSOL','VIECC_WP','NULL','NEG','VIE_CONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (954,'GO_CONSOL','VIECC_WP','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (955,'GO_CONSOL','VIELF_CNSS','NULL','NEG','VIELF_CNSS','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -4327,13 +4199,13 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (974,'GO_CONSOL','VIECF_CASHOFFSET','DECONSOL','NEG','VIECF_CC','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (975,'GO_CONSOL','VIELD_CASE','DECONSOL','NEG','VIE_DECONSOL_DAC','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (975,'GO_CONSOL','VIELD_CASE','DECONSOL','NEG','VIE_DECONSOL_DAC','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (976,'GO_CONSOL','VIELD_CASE','DECONSOL','NEG','VIELD_CASE','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (976,'GO_CONSOL','VIELD_CASE','DECONSOL','NEG','VIELD_CASE','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (977,'GO_CONSOL','VIELD_CNLM','DECONSOL','NEG','CONTRA_GROSS_WRAPPED_BOND','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (977,'GO_CONSOL','VIELD_CNLM','DECONSOL','NEG','CONTRA_GROSS_WRAPPED_BOND','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (978,'GO_CONSOL','VIELD_CNLM','DECONSOL','NEG','VIE_DECONSOL_DAC','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (978,'GO_CONSOL','VIELD_CNLM','DECONSOL','NEG','VIE_DECONSOL_DAC','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (979,'GO_CONSOL','VIELD_CNPL','DECONSOL','NEG','CONTRA_ASSUMED_PAID_LOSSES','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -4543,9 +4415,9 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1082,'GO_CONSOL','VIELF_PDL','DECONSOL','NEG','VIELF_PDL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1083,'GO_CONSOL','VIEPD_UPR_INITIAL','DECONSOL','NEG','VIE_DECONSOL_DAC','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1083,'GO_CONSOL','VIEPD_UPR_INITIAL','DECONSOL','NEG','VIE_DECONSOL_DAC','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1084,'GO_CONSOL','VIEPD_UPR_INITIAL','DECONSOL','NEG','VIEPD_UPR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1084,'GO_CONSOL','VIEPD_UPR_INITIAL','DECONSOL','NEG','VIEPD_UPR','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1085,'UKGAAP_ADJ','CC_CASH_OFFSET','NULL','POS','UK_COMMISSIONS_CASH_OFFSET_PAYABLE','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -4851,9 +4723,9 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1236,'UKGAAP_ADJ','LAE_INCOME_STMT','NULL','NEG','UK_CHANGE_IN_LAE_SLVG_RES','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1237,'GO_CONSOL','VIEPD_PGAAP_UPR','DECONSOL','NEG','VIE_DECONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1237,'GO_CONSOL','VIEPD_PGAAP_UPR','DECONSOL','NEG','VIE_DECONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1238,'GO_CONSOL','VIEPD_PGAAP_UPR','DECONSOL','NEG','PGAAP_UPR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1238,'GO_CONSOL','VIEPD_PGAAP_UPR','DECONSOL','NEG','PGAAP_UPR','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1239,'GO_CONSOL','VIEPF_PGAAP_UPR_IN','DECONSOL','NEG','PGAAP_UPR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -4875,13 +4747,13 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1248,'GO_CONSOL','VIECD_AR','DECONSOL','NEG','VIECD_AR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1249,'GO_CONSOL','VIECD_WP','DECONSOL','NEG','VIE_DECONSOL_DAC','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1249,'GO_CONSOL','VIECD_WP','DECONSOL','NEG','VIE_DECONSOL_DAC','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1250,'GO_CONSOL','VIECD_WP','DECONSOL','NEG','VIECD_WP','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1250,'GO_CONSOL','VIECD_WP','DECONSOL','NEG','VIECD_WP','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1251,'GO_CONSOL','VIELD_CNSS','DECONSOL','NEG','VIE_DECONSOL_DAC','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1251,'GO_CONSOL','VIELD_CNSS','DECONSOL','NEG','VIE_DECONSOL_DAC','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1252,'GO_CONSOL','VIELD_CNSS','DECONSOL','NEG','CONTRA_GROSS_PAID_LOSSES','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1252,'GO_CONSOL','VIELD_CNSS','DECONSOL','NEG','CONTRA_GROSS_PAID_LOSSES','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1253,'CORE','PGAAP_UPR_CHANGE','NULL','POS','PGAAP_UPR_ADJ','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -5379,9 +5251,9 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1500,'GO_CONSOL','VIEPF_FXWPACCRN_AM','NULL','POS','VIEPF_FXWPACCRN_AM_ADJUST','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1501,'GO_CONSOL','VIEPF_FXAR_FUT2CURR','NULL','POS','VIEPF_FXAR_FUT2CURR_OFFSET','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1501,'GO_CONSOL','VIEPF_FXAR_FUT2CURR','NULL','POS','VIEPF_FXAR_FUT2CURR_OFFSET','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1502,'GO_CONSOL','VIEPF_FXAR_FUT2CURR','NULL','POS','VIEPF_FXAR_FUT2CURR_ADJUST','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1502,'GO_CONSOL','VIEPF_FXAR_FUT2CURR','NULL','POS','VIEPF_FXAR_FUT2CURR_ADJUST','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1503,'GO_CONSOL','VIEPF_FXWPWRTOFF_FUT','NULL','POS','VIEPF_FXWPWRTOFF_FUT_OFFSET','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -5603,9 +5475,9 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1612,'GO_CONSOL','VIEPF_FXWPACCRN_AM','NULL','NEG','VIEPF_FXWPACCRN_AM_ADJUST','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1613,'GO_CONSOL','VIEPF_FXAR_FUT2CURR','NULL','NEG','VIEPF_FXAR_FUT2CURR_OFFSET','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1613,'GO_CONSOL','VIEPF_FXAR_FUT2CURR','NULL','NEG','VIEPF_FXAR_FUT2CURR_OFFSET','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1614,'GO_CONSOL','VIEPF_FXAR_FUT2CURR','NULL','NEG','VIEPF_FXAR_FUT2CURR_ADJUST','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1614,'GO_CONSOL','VIEPF_FXAR_FUT2CURR','NULL','NEG','VIEPF_FXAR_FUT2CURR_ADJUST','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1615,'GO_CONSOL','VIEPF_FXWPWRTOFF_FUT','NULL','NEG','VIEPF_FXWPWRTOFF_FUT_OFFSET','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -6243,13 +6115,13 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1932,'CORE_GE','FX_WP_WRITEOFF_FUT','NULL','NEG','FX_WP_WRITEOFF_FUT_ADJUST','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1933,'GO_CONSOL','VIELC_CNSS','NULL','POS','CONTRA_GROSS_PAID_LOSSES','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1933,'GO_CONSOL','VIELC_CNSS','NULL','POS','CONTRA_GROSS_PAID_LOSSES','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1934,'GO_CONSOL','VIELC_CNSS','NULL','POS','VIE_CONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1934,'GO_CONSOL','VIELC_CNSS','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1935,'GO_CONSOL','VIELC_CNSS','NULL','NEG','CONTRA_GROSS_PAID_LOSSES','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1935,'GO_CONSOL','VIELC_CNSS','NULL','NEG','CONTRA_GROSS_PAID_LOSSES','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1936,'GO_CONSOL','VIELC_CNSS','NULL','NEG','VIE_CONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1936,'GO_CONSOL','VIELC_CNSS','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1937,'GO_CONSOL','VIELF_SAL','NULL','POS','LOSS_CONTRA_RESERVES','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -6267,29 +6139,29 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1944,'GO_CONSOL','VIELF_SAL','DECONSOL','NEG','VIELC_SAL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1945,'GO_CONSOL','VIEPC_FV_UPR_INITIAL','NULL','POS','VIEPC_FV_UPR','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1945,'GO_CONSOL','VIEPC_FV_UPR_INITIAL','NULL','POS','VIEPC_FV_UPR','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1946,'GO_CONSOL','VIEPC_FV_UPR_INITIAL','NULL','POS','VIE_FV_CONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1946,'GO_CONSOL','VIEPC_FV_UPR_INITIAL','NULL','POS','VIE_FV_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1947,'GO_CONSOL','VIEPC_FV_UPR_INITIAL','NULL','NEG','VIEPC_FV_UPR','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1947,'GO_CONSOL','VIEPC_FV_UPR_INITIAL','NULL','NEG','VIEPC_FV_UPR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1948,'GO_CONSOL','VIEPC_FV_UPR_INITIAL','NULL','NEG','VIE_FV_CONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1948,'GO_CONSOL','VIEPC_FV_UPR_INITIAL','NULL','NEG','VIE_FV_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1949,'GO_CONSOL','VIEPC_PGAAP_UPR_IN','NULL','POS','VIEPC_PGAAP_UPR','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1949,'GO_CONSOL','VIEPC_PGAAP_UPR_IN','NULL','POS','VIEPC_PGAAP_UPR','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1950,'GO_CONSOL','VIEPC_PGAAP_UPR_IN','NULL','POS','VIE_PGAAP_CONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1950,'GO_CONSOL','VIEPC_PGAAP_UPR_IN','NULL','POS','VIE_PGAAP_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1951,'GO_CONSOL','VIEPC_PGAAP_UPR_IN','NULL','NEG','VIEPC_PGAAP_UPR','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1951,'GO_CONSOL','VIEPC_PGAAP_UPR_IN','NULL','NEG','VIEPC_PGAAP_UPR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1952,'GO_CONSOL','VIEPC_PGAAP_UPR_IN','NULL','NEG','VIE_PGAAP_CONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1952,'GO_CONSOL','VIEPC_PGAAP_UPR_IN','NULL','NEG','VIE_PGAAP_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1953,'GO_CONSOL','VIEPD_FV_UPR','DECONSOL','POS','VIE_DECONSOL_FV','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1953,'GO_CONSOL','VIEPD_FV_UPR','DECONSOL','POS','VIE_DECONSOL_FV','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1954,'GO_CONSOL','VIEPD_FV_UPR','DECONSOL','POS','VIEPD_FV_UPR','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1954,'GO_CONSOL','VIEPD_FV_UPR','DECONSOL','POS','VIEPD_FV_UPR','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1955,'GO_CONSOL','VIEPD_FV_UPR','DECONSOL','NEG','VIE_DECONSOL_FV','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1955,'GO_CONSOL','VIEPD_FV_UPR','DECONSOL','NEG','VIE_DECONSOL_FV','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
-  VALUES (1956,'GO_CONSOL','VIEPD_FV_UPR','DECONSOL','NEG','VIEPD_FV_UPR','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES (1956,'GO_CONSOL','VIEPD_FV_UPR','DECONSOL','NEG','VIEPD_FV_UPR','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (1957,'GO_CONSOL','VIEPF_FV_UPR_INITIAL','NULL','POS','VIEPF_FV_UPR','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
@@ -7266,6 +7138,22 @@ INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEM
   VALUES (2443,'GO_CONSOL','VIECF_FVDAC_CC_AMORT','NULL','POS','DAC_AMORT_COMM_03','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
   VALUES (2444,'GO_CONSOL','VIECF_FVDAC_CC_AMORT','NULL','NEG','DAC_AMORT_COMM_03','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
+  VALUES (2461,'GO_CONSOL','VIELC_OTHRINC_GAAP','NULL','POS','VIE_CONSOL_GL','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
+  VALUES (2462,'GO_CONSOL','VIELC_OTHRINC_GAAP','NULL','POS','OTHR_INC_GAAP_CONTRA_PAID_LOSS','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
+  VALUES (2463,'GO_CONSOL','VIELC_OTHRINC_GAAP','NULL','NEG','VIE_CONSOL_GL','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
+  VALUES (2464,'GO_CONSOL','VIELC_OTHRINC_GAAP','NULL','NEG','OTHR_INC_GAAP_CONTRA_PAID_LOSS','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
+  VALUES (2465,'GO_CONSOL','VIELD_OTHRINC_GAAP','DECONSOL','POS','OTHR_INC_GAAP_CONTRA_PAID_LOSS','DR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
+  VALUES (2466,'GO_CONSOL','VIELD_OTHRINC_GAAP','DECONSOL','POS','VIE_DECONSOL_GL','CR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
+  VALUES (2467,'GO_CONSOL','VIELD_OTHRINC_GAAP','DECONSOL','NEG','OTHR_INC_GAAP_CONTRA_PAID_LOSS','CR',1,1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_posting_driver ("PD_POSTING_DRIVER_ID","PD_POSTING_SCHEMA","PD_AET_EVENT_TYPE","PD_SUB_EVENT","PD_AMOUNT_TYPE","PD_POSTING_CODE","PD_DR_OR_CR","PD_TRANSACTION_NO","PD_NEGATE_FLAG1","PD_JOURNAL_TYPE","PD_VALID_FROM","PD_VALID_TO")
+  VALUES (2468,'GO_CONSOL','VIELD_OTHRINC_GAAP','DECONSOL','NEG','VIE_DECONSOL_GL','DR',2,-1,'PERC',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 
 -- Populate table LOAD_FR_ACCOUNT_LOOKUP
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
@@ -8537,13 +8425,13 @@ INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOK
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('OTHR_INC_GAAP','D','N','ND~','ND~','46300130-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('VIE_CONSOL_GL','ND~','ND~','ND~','ND~','44700360-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('VIE_CONSOL_GL','D','ND~','ND~','ND~','44700360-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIECC_DAC','A','ND~','ND~','ND~','14300210-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIECC_DAC','D','ND~','ND~','ND~','14200110-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('VIE_DECONSOL_DAC','ND~','ND~','ND~','ND~','44700365-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('VIE_DECONSOL_DAC','D','ND~','ND~','ND~','44700365-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIECF_DAC','A','ND~','ND~','ND~','14300210-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
@@ -8565,7 +8453,7 @@ INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOK
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('DAC_DEFERRED_COMM','D','ND~','ND~','ND~','55900030-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('OTH_INC_ASSUMED_AFF_COMM_WRITEOFF','ND~','ND~','ND~','ND~','46300550-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('OTH_INC_ASSUMED_AFF_COMM_WRITEOFF','D','ND~','ND~','ND~','46300550-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('OTH_INC_PREM_WRITEOFF','A','ND~','ND~','ND~','46300510-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
@@ -11499,15 +11387,15 @@ INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOK
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIEPC_FV_UPR','D','ND~','ND~','ND~','21300200-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('VIE_FV_CONSOL_GL','ND~','ND~','ND~','ND~','44700360-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('VIE_FV_CONSOL_GL','D','ND~','ND~','ND~','44700360-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('VIE_PGAAP_CONSOL_GL','ND~','ND~','ND~','ND~','44700360-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('VIE_PGAAP_CONSOL_GL','D','ND~','ND~','ND~','44700360-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIEPC_PGAAP_UPR','A','ND~','ND~','ND~','21400400-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIEPC_PGAAP_UPR','D','ND~','ND~','ND~','21300200-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('VIE_DECONSOL_FV','ND~','ND~','ND~','ND~','44700365-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('VIE_DECONSOL_FV','D','ND~','ND~','ND~','44700365-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIEPD_FV_UPR','A','ND~','ND~','ND~','21400400-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
@@ -11689,13 +11577,13 @@ INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOK
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('CEDING_COMMISSION_DAC_02','D','N','ND~','ND~','14200110-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('VIE_CONSOL_GL_02','ND~','N','ND~','ND~','44700360-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('VIE_CONSOL_GL_02','D','N','ND~','ND~','44700360-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIECC_DAC_02','A','N','ND~','ND~','14300210-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIECC_DAC_02','D','N','ND~','ND~','14200110-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('VIE_DECONSOL_DAC_02','ND~','N','ND~','ND~','44700365-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('VIE_DECONSOL_DAC_02','D','N','ND~','ND~','44700365-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIECF_DAC_02','A','N','ND~','ND~','14300210-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
@@ -11749,13 +11637,13 @@ INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOK
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('CEDING_COMMISSION_DAC_03','D','N','ND~','ND~','14200110-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('VIE_CONSOL_GL_03','ND~','N','ND~','ND~','44700360-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('VIE_CONSOL_GL_03','D','N','ND~','ND~','44700360-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIECC_DAC_03','A','N','ND~','ND~','14300210-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIECC_DAC_03','D','N','ND~','ND~','14200110-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
-  VALUES ('VIE_DECONSOL_DAC_03','ND~','N','ND~','ND~','44700365-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+  VALUES ('VIE_DECONSOL_DAC_03','D','N','ND~','ND~','44700365-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('VIECF_DAC_03','A','N','ND~','ND~','14300210-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
@@ -11768,6 +11656,26 @@ INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOK
   VALUES ('DAC_DEFERRED_COMM_03','A','N','ND~','ND~','55900045-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
   VALUES ('DAC_DEFERRED_COMM_03','D','N','ND~','ND~','55900030-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('VIE_CONSOL_GL','A','ND~','ND~','ND~','44700360-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('VIE_DECONSOL_DAC','A','ND~','ND~','ND~','44700365-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('OTH_INC_ASSUMED_AFF_COMM_WRITEOFF','A','ND~','ND~','ND~','46300550-01',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('VIE_FV_CONSOL_GL','A','ND~','ND~','ND~','44700360-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('VIE_PGAAP_CONSOL_GL','A','ND~','ND~','ND~','44700360-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('VIE_DECONSOL_FV','A','ND~','ND~','ND~','44700365-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('VIE_CONSOL_GL_02','A','N','ND~','ND~','44700360-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('VIE_DECONSOL_DAC_02','A','N','ND~','ND~','44700365-02',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('VIE_CONSOL_GL_03','A','N','ND~','ND~','44700360-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO stn.load_fr_account_lookup ("AL_POSTING_CODE","AL_LOOKUP_1","AL_LOOKUP_2","AL_LOOKUP_3","AL_LOOKUP_4","AL_ACCOUNT","AL_VALID_FROM","AL_VALID_TO")
+  VALUES ('VIE_DECONSOL_DAC_03','A','N','ND~','ND~','44700365-03',TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS'),TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'));
 
 -- Post-Load SQL
 execute stn.pk_posting_rules.pr_posting_rules_update;
