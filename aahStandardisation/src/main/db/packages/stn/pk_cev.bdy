@@ -555,7 +555,8 @@ and not exists (
                                                                                     )
         
                             left join stn.posting_method_derivation_gfa  gfa    on et.event_typ_id      = gfa.event_typ_in
-                                                                               and exists (
+																				and cev.basis_cd = 'US_STAT'
+                                                                                and exists (
                                                                                             select null
                                                                                               from stn.cev_valid     cev2
                                                                                               join stn.event_type    et2
