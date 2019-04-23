@@ -4284,7 +4284,7 @@ AS
                 /* jle_error_code */
                 'MADJ-1051',
                 /* jle_error_string */
-                'Transaction Currency is required.',
+                'At least one Currency type is required.',
                 /* jle_created_by */
                 'SYSTEM',
                 /* jle_created_on */
@@ -4296,82 +4296,82 @@ AS
            FROM temp_gui_jrnl_lines_unposted
           WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                 AND user_session_id = gSessionId
-                AND jlu_tran_ccy IS NULL;
+                AND (jlu_tran_ccy IS NULL AND jlu_base_ccy IS NULL and jlu_local_ccy IS NULL);
 
 
-      -- Check base Currency
-      INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
-                                             user_session_id,
-                                             jle_jrnl_hdr_id,
-                                             jle_jrnl_line_number,
-                                             jle_error_code,
-                                             jle_error_string,
-                                             jle_created_by,
-                                             jle_created_on,
-                                             jle_amended_by,
-                                             jle_amended_on)
-         SELECT                                      /* jle_jrnl_process_id */
-               0,
-                /* user_session_id */
-                gSessionId,
-                /* jle_jrnl_hdr_id */
-                jlu_jrnl_hdr_id,
-                /* jle_jrnl_line_number */
-                jlu_jrnl_line_number,
-                /* jle_error_code */
-                'MADJ-1051',
-                /* jle_error_string */
-                'Base Currency is required.',
-                /* jle_created_by */
-                'SYSTEM',
-                /* jle_created_on */
-                SYSDATE,
-                /* jle_amended_by */
-                'SYSTEM',
-                /* jle_amended_on */
-                SYSDATE
-           FROM temp_gui_jrnl_lines_unposted
-          WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-                AND user_session_id = gSessionId
-                AND jlu_base_ccy IS NULL;
-
-
-      -- Check local Currency
-      INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
-                                             user_session_id,
-                                             jle_jrnl_hdr_id,
-                                             jle_jrnl_line_number,
-                                             jle_error_code,
-                                             jle_error_string,
-                                             jle_created_by,
-                                             jle_created_on,
-                                             jle_amended_by,
-                                             jle_amended_on)
-         SELECT                                      /* jle_jrnl_process_id */
-               0,
-                /* user_session_id */
-                gSessionId,
-                /* jle_jrnl_hdr_id */
-                jlu_jrnl_hdr_id,
-                /* jle_jrnl_line_number */
-                jlu_jrnl_line_number,
-                /* jle_error_code */
-                'MADJ-1051',
-                /* jle_error_string */
-                'Local Currency is required.',
-                /* jle_created_by */
-                'SYSTEM',
-                /* jle_created_on */
-                SYSDATE,
-                /* jle_amended_by */
-                'SYSTEM',
-                /* jle_amended_on */
-                SYSDATE
-           FROM temp_gui_jrnl_lines_unposted
-          WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-                AND user_session_id = gSessionId
-                AND jlu_local_ccy IS NULL;
-
+--      -- Check base Currency
+--      INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
+--                                             user_session_id,
+--                                             jle_jrnl_hdr_id,
+--                                             jle_jrnl_line_number,
+--                                             jle_error_code,
+--                                             jle_error_string,
+--                                             jle_created_by,
+--                                             jle_created_on,
+--                                             jle_amended_by,
+--                                             jle_amended_on)
+--         SELECT                                      /* jle_jrnl_process_id */
+--               0,
+--                /* user_session_id */
+--                gSessionId,
+--                /* jle_jrnl_hdr_id */
+--                jlu_jrnl_hdr_id,
+--                /* jle_jrnl_line_number */
+--                jlu_jrnl_line_number,
+--                /* jle_error_code */
+--                'MADJ-1051',
+--                /* jle_error_string */
+--                'Base Currency is required.',
+--                /* jle_created_by */
+--                'SYSTEM',
+--                /* jle_created_on */
+--                SYSDATE,
+--                /* jle_amended_by */
+--                'SYSTEM',
+--                /* jle_amended_on */
+--                SYSDATE
+--           FROM temp_gui_jrnl_lines_unposted
+--          WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+--                AND user_session_id = gSessionId
+--                AND jlu_base_ccy IS NULL;
+--
+--
+--      -- Check local Currency
+--      INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
+--                                             user_session_id,
+--                                             jle_jrnl_hdr_id,
+--                                             jle_jrnl_line_number,
+--                                             jle_error_code,
+--                                             jle_error_string,
+--                                             jle_created_by,
+--                                             jle_created_on,
+--                                             jle_amended_by,
+--                                             jle_amended_on)
+--         SELECT                                      /* jle_jrnl_process_id */
+--               0,
+--                /* user_session_id */
+--                gSessionId,
+--                /* jle_jrnl_hdr_id */
+--                jlu_jrnl_hdr_id,
+--                /* jle_jrnl_line_number */
+--                jlu_jrnl_line_number,
+--                /* jle_error_code */
+--                'MADJ-1051',
+--                /* jle_error_string */
+--                'Local Currency Type is required.',
+--                /* jle_created_by */
+--                'SYSTEM',
+--                /* jle_created_on */
+--                SYSDATE,
+--                /* jle_amended_by */
+--                'SYSTEM',
+--                /* jle_amended_on */
+--                SYSDATE
+--           FROM temp_gui_jrnl_lines_unposted
+--          WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+--                AND user_session_id = gSessionId
+--                AND jlu_local_ccy IS NULL;
+--
       -- Check Tran Amount
 
       /* external ttp 796 - allow jlu_tran_amount = 0 do not check!*/
