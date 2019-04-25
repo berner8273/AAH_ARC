@@ -1,6 +1,6 @@
 create or replace view rdr.rrv_ag_loader_event_hier
 as
-with
+  with
      event_category
   as (
           select
@@ -35,6 +35,7 @@ with
                 fgl.lk_match_key1    event_class
               , fgl.lk_lookup_value1 event_class_descr
               , fgl.lk_lookup_value2 event_class_period_freq
+              , to_number(fgl.lk_lookup_value10) event_class_order
            from
                      fdr.fr_general_lookup fgl
                 join (
@@ -63,6 +64,7 @@ with
           select
                 fgl.lk_match_key1    event_grp
               , fgl.lk_lookup_value1 event_grp_descr
+              , to_number(fgl.lk_lookup_value10) event_grp_order
            from
                      fdr.fr_general_lookup fgl
                 join (
@@ -91,6 +93,7 @@ with
           select
                 fgl.lk_match_key1    event_subgrp
               , fgl.lk_lookup_value1 event_subgrp_descr
+              , to_number(fgl.lk_lookup_value10) event_subgrp_order
            from
                      fdr.fr_general_lookup fgl
                 join (
@@ -153,10 +156,13 @@ select
      , etyp.event_class
      , ecls.event_class_descr
      , ecls.event_class_period_freq
+     , ecls.event_class_order
      , etyp.event_grp
      , egrp.event_grp_descr
+     , egrp.event_grp_order
      , etyp.event_subgrp
      , esgp.event_subgrp_descr
+     , esgp.event_subgrp_order
      , etyp.event_typ
      , faet.aet_acc_event_type_name   event_typ_descr
      , etyp.event_typ_seq_id

@@ -1,6 +1,5 @@
 create or replace package body     pk_posting_rules
 as
-
 procedure pr_posting_rules_clear
 as
 begin
@@ -95,10 +94,13 @@ if p_no_load_total > 0 then
                                eh_load.event_class
                              , eh_load.event_class_descr
                              , eh_load.event_class_period_freq
+                             , eh_load.event_class_order
                              , eh_load.event_grp
                              , eh_load.event_grp_descr
+                             , eh_load.event_grp_order
                              , eh_load.event_subgrp
                              , eh_load.event_subgrp_descr
+                             , eh_load.event_subgrp_order
                              , eh_load.event_typ
                              , eh_load.event_typ_descr
                              , eh_load.event_typ_seq_id
@@ -113,10 +115,13 @@ if p_no_load_total > 0 then
                                eh_source.event_class
                              , eh_source.event_class_descr
                              , eh_source.event_class_period_freq
+                             , eh_source.event_class_order
                              , eh_source.event_grp
                              , eh_source.event_grp_descr
+                             , eh_source.event_grp_order
                              , eh_source.event_subgrp
                              , eh_source.event_subgrp_descr
+                             , eh_source.event_subgrp_order
                              , eh_source.event_typ
                              , eh_source.event_typ_descr
                              , eh_source.event_typ_seq_id
@@ -131,10 +136,13 @@ if p_no_load_total > 0 then
                                eh_source.event_class
                              , eh_source.event_class_descr
                              , eh_source.event_class_period_freq
+                             , eh_source.event_class_order
                              , eh_source.event_grp
                              , eh_source.event_grp_descr
+                             , eh_source.event_grp_order
                              , eh_source.event_subgrp
                              , eh_source.event_subgrp_descr
+                             , eh_source.event_subgrp_order
                              , eh_source.event_typ
                              , eh_source.event_typ_descr
                              , eh_source.event_typ_seq_id
@@ -149,10 +157,13 @@ if p_no_load_total > 0 then
                                eh_load.event_class
                              , eh_load.event_class_descr
                              , eh_load.event_class_period_freq
+                             , eh_load.event_class_order
                              , eh_load.event_grp
                              , eh_load.event_grp_descr
+                             , eh_load.event_grp_order
                              , eh_load.event_subgrp
                              , eh_load.event_subgrp_descr
+                             , eh_load.event_subgrp_order
                              , eh_load.event_typ
                              , eh_load.event_typ_descr
                              , eh_load.event_typ_seq_id
@@ -339,6 +350,7 @@ if p_no_load_total > 0 then
                                vp_load.event_typ
                              , vp_load.vie_event_typ
                              , vp_load.vie_typ
+                             
                           from
                                stn.load_vie_posting_method vp_load
                         minus
@@ -624,6 +636,7 @@ begin
            , min( eh_load.event_class_descr )       event_class_descr
            , min( eh_load.event_class_period_freq ) event_class_period_freq
            , 'EVENT_CLASS'                          lk_lkt_lookup_type_code
+           , min( eh_load.event_class_order )       event_class_order
            , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                          lk_effective_from
            , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')                          lk_effective_to
            , 'A'                                    lk_active
@@ -638,12 +651,14 @@ begin
            set
                fgl.lk_lookup_value1    = eh_new.event_class_descr
              , fgl.lk_lookup_value2    = eh_new.event_class_period_freq
+             , fgl.lk_lookup_value10   = eh_new.event_class_order
       when not matched then
         insert
             ( fgl.lk_match_key1
             , fgl.lk_lookup_value1
             , fgl.lk_lookup_value2
             , fgl.lk_lkt_lookup_type_code
+            , fgl.lk_lookup_value10
             , fgl.lk_effective_from
             , fgl.lk_effective_to
             , fgl.lk_active )
@@ -652,6 +667,7 @@ begin
             , eh_new.event_class_descr
             , eh_new.event_class_period_freq
             , eh_new.lk_lkt_lookup_type_code
+            , eh_new.event_class_order
             , eh_new.lk_effective_from
             , eh_new.lk_effective_to
             , eh_new.lk_active )
@@ -666,6 +682,7 @@ begin
              eh_load.event_grp
            , min( eh_load.event_grp_descr ) event_grp_descr
            , 'EVENT_GROUP'                  lk_lkt_lookup_type_code
+           , min( eh_load.event_grp_order )       event_grp_order
            , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                  lk_effective_from
            , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')                  lk_effective_to
            , 'A'                            lk_active
@@ -679,11 +696,13 @@ begin
         update
            set
                fgl.lk_lookup_value1    = eh_new.event_grp_descr
+             , fgl.lk_lookup_value10   = eh_new.event_grp_order
       when not matched then
         insert
             ( fgl.lk_match_key1
             , fgl.lk_lookup_value1
             , fgl.lk_lkt_lookup_type_code
+            , fgl.lk_lookup_value10
             , fgl.lk_effective_from
             , fgl.lk_effective_to
             , fgl.lk_active )
@@ -691,6 +710,7 @@ begin
             ( eh_new.event_grp
             , eh_new.event_grp_descr
             , eh_new.lk_lkt_lookup_type_code
+            , eh_new.event_grp_order
             , eh_new.lk_effective_from
             , eh_new.lk_effective_to
             , eh_new.lk_active )
@@ -705,6 +725,7 @@ begin
              eh_load.event_subgrp
            , min( eh_load.event_subgrp_descr ) event_subgrp_descr
            , 'EVENT_SUBGROUP'                  lk_lkt_lookup_type_code
+           , min( eh_load.event_subgrp_order )       event_subgrp_order
            , TO_DATE('2000/01/01 00:00:00','YYYY/MM/DD HH24:MI:SS')                     lk_effective_from
            , TO_DATE('2099/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS')                     lk_effective_to
            , 'A'                               lk_active
@@ -718,11 +739,13 @@ begin
         update
            set
                fgl.lk_lookup_value1    = eh_new.event_subgrp_descr
+             , fgl.lk_lookup_value10    = eh_new.event_subgrp_order
       when not matched then
         insert
             ( fgl.lk_match_key1
             , fgl.lk_lookup_value1
             , fgl.lk_lkt_lookup_type_code
+            , fgl.lk_lookup_value10
             , fgl.lk_effective_from
             , fgl.lk_effective_to
             , fgl.lk_active )
@@ -730,6 +753,7 @@ begin
             ( eh_new.event_subgrp
             , eh_new.event_subgrp_descr
             , eh_new.lk_lkt_lookup_type_code
+            , eh_new.event_subgrp_order
             , eh_new.lk_effective_from
             , eh_new.lk_effective_to
             , eh_new.lk_active )
@@ -980,29 +1004,38 @@ begin
     merge into
            stn.vie_posting_method_ledger vpml
     using (
-     select
-             ( select basis_id from stn.posting_accounting_basis where basis_cd = 'US_GAAP' ) input_basis_id
+        select
+             pab.basis_id  input_basis_id
            , et.event_typ_id
            , vie_multi.vie_id
            , vet.event_typ_id                                                                 vie_event_typ_id
            , ( select basis_id from stn.posting_accounting_basis where basis_cd = 'US_GAAP' ) output_basis_id
            , ( select ledger_id from stn.posting_ledger where ledger_cd = 'GO_CONSOL' )       ledger_id
            , pfc.fin_calc_id
-           , 1                                                                                negate_flag
+           , case 
+                when vpml_load.is_gaap_stat = 'Y' and pab.basis_id = 1
+                    then -1
+                else 1 end as negate_flag
            , vie_multi.sub_event
         from
-             stn.load_vie_posting_method        vpml_load
+             stn.load_vie_posting_method vpml_load
+        join stn.posting_accounting_basis pab
+            on ((vpml_load.is_gaap_stat = 'N' and basis_cd = 'US_GAAP')
+                or (vpml_load.is_gaap_stat = 'Y' and basis_cd IN ('US_GAAP', 'US_STAT')))
         join stn.event_type                     et         on vpml_load.event_typ     = et.event_typ
         join stn.event_type                     vet        on vpml_load.vie_event_typ = vet.event_typ
         join (  select 'Monthly'  vie_typ  , 2 vie_id  , 'NULL'     sub_event  , 'MONTHLY' fin_calc_cd from dual
-          union select 'Monthly'           , 5         , 'DECONSOL'            , 'MONTHLY'             from dual
+          union select 'Monthly'           , 3         , 'NULL'                , 'MONTHLY'             from dual
+          union select 'Monthly'           , 4         , 'NULL'                , 'MONTHLY'             from dual
+          union select 'Monthly'           , 5         , 'NULL'                , 'MONTHLY'             from dual
           union select 'Monthly'           , 6         , 'NULL'                , 'MONTHLY'             from dual
           union select 'Consol balance'    , 2         , 'NULL'                , 'BOP'                 from dual
           union select 'Consol balance'    , 3         , 'NULL'                , 'EOP'                 from dual
           union select 'Deconsol balance'  , 4         , 'DECONSOL'            , 'BOP'                 from dual
           union select 'Deconsol balance'  , 5         , 'DECONSOL'            , 'EOP'                 from dual )
                                                 vie_multi  on vpml_load.vie_typ       = vie_multi.vie_typ
-        join stn.posting_financial_calc         pfc        on vie_multi.fin_calc_cd   = pfc.fin_calc_cd              ) vpml_new
+        join stn.posting_financial_calc         pfc        on vie_multi.fin_calc_cd   = pfc.fin_calc_cd
+        ) vpml_new
       on (     vpml_new.input_basis_id    =  vpml.input_basis_id
            and vpml_new.event_typ_id      =  vpml.event_typ_id
            and vpml_new.vie_id            =  vpml.vie_id
