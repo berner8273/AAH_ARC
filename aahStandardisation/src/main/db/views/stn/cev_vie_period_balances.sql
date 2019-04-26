@@ -31,7 +31,8 @@ from (
                     on sedb.edb_eba_id = sec.ec_eba_id
             where 
                 sfc.fc_segment_2 in ('US_STAT', 'US_GAAP')
-                    and sfc.fc_segment_7 in ('D','A'))
+                    and sfc.fc_segment_7 in ('D','A')
+                    and sedb.edb_balance_type=50)
         , edb_dt as (
             select distinct balance_date 
             from edb_bal)
