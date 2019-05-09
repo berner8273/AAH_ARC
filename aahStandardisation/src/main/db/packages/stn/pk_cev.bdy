@@ -43,7 +43,7 @@ and not exists (
              and trunc(ce.accounting_dt,'MONTH') = trunc(ps.period_end,'MONTH')
              and ce.event_typ = ehr.event_typ
               );
-        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD' , cascade => true );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD' , estimate_percent => 30 , cascade => true );
         UPDATE CESSION_EVENT ce
             SET
                 STEP_RUN_SID = p_step_run_sid
@@ -133,7 +133,7 @@ and not exists (
         
         v_no_cev_valid := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_VALID' , cascade => true );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_VALID' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_valid', 'v_no_cev_valid', NULL, v_no_cev_valid, NULL);
         insert into stn.posting_account_derivation
         select distinct
@@ -165,8 +165,7 @@ and not exists (
         ;       
            --and padt.amount_typ_descr   in ( 'DERIVED' , 'DERIVED_PLUS' )
              
-        
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'POSTING_ACCOUNT_DERIVATION' );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'POSTING_ACCOUNT_DERIVATION' , estimate_percent => 30 , cascade => true );
         insert into stn.vie_posting_account_derivation
         select distinct
                fpd.pd_posting_schema     posting_schema
@@ -194,7 +193,7 @@ and not exists (
                          where et.event_typ = fpd.pd_aet_event_type )
              ;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'VIE_POSTING_ACCOUNT_DERIVATION' );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'VIE_POSTING_ACCOUNT_DERIVATION' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed posting_account_derivation', NULL, NULL, NULL, NULL);
         insert into stn.cev_data
         with
@@ -601,7 +600,7 @@ and not exists (
                    )
         ;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_PREMIUM_TYP_OVERRIDE' );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_PREMIUM_TYP_OVERRIDE' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_premium_typ_override', NULL, NULL, NULL, NULL);
         insert into stn.cev_mtm_data
                  select /*+ parallel*/
@@ -679,7 +678,7 @@ and not exists (
         
         v_no_cev_mtm_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_MTM_DATA' );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_MTM_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_mtm_data', 'v_no_cev_mtm_data', NULL, v_no_cev_mtm_data, NULL);
         insert into stn.cev_gaap_fut_accts_data
         with gfa_1 as
@@ -887,7 +886,7 @@ and not exists (
         
         v_no_cev_gaap_fut_accts_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_GAAP_FUT_ACCTS_DATA' );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_GAAP_FUT_ACCTS_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_gaap_fut_accts_data', 'v_no_cev_gaap_fut_accts_data', NULL, v_no_cev_gaap_fut_accts_data, NULL);
         -- Derived plus logic no longer needed in cession event standardisation
         -- UPR change logic is done in upstream system
@@ -1252,7 +1251,7 @@ and not exists (
         
         v_no_cev_non_intercompany_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_NON_INTERCOMPANY_DATA' );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_NON_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_non_intercompany_data', 'v_no_cev_non_intercompany_data', NULL, v_no_cev_non_intercompany_data, NULL);
         insert into stn.cev_intercompany_data
         with intercompany_data
@@ -1626,7 +1625,7 @@ and not exists (
         
         v_no_cev_intercompany_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_INTERCOMPANY_DATA' );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_intercompany_data', 'v_no_cev_intercompany_data', NULL, v_no_cev_intercompany_data, NULL);
         insert into stn.cev_vie_data
         with vie_event_cd
@@ -2117,7 +2116,7 @@ and not exists (
         
         v_no_cev_vie_data := sql%rowcount;
         
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_VIE_DATA' );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_VIE_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_vie_data', 'v_no_cev_vie_data', NULL, v_no_cev_vie_data, NULL);
         INSERT INTO HOPPER_CESSION_EVENT
             (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP)
