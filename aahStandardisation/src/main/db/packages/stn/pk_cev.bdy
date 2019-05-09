@@ -303,23 +303,21 @@ and not exists (
                                         end premium_typ
                                 
                                  , case
-                                        when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('C','CA') and ce_data.counterparty_le_cd = 'FSAU')
-                                              or (cev.event_typ like 'PGAAP%' and cev.business_typ in ('A','AA','D') and ce_data.owner_le_cd = 'FSAU')
+                                        when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('C') and ce_data.counterparty_le_cd = 'FSAU')
+                                              or (cev.event_typ like 'PGAAP%' and cev.business_typ in ('A','CA','AA','D') and ce_data.owner_le_cd = 'FSAU')
                                             then 'FSANY'
                                         when cev.event_typ = 'DAC_CC_CONS_ADJUST' and cev.business_typ in ('C','A','D','AA')
                                             then 'CA005'
                                         else ce_data.le_cd
                                     end le_cd
-                                           
+
                                  , case
-                                        when (cev.event_typ like 'PGAAP%' and cev.business_typ ='CA' and ce_data.counterparty_le_cd = 'FSAU')
-                                              or (cev.event_typ like 'PGAAP%' and cev.business_typ ='AA' and ce_data.owner_le_cd = 'FSAU')
+                                        when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('AA','CA') and ce_data.counterparty_le_cd = 'FSAU')                                              
                                             then 'FSANY'
                                         when cev.event_typ = 'DAC_CC_CONS_ADJUST' and cev.business_typ in ('CA')
                                             then 'CA005'
                                         else ce_data.parent_cession_le_cd
-                                    end parent_cession_le_cd
-        
+                                    end parent_cession_le_cd        
                                  , ce_data.owner_le_cd
                                  , ce_data.counterparty_le_cd
                                  , cev.transaction_amt
