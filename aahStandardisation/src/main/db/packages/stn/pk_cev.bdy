@@ -576,7 +576,7 @@ and not exists (
                         )
               ;
         v_no_cev_data := sql%rowcount;
-        dbms_stats.gather_table_stats ( ownname => 'STN', tabname => 'CEV_DATA' );
+		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_data', 'v_no_cev_data', NULL, v_no_cev_data, NULL);
         insert into stn.cev_premium_typ_override
                 select distinct
