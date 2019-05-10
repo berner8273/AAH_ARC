@@ -10329,9 +10329,7 @@ AS
                               /* jlu_base_rate */
                               NULL,
                               /* jlu_base_ccy */
-                              DECODE (NVL (base_amount, 0),
-                                      0, NULL,
-                                      base_currency),
+                              base_currency,
                               /* jlu_base_amount */
                               DECODE (NVL (base_amount, 0),
                                       0, NULL,
@@ -10339,9 +10337,7 @@ AS
                               /* jlu_local_rate */
                               NULL,
                               /* jlu_local_ccy */
-                              DECODE (NVL (local_amount, 0),
-                                      0, NULL,
-                                      local_currency),
+                              local_currency,
                               /* jlu_local_amount */
                               DECODE (NVL (local_amount, 0),
                                       0, NULL,
