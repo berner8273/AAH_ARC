@@ -2783,23 +2783,27 @@ AS
                          /* jlu_base_rate */
                          jlu_base_rate,
                          /* jlu_base_ccy */
-                         DECODE (NVL (jlu_base_amount, 0),
-                                 0, NULL,
-                                 jlu_base_ccy),
+                         jlu_base_ccy,
+--                         DECODE (NVL (jlu_base_amount, 0),
+--                                 0, NULL,
+--                                 jlu_base_ccy),
                          /* jlu_base_amount */
-                         DECODE (NVL (jlu_base_amount, 0),
-                                 0, NULL,
-                                 jlu_base_amount),
+                         jlu_base_amount,
+--                         DECODE (NVL (jlu_base_amount, 0),
+--                                 0, NULL,
+--                                 jlu_base_amount),
                          /* jlu_local_rate */
                          jlu_local_rate,
                          /* jlu_local_ccy */
-                         DECODE (NVL (jlu_local_amount, 0),
-                                 0, NULL,
-                                 jlu_local_ccy),
+                         jlu_local_ccy,
+--                         DECODE (NVL (jlu_local_amount, 0),
+--                                 0, NULL,
+--                                 jlu_local_ccy),
                          /* jlu_local_amount */
-                         DECODE (NVL (jlu_local_amount, 0),
-                                 0, NULL,
-                                 jlu_local_amount),
+                         jlu_local_amount,
+--                         DECODE (NVL (jlu_local_amount, 0),
+--                                 0, NULL,
+--                                 jlu_local_amount),
                          /* jlu_created_by */
                          updated_by,
                          /* jlu_created_on */
@@ -4333,7 +4337,8 @@ AS
            FROM temp_gui_jrnl_lines_unposted
           WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                 AND user_session_id = gSessionId
-                AND jlu_base_ccy IS NULL;
+                AND jlu_base_ccy IS NULL
+                AND NVL (jlu_base_amount, 0) != 0;
 
 
       -- Check local Currency
@@ -4370,7 +4375,8 @@ AS
            FROM temp_gui_jrnl_lines_unposted
           WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                 AND user_session_id = gSessionId
-                AND jlu_local_ccy IS NULL;
+                AND jlu_local_ccy IS NULL
+                AND NVL (jlu_local_amount, 0) != 0;
 
       -- Check Tran Amount
 
@@ -14108,13 +14114,12 @@ AS
 
       --delete journals that failed posting from slr unposted tables, update journal status and copy errors to gui.--
       prui_rollback_err_slr_journals (epg_id            => epg_id,
-                                      journal_id_list   => journal_id_list,
+                                      journal_id_list   => lv_journal_id_list,
                                       rollback_all      => FALSE);
       COMMIT;
 
       --delete successfuly posted or future dated (awaiting posting 'W') journals from gui tables--
       prui_delete_gui_journals (lv_journal_id_list);
---      prui_delete_gui_journals (lv_header_id_list);
 
       COMMIT;
 
