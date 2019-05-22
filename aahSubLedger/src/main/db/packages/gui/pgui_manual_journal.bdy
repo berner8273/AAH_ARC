@@ -10126,10 +10126,7 @@ AS
                          DECODE (overwrite_details,
                                  'Y', base_rate,
                                  jlu_base_rate),
-                      jlu_base_ccy =
-                         DECODE (overwrite_details,
-                                 'Y', base_currency,
-                                 jlu_base_ccy),
+                      jlu_base_ccy = jlu_base_ccy,
                       jlu_base_amount =
                          DECODE (
                             overwrite_details,
@@ -10143,10 +10140,7 @@ AS
                          DECODE (overwrite_details,
                                  'Y', local_rate,
                                  jlu_local_rate),
-                      Jlu_local_ccy =
-                         DECODE (overwrite_details,
-                                 'Y', local_currency,
-                                 jlu_local_ccy),
+                      Jlu_local_ccy = jlu_local_ccy,
                       jlu_local_amount =
                          DECODE (
                             overwrite_details,
