@@ -2784,26 +2784,14 @@ AS
                          jlu_base_rate,
                          /* jlu_base_ccy */
                          jlu_base_ccy,
---                         DECODE (NVL (jlu_base_amount, 0),
---                                 0, NULL,
---                                 jlu_base_ccy),
                          /* jlu_base_amount */
                          jlu_base_amount,
---                         DECODE (NVL (jlu_base_amount, 0),
---                                 0, NULL,
---                                 jlu_base_amount),
                          /* jlu_local_rate */
                          jlu_local_rate,
                          /* jlu_local_ccy */
                          jlu_local_ccy,
---                         DECODE (NVL (jlu_local_amount, 0),
---                                 0, NULL,
---                                 jlu_local_ccy),
                          /* jlu_local_amount */
                          jlu_local_amount,
---                         DECODE (NVL (jlu_local_amount, 0),
---                                 0, NULL,
---                                 jlu_local_amount),
                          /* jlu_created_by */
                          updated_by,
                          /* jlu_created_on */
