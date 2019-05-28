@@ -88,3 +88,7 @@ end;
 @@users/aah_read.sql ~read_password
 @@users/aah_report.sql ~report_password
 @@users/aah_ps.sql ~ps_password
+@@grants/tables/stn/posting_ledger.sql
+@@grants/tables/stn/posting_method_derivation_ic.sql
+@@grants/tables/fdr/fr_party_legal.sql
+

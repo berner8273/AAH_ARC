@@ -8,6 +8,7 @@ set echo on
     define b_num = &user_bubble_number
 
 
+	
 --Define all other Connections
 	define 1 = 'FDR/bJGeTSP2PbMikw4d@Oraaptci-bubble&b_num:1521:aptci'
 	define 2 = 'GUI/KWDfdtQqoa3A2nE5@Oraaptci-bubble&b_num:1521:aptci'
@@ -53,6 +54,7 @@ set define on
 
 	--Running the Custom Step Trigger Install script	
 		@@aahETL/src/main/db/install.sql	
+	
 
 set define off
 exit
