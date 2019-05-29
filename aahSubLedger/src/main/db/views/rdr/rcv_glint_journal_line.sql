@@ -163,12 +163,12 @@ AS
           NVL (fgl.lk_lookup_value3, ' ') AS event_class,
           CASE
              WHEN jl_tran_amount < 0 THEN ROUND (jl_tran_amount, 2)
-             ELSE NULL
+             ELSE 0
           END
              AS credit_amt,
           CASE
              WHEN jl_tran_amount >= 0 THEN ROUND (jl_tran_amount, 2)
-             ELSE NULL
+             ELSE 0
           END
              AS debit_amt,
           'U' AS event_status,
