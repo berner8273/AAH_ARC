@@ -1458,7 +1458,7 @@ and     exists (
                 jl.LPG_ID AS lpg_id,
                 TO_CHAR(jl.STEP_RUN_SID) AS process_id,
                 TO_CHAR(jl.ROW_SID) AS message_id,
-                jl.ACCOUNTING_DT AS sra_ae_posting_date,
+                least(jl.ACCOUNTING_DT,gp.GP_TODAYS_BUS_DATE) AS sra_ae_posting_date,
                 jl_default.SRA_AE_INSTR_TYPE_MAP_CODE AS sra_ae_instr_type_map_code,
                 jl_default.SRA_SI_ACCOUNT_SYS_INST_CODE AS sra_si_account_sys_inst_code,
                 jl_default.SRA_SI_INSTR_SYS_INST_CODE AS sra_si_instr_sys_inst_code,
@@ -1488,6 +1488,7 @@ and     exists (
                 LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_ultimate_parent_le_id ON jl.ULTIMATE_PARENT_LE_ID = to_number ( pl_ultimate_parent_le_id.PL_GLOBAL_ID )
                 LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_counter_party ON jl.COUNTERPARTY_LE_ID = to_number ( pl_counter_party.PL_GLOBAL_ID )
                 LEFT OUTER JOIN fdr.FR_PARTY_LEGAL pl_affiliate ON jl.AFFILIATE_LE_ID = to_number ( pl_affiliate.PL_GLOBAL_ID )
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON jl.LPG_ID = gp.LPG_ID
             WHERE
                 jl.EVENT_STATUS = 'V';
         p_total_no_published := SQL%ROWCOUNT;
