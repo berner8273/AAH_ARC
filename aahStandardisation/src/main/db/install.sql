@@ -348,7 +348,6 @@ conn ~stn_logon
 @@grants/tables/stn/cession_event.sql
 @@grants/tables/stn/posting_method_derivation_le.sql
 @@grants/tables/stn/posting_method_derivation_mtm.sql
-@@grants/tables/stn/posting_method_derivation_ic.sql
 @@grants/tables/stn/posting_method.sql
 @@grants/tables/stn/posting_accounting_basis.sql
 @@grants/tables/stn/vie_posting_method_ledger.sql
