@@ -20,7 +20,7 @@ AS
 		COMMIT;
 
 
-    exec dbms_stats.gather_table_stats ( ownname => 'RDR' , tabname => 'RR_GLINT_JOURNAL_LINE' , cascade => true, no_invalidate => false );
+    dbms_stats.gather_table_stats ( ownname => 'RDR' , tabname => 'RR_GLINT_JOURNAL_LINE' , cascade => true, no_invalidate => false );
     commit;
 
     -- STORE THE MAPPING FROM SLR JOURNALS TO GLINT JOURNALS
