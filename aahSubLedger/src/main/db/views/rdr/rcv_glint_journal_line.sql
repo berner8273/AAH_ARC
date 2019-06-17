@@ -203,7 +203,7 @@ AS
                        WHERE     fgl.lk_lookup_value3 = fgl2.lk_match_key1
                              AND fgl2.lk_lkt_lookup_type_code =
                                     'EVENT_CLASS_PERIOD'
-                             AND fgl2.lk_lookup_value1 = 'C' or fgl2.lk_lookup_value1 = 'Y'
+                             AND (fgl2.lk_lookup_value1 = 'C' or fgl2.lk_lookup_value5 = 'Y')
                              AND jl.jl_effective_date BETWEEN TO_DATE(fgl2.lk_lookup_value2, 'dd/mm/yyyy') AND TO_DATE(fgl2.lk_lookup_value3, 'dd/mm/yyyy')))
 ;
 
