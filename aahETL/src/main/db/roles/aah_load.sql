@@ -37,6 +37,7 @@ grant 		   select 		   on SLR.SLR_JRNL_LINES_UNPOSTED to aah_load;
 grant 		   select 		   on fdr.fr_log to aah_load;
 grant 		   select 		   on fdr.fr_general_codes to aah_load;
 grant 		   select 		   on fdr.fr_general_lookup to aah_load;
+grant 		   select 		   on rdr.rr_glint_to_slr_ag;
 grant 		   execute 		   on stn.f_event_status_desc to aah_load;
 
 
