@@ -13,6 +13,7 @@ BEGIN
             ELSE EVENT_CODE
         END;      
 END F_EVENT_STATUS_DESC;
+/
 
 
 
