@@ -448,7 +448,7 @@ commit;
 @@indices/stn/cev_data.sql
 @@indices/stn/cev_valid.sql
 
-
+@@packages/stn/f_event_status_desc.sql
 
 /*
  * Capture statistics across STN
