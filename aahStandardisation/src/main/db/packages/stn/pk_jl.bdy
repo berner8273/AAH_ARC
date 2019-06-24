@@ -1555,7 +1555,7 @@ and     exists (
                     jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
                     jl.ACCT_CD AS ERROR_VALUE,
                     jl.LPG_ID AS LPG_ID,
-                    'COMBO_EDIT' AS EVENT_TEXT,
+                    vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
                     cce.ce_attribute_name AS FIELD_IN_ERROR_NAME,
                     rveld.EVENT_TYPE AS EVENT_TYPE,
                     rveld.ERROR_STATUS AS ERROR_STATUS,

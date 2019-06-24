@@ -5615,7 +5615,7 @@ AS
                    /* jle_error_code */
                    'MADJ-1014',
                    /* jle_error_string */
-                   'Effective Date is invalid or is not open',
+                   'Effective Date is invalid, earlier than 1/1/2017 or is not open',
                    /* jle_created_by */
                    'SYSTEM',
                    /* jle_created_on */
@@ -5627,13 +5627,13 @@ AS
               FROM temp_gui_jrnl_lines_unposted
              WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                    AND user_session_id = gSessionId
-                   AND NOT EXISTS
+                   AND (    NOT EXISTS
                               (SELECT 1
                                  FROM slr_entity_days
                                 WHERE     ed_entity_set =
                                              gEntityConfiguration.ent_periods_and_days_set
                                       AND ed_date = jlu_effective_date
-                                      AND ed_status = 'O');
+                                      AND ed_status = 'O') OR jlu_effective_date < to_date('01/01/2017','mm/dd/yyyy') );                                      
       EXCEPTION
          WHEN OTHERS
          THEN
