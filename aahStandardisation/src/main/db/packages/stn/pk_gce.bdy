@@ -535,7 +535,16 @@ and not exists (
                     gcea.STEP_RUN_SID,
                     gcea.LEDGER_CD) gcea ON gcep.PRC_CD = gcea.PRC_CD AND gcep.FEED_UUID = gcea.FEED_UUID
             WHERE
-                gcep.EVENT_STATUS = 'V' AND gcea.EVENT_STATUS = 'V';
+                    gcep.EVENT_STATUS = 'V'
+and gcea.EVENT_STATUS = 'V'
+and not exists (
+            select null from stn.HOPPER_GL_COMBO_EDIT_GL hgl
+                where hgl.combo_rule_or_set = gcea.LEDGER_CD || '_' || gcea.LE_CD and
+                     hgl.combo_rule_typ = GCE_DEFAULT.LKT_CODE1 and
+                     hgl.combo_attr_or_rule = gcep.PRC_CD and
+                     hgl.effective_from = GCE_DEFAULT.EFFECTIVE_FROM
+                     )
+;
         p_no_fsrgc_le_pub := SQL%ROWCOUNT;
         INSERT INTO fdr.FR_GENERAL_CODE_TYPES
             (GCT_CODE_TYPE_ID, GCT_CODE_TYPE_NAME, GCT_CLIENT_CODE_TYPE, GCT_ACTIVE, GCT_INPUT_BY, GCT_INPUT_TIME, GCT_VALID_FROM, GCT_VALID_TO)
