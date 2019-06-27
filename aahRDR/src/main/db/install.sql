@@ -117,3 +117,4 @@ conn ~rdr_logon
 @@views/rdr/rrv_ag_glint_jl_processed.sql
 @@views/rdr/rrv_ag_glint_jl_unposted.sql
 @@views/rdr/rrv_ag_journal_lines.sql
+@@views/rdr/rrv_ag_event_class_status.sql
