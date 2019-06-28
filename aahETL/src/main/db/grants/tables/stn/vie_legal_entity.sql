@@ -1,0 +1,1 @@
+grant select on stn.vie_legal_entity to aah_ssis;
