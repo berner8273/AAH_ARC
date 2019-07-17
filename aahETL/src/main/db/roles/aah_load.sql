@@ -20,7 +20,7 @@ grant insert , select          on stn.insurance_policy_tax_jurisd to aah_load;
 grant insert , select          on stn.insurance_policy_fx_rate    to aah_load;
 grant insert , select          on stn.cession                     to aah_load;
 grant insert , select          on stn.cession_link                to aah_load;
-grant insert , select          on stn.cession_event               to aah_load;
+grant insert , select, delete  on stn.cession_event               to aah_load;
 grant insert , select          on stn.journal_line                to aah_load;
 grant insert , select          on stn.tax_jurisdiction            to aah_load;
 grant          select          on stn.event_type                  to aah_load;
