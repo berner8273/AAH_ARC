@@ -3,4 +3,3 @@ alter table stn.cession_event add constraint fk_et_cev     foreign key ( event_t
 alter table stn.cession_event add constraint fk_abasis_cev foreign key ( basis_cd )           references stn.posting_accounting_basis   ( basis_cd );
 alter table stn.cession_event add constraint fk_ceptyp_cev foreign key ( premium_typ )        references stn.cession_event_premium_type ( premium_typ );
 alter table stn.cession_event add constraint fk_be_cev     foreign key ( business_event_typ ) references stn.business_event             ( business_event_cd );
-alter table stn.cession_event add constraint uk_cev_all    unique	   ( correlation_uuid,accounting_dt,stream_id,basis_cd,premium_typ,business_typ,event_typ);
