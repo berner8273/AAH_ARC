@@ -150,8 +150,6 @@ and not exists (
           join fdr.fr_account_lookup              fal   on fpd.pd_posting_code    = fal.al_posting_code
           join fdr.fr_gl_account                  fgl   on fal.al_account         = fgl.ga_account_code
           join stn.event_type                     et    on fpd.pd_aet_event_type  = et.event_typ
-          join stn.posting_amount_derivation      pad   on et.event_typ_id        = pad.event_typ_id
-          join stn.posting_amount_derivation_type padt  on pad.amount_typ_id      = padt.amount_typ_id
          where
                fgl.ga_account_type     = 'B'
         group by
@@ -166,34 +164,6 @@ and not exists (
            --and padt.amount_typ_descr   in ( 'DERIVED' , 'DERIVED_PLUS' )
              
 		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'POSTING_ACCOUNT_DERIVATION' , estimate_percent => 30 , cascade => true );
-        insert into stn.vie_posting_account_derivation
-        select distinct
-               fpd.pd_posting_schema     posting_schema
-             , fpd.pd_aet_event_type     event_typ
-             , fpd.pd_sub_event          sub_event
-             , fal.al_lookup_1           business_typ
-             , fal.al_lookup_2           is_mark_to_market
-             , fal.al_lookup_4           business_unit
-             , fal.al_ccy                currency
-             , fal.al_account            sub_account
-          from
-               fdr.fr_posting_driver              fpd
-          join fdr.fr_account_lookup              fal   on fpd.pd_posting_code    = fal.al_posting_code
-          join fdr.fr_gl_account                  fgl   on fal.al_account         = fgl.ga_account_code
-          join stn.event_type                     et    on fpd.pd_aet_event_type  = et.event_typ
-          join stn.posting_amount_derivation      pad   on et.event_typ_id        = pad.event_typ_id
-          join stn.posting_amount_derivation_type padt  on pad.amount_typ_id      = padt.amount_typ_id
-         where
-               fgl.ga_account_type     = 'B'
-           and exists ( select
-                               null
-                          from
-                               stn.event_type      et
-                          join stn.vie_event_type  vet   on et.event_typ_id = vet.event_typ_id
-                         where et.event_typ = fpd.pd_aet_event_type )
-             ;
-        
-		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'VIE_POSTING_ACCOUNT_DERIVATION' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed posting_account_derivation', NULL, NULL, NULL, NULL);
         insert into stn.cev_data
         with

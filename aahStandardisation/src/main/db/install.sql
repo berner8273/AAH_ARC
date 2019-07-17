@@ -403,7 +403,6 @@ commit;
 @@data/fdr/aah_posting_rules_data_loader.sql
 --end aah posting rule loader
 
-@@data/stn/posting_amount_derivation.sql
 @@data/stn/posting_amount_negate_flag.sql
 @@data/stn/posting_method_derivation_gfa.sql
 @@data/stn/posting_method_derivation_ic.sql
