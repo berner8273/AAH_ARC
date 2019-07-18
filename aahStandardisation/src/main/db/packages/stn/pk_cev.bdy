@@ -182,7 +182,7 @@ and not exists (
                          , ipr.is_mark_to_market
                          , ipr.policy_premium_typ
                          , ipr.policy_accident_yr
-                         , ipr.underwriting_yr					policy_underwriting_yr
+                         , ipr.underwriting_yr				policy_underwriting_yr
                          , ipr.policy_typ
                          , ipr.parent_stream_id
                          , pipr.ledger_entity_cd                parent_cession_le_cd
