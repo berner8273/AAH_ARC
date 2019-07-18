@@ -2109,7 +2109,10 @@ end
                 ROUND(NVL(cep.TRANSACTION_AMT, 0), 2) AS TRANSACTION_AMT,
                 cep.BUSINESS_TYP AS BUSINESS_TYP,
                 cep.POLICY_TYP AS POLICY_TYP,
-                cep.PREMIUM_TYP AS PREMIUM_TYP,
+                case 
+when cep.PREMIUM_TYP = 'M' then 'I'
+else cep.PREMIUM_TYP
+end AS PREMIUM_TYP,
                 cep.SUB_EVENT AS SUB_EVENT,
                 cep.IS_MARK_TO_MARKET AS IS_MARK_TO_MARKET,
                 cep.VIE_CD AS VIE_CD,
@@ -2213,7 +2216,10 @@ end
                 ROUND(NVL(cerhist.TRANSACTION_AMT, 0), 2) AS TRANSACTION_AMT,
                 cerhist.BUSINESS_TYP AS BUSINESS_TYP,
                 cerhist.POLICY_TYP AS POLICY_TYP,
-                cerhist.PREMIUM_TYP AS PREMIUM_TYP,
+                case 
+when cerhist.PREMIUM_TYP = 'M' then 'I'
+else cerhist.PREMIUM_TYP
+end  AS PREMIUM_TYP,
                 cerhist.SUB_EVENT AS SUB_EVENT,
                 cerhist.IS_MARK_TO_MARKET AS IS_MARK_TO_MARKET,
                 cerhist.VIE_CD AS VIE_CD,
@@ -2296,7 +2302,10 @@ end
                 ROUND(NVL(cercurr.TRANSACTION_AMT, 0), 2) AS TRANSACTION_AMT,
                 cercurr.BUSINESS_TYP AS BUSINESS_TYP,
                 cercurr.POLICY_TYP AS POLICY_TYP,
-                cercurr.PREMIUM_TYP AS PREMIUM_TYP,
+                case 
+when cercurr.PREMIUM_TYP = 'M' then 'I'
+else cercurr.PREMIUM_TYP
+end  AS PREMIUM_TYP,
                 cercurr.SUB_EVENT AS SUB_EVENT,
                 cercurr.IS_MARK_TO_MARKET AS IS_MARK_TO_MARKET,
                 cercurr.VIE_CD AS VIE_CD,
