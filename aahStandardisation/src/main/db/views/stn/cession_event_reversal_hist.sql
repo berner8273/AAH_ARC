@@ -11,7 +11,7 @@
           from stn.cession_event_posting        cep
          where fsrae.srae_acc_event_type                   = cep.event_typ
            and fsrae.srae_dimension_8                      = cep.stream_id
-           and nvl(fsrae.srae_dimension_14, 'NVS')         = nvl(cep.premium_typ,'NVS')
+           and nvl(case when fsrae.srae_dimension_14 = 'M' then 'I' else fsrae.srae_dimension_14 end, 'NVS') = nvl(case when cep.premium_typ = 'M' then 'I' else cep.premium_typ end,'NVS')
            and trunc( fsrae.srae_accevent_date , 'MONTH' ) = trunc( cep.accounting_dt , 'MONTH' )
         )                                accounting_dt
      , fsrae.srae_dimension_7            policy_id
@@ -55,7 +55,7 @@
                   from stn.cession_event_posting    cep2
                  where fsrae.srae_acc_event_type                   = cep2.event_typ
                    and fsrae.srae_dimension_8                      = cep2.stream_id
-                   and nvl(fsrae.srae_dimension_14, 'NVS')         = nvl(cep2.premium_typ,'NVS')
+                   and nvl(case when fsrae.srae_dimension_14 = 'M' then 'I' else fsrae.srae_dimension_14 end, 'NVS') = nvl(case when cep2.premium_typ = 'M' then 'I' else cep2.premium_typ end,'NVS')
                    and trunc( fsrae.srae_accevent_date , 'MONTH' ) = trunc( cep2.accounting_dt , 'MONTH' )
               )
    and fsrae.srae_client_spare_id14 not in ( select faei2.ae_client_spare_id14
