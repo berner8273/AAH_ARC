@@ -11,6 +11,8 @@ AS
      FROM (SELECT 'MADJGEN' si_sys_inst_id, 'MADJ General' si_sys_inst_name FROM DUAL
              UNION ALL
            SELECT 'MADJGEN-CR' si_sys_inst_id, 'Contingency Reserves' si_sys_inst_name FROM DUAL
+           UNION ALL  
+           SELECT 'MADJGEN-OTHER' si_sys_inst_id, 'Other' si_sys_inst_name FROM DUAL             
             UNION ALL
            SELECT 'MADJGEN-USGAAPFX' si_sys_inst_id, 'US GAAP FX' si_sys_inst_name FROM DUAL
             UNION ALL
