@@ -2123,13 +2123,13 @@ end AS PREMIUM_TYP,
                 ce_default.SYSTEM_INSTANCE AS SRAE_STATIC_SYS_INST_CODE,
                 ce_default.SYSTEM_INSTANCE AS SRAE_INSTR_SYS_INST_CODE,
                 (CASE
-                    WHEN cep.TRANSACTION_AMT > 0 THEN 'POS'
-                    WHEN cep.TRANSACTION_AMT < 0 THEN 'NEG'
-                    WHEN cep.FUNCTIONAL_AMT > 0 THEN 'POS'
-                    WHEN cep.FUNCTIONAL_AMT < 0 THEN 'NEG'
-                    WHEN cep.REPORTING_AMT > 0 THEN 'POS'
-                    ELSE 'NEG'
-                END) AS TRANSACTION_POS_NEG,
+                    WHEN ROUND(NVL(cep.TRANSACTION_AMT, 0), 2) > 0 THEN 'POS'
+                    WHEN ROUND(NVL(cep.TRANSACTION_AMT, 0), 2) < 0 THEN 'NEG'
+                    WHEN ROUND(NVL(cep.FUNCTIONAL_AMT, 0), 2) > 0 THEN 'POS'
+                    WHEN ROUND(NVL(cep.FUNCTIONAL_AMT, 0), 2) < 0 THEN 'NEG'
+                    WHEN ROUND(NVL(cep.REPORTING_AMT, 0), 2) > 0 THEN 'POS'
+                ELSE 'NEG'
+        END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
                 case 
 when cep.EVENT_TYP in ( 'DAC_CC_CAP_DEF'
@@ -2229,14 +2229,14 @@ end  AS PREMIUM_TYP,
                 cerhist.EVENT_TYP AS AAH_EVENT_TYP,
                 ce_default.SYSTEM_INSTANCE AS SRAE_STATIC_SYS_INST_CODE,
                 ce_default.SYSTEM_INSTANCE AS SRAE_INSTR_SYS_INST_CODE,
-                (CASE
-                    WHEN cerhist.TRANSACTION_AMT > 0 THEN 'POS'
-                    WHEN cerhist.TRANSACTION_AMT < 0 THEN 'NEG'
-                    WHEN cerhist.FUNCTIONAL_AMT > 0 THEN 'POS'
-                    WHEN cerhist.FUNCTIONAL_AMT < 0 THEN 'NEG'
-                    WHEN cerhist.REPORTING_AMT > 0 THEN 'POS'
-                    ELSE 'NEG'
-                END) AS TRANSACTION_POS_NEG,
+                  (CASE
+                    WHEN ROUND(NVL(cerhist.TRANSACTION_AMT, 0), 2) > 0 THEN 'POS'
+                    WHEN ROUND(NVL(cerhist.TRANSACTION_AMT, 0), 2) < 0 THEN 'NEG'
+                    WHEN ROUND(NVL(cerhist.FUNCTIONAL_AMT, 0), 2) > 0 THEN 'POS'
+                    WHEN ROUND(NVL(cerhist.FUNCTIONAL_AMT, 0), 2) < 0 THEN 'NEG'
+                    WHEN ROUND(NVL(cerhist.REPORTING_AMT, 0), 2) > 0 THEN 'POS'
+                ELSE 'NEG'
+        END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
                 case 
 when cerhist.EVENT_TYP in ( 'DAC_CC_CAP_DEF'
@@ -2316,13 +2316,13 @@ end  AS PREMIUM_TYP,
                 ce_default.SYSTEM_INSTANCE AS SRAE_STATIC_SYS_INST_CODE,
                 ce_default.SYSTEM_INSTANCE AS SRAE_INSTR_SYS_INST_CODE,
                 (CASE
-                    WHEN cercurr.TRANSACTION_AMT > 0 THEN 'POS'
-                    WHEN cercurr.TRANSACTION_AMT < 0 THEN 'NEG'
-                    WHEN cercurr.FUNCTIONAL_AMT > 0 THEN 'POS'
-                    WHEN cercurr.FUNCTIONAL_AMT < 0 THEN 'NEG'
-                    WHEN cercurr.REPORTING_AMT > 0 THEN 'POS'
-                    ELSE 'NEG'
-                END) AS TRANSACTION_POS_NEG,
+                    WHEN ROUND(NVL(cercurr.TRANSACTION_AMT, 0), 2) > 0 THEN 'POS'
+                    WHEN ROUND(NVL(cercurr.TRANSACTION_AMT, 0), 2) < 0 THEN 'NEG'
+                    WHEN ROUND(NVL(cercurr.FUNCTIONAL_AMT, 0), 2) > 0 THEN 'POS'
+                    WHEN ROUND(NVL(cercurr.FUNCTIONAL_AMT, 0), 2) < 0 THEN 'NEG'
+                    WHEN ROUND(NVL(cercurr.REPORTING_AMT, 0), 2) > 0 THEN 'POS'
+                ELSE 'NEG'
+        END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
                 case 
 when cercurr.EVENT_TYP in ( 'DAC_CC_CAP_DEF'
