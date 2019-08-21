@@ -2083,7 +2083,7 @@ and not exists (
           from
                vie_hist
         ;
-        
+
         v_no_cev_vie_data := sql%rowcount;
         
 		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_VIE_DATA' , estimate_percent => 30 , cascade => true );
