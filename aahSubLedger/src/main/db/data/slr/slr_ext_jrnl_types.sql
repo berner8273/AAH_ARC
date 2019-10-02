@@ -1,8 +1,8 @@
 -- update journal type descriptions for manual journal entries by gui
-update slr.slr_ext_jrnl_types set ejt_madj_flag = 'N' where ejt_type not in ('MADJPERB','MADJPERC','MADJPERF','MADJREVD','MADJREVOD', 'MADJ_REVERSING','MADJ_NONREVERSING');
-update slr.slr_ext_jrnl_types set ejt_madj_flag = 'Y' where ejt_type in ('MADJPERB','MADJPERC','MADJPERF','MADJREVD','MADJREVOD');
-update slr.slr_ext_jrnl_types set ejt_active_flag = 'I' where ejt_type not in ('MADJPERB','MADJPERC','MADJPERF','MADJREVD','MADJREVOD','PERC','FXREVALUE','PLRETEARNINGS','MADJ_NONREVERSING', 'MADJ_REVERSING');
-update slr.slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type in ('MADJPERB','MADJPERC','MADJPERF','MADJREVD','MADJREVOD','PERC','FXREVALUE','PLRETEARNINGS');
+update slr.slr_ext_jrnl_types set ejt_madj_flag = 'N' where ejt_type not in ('MADJ_NONREVERSING','MADJ_REVERSING','MADJPERB','MADJPERC','MADJPERF','MADJREVD','MADJREVOD');
+update slr.slr_ext_jrnl_types set ejt_madj_flag = 'Y' where ejt_type in ('MADJ_NONREVERSING','MADJ_REVERSING','MADJPERB','MADJPERC','MADJPERF','MADJREVD','MADJREVOD');
+update slr.slr_ext_jrnl_types set ejt_active_flag = 'I' where ejt_type not in ('FXREVALUE','MADJ_NONREVERSING','MADJ_REVERSING','PERC','PLRETEARNINGS');
+update slr.slr_ext_jrnl_types set ejt_active_flag = 'A' where ejt_type in ('FXREVALUE','MADJ_NONREVERSING','MADJ_REVERSING','PERC','PLRETEARNINGS');
 update slr.slr_ext_jrnl_types set ejt_short_desc = 'MADJ Acctng Date < System Date' where ejt_type = 'MADJPERB';
 update slr.slr_ext_jrnl_types set ejt_short_desc = 'MADJ Acctng Date = System Date' where ejt_type = 'MADJPERC';
 update slr.slr_ext_jrnl_types set ejt_short_desc = 'MADJ Acctng Date > System Date' where ejt_type = 'MADJPERF';
