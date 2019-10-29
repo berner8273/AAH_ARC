@@ -47,7 +47,8 @@ select --In progress manual journals
      , gjlu.jlu_created_by        created_by
      , null                       approved_by
      , gjlu.jhu_jrnl_type         jh_jrnl_type
-     , gjlu.jhu_jrnl_description  jh_jrnl_description     
+     , gjlu.jhu_jrnl_description  jh_jrnl_description
+	 , gjlu.jhu_jrnl_source         jhu_jrnl_source 
   from ( select
                 jlu_jrnl_hdr_id
               , case when jt.ejt_madj_flag = 'Y' then jlu_jrnl_hdr_id else 0 end                           jlu_jrnl_hdr_id2
@@ -117,7 +118,8 @@ select --In progress manual journals
               , jl.jlu_jrnl_process_id
               , jt.ejt_madj_flag
               , jh.jhu_jrnl_type            
-              , jh.jhu_jrnl_description               
+              , jh.jhu_jrnl_description
+			  , jh.jhu_jrnl_source
            from
                 gui.gui_jrnl_lines_unposted   jl
       left join fdr.fr_general_lookup         fgl   on jl.jlu_attribute_4          = fgl.lk_match_key1
@@ -145,4 +147,5 @@ select --In progress manual journals
      , gjlu.ejt_madj_flag
      , gjlu.jlu_created_by
      , gjlu.jhu_jrnl_type            
-     , gjlu.jhu_jrnl_description;
+     , gjlu.jhu_jrnl_description
+	 , gjlu.jhu_jrnl_source;
