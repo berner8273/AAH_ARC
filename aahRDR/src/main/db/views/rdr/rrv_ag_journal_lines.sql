@@ -58,7 +58,6 @@ SELECT
   , gjl.jh_jrnl_description AS glint_jrnl_line_desc
   , jh.jh_jrnl_source AS journal_source
   , jh.jh_amended_on AS journal_updated_on
-
 FROM slr.slr_jrnl_lines jl
     LEFT JOIN slr.slr_jrnl_headers jh
         ON jl.jl_jrnl_hdr_id = jh.jh_jrnl_id

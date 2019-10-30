@@ -48,7 +48,7 @@ select --In progress manual journals
      , null                       approved_by
      , gjlu.jhu_jrnl_type         jh_jrnl_type
      , gjlu.jhu_jrnl_description  jh_jrnl_description
-	 , gjlu.jhu_jrnl_source         jhu_jrnl_source 
+	   , gjlu.jhu_jrnl_source         jhu_jrnl_source 
   from ( select
                 jlu_jrnl_hdr_id
               , case when jt.ejt_madj_flag = 'Y' then jlu_jrnl_hdr_id else 0 end                           jlu_jrnl_hdr_id2
