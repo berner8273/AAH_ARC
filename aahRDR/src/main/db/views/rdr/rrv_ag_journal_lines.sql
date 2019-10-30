@@ -44,7 +44,7 @@ SELECT
   , jh.jh_jrnl_authorised_on as authorised_date
   , jh.jh_jrnl_validated_on as validated_date
   , jh.jh_created_on as created_date
-  , jh.jh_created_by AS requestor
+  , jh.jh_amended_by AS requestor
   , jh.jh_jrnl_authorised_by AS approver
   , CASE WHEN gjl.rgjl_id is not null
             THEN 'Y'
