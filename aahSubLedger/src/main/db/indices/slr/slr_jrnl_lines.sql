@@ -1,0 +1,1 @@
+create index slr.idx_jl_source_jrnl_id on slr.slr_jrnl_lines(jl_source_jrnl_id);
