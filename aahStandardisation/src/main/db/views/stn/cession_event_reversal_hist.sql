@@ -44,7 +44,7 @@ CREATE OR REPLACE FORCE VIEW STN.CESSION_EVENT_REVERSAL_HIST
 )
    BEQUEATH DEFINER
 AS
-   SELECT /*+ PARLLEL (4) */ DISTINCT 'REVERSE_REPOST' posting_type,
+   SELECT /*+ PARALLEL (4) */ DISTINCT 'REVERSE_REPOST' posting_type,
                    fsrae.srae_client_spare_id14 correlation_uuid,
                    fsrae.srae_client_spare_id12 event_seq_id,
                    fsrae.srae_acc_event_id || '.01' row_sid,
