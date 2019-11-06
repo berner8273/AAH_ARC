@@ -6,10 +6,9 @@ AS
 
     BEGIN
 
-
       -- SET MANUALS PERIODS REQUESTS BACK TO N AND RECORD DATE
-
-		UPDATE fdr.fr_general_lookup
+	  -- no longer needed since removed code to check this flag
+	/*	UPDATE fdr.fr_general_lookup
 			SET lk_lookup_value5 = 'N',
 				lk_lookup_value6 =
                 CONCAT (
@@ -18,10 +17,11 @@ AS
 		WHERE     lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
              AND lk_lookup_value5 = 'Y';
 		COMMIT;
-
+		
 
     dbms_stats.gather_table_stats ( ownname => 'RDR' , tabname => 'RR_GLINT_JOURNAL_LINE' , cascade => true, no_invalidate => false );
     commit;
+*/
 
     -- STORE THE MAPPING FROM SLR JOURNALS TO GLINT JOURNALS
     SELECT NVL (MAX (RGJL_ID), 0) INTO max_glint_id FROM RDR.RR_GLINT_TO_SLR_AG GTS;
