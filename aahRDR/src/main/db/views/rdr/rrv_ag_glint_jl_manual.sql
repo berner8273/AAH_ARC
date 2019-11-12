@@ -12,8 +12,8 @@ select --In progress manual journals
      , gjlu.jlu_jrnl_line_number  rgjl_aah_journal_line
      , null                       input_time
      , null                       input_user
-     , null                       modified_time
-     , null                       modified_user
+     , gjlu.jlu_amended_on        modified_time
+     , gjlu.jlu_amended_by        modified_user
      , null                       gl_distrib_status
      , null                       appl_jrnl_id
      , gjlu.jlu_segment_1         ledger_group
@@ -148,4 +148,6 @@ select --In progress manual journals
      , gjlu.jlu_created_by
      , gjlu.jhu_jrnl_type            
      , gjlu.jhu_jrnl_description
-	 , gjlu.jhu_jrnl_source;
+	 , gjlu.jhu_jrnl_source
+	 , gjlu.jlu_amended_on
+     , gjlu.jlu_amended_by;
