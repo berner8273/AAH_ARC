@@ -2374,6 +2374,10 @@ AS
       gJournalVersion := journal_version;
 
       BEGIN
+      
+         -- Combo Edit Check
+         pCombinationCheck_GJLU ('AG', SEQ_PROCESS_NUMBER.CURRVAL, 'M');
+
          /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
          prui_lock_journal (journal_id, updated_by);
 
@@ -3674,7 +3678,7 @@ AS
          END IF;
 
          -- Combo Edit Check
-         pCombinationCheck_GJLU (v_epg_id, lv_process_id, 'M');
+--         pCombinationCheck_GJLU (v_epg_id, lv_process_id, 'M');
 
          IF NOT fnui_get_entity
          THEN
@@ -13978,7 +13982,7 @@ AS
         END IF;
 
          -- add list of elimination line id's for further processing
-         lv_journal_id_list := journal_id_list || ',' || lv_header_id_list ;
+         -- lv_journal_id_list := journal_id_list || ',' || lv_header_id_list ;
 
          prui_copy_journals_to_slr (epg_id, lv_journal_id_list);
 
@@ -14892,7 +14896,7 @@ AS
          DBMS_APPLICATION_INFO.set_action ('Create GUI Journal Line Error');
 
          INSERT /*+ parallel */
-               INTO  gui_jrnl_line_errors (jle_jrnl_process_id,
+               INTO  gui.gui_jrnl_line_errors (jle_jrnl_process_id,
                                            jle_jrnl_hdr_id,
                                            jle_jrnl_line_number,
                                            jle_error_code,
@@ -14922,10 +14926,10 @@ AS
 
          /* Update the corresponding journal line to Error. */
          MERGE /*+ parallel */
-              INTO  gui_jrnl_lines_unposted a
+              INTO  gui.gui_jrnl_lines_unposted a
               USING (  SELECT /*+ parallel */
                              jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
-                         FROM gui_jrnl_lines_unposted
+                         FROM gui.gui_jrnl_lines_unposted
                               JOIN fdr.fr_combination_check_error
                                  ON     jlu_jrnl_hdr_id =
                                            SUBSTR (
@@ -14954,7 +14958,7 @@ AS
             'Create Correlated GUI Journal Line Errors');
 
          INSERT /*+ parallel */
-               INTO  gui_jrnl_line_errors (jle_jrnl_process_id,
+               INTO  gui.gui_jrnl_line_errors (jle_jrnl_process_id,
                                            jle_jrnl_hdr_id,
                                            jle_jrnl_line_number,
                                            jle_error_code,
@@ -14991,10 +14995,10 @@ AS
 
          /* Update the corresponding journal line to Error. */
          MERGE /*+ parallel */
-              INTO  gui_jrnl_lines_unposted a
+              INTO  gui.gui_jrnl_lines_unposted a
               USING (  SELECT /*+ parallel */
                              jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id
-                         FROM gui_jrnl_lines_unposted
+                         FROM gui.gui_jrnl_lines_unposted
                               JOIN GUI.GUI_JRNL_LINE_ERRORS jle
                                  ON     jlu_jrnl_hdr_id = JLE.JLE_JRNL_HDR_ID
                                     AND jlu_jrnl_line_number =
@@ -15062,8 +15066,7 @@ AS
       lv_failed_count         NUMBER (5) := 0;
       lv_journal_id           NUMBER (12, 0);
       lv_journal_version      NUMBER (5, 0);
-      ncount                  NUMBER;
-      vHeaderId               VARCHAR2(20);
+      nCount                  NUMBER;
 
       vStartIdx binary_integer;
       vEndIdx   binary_integer;
@@ -15072,27 +15075,18 @@ AS
       cursor v_cur is
         select regexp_substr(journal_id_list,'[^,]+', 1, level) As str from dual
         connect by regexp_substr(journal_id_list, '[^,]+', 1, level) is not null;
+        
 
    BEGIN
       success := 'S';
 
     for i in v_cur loop
-
-    vHeaderId := TO_CHAR (fnui_get_next_journal_id);
-
-    IF LENGTH(lv_header_id_list) > 1 THEN
-           lv_header_id_list := lv_header_id_list || ',' || vHeaderId;
-    ELSE
-           lv_header_id_list := vHeaderId;
-    END IF;
-
-    pCreateEliminations(i.str,lv_success,vHeaderId);
-
-  end loop;
+        pCreateEliminations(i.str,lv_success,lv_header_id_list);
+    end loop;
 
   -- Call proc here for last part (or in case of single element)
-	   
-
+       
+return;
 
    EXCEPTION
       WHEN OTHERS
@@ -15122,25 +15116,62 @@ AS
    PROCEDURE pCreateEliminations (
       journal_id    IN     SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
       success          OUT CHAR,
-      vHeaderId     IN VARCHAR2)
+      lv_header_id_list IN OUT VARCHAR2 )
    IS
       lvID      NUMBER;
       nCount    NUMBER;
       nrcount   NUMBER;
+      vHeaderId VARCHAR2(20);
+        
+      cursor c_elim (v_key varchar2) is
+         SELECT distinct   COALESCE (PSMRE.REINS_LE_CD, ELE.ELIMINATION_LE_CD) ELIM_ENTITY
+           FROM gui.gui_jrnl_lines_unposted jlu
+                JOIN stn.elimination_legal_entity ele
+                   ON (    ELE.LE_1_CD = JLU.JLU_ENTITY
+                       AND ELE.LE_2_CD = JLU_SEGMENT_4)
+                JOIN STN.POSTING_LEDGER PL
+                   ON PL.LEDGER_CD = JLU.JLU_SEGMENT_1
+                JOIN stn.posting_method_derivation_ic pmd
+                   ON (    PMD.INPUT_LEDGER_ID = PL.LEDGER_ID
+                       AND PMD.LEGAL_ENTITY_LINK_TYP =
+                              ELE.LEGAL_ENTITY_LINK_TYP)
+                LEFT JOIN stn.posting_method_derivation_rein psmre
+                   ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
+                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+                LEFT JOIN STN.POSTING_LEDGER pl2 on (
+                    pl2.ledger_id = pmd.OUTPUT_LEDGER_ID )
+          WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
+                AND jlu.JLU_JRNL_HDR_ID = v_key;
+        
+    r_elim c_elim%rowtype;
+      
+      
    BEGIN
       success := 'S';
 
-      SELECT COUNT (*)
-        INTO nCount
-        FROM gui.gui_jrnl_lines_unposted
-       WHERE JLU_JRNL_HDR_ID = journal_id;
+
+    FOR r_elim IN c_elim (journal_id) LOOP
+
+        IF r_elim.elim_entity IS NULL THEN
+            EXIT;
+        END IF;
+        
+            
+        vHeaderId := TO_CHAR (fnui_get_next_journal_id);
+
+        IF LENGTH(lv_header_id_list) > 1 THEN
+               lv_header_id_list := lv_header_id_list || ',' || vHeaderId;
+        ELSE
+               lv_header_id_list := vHeaderId;
+        END IF;
+
 
 
       INSERT INTO gui.gui_jrnl_headers_unposted
          SELECT TO_NUMBER (vHeaderId) jhu_jrnl_id,
                 jhu_jrnl_type,
                 jhu_jrnl_date,
-                ce.jlu_entity jhu_jrnl_entity,
+                r_elim.elim_entity,
                 jhu_epg_id,
                 jhu_jrnl_status,
                 jhu_jrnl_status_text,
@@ -15187,7 +15218,8 @@ AS
                                AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
                   WHERE JLU.JLU_SEGMENT_7 IN ('AA', 'CA')) ce
           WHERE     gu.jhu_jrnl_id = ce.jlu_jrnl_hdr_id
-                AND gu.jhu_jrnl_id = journal_id;
+                AND gu.jhu_jrnl_id = journal_id
+                AND ce.jlu_entity = NVL(r_elim.elim_entity,'NVS');
 
 
       INSERT INTO gui.gui_jrnl_lines_unposted gjlu (
@@ -15277,8 +15309,7 @@ AS
                 JLU.JLU_SOURCE_JRNL_ID,
                 JLU.JLU_EFFECTIVE_DATE,
                 JLU.JLU_VALUE_DATE,
-                COALESCE (PSMRE.REINS_LE_CD, ELE.ELIMINATION_LE_CD)
-                   JLU_ENTITY,
+                r_elim.elim_entity  JLU_ENTITY,
                 JLU.JLU_EPG_ID,
                 JLU.JLU_account,
                 pl2.LEDGER_CD AS JLU_SEGMENT_1,
@@ -15363,9 +15394,11 @@ AS
                 LEFT JOIN STN.POSTING_LEDGER pl2 on (
                     pl2.ledger_id = pmd.OUTPUT_LEDGER_ID )
           WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
-                AND jlu.JLU_JRNL_HDR_ID = journal_id;
+                AND jlu.JLU_JRNL_HDR_ID = journal_id
+                AND COALESCE (PSMRE.REINS_LE_CD, ELE.ELIMINATION_LE_CD) = NVL(r_elim.elim_entity,'NVS');
 
       COMMIT;
+    END LOOP;
 
     return;
 
