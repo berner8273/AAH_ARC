@@ -3,11 +3,13 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_CEV AS
         (
             p_lpg_id IN NUMBER,
             p_step_run_sid IN NUMBER,
-            p_no_identified_records OUT NUMBER
+            p_no_cev_identified_records OUT NUMBER
         )
     AS
     BEGIN
-        INSERT /*+ PARALLEL */ INTO IDENTIFIED_RECORD
+        DELETE FROM STN.CEV_IDENTIFIED_RECORD;
+        
+        INSERT /*+ PARALLEL */ INTO CEV_IDENTIFIED_RECORD
             (ROW_SID)
             SELECT
                 ce.ROW_SID AS ROW_SID
@@ -43,7 +45,7 @@ and not exists (
              and trunc(ce.accounting_dt,'MONTH') = trunc(ps.period_end,'MONTH')
              and ce.event_typ = ehr.event_typ
               );
-        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD' , estimate_percent => 30 , cascade => true );
+        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_IDENTIFIED_RECORD' , estimate_percent => 30 , cascade => true );
         UPDATE CESSION_EVENT ce
             SET
                 STEP_RUN_SID = p_step_run_sid
@@ -52,11 +54,11 @@ and not exists (
            select
                   null
              from
-                  stn.identified_record idr
+                  stn.CEV_IDENTIFIED_RECORD idr
             where
                   ce.row_sid = idr.row_sid
        );
-        p_no_identified_records := SQL%ROWCOUNT;
+        p_no_CEV_IDENTIFIED_RECORDs := SQL%ROWCOUNT;
     END;
     
     PROCEDURE pr_cession_event_pub
@@ -126,7 +128,7 @@ and not exists (
         ,   cev.step_run_sid
           from
                stn.cession_event            cev
-          join stn.identified_record        idr     on cev.row_sid = idr.row_sid
+          join stn.CEV_IDENTIFIED_RECORD        idr     on cev.row_sid = idr.row_sid
          where
                cev.event_status = 'V'
         ;
@@ -582,8 +584,8 @@ and not exists (
                       , cev_data.event_seq_id
                       , cev_data.row_sid
                       , case when cev_data.is_mark_to_market = 'Y'
-        					    and psm.psm_cd = 'GAAP_TO_CORE'
-        					    and pldgr.ledger_cd = 'CORE'
+                                and psm.psm_cd = 'GAAP_TO_CORE'
+                                and pldgr.ledger_cd = 'CORE'
                             then 'MTM'
                             else pml.sub_event
                         end sub_event
@@ -1220,7 +1222,7 @@ and not exists (
                 ;
                 v_no_cev_non_intercompany_data := sql%rowcount;
         
-        		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_NON_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
+                dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_NON_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_non_intercompany_data', 'v_no_cev_non_intercompany_data', NULL, v_no_cev_non_intercompany_data, NULL);
                 insert into stn.cev_intercompany_data
                 with intercompany_data
@@ -1371,7 +1373,7 @@ and not exists (
                                     intercompany_data;
                 v_no_cev_intercompany_data := sql%rowcount;
         
-        		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
+                dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_intercompany_data', 'v_no_cev_intercompany_data', NULL, v_no_cev_intercompany_data, NULL);
                 insert into stn.cev_vie_data
                 with vie_event_cd
@@ -2194,7 +2196,7 @@ end AS VIE_BU_ACCOUNT_LOOKUP
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2232,7 +2234,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2270,7 +2272,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2310,7 +2312,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2350,7 +2352,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2390,7 +2392,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2432,7 +2434,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2467,7 +2469,8 @@ select null
                end)
                );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-posting_method', 'sql%rowcount', NULL, sql%rowcount, NULL);
-*/        
+*/
+        
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-event-hier', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
@@ -2490,7 +2493,7 @@ select null
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2528,7 +2531,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT ce
-                INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2585,7 +2588,7 @@ and exists (
                     fd.FEED_SID AS FEED_SID
                 FROM
                     CESSION_EVENT ce
-                    INNER JOIN IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
+                    INNER JOIN CEV_IDENTIFIED_RECORD idr ON ce.ROW_SID = idr.ROW_SID
                     INNER JOIN FEED fd ON ce.FEED_UUID = fd.FEED_UUID
                     INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                     INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -2670,7 +2673,7 @@ and exists (
              select
                     null
                from
-                    stn.identified_record idr
+                    stn.CEV_IDENTIFIED_RECORD idr
               where
                     ce.ROW_SID = idr.row_sid
            );
@@ -2721,7 +2724,7 @@ and exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 CESSION_EVENT cev
-                INNER JOIN IDENTIFIED_RECORD idr ON cev.ROW_SID = idr.ROW_SID
+                INNER JOIN CEV_IDENTIFIED_RECORD idr ON cev.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON cev.FEED_UUID = fd.FEED_UUID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN SET_VAL_ERROR_LOG_DEFAULT sveld ON 1 = 1
@@ -2762,7 +2765,7 @@ and exists (
         )
     AS
         v_no_reset_event_status NUMBER(38, 9) DEFAULT 0;
-        v_no_identified_records NUMBER(38, 9) DEFAULT 0;
+        v_no_CEV_IDENTIFIED_RECORDs NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hopper_records NUMBER(38, 9) DEFAULT 0;
         v_no_validated_records NUMBER(38, 9) DEFAULT 0;
         v_no_errored_records NUMBER(38, 9) DEFAULT 0;
@@ -2778,9 +2781,9 @@ and exists (
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Reset cession event event_status to U', 'v_no_reset_event_status', NULL, v_no_reset_event_status, NULL);
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify cession event records' );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start identify cession event records', NULL, NULL, NULL, NULL);
-        pr_cession_event_idf(p_lpg_id, p_step_run_sid, v_no_identified_records);
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified cession event records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
-        IF v_no_identified_records > 0 THEN
+        pr_cession_event_idf(p_lpg_id, p_step_run_sid, v_no_CEV_IDENTIFIED_RECORDs);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified cession event records', 'v_no_CEV_IDENTIFIED_RECORDs', NULL, v_no_CEV_IDENTIFIED_RECORDs, NULL);
+        IF v_no_CEV_IDENTIFIED_RECORDs > 0 THEN
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set level validate cession event records' );
             pr_cession_event_sval(p_step_run_sid);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed set level validations', NULL, NULL, NULL, NULL);
