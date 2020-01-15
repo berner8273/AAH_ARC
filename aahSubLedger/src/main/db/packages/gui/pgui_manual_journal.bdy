@@ -16,6 +16,9 @@ AS
    FUNCTION fnui_validate_header_dates
       RETURN BOOLEAN;
 
+   FUNCTION fnui_validate_madj_source
+      RETURN BOOLEAN;
+
    FUNCTION fnui_validate_line_dates
       RETURN BOOLEAN;
 
@@ -23,6 +26,9 @@ AS
       RETURN BOOLEAN;
 
    FUNCTION fnui_validate_account
+      RETURN BOOLEAN;
+      
+   FUNCTION fnui_validate_acc_event_type
       RETURN BOOLEAN;
 
    FUNCTION fnui_validate_ledger
@@ -3471,6 +3477,18 @@ AS
          lvSuccess := gSTATE_CRITICAL;
       END IF;
 
+    -- Check valid madj source system
+     IF NOT fnui_validate_madj_source
+      THEN
+         lvSuccess := gSTATE_CRITICAL;         
+         prui_log_error (
+            gJournalHeader.jhu_jrnl_id,
+            0,
+            1001,
+            'Invalid MADJ Source System');
+         RETURN gSTATE_CRITICAL;               
+      END IF;
+
       -- Exit if not successful at this point
       IF lvSuccess IN (gSTATE_CRITICAL)
       THEN
@@ -3767,6 +3785,11 @@ AS
          END IF;
 
          IF NOT fnui_validate_account
+         THEN
+            lvSuccess := gSTATE_ERRORED;
+         END IF;
+         
+         IF NOT fnui_validate_acc_event_type
          THEN
             lvSuccess := gSTATE_ERRORED;
          END IF;
@@ -4104,6 +4127,132 @@ AS
          RETURN FALSE;
    END fnui_check_header_definitions;
 
+
+   --********************************************************************************
+   FUNCTION fnui_validate_madj_source
+      RETURN BOOLEAN
+   IS
+      lvFound     NUMBER := NULL;
+      lvSuccess   BOOLEAN;
+   BEGIN
+      lvSuccess := TRUE;
+
+      BEGIN
+         --Look for errors in account code
+         INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
+                                                user_session_id,
+                                                jle_jrnl_hdr_id,
+                                                jle_error_code,
+                                                jle_error_string,
+                                                jle_created_by,
+                                                jle_created_on,
+                                                jle_amended_by,
+                                                jle_amended_on)
+            SELECT                                   /* jle_jrnl_process_id */
+                  0,
+                   /* user_session_id */
+                   gSessionId,
+                   /* jle_jrnl_hdr_id */
+                   jhu_jrnl_id,
+                   /* jle_error_code */
+                   'MADJ-1010',
+                   /* jle_error_string */
+                   'madj_source system is invalid',
+                   /* jle_created_by */
+                   'SYSTEM',
+                   /* jle_created_on */
+                   SYSDATE,
+                   /* jle_amended_by */
+                   'SYSTEM',
+                   /* jle_amended_on */
+                   SYSDATE
+              FROM temp_gui_jrnl_headers_unposted
+             WHERE jhu_jrnl_id = gJournalHeader.jhu_jrnl_id
+                   AND user_session_id = gSessionId
+                   AND jhu_jrnl_source NOT IN (SELECT si_sys_inst_id
+                                             FROM gui.vw_ui_madj_source_system);
+      EXCEPTION
+         WHEN OTHERS
+         THEN
+            pr_error (1,
+                      SQLERRM,
+                      0,
+                      'fnui_validate_madj_source',
+                      'vw_ui_madj_source_system',
+                      NULL,
+                      NULL,
+                      gPackageName,
+                      'PL/SQL',
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL);
+            lvSuccess := FALSE;
+      END;
+
+      --How many errors were found
+      BEGIN
+         SELECT COUNT (*)
+           INTO lvFound
+           FROM temp_gui_jrnl_line_errors
+          WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                AND user_session_id = gSessionId
+                AND jle_error_code = 'MADJ-1010';
+      EXCEPTION
+         WHEN NO_DATA_FOUND
+         THEN
+            NULL;                                                -- do nothing
+         WHEN OTHERS
+         THEN
+            pr_error (1,
+                      SQLERRM,
+                      0,
+                      'fnui_validate_madj_source',
+                      'temp_gui_jrnl_headers_unposted',
+                      NULL,
+                      NULL,
+                      gPackageName,
+                      'PL/SQL',
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL);
+      END;
+    
+      IF lvFound > 0
+      THEN
+         lvSuccess := FALSE;
+      END IF;
+
+      RETURN lvSuccess;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         pr_error (1,
+                   SQLERRM,
+                   0,
+                   'fnui_validate_madj_source',
+                   'vw_ui_madj_source_system',
+                   NULL,
+                   NULL,
+                   gPackageName,
+                   'PL/SQL',
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL);
+         RETURN FALSE;
+   END fnui_validate_madj_source;
+
    --********************************************************************************
 
    FUNCTION fnui_check_line_definitions
@@ -4295,6 +4444,105 @@ AS
                 AND jlu_tran_ccy IS NULL;
 
 
+      -- Check Currency/ ledger combinations
+      INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
+                                             user_session_id,
+                                             jle_jrnl_hdr_id,
+                                             jle_jrnl_line_number,
+                                             jle_error_code,
+                                             jle_error_string,
+                                             jle_created_by,
+                                             jle_created_on,
+                                             jle_amended_by,
+                                             jle_amended_on)
+         SELECT                                      /* jle_jrnl_process_id */
+               0,
+                /* user_session_id */
+                gSessionId,
+                /* jle_jrnl_hdr_id */
+                jlu_jrnl_hdr_id,
+                /* jle_jrnl_line_number */
+                jlu_jrnl_line_number,
+                /* jle_error_code */
+                'MADJ-1051',
+                /* jle_error_string */
+                case jlu_segment_1
+                    when 'UKGAAP_ADJ' THEN
+                        case jlu_local_ccy 
+                          when 'GBP' THEN
+                             'UKGAAP_ADJ must have zero base amount.'
+                           else
+                             'UKGAAP_ADJ must use GBP local currency.'
+                        
+                        end 
+                    else
+                        case jlu_base_ccy
+                            when 'USD' THEN
+                                jlu_segment_1||' '||'must have zero local amount.'
+                            else    
+                          jlu_segment_1||' '||'must use USD base currency.'
+                        end
+                    end,                  
+                /* jle_created_by */
+                'SYSTEM',
+                /* jle_created_on */
+                SYSDATE,
+                /* jle_amended_by */
+                'SYSTEM',
+                /* jle_amended_on */
+                SYSDATE
+           FROM temp_gui_jrnl_lines_unposted
+          WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                AND user_session_id = gSessionId
+                AND ( 
+                    (jlu_segment_1 = 'UKGAAP_ADJ' AND ( jlu_local_ccy <> 'GBP' OR NVL(jlu_base_amount,0) <> 0) )
+                 OR (jlu_segment_1 <> 'UKGAAP_ADJ' AND (jlu_base_ccy <> 'USD' OR NVL(jlu_local_amount,0) <> 0) )
+                     );
+
+      -- Check Currency/ amount combinations
+      INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
+                                             user_session_id,
+                                             jle_jrnl_hdr_id,
+                                             jle_jrnl_line_number,
+                                             jle_error_code,
+                                             jle_error_string,
+                                             jle_created_by,
+                                             jle_created_on,
+                                             jle_amended_by,
+                                             jle_amended_on)
+         SELECT                                      /* jle_jrnl_process_id */
+               0,
+                /* user_session_id */
+                gSessionId,
+                /* jle_jrnl_hdr_id */
+                jlu_jrnl_hdr_id,
+                /* jle_jrnl_line_number */
+                jlu_jrnl_line_number,
+                /* jle_error_code */
+                'MADJ-1051',
+                /* jle_error_string */
+                case jlu_segment_1
+                    when 'UKGAAP_ADJ' THEN
+                     'Transaction amount must equal Local Amount'
+                    else
+                     'Transaction amount must equal Base Amount'
+                    end,                  
+                /* jle_created_by */
+                'SYSTEM',
+                /* jle_created_on */
+                SYSDATE,
+                /* jle_amended_by */
+                'SYSTEM',
+                /* jle_amended_on */
+                SYSDATE
+           FROM temp_gui_jrnl_lines_unposted
+          WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                AND user_session_id = gSessionId
+                AND ( 
+                    (jlu_segment_1 = 'UKGAAP_ADJ' AND ( jlu_local_ccy = jlu_tran_ccy and nvl(jlu_tran_amount,0) <> nvl(jlu_local_amount,0)) )
+                 OR (jlu_segment_1 <> 'UKGAAP_ADJ' AND (jlu_base_ccy = jlu_tran_ccy and nvl(jlu_tran_amount,0) <> nvl(jlu_base_amount,0) ) )
+                     );
+
 --      -- Check base Currency
       INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
                                              user_session_id,
@@ -4329,8 +4577,8 @@ AS
            FROM temp_gui_jrnl_lines_unposted
           WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                 AND user_session_id = gSessionId
-                AND jlu_base_ccy IS NULL
-                AND NVL (jlu_base_amount, 0) != 0;
+                AND ((jlu_base_ccy IS NULL AND NVL (jlu_base_amount, 0) != 0)
+                OR (jlu_segment_1 <> 'UKGAAP_ADJ' and jlu_base_ccy IS NULL));
 
 
       -- Check local Currency
@@ -4367,8 +4615,8 @@ AS
            FROM temp_gui_jrnl_lines_unposted
           WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                 AND user_session_id = gSessionId
-                AND jlu_local_ccy IS NULL
-                AND NVL (jlu_local_amount, 0) != 0;
+                AND ((jlu_local_ccy IS NULL AND NVL (jlu_local_amount, 0) != 0)
+                OR (jlu_segment_1 = 'UKGAAP_ADJ' and jlu_local_ccy IS NULL));
 
       -- Check Tran Amount
 
@@ -6478,6 +6726,137 @@ AS
                    NULL);
          RETURN FALSE;
    END fnui_validate_account;
+
+   --********************************************************************************
+   --********************************************************************************
+     FUNCTION fnui_validate_acc_event_type
+      RETURN BOOLEAN
+   IS
+      lvFound     NUMBER := NULL;
+      lvSuccess   BOOLEAN;
+   BEGIN
+      lvSuccess := TRUE;
+
+      BEGIN
+         --Look for errors in account code
+         INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
+                                                user_session_id,
+                                                jle_jrnl_hdr_id,
+                                                jle_jrnl_line_number,
+                                                jle_error_code,
+                                                jle_error_string,
+                                                jle_created_by,
+                                                jle_created_on,
+                                                jle_amended_by,
+                                                jle_amended_on)
+            SELECT                                   /* jle_jrnl_process_id */
+                  0,
+                   /* user_session_id */
+                   gSessionId,
+                   /* jle_jrnl_hdr_id */
+                   jlu_jrnl_hdr_id,
+                   /* jle_jrnl_line_number */
+                   jlu_jrnl_line_number,
+                   /* jle_error_code */
+                   'MADJ-1010',
+                   /* jle_error_string */
+                   'Acc Event Type is invalid',
+                   /* jle_created_by */
+                   'SYSTEM',
+                   /* jle_created_on */
+                   SYSDATE,
+                   /* jle_amended_by */
+                   'SYSTEM',
+                   /* jle_amended_on */
+                   SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+             WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                   AND user_session_id = gSessionId
+                   AND jlu_attribute_4 NOT IN (SELECT ehr.event_typ
+                                             FROM  stn.event_hierarchy_reference ehr
+                                            WHERE ehr.event_typ = jlu_attribute_4
+                                              AND ehr.event_typ_sts  = 'A');
+      EXCEPTION
+         WHEN OTHERS
+         THEN
+            pr_error (1,
+                      SQLERRM,
+                      0,
+                      'fnui_validate_acc_event_type',
+                      'event_hierarchy_reference',
+                      NULL,
+                      NULL,
+                      gPackageName,
+                      'PL/SQL',
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL);
+            lvSuccess := FALSE;
+      END;
+
+      --How many errors were found
+      BEGIN
+         SELECT COUNT (*)
+           INTO lvFound
+           FROM temp_gui_jrnl_line_errors
+          WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                AND user_session_id = gSessionId
+                AND jle_error_code = 'MADJ-1010';
+      EXCEPTION
+         WHEN NO_DATA_FOUND
+         THEN
+            NULL;                                                -- do nothing
+         WHEN OTHERS
+         THEN
+            pr_error (1,
+                      SQLERRM,
+                      0,
+                      'fnui_validate_acc_event_type',
+                      'temp_gui_jrnl_lines_unposted',
+                      NULL,
+                      NULL,
+                      gPackageName,
+                      'PL/SQL',
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL);
+      END;
+
+      IF lvFound > 0
+      THEN
+         lvSuccess := FALSE;
+      END IF;
+
+      RETURN lvSuccess;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         pr_error (1,
+                   SQLERRM,
+                   0,
+                   'fnui_validate_acc_event_type',
+                   'event_hierarchy_reference',
+                   NULL,
+                   NULL,
+                   gPackageName,
+                   'PL/SQL',
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL);
+         RETURN FALSE;
+   END fnui_validate_acc_event_type;
 
    --********************************************************************************
    --********************************************************************************
