@@ -85,8 +85,6 @@ AS
                    fsrae.srae_client_spare_id17 bu_lookup,
                    fsrae.srae_client_spare_id18 vie_bu_lookup
      FROM fdr.fr_stan_raw_acc_event fsrae
-          INNER JOIN fdr.fr_accounting_event_imp faei
-             ON fsrae.srae_acc_event_id = faei.ae_acc_event_id
           INNER JOIN slr.slr_jrnl_lines sjl
              ON fsrae.srae_acc_event_id = sjl.jl_source_jrnl_id
           INNER JOIN stn.cession_event_posting cep
@@ -109,9 +107,6 @@ AS
           AND fsrae.srae_client_spare_id16 <> 'VIE_HISTORICAL'
           AND fsrae.event_status = 'P'
           AND fsrae.srae_client_spare_id14 NOT IN ( SELECT DISTINCT faei2.ae_client_spare_id14
-                                                     FROM fdr.fr_accounting_event_imp faei2
-                                                         INNER JOIN slr.slr_jrnl_lines sjl2
-                                                             ON faei2.ae_acc_event_id =
-                                                                   sjl2.jl_source_jrnl_id
+                                                     FROM fdr.fr_stan_raw_acc_event faei2                                                         
                                                     WHERE faei2.ae_client_spare_id16 =
                                                              'REVERSE_REPOST' );

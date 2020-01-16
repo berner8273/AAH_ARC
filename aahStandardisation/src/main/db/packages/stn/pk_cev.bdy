@@ -1973,6 +1973,9 @@ end AS VIE_BU_ACCOUNT_LOOKUP
                 (ROUND(cep.TRANSACTION_AMT, 2) <> 0 OR ROUND(cep.FUNCTIONAL_AMT, 2) <> 0 OR ROUND(cep.REPORTING_AMT, 2) <> 0);
         p_no_published_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting cession events into hopper', 'p_no_published_records', NULL, p_no_published_records, NULL);
+
+
+
         INSERT /*+ parallel(8) */ INTO HOPPER_CESSION_EVENT
             (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP, ORIGINAL_POSTING_DT)
             SELECT
@@ -2201,16 +2204,10 @@ end AS VIE_BU_ACCOUNT_LOOKUP
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
-            WHERE
-                    vdl.VALIDATION_CD = 'ce-stream_id'
-and not exists (
-                   select
-                          null
-                     from
-                          stn.insurance_policy_reference ipr
-                    where
-                          ipr.stream_id = ce.STREAM_ID
-               );
+                LEFT  JOIN stn.insurance_policy_reference ipr ON ipr.stream_id = ce.STREAM_ID
+            WHERE ipr.stream_id is null
+                    and vdl.VALIDATION_CD = 'ce-stream_id';
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-stream_id', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-basis_cd', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG
