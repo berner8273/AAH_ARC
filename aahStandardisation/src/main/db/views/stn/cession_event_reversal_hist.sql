@@ -108,7 +108,7 @@ AS
                  TRUNC (cep.accounting_dt, 'MONTH')
           AND fsrae.srae_client_spare_id16 <> 'VIE_HISTORICAL'
           AND fsrae.event_status = 'P'
-          AND fsrae.srae_client_spare_id14 NOT IN ( SELECT /*+ INDEX (faei2 IDX_AE_CLIENT_SPARE_ID16) */ DISTINCT faei2.ae_client_spare_id14
+          AND fsrae.srae_client_spare_id14 NOT IN ( SELECT DISTINCT faei2.ae_client_spare_id14
                                                      FROM fdr.fr_accounting_event_imp faei2
                                                          INNER JOIN slr.slr_jrnl_lines sjl2
                                                              ON faei2.ae_acc_event_id =
