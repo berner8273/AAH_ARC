@@ -106,7 +106,7 @@ AS
                  TRUNC (cep.accounting_dt, 'MONTH')
           AND fsrae.srae_client_spare_id16 <> 'VIE_HISTORICAL'
           AND fsrae.event_status = 'P'
-          AND fsrae.srae_client_spare_id14 NOT IN ( SELECT DISTINCT faei2.ae_client_spare_id14
+          AND fsrae.srae_client_spare_id14 NOT IN ( SELECT DISTINCT faei2.srae_client_spare_id14
                                                      FROM fdr.fr_stan_raw_acc_event faei2                                                         
-                                                    WHERE faei2.ae_client_spare_id16 =
+                                                    WHERE faei2.srae_client_spare_id16 =
                                                              'REVERSE_REPOST' );
