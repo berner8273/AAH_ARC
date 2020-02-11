@@ -187,8 +187,8 @@ AS
           LEFT JOIN fdr.fr_general_lookup fgl
              ON     jl.jl_attribute_4 = fgl.lk_match_key1
                 AND fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
-                AND (
-					 (jl.jl_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ') AND fgl.lk_lookup_value5 = 'N')
+                AND (   
+					(jl.jl_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ') AND fgl.lk_lookup_value5 = 'N')
                      OR jl.jl_segment_1 not in ('UKGAAP_ADJ','EURGAAPADJ')
 					 )
           LEFT JOIN fdr.fr_gl_account gl
@@ -208,5 +208,4 @@ AS
                              AND jl.jl_effective_date BETWEEN TO_DATE(fgl2.lk_lookup_value2, 'dd/mm/yyyy') AND TO_DATE(fgl2.lk_lookup_value3, 'dd/mm/yyyy')))
 ;
 
-COMMENT ON TABLE RDR.RCV_GLINT_JOURNAL_LINE IS 'Configurable View on Journal Lines that should be considered for sending to the GL.'
-;
+COMMENT ON TABLE RDR.RCV_GLINT_JOURNAL_LINE IS 'Configurable View on Journal Lines that should be considered for sending to the GL.';
