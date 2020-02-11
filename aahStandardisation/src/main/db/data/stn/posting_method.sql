@@ -11,4 +11,5 @@ insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'STAT_TO_GAAP_ADJ
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'STAT_TO_CORE'      , 'Post STAT amounts to CORE ledger' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'INTERCOMPANY'      , 'Post intercompany eliminations' );
 insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'UKGAAP_ADJ'        , 'UK GAAP amounts to UKGAAP_ADJ ledger' );
+insert into stn.posting_method ( psm_cd , psm_descr ) values ( 'EURGAAPADJ'        , 'FR GAAP amounts to EURGAAPADJ ledger' );
 commit;
