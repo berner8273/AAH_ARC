@@ -187,10 +187,9 @@ AS
           LEFT JOIN fdr.fr_general_lookup fgl
              ON     jl.jl_attribute_4 = fgl.lk_match_key1
                 AND fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
-                AND (   
-					(jl.jl_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ') AND fgl.lk_lookup_value5 = 'N')
-                     OR jl.jl_segment_1 not in ('UKGAAP_ADJ','EURGAAPADJ')
-					 )
+                AND (   (    jl.jl_segment_1 in ('EURGAAPADJ','UKGAAP_ADJ')
+                         AND fgl.lk_lookup_value5 = 'N')
+                     OR jl.jl_segment_1 not in ('EURGAAPADJ', 'UKGAAP_ADJ'))
           LEFT JOIN fdr.fr_gl_account gl
              ON jl.jl_account = gl.ga_account_code
           LEFT JOIN rdr.rr_glint_temp_journal jh
