@@ -206,5 +206,4 @@ AS
                              AND (fgl2.lk_lookup_value1 = 'C' or fgl2.lk_lookup_value5 = 'Y')
                              AND jl.jl_effective_date BETWEEN TO_DATE(fgl2.lk_lookup_value2, 'dd/mm/yyyy') AND TO_DATE(fgl2.lk_lookup_value3, 'dd/mm/yyyy')))
 ;
-
 COMMENT ON TABLE RDR.RCV_GLINT_JOURNAL_LINE IS 'Configurable View on Journal Lines that should be considered for sending to the GL.';
