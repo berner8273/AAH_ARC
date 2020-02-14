@@ -7,6 +7,9 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
         )
     AS
     BEGIN
+
+        DELETE FROM STN.IDENTIFIED_RECORD_POL;
+
         INSERT INTO IDENTIFIED_RECORD_POL
             (ROW_SID)
             SELECT
@@ -51,7 +54,10 @@ and not exists (
                    where
                          sf.superseded_feed_sid = fd.FEED_SID
               );
+
         p_no_identified_recs_pol := SQL%ROWCOUNT;
+COMMIT;
+
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD_POL' , cascade => true );
         UPDATE INSURANCE_POLICY pol
             SET
