@@ -173,6 +173,7 @@ conn ~stn_logon
 @@tables/stn/gl_combo_edit_rule.sql
 @@tables/stn/identified_feed.sql
 @@tables/stn/identified_record.sql
+@@tables/stn/identified_record_pol.sql
 @@tables/stn/insurance_policy.sql
 @@tables/stn/insurance_policy_fx_rate.sql
 @@tables/stn/insurance_policy_tax_jurisd.sql

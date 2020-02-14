@@ -3,11 +3,11 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
         (
             p_step_run_sid IN NUMBER,
             p_lpg_id IN NUMBER,
-            p_no_identified_recs OUT NUMBER
+            p_no_identified_recs_pol OUT NUMBER
         )
     AS
     BEGIN
-        INSERT INTO IDENTIFIED_RECORD
+        INSERT INTO IDENTIFIED_RECORD_POL
             (ROW_SID)
             SELECT
                 pol.ROW_SID AS ROW_SID
@@ -51,8 +51,8 @@ and not exists (
                    where
                          sf.superseded_feed_sid = fd.FEED_SID
               );
-        p_no_identified_recs := SQL%ROWCOUNT;
-        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD' , cascade => true );
+        p_no_identified_recs_pol := SQL%ROWCOUNT;
+        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD_POL' , cascade => true );
         UPDATE INSURANCE_POLICY pol
             SET
                 STEP_RUN_SID = p_step_run_sid
@@ -61,7 +61,7 @@ and not exists (
            select
                   null
              from
-                  stn.identified_record idr
+                  stn.identified_record_pol idr
             where
                   pol.row_sid = idr.row_sid
        );
@@ -75,7 +75,7 @@ and not exists (
                   null
              from
                        stn.insurance_policy         pol
-                  join stn.identified_record idr on pol.row_sid = idr.row_sid
+                  join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
             where
                   pol.policy_id = cs.policy_id
               and pol.feed_uuid = cs.feed_uuid
@@ -90,7 +90,7 @@ and not exists (
                       null
                  from
                            stn.insurance_policy  pol
-                      join stn.identified_record idr on pol.row_sid = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                       join stn.cession           cs  on (
                                                                 pol.policy_id = cs.policy_id
                                                             and pol.feed_uuid = cs.feed_uuid
@@ -104,7 +104,7 @@ and exists (
                       null
                  from
                            stn.insurance_policy  pol
-                      join stn.identified_record idr on pol.row_sid = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                       join stn.cession           cs  on (
                                                                 pol.policy_id = cs.policy_id
                                                             and pol.feed_uuid = cs.feed_uuid
@@ -123,7 +123,7 @@ and exists (
                   null
              from
                        stn.insurance_policy  pol
-                  join stn.identified_record idr on pol.row_sid = idr.row_sid
+                  join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
             where
                   pol.policy_id = polfxr.policy_id
               and pol.feed_uuid = polfxr.feed_uuid
@@ -138,7 +138,7 @@ and exists (
                   null
              from
                        stn.insurance_policy  pol
-                  join stn.identified_record idr on pol.row_sid = idr.row_sid
+                  join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
             where
                   pol.policy_id = poltjd.policy_id
               and pol.feed_uuid = poltjd.feed_uuid
@@ -154,7 +154,7 @@ and not exists (
                    select
                           null
                      from
-                          stn.identified_record idr
+                          stn.identified_record_pol idr
                     where
                           pol.row_sid = idr.row_sid
                )
@@ -377,7 +377,7 @@ and exists (
                                                                 pol.policy_id = cs.policy_id
                                                             and pol.feed_uuid = cs.feed_uuid
                                                         )
-                      join stn.identified_record idr on pol.row_sid   = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid   = idr.row_sid
                 where
                       cs.stream_id    = hpol.stream_id
                   and cs.event_status = 'U'
@@ -399,7 +399,7 @@ and exists (
                                                                           pol.policy_id = ipfr.policy_id
                                                                       and pol.feed_uuid = ipfr.feed_uuid
                                                                   )
-                      join stn.identified_record idr on pol.row_sid   = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid   = idr.row_sid
                 where
                       ipfr.row_sid      = fsrfr.message_id
                   and ipfr.event_status = 'U'
@@ -432,7 +432,7 @@ and exists (
                                                                           pol.policy_id = iptj.policy_id
                                                                       and pol.feed_uuid = iptj.feed_uuid
                                                                      )
-                      join stn.identified_record idr on pol.row_sid   = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid   = idr.row_sid
                 where
                       iptj.row_sid      = hpoltj.message_id
                   and iptj.event_status = 'U'
@@ -479,7 +479,7 @@ and exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -519,7 +519,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -576,7 +576,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = polfxr.policy_id
                       and pol.feed_uuid = polfxr.FEED_UUID
@@ -625,7 +625,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = polfxr.policy_id
                       and pol.feed_uuid = polfxr.FEED_UUID
@@ -674,7 +674,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = cs.policy_id
                       and pol.feed_uuid = cs.FEED_UUID
@@ -731,7 +731,7 @@ and  exists (
                        null
                   from
                             stn.insurance_policy  pol
-                       join stn.identified_record idr on pol.row_sid = idr.row_sid
+                       join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                  where
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
@@ -776,7 +776,7 @@ and  exists (
                        null
                   from
                             stn.insurance_policy  pol
-                       join stn.identified_record idr on pol.row_sid = idr.row_sid
+                       join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                  where
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
@@ -821,7 +821,7 @@ and (
                              null
                         from
                                   stn.insurance_policy  pol
-                             join stn.identified_record idr on pol.row_sid = idr.row_sid
+                             join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                        where
                              pcs.POLICY_ID = pol.policy_id
                          and pcs.FEED_UUID = pol.feed_uuid
@@ -831,7 +831,7 @@ and (
                              null
                         from
                                   stn.insurance_policy  pol
-                             join stn.identified_record idr on pol.row_sid = idr.row_sid
+                             join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                        where
                              ccs.POLICY_ID = pol.policy_id
                          and ccs.FEED_UUID = pol.feed_uuid
@@ -839,7 +839,7 @@ and (
     );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cl-stream_policies', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id-slr_link', NULL, NULL, NULL, NULL);
-		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , estimate_percent => 30 , cascade => true );
+        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , estimate_percent => 30 , cascade => true );
         INSERT INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
@@ -873,7 +873,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = cs.policy_id
                       and pol.feed_uuid = cs.FEED_UUID
@@ -910,7 +910,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN INSURANCE_POLICY_TAX_JURISD polt ON fd.FEED_UUID = polt.FEED_UUID AND polt.POLICY_ID = pol.POLICY_ID
@@ -923,7 +923,7 @@ and not exists (
 from fdr.fr_general_codes frgc
 where 
 frgc.gc_client_code = polt.TAX_JURISDICTION_CD
-	and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
+    and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
 );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  pol-tax-jurisdiction-cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-tax-jurisdiction-count', NULL, NULL, NULL, NULL);
@@ -948,7 +948,7 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -983,7 +983,7 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -1034,7 +1034,7 @@ and  exists (
                        null
                   from
                             stn.insurance_policy  pol
-                       join stn.identified_record idr on pol.row_sid = idr.row_sid
+                       join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                  where
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
@@ -1244,7 +1244,7 @@ and  exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -1461,7 +1461,7 @@ and not exists ( select null
                 NVL(pdtvn.t_fdr_ver_no, 0) + 1 AS POLICY_VERSION
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN CESSION cs ON pol.POLICY_ID = cs.POLICY_ID AND pol.FEED_UUID = cs.FEED_UUID
                 INNER JOIN cession_hierarchy ch ON cs.STREAM_ID = ch.child_stream_id AND cs.FEED_UUID = ch.feed_uuid
                 INNER JOIN fdr.FR_PARTY_LEGAL underwriting_le ON pol.UNDERWRITING_LE_ID = to_number ( underwriting_le.PL_GLOBAL_ID )
@@ -1552,7 +1552,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = polfxr.POLICY_ID
                       and pol.feed_uuid = polfxr.FEED_UUID
@@ -1650,7 +1650,7 @@ and not exists
                                                                    csil.policy_id = pol.policy_id
                                                                and csil.feed_uuid = pol.feed_uuid
                                                            )
-                  join stn.identified_record       idr  on pol.row_sid = idr.row_sid
+                  join stn.identified_record_pol idr  on pol.row_sid = idr.row_sid
             where
                   to_number ( hip.message_id ) = cs.ROW_SID
        );
@@ -1743,7 +1743,7 @@ and exists (
             p_no_failed_records OUT NUMBER
         )
     AS
-        v_no_identified_records NUMBER(38, 9) DEFAULT 0;
+        v_no_identified_records_pol NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hpol_records NUMBER(38, 9) DEFAULT 0;
         v_no_updated_fsrfr_records NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hpoltj_records NUMBER(38, 9) DEFAULT 0;
@@ -1764,9 +1764,9 @@ and exists (
         pub_val_mismatch EXCEPTION;
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify policy records' );
-        pr_policy_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
-        IF v_no_identified_records > 0 THEN
+        pr_policy_idf(p_step_run_sid, p_lpg_id, v_no_identified_records_pol);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records_pol', NULL, v_no_identified_records_pol, NULL);
+        IF v_no_identified_records_pol > 0 THEN
             stn.pk_cession_hier.pr_gen_cession_hierarchy;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
             pr_policy_chr(p_step_run_sid, p_lpg_id, v_no_updated_hpol_records, v_no_updated_fsrfr_records, v_no_updated_hpoltj_records);

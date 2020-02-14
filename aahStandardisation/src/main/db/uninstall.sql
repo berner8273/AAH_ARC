@@ -162,6 +162,7 @@ drop table stn.fx_rate_type;
 drop table stn.feed_type;
 drop table stn.supersession_method;
 drop table stn.identified_record;
+drop table stn.identified_record_pol;
 drop table stn.standardisation_log;
 drop table stn.gl_account;
 drop table stn.gl_account_category;
