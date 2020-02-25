@@ -405,6 +405,15 @@ as
                        step_run_sid = p_step_run_sid
                      ;
                 pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Number of records deleted' , 'sql%rowcount' , null , sql%rowcount , null );
+					 else
+                delete
+                  from
+                       stn.elimination_legal_entity
+                 where
+                       step_run_sid = v_old_step_run_sid
+                     ;
+			    pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Old data set deleted', 'v_old_step_run_sid' , null , v_old_step_run_sid , null );                                          
+                pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Number of records deleted' , 'sql%rowcount' , null , sql%rowcount , null );
             end if;
         else
             pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Intercompany elimination entity data does not exist', null , null , null , null );
@@ -888,6 +897,15 @@ as
                        step_run_sid = p_step_run_sid
                      ;
                 pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Number of records deleted' , 'sql%rowcount' , null , sql%rowcount , null );
+            else
+                delete
+                  from
+                       stn.vie_legal_entity
+                 where
+                       step_run_sid = v_old_step_run_sid
+                     ;                
+     			pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Old data set deleted' , 'v_old_step_run_sid' , null , v_old_step_run_sid , null );                                          
+                pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'Number of records deleted' , 'sql%rowcount' , null , sql%rowcount , null );                     
             end if;
         else
             pr_step_run_log ( p_step_run_sid , $$plsql_unit , $$plsql_line , 'VIE legal entity data does not exist', null , null , null , null );
