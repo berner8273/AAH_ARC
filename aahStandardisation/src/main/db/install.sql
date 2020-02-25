@@ -202,6 +202,7 @@ conn ~stn_logon
 @@tables/stn/posting_method_ledger.sql
 @@tables/stn/process_code_module.sql
 @@tables/stn/standardisation_log.sql
+@@tables/stn/standardisation_log_pol.sql
 @@tables/stn/superseded_feed.sql
 @@tables/stn/supersession_method.sql
 @@tables/stn/validation.sql

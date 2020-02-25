@@ -164,6 +164,7 @@ drop table stn.supersession_method;
 drop table stn.identified_record;
 drop table stn.identified_record_pol;
 drop table stn.standardisation_log;
+drop table stn.standardisation_log_pol;
 drop table stn.gl_account;
 drop table stn.gl_account_category;
 drop table stn.department;
