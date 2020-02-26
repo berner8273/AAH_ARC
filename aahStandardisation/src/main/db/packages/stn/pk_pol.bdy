@@ -1104,8 +1104,13 @@ COMMIT;
                          sl.table_in_error_name = 'insurance_policy_fx_rate'
                      and polfxr.policy_id       = pol.policy_id
                      and polfxr.feed_uuid       = pol.feed_uuid
-              )
-    or exists (
+              );
+
+    UPDATE INSURANCE_POLICY pol
+            SET
+                EVENT_STATUS = 'E'
+    WHERE
+		exists (
                   select
                          null
                     from

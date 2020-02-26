@@ -448,6 +448,7 @@ commit;
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
 @@indices/stn/cev_valid.sql
+@@indices/stn/standardisation_log_pol.sql
 
 @@packages/stn/f_event_status_desc.sql
 
