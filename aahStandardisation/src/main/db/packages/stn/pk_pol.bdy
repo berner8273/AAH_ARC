@@ -56,7 +56,7 @@ and not exists (
               );
 
         p_no_identified_recs_pol := SQL%ROWCOUNT;
-COMMIT;
+
 
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD_POL' , cascade => true );
         UPDATE INSURANCE_POLICY pol
@@ -505,7 +505,7 @@ and not exists (
                           fcl.cul_currency_lookup_code = pol.TRANSACTION_CCY
                       and fcl.cul_sil_sys_inst_clicode = pold.SYSTEM_INSTANCE
                );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : pol-transaction_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-underwriting_le_id', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -551,7 +551,7 @@ and not exists (
                       and fpll.pll_sil_sys_inst_clicode  = pold.SYSTEM_INSTANCE
                       and fpl.pl_global_id is not null
                );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : pol-underwriting_le_id', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : polfxr-to_ccy', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -601,7 +601,7 @@ and not exists (
                           fcl.cul_currency_lookup_code = polfxr.TO_CCY
                       and fcl.cul_sil_sys_inst_clicode = pold.SYSTEM_INSTANCE
                );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  polfxr-to_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : polfxr-from_ccy', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -651,7 +651,7 @@ and not exists (
                           fcl.cul_currency_lookup_code = polfxr.FROM_CCY
                       and fcl.cul_sil_sys_inst_clicode = pold.SYSTEM_INSTANCE
                );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  polfxr-from_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -705,7 +705,7 @@ and not exists (
                           to_number ( fpl.pl_global_id ) = cs.LE_ID
                       and fpll.pll_sil_sys_inst_clicode  = pold.SYSTEM_INSTANCE
                );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-le_id', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-vie_acct_dt', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -750,7 +750,7 @@ and  exists (
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
             );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-vie_acct_dt', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-vie_eff_dt', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -795,7 +795,7 @@ and  exists (
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
             );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-vie_eff_dt', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cl-stream_policies', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -851,7 +851,7 @@ and (
                          and ccs.FEED_UUID = pol.feed_uuid
                   )
     );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cl-stream_policies', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id-slr_link', NULL, NULL, NULL, NULL);
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , estimate_percent => 30 , cascade => true );
@@ -902,7 +902,7 @@ and not exists (
                           ch.feed_uuid       = cs.FEED_UUID
                       and ch.child_stream_id = cs.stream_id
                );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-le_id-slr_link', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-tax-jurisdiction-cd', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -941,7 +941,7 @@ where
 frgc.gc_client_code = polt.TAX_JURISDICTION_CD
     and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
 );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  pol-tax-jurisdiction-cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-tax-jurisdiction-count', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -977,7 +977,7 @@ COMMIT;
                      where tj.feed_uuid = pol.FEED_UUID
                      and tj.policy_id = pol.POLICY_ID)
 ;
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  policy-validate-tax-jurisd-count', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : policy-validate-cession-count', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -1012,7 +1012,7 @@ COMMIT;
               select c.policy_id from stn.cession c 
                      where c.feed_uuid = pol.FEED_UUID
                      and c.policy_id = pol.POLICY_ID);
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  policy-validate-cession-count', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cession-validate-vie-calendar-yr', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG_POL
@@ -1057,7 +1057,7 @@ and  exists (
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
             );
-COMMIT;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cession-validate-vie-calendar-yr', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
     
@@ -1280,7 +1280,7 @@ and not exists ( select null
                    from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = pol.ROW_SID
                     and sl.table_in_error_name = 'insurance_policy' );
-COMMIT;
+
         INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
@@ -1314,7 +1314,7 @@ and not exists ( select null
                    from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = cs.ROW_SID
                     and sl.table_in_error_name = 'cession' );
-COMMIT;
+
         INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
@@ -1348,7 +1348,7 @@ and not exists ( select null
                    from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = cl.ROW_SID
                     and sl.table_in_error_name = 'cession_link' );
-COMMIT;
+
         INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
@@ -1382,7 +1382,7 @@ and not exists ( select null
                    from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = poltax.ROW_SID
                     and sl.table_in_error_name = 'insurance_policy_tax_jurisd' );
-COMMIT;
+
 		INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
@@ -1416,7 +1416,7 @@ and not exists ( select null
                    from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = fxr.ROW_SID
                     and sl.table_in_error_name = 'insurance_policy_fx_rate' );
-COMMIT;
+
     END;
     
     PROCEDURE pr_policy_pub
