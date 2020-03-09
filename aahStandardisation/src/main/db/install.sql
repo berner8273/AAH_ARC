@@ -354,6 +354,8 @@ conn ~stn_logon
 @@grants/tables/stn/event_type.sql
 @@grants/tables/stn/posting_financial_calc.sql
 @@grants/views/stn/scv_combination_check_jlh.sql
+@@grants/views/stn/period_status.sql
+
 conn ~rdr_logon
 @@views/rdr/rrv_ag_loader_account_lookup.sql
 @@views/rdr/rrv_ag_loader_business_event.sql
