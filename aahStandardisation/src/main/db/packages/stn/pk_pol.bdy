@@ -1070,87 +1070,26 @@ and  exists (
         )
     AS
     BEGIN
-        UPDATE INSURANCE_POLICY pol
-            SET
-                EVENT_STATUS = 'E'
-            WHERE
-                       exists (
-                  select
-                         null
-                    from
-                         stn.standardisation_log_pol sl
-                   where
-                         sl.table_in_error_name = 'insurance_policy'
-                     and sl.row_in_error_key_id = pol.row_sid
-              )
-    or exists (
-                  select
-                         null
-                    from
-                              stn.cession                    cs
-                         join stn.standardisation_log_pol        sl  on cs.row_sid = sl.row_in_error_key_id
-                   where
-                         sl.table_in_error_name = 'cession'
-                     and cs.policy_id           = pol.policy_id
-                     and cs.feed_uuid           = pol.feed_uuid
-              )
-    or exists (
-                  select
-                         null
-                    from
-                              stn.insurance_policy_fx_rate polfxr
-                         join stn.standardisation_log_pol      sl     on polfxr.row_sid = sl.row_in_error_key_id
-                   where
-                         sl.table_in_error_name = 'insurance_policy_fx_rate'
-                     and polfxr.policy_id       = pol.policy_id
-                     and polfxr.feed_uuid       = pol.feed_uuid
-              );
+		UPDATE STN.INSURANCE_POLICY pol
+		SET EVENT_STATUS = 'E'
+		WHERE pol.policy_id in 
+			(
+					select distinct coalesce(p.policy_id, c.policy_id, tj.policy_id, pr.policy_id ) as policy_id
+					from stn.standardisation_log_pol sl 
+						left join stn.INSURANCE_POLICY p on sl.row_in_error_key_id = p.row_sid
+						left join stn.cession c on sl.row_in_error_key_id = c.row_sid
+						left join stn.insurance_policy_tax_jurisd tj on sl.row_in_error_key_id = tj.row_sid
+						left join stn.insurance_policy_fx_rate pr on sl.row_in_error_key_id = pr.row_sid                
+					where sl.table_in_error_name in ( 'insurance_policy',  'cession','insurance_policy_fx_rate','insurance_policy_tax_jurisd', 'cession_link')
+				union
+					select distinct c.policy_id as policy_id
+					from stn.standardisation_log_pol sl 
+						join stn.cession_link cl on sl.row_in_error_key_id = cl.row_sid
+						join stn.cession c on cl.parent_stream_id = c.stream_id and cl.feed_uuid = c.feed_uuid --only check parent stream because any parent/child streams will have the same policy
+					where sl.table_in_error_name in ('cession_link')
+			)
+			and pol.step_run_sid = p_step_run_sid ;
 
-    UPDATE INSURANCE_POLICY pol
-            SET
-                EVENT_STATUS = 'E'
-    WHERE
-		exists (
-                  select
-                         null
-                    from
-                              stn.insurance_policy_tax_jurisd poltj
-                         join stn.standardisation_log_pol      sl     on poltj.row_sid = sl.row_in_error_key_id
-                   where
-                         sl.table_in_error_name = 'insurance_policy_tax_jurisd'
-                     and poltj.policy_id       = pol.policy_id
-                     and poltj.feed_uuid       = pol.feed_uuid
-              )
-    or exists (
-                  select
-                         null
-                    from
-                              stn.cession_link        cl
-                         join stn.standardisation_log_pol sl on cl.row_sid = sl.row_in_error_key_id
-                         join stn.cession             cs on (
-                                                                    cl.parent_stream_id = cs.stream_id
-                                                                and cl.feed_uuid        = cs.feed_uuid
-                                                            )
-                   where
-                         sl.table_in_error_name = 'cession_link'
-                     and cs.policy_id           = pol.policy_id
-                     and cs.feed_uuid           = pol.feed_uuid
-              )
-    or exists (
-                  select
-                         null
-                    from
-                              stn.cession_link        cl
-                         join stn.standardisation_log_pol sl on cl.row_sid = sl.row_in_error_key_id
-                         join stn.cession             cs on (
-                                                                    cl.child_stream_id = cs.stream_id
-                                                                and cl.feed_uuid       = cs.feed_uuid
-                                                            )
-                   where
-                         sl.table_in_error_name = 'cession_link'
-                     and cs.policy_id           = pol.policy_id
-                     and cs.feed_uuid           = pol.feed_uuid
-              );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of insurance_policy records set to error', 'sql%rowcount', NULL, sql%rowcount, NULL);
         UPDATE INSURANCE_POLICY_FX_RATE polfxr
             SET
@@ -1667,21 +1606,13 @@ and not exists
         UPDATE CESSION cs
             SET
                 EVENT_STATUS = 'P'
-            WHERE
-                exists (
-           select
-                  null
-             from
-                       stn.hopper_insurance_policy hip
-                  join stn.cession                 csil on to_number ( hip.message_id ) = csil.row_sid
-                  join stn.insurance_policy        pol  on (
-                                                                   csil.policy_id = pol.policy_id
-                                                               and csil.feed_uuid = pol.feed_uuid
-                                                           )
-                  join stn.identified_record_pol idr  on pol.row_sid = idr.row_sid
-            where
-                  to_number ( hip.message_id ) = cs.ROW_SID
-       );
+            WHERE cs.row_sid in (
+				SELECT DISTINCT TO_NUMBER( hip.message_id )
+            from
+                stn.hopper_insurance_policy hip
+            where hip.process_id = p_step_run_sid
+    );
+
         p_no_fsrip_processed_records := SQL%ROWCOUNT;
         UPDATE INSURANCE_POLICY_TAX_JURISD poltjd
             SET
