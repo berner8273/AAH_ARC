@@ -197,6 +197,13 @@ AS
           LEFT JOIN slr.slr_ext_jrnl_types jt
              ON jt.ejt_type = jh.jh_jrnl_type
     WHERE jh.jh_jrnl_internal_period_flag = 'N'
-;
+    AND (EXISTS
+                     (SELECT NULL
+                        FROM fdr.fr_general_lookup fgl2
+                       WHERE     fgl.lk_lookup_value3 = fgl2.lk_match_key1
+                             AND fgl2.lk_lkt_lookup_type_code =
+                                    'EVENT_CLASS_PERIOD'
+                             AND (fgl2.lk_lookup_value1 = 'C' or fgl2.lk_lookup_value5 = 'Y')
+                             AND jl.jl_effective_date <= (select min(period_end) from stn.period_status)));
 
 COMMENT ON TABLE RDR.RCV_GLINT_JOURNAL_LINE IS 'Configurable View on Journal Lines that should be considered for sending to the GL.';

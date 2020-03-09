@@ -9,6 +9,18 @@ AS
     dbms_stats.gather_table_stats ( ownname => 'RDR' , tabname => 'RR_GLINT_JOURNAL_LINE' , cascade => true, no_invalidate => false );
     commit;
 
+	 -- SET MANUALS PERIODS REQUESTS BACK TO N AND RECORD DATE
+
+		UPDATE fdr.fr_general_lookup
+			SET lk_lookup_value5 = 'N',
+				lk_lookup_value6 =
+                CONCAT (
+                   CONCAT (TO_CHAR (SYSDATE, 'MM-DD-YYYY HH:MI:SS'), '  '),
+                   lk_input_by)
+		WHERE     lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
+             AND lk_lookup_value5 = 'Y';
+		COMMIT;
+
     -- STORE THE MAPPING FROM SLR JOURNALS TO GLINT JOURNALS
     SELECT NVL (MAX (RGJL_ID), 0) INTO max_glint_id FROM RDR.RR_GLINT_TO_SLR_AG GTS;
     DBMS_OUTPUT.PUT_LINE(max_glint_id);
