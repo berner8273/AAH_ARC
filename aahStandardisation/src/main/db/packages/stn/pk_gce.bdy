@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE PACKAGE BODY stn.PK_GCE AS
     PROCEDURE pr_gl_combo_edit_rval
     AS
@@ -634,7 +633,7 @@ and not exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing general code hopper records', 'v_total_no_fsrgc_published', NULL, v_no_fsrgc_acct_pub + v_no_fsrgc_affiliate_pub + v_no_fsrgc_department_pub + v_no_fsrgc_le_pub + v_no_fsrgc_ledger_pub + v_no_fsrgc_product_pub, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting general code type records', 'v_no_fgct_inserted', NULL, v_no_fgct_inserted, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish gl combo edit log records' );
-            pr_publish_log;
+            pr_publish_log(STANDARDISATION_LOG);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set gl combo edit assignment status = "P"' );
             pr_gl_combo_edit_sps(p_step_run_sid, v_no_gcea_processed_records, v_no_gcep_processed_records, v_no_gcer_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gl combo edit records', 'Total processed records', NULL, v_no_gcea_processed_records + v_no_gcep_processed_records + v_no_gcer_processed_records, NULL);
