@@ -526,7 +526,7 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing org struc hopper records', 'v_total_no_published', NULL, v_total_no_published, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing org struc cancel hopper records', 'v_no_cancel_records_published', NULL, v_no_cancel_records_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish legal entity link log records' );
-            pr_publish_log(STANDARDISATION_LOG);
+            pr_publish_log('STANDARDISATION_LOG');
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set legal entity link status = "P"' );
             pr_legal_ent_link_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);

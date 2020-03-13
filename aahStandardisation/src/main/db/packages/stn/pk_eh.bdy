@@ -565,7 +565,7 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing event_type records', 'v_total_no_et_published', NULL, v_total_no_et_published, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing hopper_event_hierarchy records', 'v_total_no_hopper_published', NULL, v_total_no_hopper_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish event hier log records' );
-            pr_publish_log(STANDARDISATION_LOG);
+            pr_publish_log('STANDARDISATION_LOG');
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set event hier status = "P"' );
             pr_event_hier_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for acc event records', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
