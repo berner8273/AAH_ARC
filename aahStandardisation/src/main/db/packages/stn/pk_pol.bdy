@@ -1750,7 +1750,7 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed deleting prior insurance policy fx rate records', 'v_total_no_pol_fx_rate_deleted', NULL, v_total_no_pol_fx_rate_deleted, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing fx rate hopper records', 'v_total_no_fsrfr_published', NULL, v_total_no_fsrfr_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish log records' );
-            pr_publish_log;
+            pr_publish_log(STANDARDISATION_LOG_POL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set legal entity status = "P"' );
             pr_policy_sps(v_no_fsrip_processed_records, v_no_fsriptj_processed_records, v_no_fsrfr_processed_records, v_no_ip_processed_records, v_no_cl_processed_records,p_step_run_sid);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_fsrip_processed_records', NULL, v_no_fsrip_processed_records, NULL);
