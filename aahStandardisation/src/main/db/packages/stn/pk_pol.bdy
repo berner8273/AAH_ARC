@@ -1609,10 +1609,12 @@ and not exists
                 EVENT_STATUS = 'P'
             WHERE cs.row_sid in (
 				SELECT DISTINCT TO_NUMBER( hip.message_id )
-            from
+                from
                 stn.hopper_insurance_policy hip
-            where hip.process_id = p_step_run_sid
-    );
+                where hip.process_id = p_step_run_sid
+                )
+                and cs.EVENT_STATUS = 'V'
+            ;
 
         p_no_fsrip_processed_records := SQL%ROWCOUNT;
         UPDATE INSURANCE_POLICY_TAX_JURISD poltjd
