@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_POL AS
     PROCEDURE pr_policy_idf
         (
             p_step_run_sid IN NUMBER,
@@ -164,11 +164,11 @@ and not exists (
                     where
                           pol.row_sid = idr.row_sid
                )
-/*and not exists (               
+/*and not exists (
                     select null from fdr.fr_log
                         where lo_table_in_error_name = 'insurance_policy'
                     and lo_error_status='R' and lo_row_in_error_key_id = pol.row_sid
-                )                          */         
+                )                          */
 and not exists (
                    select
                           null
@@ -356,7 +356,7 @@ and exists (
            );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated fr_log records to N for stn.insurance_policy_tax_jurisd with X status', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_policy_chr
         (
             p_step_run_sid IN NUMBER,
@@ -456,7 +456,7 @@ and exists (
            );
         p_no_updated_hpoltj_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_policy_rval
         (
             p_step_run_sid IN NUMBER
@@ -937,9 +937,9 @@ and not exists (
 and not exists (
  select null
 from fdr.fr_general_codes frgc
-where 
+where
 frgc.gc_client_code = polt.TAX_JURISDICTION_CD
-    and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
+    and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'
 );
 
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  pol-tax-jurisdiction-cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
@@ -972,8 +972,8 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
                  vdl.VALIDATION_CD = 'pol-policy_tax_count'
-            and not exists ( 
-              select tj.policy_id from stn.insurance_policy_tax_jurisd tj 
+            and not exists (
+              select tj.policy_id from stn.insurance_policy_tax_jurisd tj
                      where tj.feed_uuid = pol.FEED_UUID
                      and tj.policy_id = pol.POLICY_ID)
 ;
@@ -1008,8 +1008,8 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
                         vdl.VALIDATION_CD = 'pol-cession_count'
-            and not exists ( 
-              select c.policy_id from stn.cession c 
+            and not exists (
+              select c.policy_id from stn.cession c
                      where c.feed_uuid = pol.FEED_UUID
                      and c.policy_id = pol.POLICY_ID);
 
@@ -1045,7 +1045,7 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                     vdl.VALIDATION_CD = 'pol-cession_vie_date'
 and (
         cs.VIE_STATUS   is not null
-    and to_char(cs.VIE_ACCT_DT,'yyyy') <> to_char(cs.VIE_EFFECTIVE_DT,'yyyy') 
+    and to_char(cs.VIE_ACCT_DT,'yyyy') <> to_char(cs.VIE_EFFECTIVE_DT,'yyyy')
     )
 and  exists (
                 select
@@ -1060,7 +1060,7 @@ and  exists (
 
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cession-validate-vie-calendar-yr', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_policy_svs
         (
             p_step_run_sid IN NUMBER,
@@ -1072,18 +1072,18 @@ and  exists (
     BEGIN
 		UPDATE STN.INSURANCE_POLICY pol
 		SET EVENT_STATUS = 'E'
-		WHERE pol.policy_id in 
+		WHERE pol.policy_id in
 			(
 					select distinct coalesce(p.policy_id, c.policy_id, tj.policy_id, pr.policy_id ) as policy_id
-					from stn.standardisation_log_pol sl 
+					from stn.standardisation_log_pol sl
 						left join stn.INSURANCE_POLICY p on sl.row_in_error_key_id = p.row_sid
 						left join stn.cession c on sl.row_in_error_key_id = c.row_sid
 						left join stn.insurance_policy_tax_jurisd tj on sl.row_in_error_key_id = tj.row_sid
-						left join stn.insurance_policy_fx_rate pr on sl.row_in_error_key_id = pr.row_sid                
+						left join stn.insurance_policy_fx_rate pr on sl.row_in_error_key_id = pr.row_sid
 					where sl.table_in_error_name in ( 'insurance_policy',  'cession','insurance_policy_fx_rate','insurance_policy_tax_jurisd', 'cession_link')
 				union
 					select distinct c.policy_id as policy_id
-					from stn.standardisation_log_pol sl 
+					from stn.standardisation_log_pol sl
 						join stn.cession_link cl on sl.row_in_error_key_id = cl.row_sid
 						join stn.cession c on cl.parent_stream_id = c.stream_id and cl.feed_uuid = c.feed_uuid --only check parent stream because any parent/child streams will have the same policy
 					where sl.table_in_error_name in ('cession_link')
@@ -1357,7 +1357,7 @@ and not exists ( select null
                     and sl.table_in_error_name = 'insurance_policy_fx_rate' );
 
     END;
-    
+
     PROCEDURE pr_policy_pub
         (
             p_step_run_sid IN NUMBER,
@@ -1479,9 +1479,9 @@ and exists
    (
      select
            null
-     from 
+     from
            stn.insurance_policy_tax_jurisd iptj
-     where 
+     where
             iptj.policy_id            = FR_GENERAL_CODES.GC_CLIENT_TEXT1
         and iptj.event_status         = 'V'
    )
@@ -1489,9 +1489,9 @@ and not exists
    (
      select
            null
-     from 
+     from
            stn.insurance_policy_tax_jurisd iptj
-     where 
+     where
             iptj.policy_id            = FR_GENERAL_CODES.GC_CLIENT_TEXT1
         and iptj.tax_jurisdiction_cd  = FR_GENERAL_CODES.GC_CLIENT_TEXT2
         and iptj.event_status         = 'V'
@@ -1570,7 +1570,7 @@ and exists
       join stn.insurance_policy ip
            on ip.policy_id    = ipfr.policy_id
           and ip.step_run_sid = ipfr.step_run_sid
-     where 
+     where
             '/POL/' || ipfr.policy_id  = FR_FX_RATE.FR_RTY_RATE_TYPE_ID
         and ipfr.event_status          = 'V'
    )
@@ -1583,7 +1583,7 @@ and not exists
       join stn.insurance_policy ip
            on ip.policy_id    = ipfr.policy_id
           and ip.step_run_sid = ipfr.step_run_sid
-     where 
+     where
             ip.CLOSE_DT                = FR_FX_RATE.FR_FXRATE_DATE
         and ipfr.from_ccy              = FR_FX_RATE.FR_CU_CURRENCY_NUMER_ID
         and ipfr.to_ccy                = FR_FX_RATE.FR_CU_CURRENCY_DENOM_ID
@@ -1592,7 +1592,7 @@ and not exists
    );
         p_total_no_pol_fx_rate_deleted := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_policy_sps
         (
             p_no_fsrip_processed_records OUT NUMBER,
@@ -1609,10 +1609,12 @@ and not exists
                 EVENT_STATUS = 'P'
             WHERE cs.row_sid in (
 				SELECT DISTINCT TO_NUMBER( hip.message_id )
-            from
+                from
                 stn.hopper_insurance_policy hip
-            where hip.process_id = p_step_run_sid
-    );
+                where hip.process_id = p_step_run_sid
+                )
+                and cs.EVENT_STATUS = 'V'
+            ;
 
         p_no_fsrip_processed_records := SQL%ROWCOUNT;
         UPDATE INSURANCE_POLICY_TAX_JURISD poltjd
@@ -1694,7 +1696,7 @@ and exists (
            );
         p_no_cl_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_policy_prc
         (
             p_step_run_sid IN NUMBER,
