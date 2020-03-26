@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY     "PGUI_MANUAL_JOURNAL"
+CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL"
 AS
    /******************************************************************************************
    Declare private processes
@@ -492,23 +492,23 @@ AS
          || 'AND '
          || lv_head_prefix
          || '_created_by IN ' -- Restrict user to view journals in their groups or sub-groups
-         || '(	SELECT child.mmg_user_id '
-         || '		FROM   ui_meta_user_groups child '
-         || '			   		INNER JOIN ui_meta_user_groups parent '
-         || '						  ON child.mmg_group_id = parent.mmg_group_id '
-         || '		WHERE  child.mmg_user_id = sjhu.jhu_created_by '
-         || '		AND	   parent.mmg_user_id = '''
+         || '(    SELECT child.mmg_user_id '
+         || '        FROM   ui_meta_user_groups child '
+         || '                       INNER JOIN ui_meta_user_groups parent '
+         || '                          ON child.mmg_group_id = parent.mmg_group_id '
+         || '        WHERE  child.mmg_user_id = sjhu.jhu_created_by '
+         || '        AND       parent.mmg_user_id = '''
          || user_id
          || ''' '
-         || '		UNION '
-         || '		SELECT child.mmg_user_id '
-         || '		FROM   ui_meta_group_hierarchy '
-         || '					INNER JOIN ui_meta_user_groups parent '
-         || '						  ON mgh_parent_id = parent.mmg_group_id '
-         || '					INNER JOIN ui_meta_user_groups child '
-         || '						  ON mgh_child_id = child.mmg_group_id '
-         || '		WHERE  child.mmg_user_id = sjhu.jhu_created_by '
-         || '		AND	   parent.mmg_user_id = '''
+         || '        UNION '
+         || '        SELECT child.mmg_user_id '
+         || '        FROM   ui_meta_group_hierarchy '
+         || '                    INNER JOIN ui_meta_user_groups parent '
+         || '                          ON mgh_parent_id = parent.mmg_group_id '
+         || '                    INNER JOIN ui_meta_user_groups child '
+         || '                          ON mgh_child_id = child.mmg_group_id '
+         || '        WHERE  child.mmg_user_id = sjhu.jhu_created_by '
+         || '        AND       parent.mmg_user_id = '''
          || user_id
          || ''' ) ';
 
@@ -4467,13 +4467,19 @@ AS
                 'MADJ-1051',
                 /* jle_error_string */
                 case jlu_segment_1
-                    when 'UKGAAP_ADJ' THEN
+                    when 'UKGAAP_ADJ'  THEN
                         case jlu_local_ccy 
                           when 'GBP' THEN
                              'UKGAAP_ADJ must have zero base amount.'
                            else
-                             'UKGAAP_ADJ must use GBP local currency.'
-                        
+                             'UKGAAP_ADJ must use GBP local currency.'                        
+                        end 
+                    when 'EURGAAPADJ'  THEN
+                        case jlu_local_ccy 
+                          when 'EUR' THEN
+                             'EURGAAPADJ must have zero base amount.'
+                           else
+                             'EURGAAPADJ must use EUR local currency.'                        
                         end 
                     else
                         case jlu_base_ccy
@@ -4496,7 +4502,8 @@ AS
                 AND user_session_id = gSessionId
                 AND ( 
                     (jlu_segment_1 = 'UKGAAP_ADJ' AND ( jlu_local_ccy <> 'GBP' OR NVL(jlu_base_amount,0) <> 0) )
-                 OR (jlu_segment_1 <> 'UKGAAP_ADJ' AND (jlu_base_ccy <> 'USD' OR NVL(jlu_local_amount,0) <> 0) )
+                 OR  (jlu_segment_1 = 'EURGAAPADJ' AND ( jlu_local_ccy <> 'EUR' OR NVL(jlu_base_amount,0) <> 0) )   
+                 OR  ( (jlu_segment_1 <> 'UKGAAP_ADJ' AND jlu_segment_1 <> 'EURGAAPADJ')  AND (jlu_base_ccy <> 'USD' OR NVL(jlu_local_amount,0) <> 0) )
                      );
 
       -- Check Currency/ amount combinations
@@ -4524,6 +4531,8 @@ AS
                 case jlu_segment_1
                     when 'UKGAAP_ADJ' THEN
                      'Transaction amount must equal Local Amount'
+                    when 'EURGAAPADJ' THEN
+                     'Transaction amount must equal Local Amount'
                     else
                      'Transaction amount must equal Base Amount'
                     end,                  
@@ -4540,7 +4549,8 @@ AS
                 AND user_session_id = gSessionId
                 AND ( 
                     (jlu_segment_1 = 'UKGAAP_ADJ' AND ( jlu_local_ccy = jlu_tran_ccy and nvl(jlu_tran_amount,0) <> nvl(jlu_local_amount,0)) )
-                 OR (jlu_segment_1 <> 'UKGAAP_ADJ' AND (jlu_base_ccy = jlu_tran_ccy and nvl(jlu_tran_amount,0) <> nvl(jlu_base_amount,0) ) )
+                 OR (jlu_segment_1 = 'EURGAAPADJ' AND ( jlu_local_ccy = jlu_tran_ccy and nvl(jlu_tran_amount,0) <> nvl(jlu_local_amount,0)) )
+                 OR ( (jlu_segment_1 <> 'UKGAAP_ADJ' AND jlu_segment_1 <> 'EURGAAPADJ') AND (jlu_base_ccy = jlu_tran_ccy and nvl(jlu_tran_amount,0) <> nvl(jlu_base_amount,0) ) )
                      );
 
 --      -- Check base Currency
@@ -4578,8 +4588,7 @@ AS
           WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                 AND user_session_id = gSessionId
                 AND ((jlu_base_ccy IS NULL AND NVL (jlu_base_amount, 0) != 0)
-                OR (jlu_segment_1 <> 'UKGAAP_ADJ' and jlu_base_ccy IS NULL));
-
+                OR ( (jlu_segment_1 <> 'UKGAAP_ADJ' AND jlu_segment_1 <> 'EURGAAPADJ') and jlu_base_ccy IS NULL));
 
       -- Check local Currency
       INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
@@ -4616,7 +4625,7 @@ AS
           WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                 AND user_session_id = gSessionId
                 AND ((jlu_local_ccy IS NULL AND NVL (jlu_local_amount, 0) != 0)
-                OR (jlu_segment_1 = 'UKGAAP_ADJ' and jlu_local_ccy IS NULL));
+                OR ( (jlu_segment_1 = 'UKGAAP_ADJ' OR jlu_segment_1 = 'EURGAAPADJ' ) and jlu_local_ccy IS NULL));
 
       -- Check Tran Amount
 
@@ -6180,14 +6189,14 @@ AS
          lv_sql_template :=
                'SELECT COUNT(*) '
             || ' FROM (SELECT SUM(##NAME##) '
-            || ' 	    FROM temp_gui_jrnl_lines_unposted '
+            || '         FROM temp_gui_jrnl_lines_unposted '
             || '        WHERE jlu_jrnl_hdr_id = '
             || gJournalHeader.jhu_jrnl_id
             || '          AND user_session_id = '''
             || gSessionId
             || ''''
-            || '		   GROUP BY jlu_jrnl_hdr_id, jlu_effective_date, '
-            || '  	            jlu_value_date, jlu_tran_ccy ';
+            || '           GROUP BY jlu_jrnl_hdr_id, jlu_effective_date, '
+            || '                  jlu_value_date, jlu_tran_ccy ';
 
          lvTemplateMessage := 'The journal doesn''t balance by ##NAME##, ';
 
@@ -6441,11 +6450,11 @@ AS
 
          lvSqltext :=
             ' SELECT  DISTINCT EPG_ID
-				FROM    TEMP_GUI_JRNL_LINES_UNPOSTED, SLR_ENTITY_PROC_GROUP
-				WHERE
-					JLU_JRNL_HDR_ID = :vJrnlHdrId
-			     AND USER_SESSION_ID = :gSessionId
-				 AND JLU_ENTITY = EPG_ENTITY';
+                FROM    TEMP_GUI_JRNL_LINES_UNPOSTED, SLR_ENTITY_PROC_GROUP
+                WHERE
+                    JLU_JRNL_HDR_ID = :vJrnlHdrId
+                 AND USER_SESSION_ID = :gSessionId
+                 AND JLU_ENTITY = EPG_ENTITY';
 
          IF vEPG_DIMENSION_column_name IS NOT NULL
          THEN
@@ -6465,8 +6474,8 @@ AS
          -- lines with group configuration and without in one header
          lvSqltext :=
             ' SELECT  COUNT(*)
-				FROM    TEMP_GUI_JRNL_LINES_UNPOSTED LEFT JOIN SLR_ENTITY_PROC_GROUP
-						ON JLU_ENTITY = EPG_ENTITY ';
+                FROM    TEMP_GUI_JRNL_LINES_UNPOSTED LEFT JOIN SLR_ENTITY_PROC_GROUP
+                        ON JLU_ENTITY = EPG_ENTITY ';
 
          IF vEPG_DIMENSION_column_name IS NOT NULL
          THEN
@@ -6478,9 +6487,9 @@ AS
          END IF;
 
          lvSqltext := lvSqltext || ' WHERE
-					JLU_JRNL_HDR_ID = :vJrnlHdrId
-			     AND USER_SESSION_ID = :gSessionId
-				 AND EPG_ID IS NULL';
+                    JLU_JRNL_HDR_ID = :vJrnlHdrId
+                 AND USER_SESSION_ID = :gSessionId
+                 AND EPG_ID IS NULL';
 
 
          EXECUTE IMMEDIATE lvSqltext
@@ -8340,24 +8349,24 @@ AS
       BEGIN
          lv_sql_statement :=
                'INSERT INTO temp_gui_jrnl_line_errors ( '
-            || '	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-            || '	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-            || '	jle_amended_by, jle_amended_on '
+            || '    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+            || '    jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+            || '    jle_amended_by, jle_amended_on '
             || ' ) '
-            || ' SELECT /* jle_jrnl_process_id */	 	0, '
-            || '/* user_session_id */			'''
+            || ' SELECT /* jle_jrnl_process_id */         0, '
+            || '/* user_session_id */            '''
             || gSessionId
             || ''', '
-            || '/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-            || '/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-            || '/* jle_error_code */	  		''MADJ-1013'', '
-            || '/* jle_error_string */		'''
+            || '/* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id, '
+            || '/* jle_jrnl_line_number */    jlu_jrnl_line_number, '
+            || '/* jle_error_code */              ''MADJ-1013'', '
+            || '/* jle_error_string */        '''
             || fak_name
             || ' is greater than 100 characters.'', '
-            || '/* jle_created_by */			''SYSTEM'', '
-            || '/* jle_created_on */			SYSDATE, '
-            || '/* jle_amended_by */			''SYSTEM'', '
-            || '/* jle_amended_on */	 		SYSDATE '
+            || '/* jle_created_by */            ''SYSTEM'', '
+            || '/* jle_created_on */            SYSDATE, '
+            || '/* jle_amended_by */            ''SYSTEM'', '
+            || '/* jle_amended_on */             SYSDATE '
             || ' FROM temp_gui_jrnl_lines_unposted '
             || ' WHERE jlu_jrnl_hdr_id = '
             || gJournalHeader.jhu_jrnl_id
@@ -8400,24 +8409,24 @@ AS
             THEN
                lv_sql_statement :=
                      'INSERT INTO temp_gui_jrnl_line_errors ( '
-                  || '	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                  || '	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                  || '	jle_amended_by, jle_amended_on '
+                  || '    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                  || '    jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                  || '    jle_amended_by, jle_amended_on '
                   || ' ) '
-                  || ' SELECT /* jle_jrnl_process_id */	 	0, '
-                  || '/* user_session_id */			'''
+                  || ' SELECT /* jle_jrnl_process_id */         0, '
+                  || '/* user_session_id */            '''
                   || gSessionId
                   || ''', '
-                  || '/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                  || '/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                  || '/* jle_error_code */	  		''MADJ-1012'', '
-                  || '/* jle_error_string */		''Value for '
+                  || '/* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id, '
+                  || '/* jle_jrnl_line_number */    jlu_jrnl_line_number, '
+                  || '/* jle_error_code */              ''MADJ-1012'', '
+                  || '/* jle_error_string */        ''Value for '
                   || fak_name
                   || ' is invalid.'', '
-                  || '/* jle_created_by */			''SYSTEM'', '
-                  || '/* jle_created_on */			SYSDATE, '
-                  || '/* jle_amended_by */			''SYSTEM'', '
-                  || '/* jle_amended_on */	 		SYSDATE '
+                  || '/* jle_created_by */            ''SYSTEM'', '
+                  || '/* jle_created_on */            SYSDATE, '
+                  || '/* jle_amended_by */            ''SYSTEM'', '
+                  || '/* jle_amended_on */             SYSDATE '
                   || ' FROM temp_gui_jrnl_lines_unposted '
                   || ' WHERE jlu_jrnl_hdr_id = '
                   || gJournalHeader.jhu_jrnl_id
@@ -8446,24 +8455,24 @@ AS
             ELSE
                lv_sql_statement :=
                      'INSERT INTO temp_gui_jrnl_line_errors ( '
-                  || '	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                  || '	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                  || '	jle_amended_by, jle_amended_on '
+                  || '    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                  || '    jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                  || '    jle_amended_by, jle_amended_on '
                   || ' ) '
-                  || ' SELECT /* jle_jrnl_process_id */	 	0, '
-                  || '/* user_session_id */			'''
+                  || ' SELECT /* jle_jrnl_process_id */         0, '
+                  || '/* user_session_id */            '''
                   || gSessionId
                   || ''', '
-                  || '/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                  || '/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                  || '/* jle_error_code */	  		''MADJ-1012'', '
-                  || '/* jle_error_string */		''Value for '
+                  || '/* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id, '
+                  || '/* jle_jrnl_line_number */    jlu_jrnl_line_number, '
+                  || '/* jle_error_code */              ''MADJ-1012'', '
+                  || '/* jle_error_string */        ''Value for '
                   || fak_name
                   || ' is invalid.'', '
-                  || '/* jle_created_by */			''SYSTEM'', '
-                  || '/* jle_created_on */			SYSDATE, '
-                  || '/* jle_amended_by */			''SYSTEM'', '
-                  || '/* jle_amended_on */	 		SYSDATE '
+                  || '/* jle_created_by */            ''SYSTEM'', '
+                  || '/* jle_created_on */            SYSDATE, '
+                  || '/* jle_amended_by */            ''SYSTEM'', '
+                  || '/* jle_amended_on */             SYSDATE '
                   || ' FROM temp_gui_jrnl_lines_unposted '
                   || ' WHERE jlu_jrnl_hdr_id = '
                   || gJournalHeader.jhu_jrnl_id
@@ -8633,24 +8642,24 @@ AS
       BEGIN
          lv_sql_statement :=
                'INSERT INTO temp_gui_jrnl_line_errors ( '
-            || '	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-            || '	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-            || '	jle_amended_by, jle_amended_on '
+            || '    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+            || '    jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+            || '    jle_amended_by, jle_amended_on '
             || ' ) '
-            || ' SELECT /* jle_jrnl_process_id */	 	0, '
-            || '/* user_session_id */			'''
+            || ' SELECT /* jle_jrnl_process_id */         0, '
+            || '/* user_session_id */            '''
             || gSessionId
             || ''', '
-            || '/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-            || '/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-            || '/* jle_error_code */	  		''MADJ-1013'', '
-            || '/* jle_error_string */		'''
+            || '/* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id, '
+            || '/* jle_jrnl_line_number */    jlu_jrnl_line_number, '
+            || '/* jle_error_code */              ''MADJ-1013'', '
+            || '/* jle_error_string */        '''
             || eba_name
             || ' is greater than 100 characters.'', '
-            || '/* jle_created_by */			''SYSTEM'', '
-            || '/* jle_created_on */			SYSDATE, '
-            || '/* jle_amended_by */			''SYSTEM'', '
-            || '/* jle_amended_on */	 		SYSDATE '
+            || '/* jle_created_by */            ''SYSTEM'', '
+            || '/* jle_created_on */            SYSDATE, '
+            || '/* jle_amended_by */            ''SYSTEM'', '
+            || '/* jle_amended_on */             SYSDATE '
             || ' FROM temp_gui_jrnl_lines_unposted '
             || ' WHERE jlu_jrnl_hdr_id = '
             || gJournalHeader.jhu_jrnl_id
@@ -8693,24 +8702,24 @@ AS
             THEN
                lv_sql_statement :=
                      'INSERT INTO temp_gui_jrnl_line_errors ( '
-                  || '	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                  || '	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                  || '	jle_amended_by, jle_amended_on '
+                  || '    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                  || '    jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                  || '    jle_amended_by, jle_amended_on '
                   || ' ) '
-                  || ' SELECT /* jle_jrnl_process_id */	 	0, '
-                  || '/* user_session_id */			'''
+                  || ' SELECT /* jle_jrnl_process_id */         0, '
+                  || '/* user_session_id */            '''
                   || gSessionId
                   || ''', '
-                  || '/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                  || '/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                  || '/* jle_error_code */	  		''MADJ-1012'', '
-                  || '/* jle_error_string */		''Value for '
+                  || '/* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id, '
+                  || '/* jle_jrnl_line_number */    jlu_jrnl_line_number, '
+                  || '/* jle_error_code */              ''MADJ-1012'', '
+                  || '/* jle_error_string */        ''Value for '
                   || eba_name
                   || ' is missing.'', '
-                  || '/* jle_created_by */			''SYSTEM'', '
-                  || '/* jle_created_on */			SYSDATE, '
-                  || '/* jle_amended_by */			''SYSTEM'', '
-                  || '/* jle_amended_on */	 		SYSDATE '
+                  || '/* jle_created_by */            ''SYSTEM'', '
+                  || '/* jle_created_on */            SYSDATE, '
+                  || '/* jle_amended_by */            ''SYSTEM'', '
+                  || '/* jle_amended_on */             SYSDATE '
                   || ' FROM temp_gui_jrnl_lines_unposted '
                   || ' WHERE jlu_jrnl_hdr_id = '
                   || gJournalHeader.jhu_jrnl_id
@@ -8726,24 +8735,24 @@ AS
             ELSE
                lv_sql_statement :=
                      'INSERT INTO temp_gui_jrnl_line_errors ( '
-                  || '	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                  || '	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                  || '	jle_amended_by, jle_amended_on '
+                  || '    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                  || '    jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                  || '    jle_amended_by, jle_amended_on '
                   || ' ) '
-                  || ' SELECT /* jle_jrnl_process_id */	 	0, '
-                  || '/* user_session_id */			'''
+                  || ' SELECT /* jle_jrnl_process_id */         0, '
+                  || '/* user_session_id */            '''
                   || gSessionId
                   || ''', '
-                  || '/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                  || '/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                  || '/* jle_error_code */	  		''MADJ-1012'', '
-                  || '/* jle_error_string */		''Value for '
+                  || '/* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id, '
+                  || '/* jle_jrnl_line_number */    jlu_jrnl_line_number, '
+                  || '/* jle_error_code */              ''MADJ-1012'', '
+                  || '/* jle_error_string */        ''Value for '
                   || eba_name
                   || ' is missing.'', '
-                  || '/* jle_created_by */			''SYSTEM'', '
-                  || '/* jle_created_on */			SYSDATE, '
-                  || '/* jle_amended_by */			''SYSTEM'', '
-                  || '/* jle_amended_on */	 		SYSDATE '
+                  || '/* jle_created_by */            ''SYSTEM'', '
+                  || '/* jle_created_on */            SYSDATE, '
+                  || '/* jle_amended_by */            ''SYSTEM'', '
+                  || '/* jle_amended_on */             SYSDATE '
                   || ' FROM temp_gui_jrnl_lines_unposted '
                   || ' WHERE jlu_jrnl_hdr_id = '
                   || gJournalHeader.jhu_jrnl_id
@@ -13216,11 +13225,11 @@ AS
       s_table_name := 'SLR_ENTITY_PROC_GROUP';
 
       v_sql := ' SELECT  DISTINCT EPG_ID
-			FROM    TEMP_GUI_JRNL_LINES_UNPOSTED, SLR_ENTITY_PROC_GROUP
-			WHERE
-				JLU_JRNL_HDR_ID = :pJrnlHdrID
-			AND USER_SESSION_ID = :session_id
-			AND JLU_ENTITY = EPG_ENTITY';
+            FROM    TEMP_GUI_JRNL_LINES_UNPOSTED, SLR_ENTITY_PROC_GROUP
+            WHERE
+                JLU_JRNL_HDR_ID = :pJrnlHdrID
+            AND USER_SESSION_ID = :session_id
+            AND JLU_ENTITY = EPG_ENTITY';
 
       IF vEPG_DIMENSION_column_name IS NOT NULL
       THEN
@@ -14137,7 +14146,7 @@ AS
           gjhu.jhu_jrnl_pref_static_src,
           ''Y'',
           gjhu.jhu_epg_id,
-		  gjhu.jhu_jrnl_rev_date
+          gjhu.jhu_jrnl_rev_date
         FROM gui_jrnl_headers_unposted gjhu
         WHERE gjhu.jhu_jrnl_id IN ('
          || journal_id_list || ')
@@ -14578,15 +14587,15 @@ AS
       vSql :=
             'SELECT count(1)
     FROM slr_jrnl_headers_unposted sjhu,
-		 slr.slr_ext_jrnl_types ejt,
-		 slr.slr_jrnl_types jt
+         slr.slr_ext_jrnl_types ejt,
+         slr.slr_jrnl_types jt
     WHERE sjhu.jhu_jrnl_id in ('
          || journal_id_list
          || ')
     AND sjhu.jhu_jrnl_status = :status
-	and sjhu.jhu_jrnl_type = ejt.ejt_type
-	AND jt.jt_type = ejt.ejt_jt_type
-	and jt.jt_reverse_flag = ''Y''';
+    and sjhu.jhu_jrnl_type = ejt.ejt_type
+    AND jt.jt_type = ejt.ejt_jt_type
+    and jt.jt_reverse_flag = ''Y''';
 
       EXECUTE IMMEDIATE vSql INTO vRevJrnlCount USING status;
 
@@ -14629,59 +14638,59 @@ AS
 
                EXECUTE IMMEDIATE
                      'INSERT INTO gui_jrnl_line_errors (
-			  jle_jrnl_process_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-			  jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-			  jle_amended_by, jle_amended_on)
-		   select  :process_id, jhu_jrnl_id, 0,
-			  ''MADJ-9999'', ''Unable to create reversing journal for journal ''||TO_CHAR(jhu_jrnl_id), user, sysdate, user, sysdate
-		   from slr_jrnl_headers_unposted sjhu,
-				slr.slr_ext_jrnl_types ejt,
-				slr.slr_jrnl_types jt
-		   where sjhu.jhu_jrnl_id in ('
+              jle_jrnl_process_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+              jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+              jle_amended_by, jle_amended_on)
+           select  :process_id, jhu_jrnl_id, 0,
+              ''MADJ-9999'', ''Unable to create reversing journal for journal ''||TO_CHAR(jhu_jrnl_id), user, sysdate, user, sysdate
+           from slr_jrnl_headers_unposted sjhu,
+                slr.slr_ext_jrnl_types ejt,
+                slr.slr_jrnl_types jt
+           where sjhu.jhu_jrnl_id in ('
                   || journal_id_list
                   || ')
-		   AND sjhu.jhu_jrnl_status  = :status
-		   and sjhu.jhu_jrnl_type = ejt.ejt_type
-		   AND jt.jt_type = ejt.ejt_jt_type
-		   and jt.jt_reverse_flag = ''Y'''
+           AND sjhu.jhu_jrnl_status  = :status
+           and sjhu.jhu_jrnl_type = ejt.ejt_type
+           AND jt.jt_type = ejt.ejt_jt_type
+           and jt.jt_reverse_flag = ''Y'''
                   USING process_id, status;
 
                EXECUTE IMMEDIATE
                      'update slr_jrnl_lines_unposted sjlu
-		   set sjlu.jlu_jrnl_status = ''E''
-			  ,sjlu.jlu_jrnl_status_text = ''Error''
-		   where sjlu.jlu_jrnl_hdr_id
-		   in (select jhu_jrnl_id
-			  from slr_jrnl_headers_unposted sjhu,
-				   slr.slr_ext_jrnl_types ejt,
-				   slr.slr_jrnl_types jt
-			  where sjhu.jhu_jrnl_id in ('
+           set sjlu.jlu_jrnl_status = ''E''
+              ,sjlu.jlu_jrnl_status_text = ''Error''
+           where sjlu.jlu_jrnl_hdr_id
+           in (select jhu_jrnl_id
+              from slr_jrnl_headers_unposted sjhu,
+                   slr.slr_ext_jrnl_types ejt,
+                   slr.slr_jrnl_types jt
+              where sjhu.jhu_jrnl_id in ('
                   || journal_id_list
                   || ')
-			  AND sjhu.jhu_jrnl_status = :status
-			  and sjhu.jhu_jrnl_type = ejt.ejt_type
-			  AND jt.jt_type = ejt.ejt_jt_type
-			  and jt.jt_reverse_flag = ''Y'')
-		   AND sjlu.jlu_jrnl_status = :status
-		   AND sjlu.jlu_epg_id = '''
+              AND sjhu.jhu_jrnl_status = :status
+              and sjhu.jhu_jrnl_type = ejt.ejt_type
+              AND jt.jt_type = ejt.ejt_jt_type
+              and jt.jt_reverse_flag = ''Y'')
+           AND sjlu.jlu_jrnl_status = :status
+           AND sjlu.jlu_epg_id = '''
                   || epg_id
                   || ''''
                   USING status, status;
 
                EXECUTE IMMEDIATE
                      'update (select jhu_jrnl_status, jhu_jrnl_status_text
-			from slr_jrnl_headers_unposted,
-				 slr.slr_ext_jrnl_types ejt,
-				 slr.slr_jrnl_types jt
-			where jhu_jrnl_id in ('
+            from slr_jrnl_headers_unposted,
+                 slr.slr_ext_jrnl_types ejt,
+                 slr.slr_jrnl_types jt
+            where jhu_jrnl_id in ('
                   || journal_id_list
                   || ')
-			AND jhu_jrnl_status  = :status
-			and jhu_jrnl_type = ejt.ejt_type
-			AND jt.jt_type = ejt.ejt_jt_type
-			and jt.jt_reverse_flag = ''Y'') sjhu
-		  set sjhu.jhu_jrnl_status = ''E''
-			 ,sjhu.jhu_jrnl_status_text = ''Error'''
+            AND jhu_jrnl_status  = :status
+            and jhu_jrnl_type = ejt.ejt_type
+            AND jt.jt_type = ejt.ejt_jt_type
+            and jt.jt_reverse_flag = ''Y'') sjhu
+          set sjhu.jhu_jrnl_status = ''E''
+             ,sjhu.jhu_jrnl_status_text = ''Error'''
                   USING status;
          END;
       END IF;
@@ -14772,10 +14781,10 @@ AS
         jle_error_code, jle_error_string, jle_created_by, jle_created_on,
         jle_amended_by, jle_amended_on)
      SELECT jle_jrnl_process_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-            jle_error_code,	jle_error_string, jle_created_by, jle_created_on,
-            jle_amended_by,	jle_amended_on
-     FROM 	slr_jrnl_line_errors, slr_jrnl_headers_unposted
-     WHERE	jle_jrnl_hdr_id = jhu_jrnl_id
+            jle_error_code,    jle_error_string, jle_created_by, jle_created_on,
+            jle_amended_by,    jle_amended_on
+     FROM     slr_jrnl_line_errors, slr_jrnl_headers_unposted
+     WHERE    jle_jrnl_hdr_id = jhu_jrnl_id
      and    jhu_jrnl_id in ('
          || journal_id_list
          || ')';
@@ -14892,14 +14901,14 @@ AS
       THEN
          vSql :=
                'delete from slr.slr_jrnl_file_attachment
-			where JFA_JF_FILE_ID in ('
+            where JFA_JF_FILE_ID in ('
             || v_file_id_list
             || ')';
 
          EXECUTE IMMEDIATE vSql;
 
          vSql := 'delete from slr.slr_jrnl_file
-			where JF_FILE_ID in (' || v_file_id_list || ')';
+            where JF_FILE_ID in (' || v_file_id_list || ')';
 
          EXECUTE IMMEDIATE vSql;
       END IF;
@@ -15208,10 +15217,10 @@ AS
         jle_error_code, jle_error_string, jle_created_by, jle_created_on,
         jle_amended_by, jle_amended_on)
      SELECT 0, jhu_jrnl_id, 0,
-            ''MADJ-9999'',	:error_string, user, sysdate ,
-            user,	sysdate
-     FROM 	gui_jrnl_headers_unposted
-     WHERE	jhu_jrnl_id in ('
+            ''MADJ-9999'',    :error_string, user, sysdate ,
+            user,    sysdate
+     FROM     gui_jrnl_headers_unposted
+     WHERE    jhu_jrnl_id in ('
          || journal_id_list
          || ')'
          USING error_message;
