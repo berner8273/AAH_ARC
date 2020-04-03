@@ -1729,6 +1729,12 @@ and exists (
         pr_policy_idf(p_step_run_sid, p_lpg_id, v_no_identified_records_pol);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records_pol', NULL, v_no_identified_records_pol, NULL);
         IF v_no_identified_records_pol > 0 THEN
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY' , cascade => true );
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION' , cascade => true );
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_LINK' , cascade => true );
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_TAX_JURISD' , cascade => true );
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_FX_RATE' , cascade => true );            
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed gathering stats on ins policy tables', '', NULL, NULL, NULL);
             stn.pk_cession_hier.pr_gen_cession_hierarchy;
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed generating cession hiearchy', 'stn.pk_cession_hier.pr_gen_cession_hierarchy', NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
