@@ -854,7 +854,7 @@ and (
 
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cl-stream_policies', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id-slr_link', NULL, NULL, NULL, NULL);
-        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , estimate_percent => 30 , cascade => true );
+        
         INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
@@ -1736,6 +1736,7 @@ and exists (
             dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_FX_RATE' , cascade => true );            
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed gathering stats on ins policy tables', '', NULL, NULL, NULL);
             stn.pk_cession_hier.pr_gen_cession_hierarchy;
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , estimate_percent => 30 , cascade => true );
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed generating cession hiearchy', 'stn.pk_cession_hier.pr_gen_cession_hierarchy', NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
             pr_policy_chr(p_step_run_sid, p_lpg_id, v_no_updated_hpol_records, v_no_updated_fsrfr_records, v_no_updated_hpoltj_records);
