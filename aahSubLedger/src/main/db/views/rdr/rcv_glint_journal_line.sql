@@ -143,7 +143,7 @@ AS
              THEN
                 jl_local_rate
              ELSE
-                jl_nbase_rate
+                jl_base_rate
           END
           jl_base_rate,
           CASE
