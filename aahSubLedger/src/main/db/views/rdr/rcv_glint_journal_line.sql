@@ -138,9 +138,16 @@ AS
              AS jl_reference_10,
           CAST (jl_tran_ccy AS VARCHAR2 (3)) AS jl_tran_ccy,
           ROUND (jl_tran_amount, 2) AS jl_tran_amount,
+          CASE
+             WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ')
+             THEN
+                jl_local_rate
+             ELSE
+                jl_nbase_rate
+          END
           jl_base_rate,
           CASE
-             WHEN JL_SEGMENT_1 = 'UKGAAP_ADJ'
+             WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ')
              THEN
                 CAST (jl_local_ccy AS VARCHAR2 (3))
              ELSE
@@ -148,7 +155,7 @@ AS
           END
              AS jl_base_ccy,
           CASE
-             WHEN JL_SEGMENT_1 = 'UKGAAP_ADJ' THEN ROUND (jl_local_amount, 2)
+             WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ') THEN ROUND (jl_local_amount, 2)
              ELSE ROUND (jl_base_amount, 2)
           END
              AS jl_base_amount,
