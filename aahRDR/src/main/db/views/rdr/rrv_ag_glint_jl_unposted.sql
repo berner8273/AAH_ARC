@@ -92,14 +92,18 @@ select --Posted SLR journals not yet GLINT processed
               , case when jl_reference_10 = 'NVS' then ' ' else jl_reference_10 end                        jl_reference_10
               , cast( jl_tran_ccy as varchar2(3) )                                                         jl_tran_ccy
               , round( jl_tran_amount , 2 )                                                                jl_tran_amount
-              , jl_base_rate
               , case
-                  when jl_segment_1 = 'UKGAAP_ADJ' 
+                  when jl_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ' )
+                  then jl_local_rate
+                  else jl_base_rate
+                end                                                                                       jl_base_rate
+              , case
+                  when jl_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ' )
                   then cast( jl_local_ccy as varchar2(3) )
                   else cast( jl_base_ccy as varchar2(3) )
                 end                                                                                        jl_base_ccy
               , case
-                  when jl_segment_1 = 'UKGAAP_ADJ'
+                  when jl_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                   then round( jl_local_amount , 2 )
                   else round( jl_base_amount , 2 )
                 end                                                                                        jl_base_amount
