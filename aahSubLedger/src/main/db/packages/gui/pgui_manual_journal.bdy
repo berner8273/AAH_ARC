@@ -18,7 +18,7 @@ AS
 
    FUNCTION fnui_validate_madj_source
       RETURN BOOLEAN;
-
+	  
    FUNCTION fnui_validate_line_dates
       RETURN BOOLEAN;
 
@@ -27,7 +27,7 @@ AS
 
    FUNCTION fnui_validate_account
       RETURN BOOLEAN;
-      
+
    FUNCTION fnui_validate_acc_event_type
       RETURN BOOLEAN;
 
@@ -3788,8 +3788,8 @@ AS
          THEN
             lvSuccess := gSTATE_ERRORED;
          END IF;
-         
-         IF NOT fnui_validate_acc_event_type
+
+ 		 IF NOT fnui_validate_acc_event_type
          THEN
             lvSuccess := gSTATE_ERRORED;
          END IF;
@@ -4127,7 +4127,6 @@ AS
          RETURN FALSE;
    END fnui_check_header_definitions;
 
-
    --********************************************************************************
    FUNCTION fnui_validate_madj_source
       RETURN BOOLEAN
@@ -4253,7 +4252,7 @@ AS
          RETURN FALSE;
    END fnui_validate_madj_source;
 
-   --********************************************************************************
+ --********************************************************************************
 
    FUNCTION fnui_check_line_definitions
       RETURN BOOLEAN
@@ -4442,7 +4441,6 @@ AS
           WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                 AND user_session_id = gSessionId
                 AND jlu_tran_ccy IS NULL;
-
 
       -- Check Currency/ ledger combinations
       INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
@@ -6729,7 +6727,8 @@ AS
 
    --********************************************************************************
    --********************************************************************************
-     FUNCTION fnui_validate_acc_event_type
+  
+  FUNCTION fnui_validate_acc_event_type
       RETURN BOOLEAN
    IS
       lvFound     NUMBER := NULL;
