@@ -187,9 +187,9 @@ AS
           LEFT JOIN fdr.fr_general_lookup fgl
              ON     jl.jl_attribute_4 = fgl.lk_match_key1
                 AND fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
-                AND (   (    jl.jl_segment_1 = 'UKGAAP_ADJ'
+                AND (   (    jl.jl_segment_1 in ('EURGAAPADJ','UKGAAP_ADJ')
                          AND fgl.lk_lookup_value5 = 'N')
-                     OR jl.jl_segment_1 <> 'UKGAAP_ADJ')
+                     OR jl.jl_segment_1 not in ('EURGAAPADJ', 'UKGAAP_ADJ'))
           LEFT JOIN fdr.fr_gl_account gl
              ON jl.jl_account = gl.ga_account_code
           LEFT JOIN rdr.rr_glint_temp_journal jh
@@ -206,5 +206,4 @@ AS
                              AND (fgl2.lk_lookup_value1 = 'C' or fgl2.lk_lookup_value5 = 'Y')
                              AND jl.jl_effective_date BETWEEN TO_DATE(fgl2.lk_lookup_value2, 'dd/mm/yyyy') AND TO_DATE(fgl2.lk_lookup_value3, 'dd/mm/yyyy')))
 ;
-
 COMMENT ON TABLE RDR.RCV_GLINT_JOURNAL_LINE IS 'Configurable View on Journal Lines that should be considered for sending to the GL.';
