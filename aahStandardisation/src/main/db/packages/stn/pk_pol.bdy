@@ -1,13 +1,16 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_POL AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_POL AS
     PROCEDURE pr_policy_idf
         (
             p_step_run_sid IN NUMBER,
             p_lpg_id IN NUMBER,
-            p_no_identified_recs OUT NUMBER
+            p_no_identified_recs_pol OUT NUMBER
         )
     AS
     BEGIN
-        INSERT INTO IDENTIFIED_RECORD
+
+        DELETE FROM STN.IDENTIFIED_RECORD_POL;
+
+        INSERT INTO IDENTIFIED_RECORD_POL
             (ROW_SID)
             SELECT
                 pol.ROW_SID AS ROW_SID
@@ -51,8 +54,11 @@ and not exists (
                    where
                          sf.superseded_feed_sid = fd.FEED_SID
               );
-        p_no_identified_recs := SQL%ROWCOUNT;
-        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD' , cascade => true );
+
+        p_no_identified_recs_pol := SQL%ROWCOUNT;
+
+
+        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'IDENTIFIED_RECORD_POL' , cascade => true );
         UPDATE INSURANCE_POLICY pol
             SET
                 STEP_RUN_SID = p_step_run_sid
@@ -61,7 +67,7 @@ and not exists (
            select
                   null
              from
-                  stn.identified_record idr
+                  stn.identified_record_pol idr
             where
                   pol.row_sid = idr.row_sid
        );
@@ -75,7 +81,7 @@ and not exists (
                   null
              from
                        stn.insurance_policy         pol
-                  join stn.identified_record idr on pol.row_sid = idr.row_sid
+                  join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
             where
                   pol.policy_id = cs.policy_id
               and pol.feed_uuid = cs.feed_uuid
@@ -90,7 +96,7 @@ and not exists (
                       null
                  from
                            stn.insurance_policy  pol
-                      join stn.identified_record idr on pol.row_sid = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                       join stn.cession           cs  on (
                                                                 pol.policy_id = cs.policy_id
                                                             and pol.feed_uuid = cs.feed_uuid
@@ -104,7 +110,7 @@ and exists (
                       null
                  from
                            stn.insurance_policy  pol
-                      join stn.identified_record idr on pol.row_sid = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                       join stn.cession           cs  on (
                                                                 pol.policy_id = cs.policy_id
                                                             and pol.feed_uuid = cs.feed_uuid
@@ -123,7 +129,7 @@ and exists (
                   null
              from
                        stn.insurance_policy  pol
-                  join stn.identified_record idr on pol.row_sid = idr.row_sid
+                  join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
             where
                   pol.policy_id = polfxr.policy_id
               and pol.feed_uuid = polfxr.feed_uuid
@@ -138,7 +144,7 @@ and exists (
                   null
              from
                        stn.insurance_policy  pol
-                  join stn.identified_record idr on pol.row_sid = idr.row_sid
+                  join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
             where
                   pol.policy_id = poltjd.policy_id
               and pol.feed_uuid = poltjd.feed_uuid
@@ -154,15 +160,15 @@ and not exists (
                    select
                           null
                      from
-                          stn.identified_record idr
+                          stn.identified_record_pol idr
                     where
                           pol.row_sid = idr.row_sid
                )
-/*and not exists (               
+/*and not exists (
                     select null from fdr.fr_log
                         where lo_table_in_error_name = 'insurance_policy'
                     and lo_error_status='R' and lo_row_in_error_key_id = pol.row_sid
-                )                          */         
+                )                          */
 and not exists (
                    select
                           null
@@ -350,7 +356,7 @@ and exists (
            );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated fr_log records to N for stn.insurance_policy_tax_jurisd with X status', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_policy_chr
         (
             p_step_run_sid IN NUMBER,
@@ -377,7 +383,7 @@ and exists (
                                                                 pol.policy_id = cs.policy_id
                                                             and pol.feed_uuid = cs.feed_uuid
                                                         )
-                      join stn.identified_record idr on pol.row_sid   = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid   = idr.row_sid
                 where
                       cs.stream_id    = hpol.stream_id
                   and cs.event_status = 'U'
@@ -399,7 +405,7 @@ and exists (
                                                                           pol.policy_id = ipfr.policy_id
                                                                       and pol.feed_uuid = ipfr.feed_uuid
                                                                   )
-                      join stn.identified_record idr on pol.row_sid   = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid   = idr.row_sid
                 where
                       ipfr.row_sid      = fsrfr.message_id
                   and ipfr.event_status = 'U'
@@ -432,7 +438,7 @@ and exists (
                                                                           pol.policy_id = iptj.policy_id
                                                                       and pol.feed_uuid = iptj.feed_uuid
                                                                      )
-                      join stn.identified_record idr on pol.row_sid   = idr.row_sid
+                      join stn.identified_record_pol idr on pol.row_sid   = idr.row_sid
                 where
                       iptj.row_sid      = hpoltj.message_id
                   and iptj.event_status = 'U'
@@ -450,7 +456,7 @@ and exists (
            );
         p_no_updated_hpoltj_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_policy_rval
         (
             p_step_run_sid IN NUMBER
@@ -458,7 +464,10 @@ and exists (
     AS
     BEGIN
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-transaction_ccy', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+
+		DELETE FROM STANDARDISATION_LOG_POL;
+
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -479,7 +488,7 @@ and exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -496,9 +505,10 @@ and not exists (
                           fcl.cul_currency_lookup_code = pol.TRANSACTION_CCY
                       and fcl.cul_sil_sys_inst_clicode = pold.SYSTEM_INSTANCE
                );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : pol-transaction_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-underwriting_le_id', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -519,7 +529,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -541,9 +551,10 @@ and not exists (
                       and fpll.pll_sil_sys_inst_clicode  = pold.SYSTEM_INSTANCE
                       and fpl.pl_global_id is not null
                );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : pol-underwriting_le_id', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : polfxr-to_ccy', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -576,7 +587,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = polfxr.policy_id
                       and pol.feed_uuid = polfxr.FEED_UUID
@@ -590,9 +601,10 @@ and not exists (
                           fcl.cul_currency_lookup_code = polfxr.TO_CCY
                       and fcl.cul_sil_sys_inst_clicode = pold.SYSTEM_INSTANCE
                );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  polfxr-to_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : polfxr-from_ccy', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -625,7 +637,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = polfxr.policy_id
                       and pol.feed_uuid = polfxr.FEED_UUID
@@ -639,9 +651,10 @@ and not exists (
                           fcl.cul_currency_lookup_code = polfxr.FROM_CCY
                       and fcl.cul_sil_sys_inst_clicode = pold.SYSTEM_INSTANCE
                );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  polfxr-from_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -674,7 +687,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = cs.policy_id
                       and pol.feed_uuid = cs.FEED_UUID
@@ -692,9 +705,10 @@ and not exists (
                           to_number ( fpl.pl_global_id ) = cs.LE_ID
                       and fpll.pll_sil_sys_inst_clicode  = pold.SYSTEM_INSTANCE
                );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-le_id', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-vie_acct_dt', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -731,15 +745,15 @@ and  exists (
                        null
                   from
                             stn.insurance_policy  pol
-                       join stn.identified_record idr on pol.row_sid = idr.row_sid
+                       join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                  where
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
-            )
-;
+            );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-vie_acct_dt', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-vie_eff_dt', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -776,15 +790,15 @@ and  exists (
                        null
                   from
                             stn.insurance_policy  pol
-                       join stn.identified_record idr on pol.row_sid = idr.row_sid
+                       join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                  where
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
-            )
-;
+            );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-vie_eff_dt', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cl-stream_policies', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -821,7 +835,7 @@ and (
                              null
                         from
                                   stn.insurance_policy  pol
-                             join stn.identified_record idr on pol.row_sid = idr.row_sid
+                             join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                        where
                              pcs.POLICY_ID = pol.policy_id
                          and pcs.FEED_UUID = pol.feed_uuid
@@ -831,16 +845,17 @@ and (
                              null
                         from
                                   stn.insurance_policy  pol
-                             join stn.identified_record idr on pol.row_sid = idr.row_sid
+                             join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                        where
                              ccs.POLICY_ID = pol.policy_id
                          and ccs.FEED_UUID = pol.feed_uuid
                   )
     );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cl-stream_policies', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id-slr_link', NULL, NULL, NULL, NULL);
-		dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , estimate_percent => 30 , cascade => true );
-        INSERT INTO STANDARDISATION_LOG
+        
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -873,7 +888,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = cs.policy_id
                       and pol.feed_uuid = cs.FEED_UUID
@@ -887,9 +902,10 @@ and not exists (
                           ch.feed_uuid       = cs.FEED_UUID
                       and ch.child_stream_id = cs.stream_id
                );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cs-le_id-slr_link', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-tax-jurisdiction-cd', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -910,7 +926,7 @@ and not exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN INSURANCE_POLICY_TAX_JURISD polt ON fd.FEED_UUID = polt.FEED_UUID AND polt.POLICY_ID = pol.POLICY_ID
@@ -921,13 +937,14 @@ and not exists (
 and not exists (
  select null
 from fdr.fr_general_codes frgc
-where 
+where
 frgc.gc_client_code = polt.TAX_JURISDICTION_CD
-	and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'                           
+    and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'
 );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  pol-tax-jurisdiction-cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : pol-tax-jurisdiction-count', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -948,21 +965,22 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
                  vdl.VALIDATION_CD = 'pol-policy_tax_count'
-            and not exists ( 
-              select tj.policy_id from stn.insurance_policy_tax_jurisd tj 
+            and not exists (
+              select tj.policy_id from stn.insurance_policy_tax_jurisd tj
                      where tj.feed_uuid = pol.FEED_UUID
                      and tj.policy_id = pol.POLICY_ID)
 ;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  policy-validate-tax-jurisd-count', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : policy-validate-cession-count', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -983,21 +1001,21 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
                         vdl.VALIDATION_CD = 'pol-cession_count'
-            and not exists ( 
-              select c.policy_id from stn.cession c 
+            and not exists (
+              select c.policy_id from stn.cession c
                      where c.feed_uuid = pol.FEED_UUID
-                     and c.policy_id = pol.POLICY_ID)
-;
+                     and c.policy_id = pol.POLICY_ID);
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  policy-validate-cession-count', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cession-validate-vie-calendar-yr', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -1027,22 +1045,22 @@ frgc.gc_client_code = polt.TAX_JURISDICTION_CD
                     vdl.VALIDATION_CD = 'pol-cession_vie_date'
 and (
         cs.VIE_STATUS   is not null
-    and to_char(cs.VIE_ACCT_DT,'yyyy') <> to_char(cs.VIE_EFFECTIVE_DT,'yyyy') 
+    and to_char(cs.VIE_ACCT_DT,'yyyy') <> to_char(cs.VIE_EFFECTIVE_DT,'yyyy')
     )
 and  exists (
                 select
                        null
                   from
                             stn.insurance_policy  pol
-                       join stn.identified_record idr on pol.row_sid = idr.row_sid
+                       join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                  where
                        pol.policy_id = cs.policy_id
                    and pol.feed_uuid = cs.FEED_UUID
-            )
-;
+            );
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cession-validate-vie-calendar-yr', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_policy_svs
         (
             p_step_run_sid IN NUMBER,
@@ -1052,82 +1070,26 @@ and  exists (
         )
     AS
     BEGIN
-        UPDATE INSURANCE_POLICY pol
-            SET
-                EVENT_STATUS = 'E'
-            WHERE
-                       exists (
-                  select
-                         null
-                    from
-                         stn.standardisation_log sl
-                   where
-                         sl.table_in_error_name = 'insurance_policy'
-                     and sl.row_in_error_key_id = pol.row_sid
-              )
-    or exists (
-                  select
-                         null
-                    from
-                              stn.cession                    cs
-                         join stn.standardisation_log        sl  on cs.row_sid = sl.row_in_error_key_id
-                   where
-                         sl.table_in_error_name = 'cession'
-                     and cs.policy_id           = pol.policy_id
-                     and cs.feed_uuid           = pol.feed_uuid
-              )
-    or exists (
-                  select
-                         null
-                    from
-                              stn.insurance_policy_fx_rate polfxr
-                         join stn.standardisation_log      sl     on polfxr.row_sid = sl.row_in_error_key_id
-                   where
-                         sl.table_in_error_name = 'insurance_policy_fx_rate'
-                     and polfxr.policy_id       = pol.policy_id
-                     and polfxr.feed_uuid       = pol.feed_uuid
-              )
-    or exists (
-                  select
-                         null
-                    from
-                              stn.insurance_policy_tax_jurisd poltj
-                         join stn.standardisation_log      sl     on poltj.row_sid = sl.row_in_error_key_id
-                   where
-                         sl.table_in_error_name = 'insurance_policy_tax_jurisd'
-                     and poltj.policy_id       = pol.policy_id
-                     and poltj.feed_uuid       = pol.feed_uuid
-              )
-    or exists (
-                  select
-                         null
-                    from
-                              stn.cession_link        cl
-                         join stn.standardisation_log sl on cl.row_sid = sl.row_in_error_key_id
-                         join stn.cession             cs on (
-                                                                    cl.parent_stream_id = cs.stream_id
-                                                                and cl.feed_uuid        = cs.feed_uuid
-                                                            )
-                   where
-                         sl.table_in_error_name = 'cession_link'
-                     and cs.policy_id           = pol.policy_id
-                     and cs.feed_uuid           = pol.feed_uuid
-              )
-    or exists (
-                  select
-                         null
-                    from
-                              stn.cession_link        cl
-                         join stn.standardisation_log sl on cl.row_sid = sl.row_in_error_key_id
-                         join stn.cession             cs on (
-                                                                    cl.child_stream_id = cs.stream_id
-                                                                and cl.feed_uuid       = cs.feed_uuid
-                                                            )
-                   where
-                         sl.table_in_error_name = 'cession_link'
-                     and cs.policy_id           = pol.policy_id
-                     and cs.feed_uuid           = pol.feed_uuid
-              );
+		UPDATE STN.INSURANCE_POLICY pol
+		SET EVENT_STATUS = 'E'
+		WHERE pol.policy_id in
+			(
+					select distinct coalesce(p.policy_id, c.policy_id, tj.policy_id, pr.policy_id ) as policy_id
+					from stn.standardisation_log_pol sl
+						left join stn.INSURANCE_POLICY p on sl.row_in_error_key_id = p.row_sid
+						left join stn.cession c on sl.row_in_error_key_id = c.row_sid
+						left join stn.insurance_policy_tax_jurisd tj on sl.row_in_error_key_id = tj.row_sid
+						left join stn.insurance_policy_fx_rate pr on sl.row_in_error_key_id = pr.row_sid
+					where sl.table_in_error_name in ( 'insurance_policy',  'cession','insurance_policy_fx_rate','insurance_policy_tax_jurisd', 'cession_link')
+				union
+					select distinct c.policy_id as policy_id
+					from stn.standardisation_log_pol sl
+						join stn.cession_link cl on sl.row_in_error_key_id = cl.row_sid
+						join stn.cession c on cl.parent_stream_id = c.stream_id and cl.feed_uuid = c.feed_uuid --only check parent stream because any parent/child streams will have the same policy
+					where sl.table_in_error_name in ('cession_link')
+			)
+			and pol.step_run_sid = p_step_run_sid ;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of insurance_policy records set to error', 'sql%rowcount', NULL, sql%rowcount, NULL);
         UPDATE INSURANCE_POLICY_FX_RATE polfxr
             SET
@@ -1223,7 +1185,7 @@ and  exists (
             WHERE
                     cl.EVENT_STATUS = 'U';
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of cession link records set to passed validation', 'sql%rowcount', NULL, sql%rowcount, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -1244,7 +1206,7 @@ and  exists (
                 fd.FEED_SID AS FEED_SID
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN FEED fd ON pol.FEED_UUID = fd.FEED_UUID
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON pol.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
@@ -1254,10 +1216,11 @@ and  exists (
                     vdl.VALIDATION_CD = 'pol-related_record'
 and pol.EVENT_STATUS  = 'E'
 and not exists ( select null
-                   from stn.standardisation_log sl
+                   from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = pol.ROW_SID
                     and sl.table_in_error_name = 'insurance_policy' );
-        INSERT INTO STANDARDISATION_LOG
+
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -1287,10 +1250,11 @@ and not exists ( select null
                     vdl.VALIDATION_CD = 'cs-related_record'
 and cs.EVENT_STATUS  = 'E'
 and not exists ( select null
-                   from stn.standardisation_log sl
+                   from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = cs.ROW_SID
                     and sl.table_in_error_name = 'cession' );
-        INSERT INTO STANDARDISATION_LOG
+
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -1320,10 +1284,11 @@ and not exists ( select null
                     vdl.VALIDATION_CD = 'cl-related_record'
 and cl.EVENT_STATUS  = 'E'
 and not exists ( select null
-                   from stn.standardisation_log sl
+                   from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = cl.ROW_SID
                     and sl.table_in_error_name = 'cession_link' );
-        INSERT INTO STANDARDISATION_LOG
+
+        INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -1353,10 +1318,11 @@ and not exists ( select null
                     vdl.VALIDATION_CD = 'poltax-related_record'
 and poltax.EVENT_STATUS  = 'E'
 and not exists ( select null
-                   from stn.standardisation_log sl
+                   from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = poltax.ROW_SID
                     and sl.table_in_error_name = 'insurance_policy_tax_jurisd' );
-        INSERT INTO STANDARDISATION_LOG
+
+		INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -1386,11 +1352,12 @@ and not exists ( select null
                     vdl.VALIDATION_CD = 'polfxr-related_record'
 and fxr.EVENT_STATUS  = 'E'
 and not exists ( select null
-                   from stn.standardisation_log sl
+                   from stn.standardisation_log_pol sl
                   where sl.row_in_error_key_id = fxr.ROW_SID
                     and sl.table_in_error_name = 'insurance_policy_fx_rate' );
+
     END;
-    
+
     PROCEDURE pr_policy_pub
         (
             p_step_run_sid IN NUMBER,
@@ -1461,7 +1428,7 @@ and not exists ( select null
                 NVL(pdtvn.t_fdr_ver_no, 0) + 1 AS POLICY_VERSION
             FROM
                 INSURANCE_POLICY pol
-                INNER JOIN IDENTIFIED_RECORD idr ON pol.ROW_SID = idr.ROW_SID
+                INNER JOIN IDENTIFIED_RECORD_POL idr ON pol.ROW_SID = idr.ROW_SID
                 INNER JOIN CESSION cs ON pol.POLICY_ID = cs.POLICY_ID AND pol.FEED_UUID = cs.FEED_UUID
                 INNER JOIN cession_hierarchy ch ON cs.STREAM_ID = ch.child_stream_id AND cs.FEED_UUID = ch.feed_uuid
                 INNER JOIN fdr.FR_PARTY_LEGAL underwriting_le ON pol.UNDERWRITING_LE_ID = to_number ( underwriting_le.PL_GLOBAL_ID )
@@ -1512,9 +1479,9 @@ and exists
    (
      select
            null
-     from 
+     from
            stn.insurance_policy_tax_jurisd iptj
-     where 
+     where
             iptj.policy_id            = FR_GENERAL_CODES.GC_CLIENT_TEXT1
         and iptj.event_status         = 'V'
    )
@@ -1522,9 +1489,9 @@ and not exists
    (
      select
            null
-     from 
+     from
            stn.insurance_policy_tax_jurisd iptj
-     where 
+     where
             iptj.policy_id            = FR_GENERAL_CODES.GC_CLIENT_TEXT1
         and iptj.tax_jurisdiction_cd  = FR_GENERAL_CODES.GC_CLIENT_TEXT2
         and iptj.event_status         = 'V'
@@ -1552,7 +1519,7 @@ and     exists (
                           null
                      from
                                stn.insurance_policy  pol
-                          join stn.identified_record idr on pol.row_sid = idr.row_sid
+                          join stn.identified_record_pol idr on pol.row_sid = idr.row_sid
                     where
                           pol.policy_id = polfxr.POLICY_ID
                       and pol.feed_uuid = polfxr.FEED_UUID
@@ -1603,7 +1570,7 @@ and exists
       join stn.insurance_policy ip
            on ip.policy_id    = ipfr.policy_id
           and ip.step_run_sid = ipfr.step_run_sid
-     where 
+     where
             '/POL/' || ipfr.policy_id  = FR_FX_RATE.FR_RTY_RATE_TYPE_ID
         and ipfr.event_status          = 'V'
    )
@@ -1616,7 +1583,7 @@ and not exists
       join stn.insurance_policy ip
            on ip.policy_id    = ipfr.policy_id
           and ip.step_run_sid = ipfr.step_run_sid
-     where 
+     where
             ip.CLOSE_DT                = FR_FX_RATE.FR_FXRATE_DATE
         and ipfr.from_ccy              = FR_FX_RATE.FR_CU_CURRENCY_NUMER_ID
         and ipfr.to_ccy                = FR_FX_RATE.FR_CU_CURRENCY_DENOM_ID
@@ -1625,35 +1592,30 @@ and not exists
    );
         p_total_no_pol_fx_rate_deleted := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_policy_sps
         (
             p_no_fsrip_processed_records OUT NUMBER,
             p_no_fsriptj_processed_records OUT NUMBER,
             p_no_fsrfr_processed_records OUT NUMBER,
             p_no_ip_processed_records OUT NUMBER,
-            p_no_cl_processed_records OUT NUMBER
+            p_no_cl_processed_records OUT NUMBER,
+            p_step_run_sid IN NUMBER
         )
     AS
     BEGIN
         UPDATE CESSION cs
             SET
                 EVENT_STATUS = 'P'
-            WHERE
-                exists (
-           select
-                  null
-             from
-                       stn.hopper_insurance_policy hip
-                  join stn.cession                 csil on to_number ( hip.message_id ) = csil.row_sid
-                  join stn.insurance_policy        pol  on (
-                                                                   csil.policy_id = pol.policy_id
-                                                               and csil.feed_uuid = pol.feed_uuid
-                                                           )
-                  join stn.identified_record       idr  on pol.row_sid = idr.row_sid
-            where
-                  to_number ( hip.message_id ) = cs.ROW_SID
-       );
+            WHERE cs.row_sid in (
+				SELECT DISTINCT TO_NUMBER( hip.message_id )
+                from
+                stn.hopper_insurance_policy hip
+                where hip.process_id = p_step_run_sid
+                )
+                and cs.EVENT_STATUS = 'V'
+            ;
+
         p_no_fsrip_processed_records := SQL%ROWCOUNT;
         UPDATE INSURANCE_POLICY_TAX_JURISD poltjd
             SET
@@ -1734,7 +1696,7 @@ and exists (
            );
         p_no_cl_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_policy_prc
         (
             p_step_run_sid IN NUMBER,
@@ -1743,7 +1705,7 @@ and exists (
             p_no_failed_records OUT NUMBER
         )
     AS
-        v_no_identified_records NUMBER(38, 9) DEFAULT 0;
+        v_no_identified_records_pol NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hpol_records NUMBER(38, 9) DEFAULT 0;
         v_no_updated_fsrfr_records NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hpoltj_records NUMBER(38, 9) DEFAULT 0;
@@ -1764,10 +1726,18 @@ and exists (
         pub_val_mismatch EXCEPTION;
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify policy records' );
-        pr_policy_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records', NULL, v_no_identified_records, NULL);
-        IF v_no_identified_records > 0 THEN
+        pr_policy_idf(p_step_run_sid, p_lpg_id, v_no_identified_records_pol);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records_pol', NULL, v_no_identified_records_pol, NULL);
+        IF v_no_identified_records_pol > 0 THEN
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY' , cascade => true );
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION' , cascade => true );
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_LINK' , cascade => true );
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_TAX_JURISD' , cascade => true );
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_FX_RATE' , cascade => true );            
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed gathering stats on ins policy tables', '', NULL, NULL, NULL);
             stn.pk_cession_hier.pr_gen_cession_hierarchy;
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , estimate_percent => 30 , cascade => true );
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed generating cession hiearchy', 'stn.pk_cession_hier.pr_gen_cession_hierarchy', NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
             pr_policy_chr(p_step_run_sid, p_lpg_id, v_no_updated_hpol_records, v_no_updated_fsrfr_records, v_no_updated_hpoltj_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed policy hopper records', 'v_no_updated_hpol_records', NULL, v_no_updated_hpol_records, NULL);
@@ -1790,9 +1760,9 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed deleting prior insurance policy fx rate records', 'v_total_no_pol_fx_rate_deleted', NULL, v_total_no_pol_fx_rate_deleted, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing fx rate hopper records', 'v_total_no_fsrfr_published', NULL, v_total_no_fsrfr_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish log records' );
-            pr_publish_log;
+            pr_publish_log('STANDARDISATION_LOG_POL');
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set legal entity status = "P"' );
-            pr_policy_sps(v_no_fsrip_processed_records, v_no_fsriptj_processed_records, v_no_fsrfr_processed_records, v_no_ip_processed_records, v_no_cl_processed_records);
+            pr_policy_sps(v_no_fsrip_processed_records, v_no_fsriptj_processed_records, v_no_fsrfr_processed_records, v_no_ip_processed_records, v_no_cl_processed_records,p_step_run_sid);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_fsrip_processed_records', NULL, v_no_fsrip_processed_records, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_fsriptj_processed_records', NULL, v_no_fsriptj_processed_records, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_fsrfr_processed_records', NULL, v_no_fsrfr_processed_records, NULL);

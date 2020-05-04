@@ -2791,7 +2791,7 @@ and exists (
             pr_cession_event_svs(p_step_run_sid, v_no_errored_records, v_no_validated_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting validation status', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish log records' );
-            pr_publish_log;
+            pr_publish_log('STANDARDISATION_LOG');
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish cession event records' );
             pr_cession_event_pub(p_step_run_sid, v_no_published_records, v_no_pub_rev_hist_records, v_no_pub_rev_curr_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing records', 'v_no_published_records + v_no_pub_rev_hist_records + v_no_pub_rev_curr_records', NULL, v_no_published_records + v_no_pub_rev_hist_records + v_no_pub_rev_curr_records, NULL);

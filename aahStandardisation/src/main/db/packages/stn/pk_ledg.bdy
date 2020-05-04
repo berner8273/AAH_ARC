@@ -642,7 +642,7 @@ and (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed updating general lookup legal_entity_ledger records', 'v_no_gen_lk_lel_updated', NULL, v_no_gen_lk_lel_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing hopper_legal_entity_ledger records', 'v_no_lel_published', NULL, v_no_lel_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish ledger standardise log records' );
-            pr_publish_log;
+            pr_publish_log('STANDARDISATION_LOG');
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set ledger status = "P"' );
             pr_ledger_sps(p_step_run_sid, v_no_l_processed_records, v_no_abl_processed_records, v_no_lel_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for ledger records', 'v_no_processed_records', NULL, v_no_l_processed_records + v_no_abl_processed_records + v_no_lel_processed_records, NULL);

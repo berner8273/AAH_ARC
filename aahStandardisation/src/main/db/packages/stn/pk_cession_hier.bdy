@@ -22,7 +22,7 @@ as
                                         , null           parent_le_id
                                      from
                                                stn.insurance_policy  ip
-                                          join stn.identified_record idr on ip.row_sid = idr.row_sid
+                                          join stn.identified_record_pol idr on ip.row_sid = idr.row_sid
                                           join stn.cession           cs  on (
                                                                                     ip.policy_id = cs.policy_id
                                                                                 and ip.feed_uuid = cs.feed_uuid
@@ -50,7 +50,7 @@ as
                                         , pcs.le_id           parent_le_id
                                      from
                                                stn.insurance_policy  ip
-                                          join stn.identified_record idr on ip.row_sid = idr.row_sid
+                                          join stn.identified_record_pol idr on ip.row_sid = idr.row_sid
                                           join stn.cession           ccs on (
                                                                                     ip.policy_id = ccs.policy_id
                                                                                 and ip.feed_uuid = ccs.feed_uuid

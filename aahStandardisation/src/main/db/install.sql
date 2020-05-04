@@ -173,6 +173,7 @@ conn ~stn_logon
 @@tables/stn/gl_combo_edit_rule.sql
 @@tables/stn/identified_feed.sql
 @@tables/stn/identified_record.sql
+@@tables/stn/identified_record_pol.sql
 @@tables/stn/cev_identified_record.sql
 @@tables/stn/insurance_policy.sql
 @@tables/stn/insurance_policy_fx_rate.sql
@@ -202,6 +203,7 @@ conn ~stn_logon
 @@tables/stn/posting_method_ledger.sql
 @@tables/stn/process_code_module.sql
 @@tables/stn/standardisation_log.sql
+@@tables/stn/standardisation_log_pol.sql
 @@tables/stn/superseded_feed.sql
 @@tables/stn/supersession_method.sql
 @@tables/stn/validation.sql
@@ -447,6 +449,7 @@ commit;
 @@indices/stn/cession_event.sql
 @@indices/stn/cev_data.sql
 @@indices/stn/cev_valid.sql
+@@indices/stn/standardisation_log_pol.sql
 
 @@packages/stn/f_event_status_desc.sql
 

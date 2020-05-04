@@ -1699,7 +1699,7 @@ AND NOT EXISTS (SELECT cce.ce_input_id FROM fdr.fr_combination_check_error je2 W
             pr_journal_line_pub(v_total_no_published);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing journal line hopper records', 'v_total_no_published', NULL, v_total_no_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish journal line log records' );
-            pr_publish_log;
+            pr_publish_log('STANDARDISATION_LOG');
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set journal line status = "P"' );
             pr_journal_line_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
