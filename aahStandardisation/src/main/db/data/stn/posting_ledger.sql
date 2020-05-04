@@ -5,4 +5,5 @@ insert into stn.posting_ledger ( ledger_cd ) values ( 'GO_CONSOL' );
 insert into stn.posting_ledger ( ledger_cd ) values ( 'CORE_GE' );
 insert into stn.posting_ledger ( ledger_cd ) values ( 'CORE_SE' );
 insert into stn.posting_ledger ( ledger_cd ) values ( 'UKGAAP_ADJ' );
+insert into stn.posting_ledger ( ledger_cd ) values ( 'EURGAAPADJ' );
 commit;

@@ -536,6 +536,9 @@ INSERT INTO stn.load_gaap_to_core ("LE_CD")
   VALUES ('MBUK');
 INSERT INTO stn.load_gaap_to_core ("LE_CD")
   VALUES ('FSAUK');
+INSERT INTO stn.load_gaap_to_core ("LE_CD")
+  VALUES ('AGFRA');
+
 
 -- Populate table LOAD_POSTING_METHOD_DERIVATION
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")

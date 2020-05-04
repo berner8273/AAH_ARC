@@ -25,5 +25,12 @@ insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_
 insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'CA005' , 'AGROL' , NULL , 'CA003' );
 insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'CA005' , 'AGREL' , NULL , 'CA003' );
 insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'CA005' , 'AGCRP' , NULL , 'CARA1' );
+insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'AGFRA' , 'AGROL' , 'REIN2' , 'CA003' );
+insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'AGFRA' , 'AGREL' , 'REIN2' , 'CA003' );
+insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'AGFRA' , 'AGCRP' , 'REIN4' , 'CARA1' );
+insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'AGROL' , 'AGFRA' , 'REIN2' , 'CA003' );
+insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'AGREL' , 'AGFRA' , 'REIN2' , 'CA003' );
+insert into stn.posting_method_derivation_rein ( le_1_cd , le_2_cd , chartfield_cd , reins_le_cd ) values ( 'AGCRP' , 'AGFRA' , 'REIN4' , 'CARA1' );
+
 
 commit;
