@@ -44,7 +44,7 @@ SELECT
   , jh.jh_jrnl_authorised_on as authorised_date
   , jh.jh_jrnl_validated_on as validated_date
   , jh.jh_created_on as created_date
-  , jh.jh_created_by AS requestor
+  , jh.jh_amended_by AS requestor
   , jh.jh_jrnl_authorised_by AS approver
   , CASE WHEN gjl.rgjl_id is not null
             THEN 'Y'
@@ -54,6 +54,10 @@ SELECT
   , gjl.rgjl_rgj_rgbc_id AS glint_header_id
   , gjl.rgjl_id AS glint_line_id
   , gjl.accounting_dt AS glint_acctng_date
+  , jh.jh_jrnl_description AS aah_journal_header_desc
+  , gjl.jh_jrnl_description AS glint_jrnl_line_desc
+  , jh.jh_jrnl_source AS journal_source
+  , jh.jh_amended_on AS journal_updated_on
 FROM slr.slr_jrnl_lines jl
     LEFT JOIN slr.slr_jrnl_headers jh
         ON jl.jl_jrnl_hdr_id = jh.jh_jrnl_id

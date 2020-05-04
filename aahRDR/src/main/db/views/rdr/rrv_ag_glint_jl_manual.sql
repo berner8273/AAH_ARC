@@ -12,8 +12,8 @@ select --In progress manual journals
      , gjlu.jlu_jrnl_line_number  rgjl_aah_journal_line
      , null                       input_time
      , null                       input_user
-     , null                       modified_time
-     , null                       modified_user
+     , gjlu.jlu_amended_on        modified_time
+     , gjlu.jlu_amended_by        modified_user
      , null                       gl_distrib_status
      , null                       appl_jrnl_id
      , gjlu.jlu_segment_1         ledger_group
@@ -47,7 +47,10 @@ select --In progress manual journals
      , gjlu.jlu_created_by        created_by
      , null                       approved_by
      , gjlu.jhu_jrnl_type         jh_jrnl_type
-     , gjlu.jhu_jrnl_description  jh_jrnl_description     
+     , gjlu.jhu_jrnl_description  jh_jrnl_description
+	 , gjlu.jhu_jrnl_source         jhu_jrnl_source
+	 , gjlu.jhu_jrnl_authorised_by authorized_by
+     , gjlu.jhu_jrnl_authorised_on authorized_on
   from ( select
                 jlu_jrnl_hdr_id
               , case when jt.ejt_madj_flag = 'Y' then jlu_jrnl_hdr_id else 0 end                           jlu_jrnl_hdr_id2
@@ -117,7 +120,10 @@ select --In progress manual journals
               , jl.jlu_jrnl_process_id
               , jt.ejt_madj_flag
               , jh.jhu_jrnl_type            
-              , jh.jhu_jrnl_description               
+              , jh.jhu_jrnl_description
+			  , jh.jhu_jrnl_source
+			  , gjhu.jhu_jrnl_authorised_by 
+              , gjhu.jhu_jrnl_authorised_on 
            from
                 gui.gui_jrnl_lines_unposted   jl
       left join fdr.fr_general_lookup         fgl   on jl.jlu_attribute_4          = fgl.lk_match_key1
@@ -126,7 +132,8 @@ select --In progress manual journals
       left join gui.gui_jrnl_headers_unposted jh    on jh.jhu_jrnl_id              = jl.jlu_jrnl_hdr_id
       left join gui.gui_jrnl_line_errors      jle   on jl.jlu_jrnl_hdr_id          = jle.jle_jrnl_hdr_id
 												   and jl.jlu_jrnl_line_number     = jle.jle_jrnl_line_number
-      left join slr.slr_ext_jrnl_types        jt    on jt.ejt_type                 = jh.jhu_jrnl_type       ) gjlu
+      left join slr.slr_ext_jrnl_types        jt    on jt.ejt_type                 = jh.jhu_jrnl_type
+      left join gui.gui_jrnl_headers_unposted gjhu  on jl.jlu_jrnl_hdr_id          = gjhu.jhu_jrnl_id        ) gjlu
  group by
  	   gjlu.jlu_jrnl_hdr_id
      , gjlu.jlu_jrnl_line_number
@@ -145,4 +152,9 @@ select --In progress manual journals
      , gjlu.ejt_madj_flag
      , gjlu.jlu_created_by
      , gjlu.jhu_jrnl_type            
-     , gjlu.jhu_jrnl_description;
+     , gjlu.jhu_jrnl_description
+	 , gjlu.jhu_jrnl_source
+	 , gjlu.jlu_amended_on
+     , gjlu.jlu_amended_by
+     , gjlu.jhu_jrnl_authorised_by 
+     , gjlu.jhu_jrnl_authorised_on;
