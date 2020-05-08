@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_CEV AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_CEV AS
     PROCEDURE pr_cession_event_idf
         (
             p_lpg_id IN NUMBER,
@@ -7,9 +7,9 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_CEV AS
         )
     AS
     BEGIN
-        DELETE FROM STN.CEV_IDENTIFIED_RECORD;
-        
-        INSERT /*+ PARALLEL */ INTO CEV_IDENTIFIED_RECORD
+        execute immediate 'truncate table STN.CEV_IDENTIFIED_RECORD';
+
+        INSERT /*+ APPEND */ INTO CEV_IDENTIFIED_RECORD
             (ROW_SID)
             SELECT
                 ce.ROW_SID AS ROW_SID
@@ -39,12 +39,13 @@ and not exists (
             select
                  null
             from
-                stn.event_hierarchy_reference ehr 
+                stn.event_hierarchy_reference ehr
            join stn.period_status ps on ehr.event_class = ps.event_class
            where ps.status = 'O'
              and trunc(ce.accounting_dt,'MONTH') = trunc(ps.period_end,'MONTH')
              and ce.event_typ = ehr.event_typ
               );
+              commit;
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_IDENTIFIED_RECORD' , estimate_percent => 30 , cascade => true );
         UPDATE CESSION_EVENT ce
             SET
@@ -60,7 +61,7 @@ and not exists (
        );
         p_no_CEV_IDENTIFIED_RECORDs := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_cession_event_pub
         (
             p_step_run_sid IN NUMBER,
@@ -79,8 +80,9 @@ and not exists (
         v_no_cev_intercompany_data NUMBER(38, 9) DEFAULT 0;
         v_no_cev_vie_data NUMBER(38, 9) DEFAULT 0;
     BEGIN
-        delete /*+ parallel*/ from stn.cev_valid;
-        insert /*+ parallel*/ into stn.cev_valid
+        --delete /*+ parallel*/ from stn.cev_valid;
+        execute immediate 'truncate table stn.cev_valid';
+        insert /*+ APPEND*/ into stn.cev_valid
         (   row_sid
         ,   correlation_uuid
         ,   event_id
@@ -132,10 +134,10 @@ and not exists (
          where
                cev.event_status = 'V'
         ;
-        
+        commit;
         v_no_cev_valid := sql%rowcount;
-        
-        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_VALID' , estimate_percent => 30 , cascade => true );
+
+        --dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_VALID' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_valid', 'v_no_cev_valid', NULL, v_no_cev_valid, NULL);
         insert into stn.posting_account_derivation
         select distinct
@@ -162,13 +164,13 @@ and not exists (
              , fal.al_lookup_2
              , fal.al_lookup_3
              , fal.al_ccy
-        ;       
+        ;
            --and padt.amount_typ_descr   in ( 'DERIVED' , 'DERIVED_PLUS' )
-             
-        
+
+
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'POSTING_ACCOUNT_DERIVATION' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed posting_account_derivation', NULL, NULL, NULL, NULL);
-        insert into stn.cev_data
+        insert /*+ APPEND */ into stn.cev_data
         with
           ce_data
           as (
@@ -273,7 +275,7 @@ and not exists (
                                         then ppt.cession_event_premium_typ
                                         else cev.premium_typ
                                         end premium_typ
-                                
+
                                   , case
                                                 when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('C') and ce_data.counterparty_le_cd = 'FSAU')
                                                       or (cev.event_typ like 'PGAAP%' and cev.business_typ in ('A','CA','AA','D') and ce_data.owner_le_cd = 'FSAU')
@@ -282,7 +284,7 @@ and not exists (
                                                     then 'CA005'
                                                 else ce_data.le_cd
                                             end le_cd
-        
+
                                   , case
                                                 when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('AA','CA') and ce_data.counterparty_le_cd = 'FSAU')
                                                     then 'FSANY'
@@ -523,7 +525,7 @@ and not exists (
                                                                                 and cev.business_typ     = cev_sum.business_typ
                                                                                 and cev.basis_cd         = cev_sum.basis_cd
                                                                                     )
-        
+
                             left join stn.posting_method_derivation_gfa  gfa    on et.event_typ_id      = gfa.event_typ_in and cev.basis_cd = 'US_STAT'
                                                                                and exists (
                                                                                             select null
@@ -544,8 +546,9 @@ and not exists (
                                                                                     end  ) = pmdl.le_cd
                         )
               ;
+              commit;
         v_no_cev_data := sql%rowcount;
-        dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_DATA' , estimate_percent => 30 , cascade => true );
+        --dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_data', 'v_no_cev_data', NULL, v_no_cev_data, NULL);
         insert into stn.cev_premium_typ_override
                 select distinct
@@ -571,7 +574,7 @@ and not exists (
                            )
                    )
         ;
-        
+
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_PREMIUM_TYP_OVERRIDE' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_premium_typ_override', NULL, NULL, NULL, NULL);
         insert into stn.cev_mtm_data
@@ -647,9 +650,9 @@ and not exists (
                         join stn.posting_financial_calc         fincalc  on pml.fin_calc_id                        = fincalc.fin_calc_id
                     where cev_data.gaap_fut_accts_flag = 'N'
         ;
-        
+
         v_no_cev_mtm_data := sql%rowcount;
-        
+
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_MTM_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_mtm_data', 'v_no_cev_mtm_data', NULL, v_no_cev_mtm_data, NULL);
         insert into stn.cev_gaap_fut_accts_data
@@ -855,9 +858,9 @@ and not exists (
                     , partner_reporting_amt
                     , lpg_id
         ;
-        
+
         v_no_cev_gaap_fut_accts_data := sql%rowcount;
-        
+
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_GAAP_FUT_ACCTS_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_gaap_fut_accts_data', 'v_no_cev_gaap_fut_accts_data', NULL, v_no_cev_gaap_fut_accts_data, NULL);
         -- Derived plus logic no longer needed in cession event standardisation
@@ -1166,7 +1169,7 @@ and not exists (
                                     left join stn.policy_tax                     pt     on ad.policy_id         = pt.policy_id
                                 )
                      )
-        
+
                              select
                                     posting_type
                                   , business_type_association_id
@@ -1221,7 +1224,7 @@ and not exists (
                                     non_intercompany_data
                 ;
                 v_no_cev_non_intercompany_data := sql%rowcount;
-        
+
                 dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_NON_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_non_intercompany_data', 'v_no_cev_non_intercompany_data', NULL, v_no_cev_non_intercompany_data, NULL);
                 insert into stn.cev_intercompany_data
@@ -1372,7 +1375,7 @@ and not exists (
                                from
                                     intercompany_data;
                 v_no_cev_intercompany_data := sql%rowcount;
-        
+
                 dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_intercompany_data', 'v_no_cev_intercompany_data', NULL, v_no_cev_intercompany_data, NULL);
                 insert into stn.cev_vie_data
@@ -1862,11 +1865,11 @@ and not exists (
                        vie_hist
                 ;
                 v_no_cev_vie_data := sql%rowcount;
-        
+
                 dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_VIE_DATA' , estimate_percent => 30 , cascade => true );
-                
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_vie_data', 'v_no_cev_vie_data', NULL, v_no_cev_vie_data, NULL);
-        INSERT INTO HOPPER_CESSION_EVENT
+        INSERT /*+ APPEND */ INTO HOPPER_CESSION_EVENT
             (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP)
             SELECT
                 cep.BUSINESS_UNIT AS BUSINESS_UNIT,
@@ -1887,7 +1890,7 @@ end
                 ROUND(NVL(cep.TRANSACTION_AMT, 0), 2) AS TRANSACTION_AMT,
                 cep.BUSINESS_TYP AS BUSINESS_TYP,
                 cep.POLICY_TYP AS POLICY_TYP,
-                case 
+                case
 when cep.PREMIUM_TYP = 'M' then 'I'
 else cep.PREMIUM_TYP
 end AS PREMIUM_TYP,
@@ -1909,11 +1912,11 @@ end AS PREMIUM_TYP,
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
-                case 
+                case
 when cep.EVENT_TYP in ( 'DAC_CC_CAP_DEF'
                       , 'VIECC_DAC_CAP_DEF'
                       , 'VIECD_DAC_CAP_DEF'
-                      , 'VIECF_DAC_CAP_DEF' ) 
+                      , 'VIECF_DAC_CAP_DEF' )
 then '4001'
 else null
 end AS DEPT_CD,
@@ -1971,12 +1974,13 @@ end AS VIE_BU_ACCOUNT_LOOKUP
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cep.LPG_ID = gp.LPG_ID
             WHERE
                 (ROUND(cep.TRANSACTION_AMT, 2) <> 0 OR ROUND(cep.FUNCTIONAL_AMT, 2) <> 0 OR ROUND(cep.REPORTING_AMT, 2) <> 0);
+                commit;
         p_no_published_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting cession events into hopper', 'p_no_published_records', NULL, p_no_published_records, NULL);
 
 
 
-        INSERT /*+ parallel(8) */ INTO HOPPER_CESSION_EVENT
+        INSERT /*+ APPEND */ INTO HOPPER_CESSION_EVENT
             (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP, ORIGINAL_POSTING_DT)
             SELECT
                 cerhist.BUSINESS_UNIT AS BUSINESS_UNIT,
@@ -1997,7 +2001,7 @@ end
                 ROUND(NVL(cerhist.TRANSACTION_AMT, 0), 2) AS TRANSACTION_AMT,
                 cerhist.BUSINESS_TYP AS BUSINESS_TYP,
                 cerhist.POLICY_TYP AS POLICY_TYP,
-                case 
+                case
 when cerhist.PREMIUM_TYP = 'M' then 'I'
 else cerhist.PREMIUM_TYP
 end  AS PREMIUM_TYP,
@@ -2019,11 +2023,11 @@ end  AS PREMIUM_TYP,
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
-                case 
+                case
 when cerhist.EVENT_TYP in ( 'DAC_CC_CAP_DEF'
                           , 'VIECC_DAC_CAP_DEF'
                           , 'VIECD_DAC_CAP_DEF'
-                          , 'VIECF_DAC_CAP_DEF' ) 
+                          , 'VIECF_DAC_CAP_DEF' )
 then '4001'
 else null
 end AS DEPT_CD,
@@ -2060,6 +2064,7 @@ end AS DEPT_CD,
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cerhist.LPG_ID = gp.LPG_ID
             WHERE
                 (ROUND(cerhist.TRANSACTION_AMT, 2) <> 0 OR ROUND(cerhist.FUNCTIONAL_AMT, 2) <> 0 OR ROUND(cerhist.REPORTING_AMT, 2) <> 0);
+                commit;
         p_no_pub_rev_hist_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting historical reversal records into hopper', 'p_no_pub_rev_hist_records', NULL, p_no_pub_rev_hist_records, NULL);
         INSERT /*+ parallel(8) */ INTO HOPPER_CESSION_EVENT
@@ -2083,7 +2088,7 @@ end
                 ROUND(NVL(cercurr.TRANSACTION_AMT, 0), 2) AS TRANSACTION_AMT,
                 cercurr.BUSINESS_TYP AS BUSINESS_TYP,
                 cercurr.POLICY_TYP AS POLICY_TYP,
-                case 
+                case
 when cercurr.PREMIUM_TYP = 'M' then 'I'
 else cercurr.PREMIUM_TYP
 end  AS PREMIUM_TYP,
@@ -2105,11 +2110,11 @@ end  AS PREMIUM_TYP,
                     ELSE 'NEG'
                 END) AS TRANSACTION_POS_NEG,
                 ce_default.SRAE_GL_PERSON_CODE AS SRAE_GL_PERSON_CODE,
-                case 
+                case
 when cercurr.EVENT_TYP in ( 'DAC_CC_CAP_DEF'
                           , 'VIECC_DAC_CAP_DEF'
                           , 'VIECD_DAC_CAP_DEF'
-                          , 'VIECF_DAC_CAP_DEF' ) 
+                          , 'VIECF_DAC_CAP_DEF' )
 then '4001'
 else null
 end AS DEPT_CD,
@@ -2170,7 +2175,7 @@ end AS VIE_BU_ACCOUNT_LOOKUP
         p_no_pub_rev_curr_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting current reversal records into hopper', 'p_no_pub_rev_curr_records', NULL, p_no_pub_rev_curr_records, NULL);
     END;
-    
+
     PROCEDURE pr_cession_event_rval
         (
             p_step_run_sid IN NUMBER
@@ -2178,7 +2183,7 @@ end AS VIE_BU_ACCOUNT_LOOKUP
     AS
     BEGIN
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-stream_id', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -2204,13 +2209,17 @@ end AS VIE_BU_ACCOUNT_LOOKUP
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON ce.LPG_ID = gp.LPG_ID
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
-                LEFT  JOIN stn.insurance_policy_reference ipr ON ipr.stream_id = ce.STREAM_ID
-            WHERE ipr.stream_id is null
+                --LEFT  JOIN stn.insurance_policy_reference ipr ON ipr.stream_id = ce.STREAM_ID
+                LEFT  JOIN fdr.fr_trade ipr ON   ce.STREAM_ID = ipr.t_source_tran_no
+            WHERE 
+            ce.EVENT_STATUS='U' and
+             --ipr.stream_id is null
+            ipr.t_source_tran_no is null
                     and vdl.VALIDATION_CD = 'ce-stream_id';
-
+        commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-stream_id', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-basis_cd', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -2246,9 +2255,10 @@ and not exists (
                     where
                           fg.fga_gaap_id = ce.BASIS_CD
                );
+               commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-basis_cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-transaction_ccy', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -2286,9 +2296,10 @@ and not exists (
                           fcl.cul_currency_lookup_code = ce.TRANSACTION_CCY
                       and fcl.cul_sil_sys_inst_clicode = ced.SYSTEM_INSTANCE
                );
+               commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-transaction_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-functional_ccy', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -2326,9 +2337,10 @@ and not exists (
                           fcl.cul_currency_lookup_code = ce.FUNCTIONAL_CCY
                       and fcl.cul_sil_sys_inst_clicode = ced.SYSTEM_INSTANCE
                );
+               commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-functional_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-reporting_ccy', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -2366,9 +2378,10 @@ and not exists (
                           fcl.cul_currency_lookup_code = ce.REPORTING_CCY
                       and fcl.cul_sil_sys_inst_clicode = ced.SYSTEM_INSTANCE
                );
+               commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-reporting_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-event_typ', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -2404,8 +2417,9 @@ and not exists (
                     where
                           faet.aet_acc_event_type_id = ce.EVENT_TYP
                );
+               commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-event_typ', 'sql%rowcount', NULL, sql%rowcount, NULL);
-/*        
+/*
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-posting_method', NULL, NULL, NULL, NULL);
         INSERT INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
@@ -2443,7 +2457,7 @@ and not exists (
   ppt.CESSION_EVENT_PREMIUM_TYP
      else
   ce.PREMIUM_TYP
- end)  = ppt.PREMIUM_TYP                                 
+ end)  = ppt.PREMIUM_TYP
 
             WHERE
                 vdl.VALIDATION_CD = 'ce-posting_method'
@@ -2467,9 +2481,9 @@ select null
                );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-posting_method', 'sql%rowcount', NULL, sql%rowcount, NULL);
 */
-        
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-event-hier', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -2505,9 +2519,10 @@ and not exists (
                     where
                           ehr.event_typ = ce.EVENT_TYP
                );
+               commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-event-hier', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-correlation-uuid-dup', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -2535,18 +2550,21 @@ and not exists (
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
                     vdl.VALIDATION_CD = 'ce-correlation_uuid_dup'
-and exists (
+                and ce.EVENT_STATUS = 'U' 
+                and exists (
                    select
-                          null
+                           1
                      from
-                          stn.hopper_cession_event hce
-                    where 
-                          hce.correlation_uuid = ce.correlation_uuid
-                          and trunc(hce.accounting_dt,'MONTH') = trunc(ce.accounting_dt,'MONTH')
-               );
+                          fdr.fr_stan_raw_acc_event hce
+                    where
+                          hce.srae_client_spare_id14 = ce.correlation_uuid
+                          and trunc(hce.srae_accevent_date,'MONTH') = trunc(ce.accounting_dt,'MONTH')
+                          and ce.lpg_id=hce.lpg_id
+                          );
+               commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-correlation-uuid-dup', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-correlation_uuid_error', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
             SELECT
                 "ce-validate-correlation-uuid".CATEGORY_ID AS CATEGORY_ID,
@@ -2591,17 +2609,18 @@ and exists (
                     INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                     INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
                 WHERE
+                ce.EVENT_STATUS='U' and
                         vdl.VALIDATION_CD = 'ce-correlation_uuid'
 and exists (
        select
               null
          from
               stn.standardisation_log sl
-         join 
-              stn.cession_event ce2 on 
+         join
+              stn.cession_event ce2 on
             ( sl.row_in_error_key_id = ce2.row_sid
           and sl.step_run_sid = ce2.step_run_sid )
-        where 
+        where
               ce.correlation_uuid = ce2.correlation_uuid
             )
 and not exists (
@@ -2609,13 +2628,14 @@ and not exists (
               null
          from
               stn.standardisation_log sl3
-        where 
+        where
               ce.ROW_SID = sl3.row_in_error_key_id
             )) "ce-validate-correlation-uuid";
+            commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-correlation-uuid-error', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Loaded correlated records to stn.standardisation_log', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_cession_event_sps
         (
             p_no_processed_records OUT NUMBER
@@ -2637,7 +2657,7 @@ and not exists (
            );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_cession_event_svs
         (
             p_step_run_sid IN NUMBER,
@@ -2666,7 +2686,7 @@ and not exists (
                 EVENT_STATUS = 'V'
             WHERE
                     ce.EVENT_STATUS = 'U'
-and exists ( 
+and exists (
              select
                     null
                from
@@ -2677,7 +2697,7 @@ and exists (
         p_no_validated_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of cession_event records set to passed validation', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_cession_event_cur
         (
             p_step_run_sid IN NUMBER,
@@ -2693,7 +2713,7 @@ and exists (
         p_no_unprocessed_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of unprocessed records cancelled', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_cession_event_sval
         (
             p_step_run_sid IN NUMBER
@@ -2701,7 +2721,7 @@ and exists (
     AS
     BEGIN
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cession-event-validate-event-class', NULL, NULL, NULL, NULL);
-        INSERT INTO STANDARDISATION_LOG
+        INSERT /*+ APPEND */ INTO STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
                 vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
@@ -2735,10 +2755,11 @@ and exists (
                     cev.FEED_UUID) cevecd ON cev.FEED_UUID = cevecd.FEED_UUID
             WHERE
                 vdl.VALIDATION_CD = 'ce-event_class_count' AND cevecd.COUNT_DISTINCT > 1;
+                commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : jcession-event-validate-event-class', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : jcession-event-validate-event-class-period', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_cession_event_res
         (
             p_no_reset_event_status OUT NUMBER
@@ -2752,7 +2773,7 @@ and exists (
                 ce.EVENT_STATUS = 'V';
         p_no_reset_event_status := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_cession_event_prc
         (
             p_step_run_sid IN NUMBER,
@@ -2791,7 +2812,7 @@ and exists (
             pr_cession_event_svs(p_step_run_sid, v_no_errored_records, v_no_validated_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting validation status', NULL, NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish log records' );
-            pr_publish_log('STANDARDISATION_LOG');
+            pr_publish_log;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish cession event records' );
             pr_cession_event_pub(p_step_run_sid, v_no_published_records, v_no_pub_rev_hist_records, v_no_pub_rev_curr_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing records', 'v_no_published_records + v_no_pub_rev_hist_records + v_no_pub_rev_curr_records', NULL, v_no_published_records + v_no_pub_rev_hist_records + v_no_pub_rev_curr_records, NULL);
