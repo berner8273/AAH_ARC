@@ -278,7 +278,7 @@ and not exists (
                                                 when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('C') and ce_data.counterparty_le_cd = 'FSAU')
                                                       or (cev.event_typ like 'PGAAP%' and cev.business_typ in ('A','CA','AA','D') and ce_data.owner_le_cd = 'FSAU')
                                                     then 'FSANY'
-                                                when cev.event_typ = 'DAC_CC_CONS_ADJUST' and cev.business_typ in ('C','A','D','AA')
+                                                when cev.event_typ in ('DAC_CC_CONS_ADJUST', 'CONSOL_DAC_AMORT', 'CONSOL_CC_CAP_DEF') and cev.business_typ in ('C','A','D','AA')
                                                     then 'CA005'
                                                 else ce_data.le_cd
                                             end le_cd
@@ -286,7 +286,7 @@ and not exists (
                                   , case
                                                 when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('AA','CA') and ce_data.counterparty_le_cd = 'FSAU')
                                                     then 'FSANY'
-                                                when cev.event_typ = 'DAC_CC_CONS_ADJUST' and cev.business_typ in ('CA')
+                                                when cev.event_typ in ('DAC_CC_CONS_ADJUST', 'CONSOL_DAC_AMORT', 'CONSOL_CC_CAP_DEF') and cev.business_typ in ('CA')
                                                     then 'CA005'
                                                 else ce_data.parent_cession_le_cd
                                             end parent_cession_le_cd
@@ -1871,7 +1871,7 @@ and not exists (
             SELECT
                 cep.BUSINESS_UNIT AS BUSINESS_UNIT,
                 case
-when cep.EVENT_TYP <> 'DAC_CC_CONS_ADJUST'
+when cep.EVENT_TYP not in ('DAC_CC_CONS_ADJUST', 'CONSOL_DAC_AMORT', 'CONSOL_CC_CAP_DEF')
 then cep.AFFILIATE
 else null
 end
@@ -1981,7 +1981,7 @@ end AS VIE_BU_ACCOUNT_LOOKUP
             SELECT
                 cerhist.BUSINESS_UNIT AS BUSINESS_UNIT,
                 case
-when cerhist.EVENT_TYP <> 'DAC_CC_CONS_ADJUST'
+when cerhist.EVENT_TYP not in ('DAC_CC_CONS_ADJUST', 'CONSOL_DAC_AMORT', 'CONSOL_CC_CAP_DEF')
 then cerhist.AFFILIATE
 else null
 end
@@ -2067,7 +2067,7 @@ end AS DEPT_CD,
             SELECT
                 cercurr.BUSINESS_UNIT AS BUSINESS_UNIT,
                 case
-when cercurr.EVENT_TYP <> 'DAC_CC_CONS_ADJUST'
+when cercurr.EVENT_TYP not in ('DAC_CC_CONS_ADJUST', 'CONSOL_DAC_AMORT', 'CONSOL_CC_CAP_DEF')
 then cercurr.AFFILIATE
 else null
 end
