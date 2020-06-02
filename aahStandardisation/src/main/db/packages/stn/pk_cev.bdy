@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY STN.PK_CEV AS                                                PK_CEV AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_CEV AS
     PROCEDURE pr_cession_event_idf
         (
             p_lpg_id IN NUMBER,
