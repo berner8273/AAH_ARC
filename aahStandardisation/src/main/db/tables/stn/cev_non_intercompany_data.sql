@@ -1,4 +1,4 @@
-create global temporary table stn.cev_non_intercompany_data
+create table stn.cev_non_intercompany_data
 (
    posting_type                   varchar2 ( 20 char )
 ,  business_type_association_id   number
@@ -50,5 +50,12 @@ create global temporary table stn.cev_non_intercompany_data
 ,  input_reporting_amt            number
 ,  lpg_id                         number ( 38 )
 )
-on commit delete rows
 ;
+
+
+  GRANT UPDATE ON "STN"."CEV_NON_INTERCOMPANY_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT SELECT ON "STN"."CEV_NON_INTERCOMPANY_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT INSERT ON "STN"."CEV_NON_INTERCOMPANY_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT DELETE ON "STN"."CEV_NON_INTERCOMPANY_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT ALTER ON "STN"."CEV_NON_INTERCOMPANY_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT SELECT ON "STN"."CEV_NON_INTERCOMPANY_DATA" TO "AAH_READ_ONLY";

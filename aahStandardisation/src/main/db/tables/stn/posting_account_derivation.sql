@@ -1,4 +1,4 @@
-create global temporary table stn.posting_account_derivation
+create table stn.posting_account_derivation
 (
    posting_schema     varchar2 ( 20 char )
 ,  event_typ          varchar2 ( 20 char )
@@ -9,5 +9,12 @@ create global temporary table stn.posting_account_derivation
 ,  currency           varchar2 ( 3 char )
 ,  sub_account        varchar2 ( 20 char )
 )
-on commit delete rows
+
 ;
+
+  GRANT UPDATE ON "STN"."POSTING_ACCOUNT_DERIVATION" TO "AUTOMATED_UNIT_TEST";
+  GRANT SELECT ON "STN"."POSTING_ACCOUNT_DERIVATION" TO "AUTOMATED_UNIT_TEST";
+  GRANT INSERT ON "STN"."POSTING_ACCOUNT_DERIVATION" TO "AUTOMATED_UNIT_TEST";
+  GRANT DELETE ON "STN"."POSTING_ACCOUNT_DERIVATION" TO "AUTOMATED_UNIT_TEST";
+  GRANT ALTER ON "STN"."POSTING_ACCOUNT_DERIVATION" TO "AUTOMATED_UNIT_TEST";
+  GRANT SELECT ON "STN"."POSTING_ACCOUNT_DERIVATION" TO "AAH_READ_ONLY";

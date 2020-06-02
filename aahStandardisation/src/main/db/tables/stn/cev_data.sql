@@ -1,4 +1,4 @@
-create global temporary table stn.cev_data
+create table stn.cev_data
 (
    gaap_fut_accts_flag            varchar2 ( 1 char )
 ,  le_flag                        varchar2 ( 1 char )
@@ -51,5 +51,25 @@ create global temporary table stn.cev_data
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  lpg_id                         number ( 38 )
 )
-on commit delete rows
 ;
+
+
+  GRANT UPDATE ON "STN"."CEV_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT SELECT ON "STN"."CEV_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT INSERT ON "STN"."CEV_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT DELETE ON "STN"."CEV_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT ALTER ON "STN"."CEV_DATA" TO "AUTOMATED_UNIT_TEST";
+  GRANT SELECT ON "STN"."CEV_DATA" TO "AAH_READ_ONLY";
+--------------------------------------------------------
+
+  CREATE INDEX "STN"."IDX_CEV_DATA_COMP2" ON "STN"."CEV_DATA" ("GAAP_FUT_ACCTS_FLAG", "PREMIUM_TYP") ;
+--------------------------------------------------------
+--  DDL for Index IDX_CEV_DATA_COMP1
+--------------------------------------------------------
+
+  CREATE INDEX "STN"."IDX_CEV_DATA_COMP1" ON "STN"."CEV_DATA" ("PREMIUM_TYP", "CORRELATION_UUID", "EVENT_TYP") ;
+--------------------------------------------------------
+--  DDL for Index I_CEV_DATA
+--------------------------------------------------------
+
+  CREATE INDEX "STN"."I_CEV_DATA" ON "STN"."CEV_DATA" ("CORRELATION_UUID") ;
