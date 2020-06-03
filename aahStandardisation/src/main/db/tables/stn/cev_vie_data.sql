@@ -46,8 +46,6 @@ create table stn.cev_vie_data
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  reporting_amt                  number
 ,  lpg_id                         number ( 38 )
-)
-
-;
+);
 
   GRANT SELECT ON "STN"."CEV_VIE_DATA" TO "AAH_READ_ONLY";

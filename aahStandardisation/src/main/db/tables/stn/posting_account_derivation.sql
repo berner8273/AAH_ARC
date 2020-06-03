@@ -8,7 +8,5 @@ create table stn.posting_account_derivation
 ,  business_unit      varchar2 ( 50 char )
 ,  currency           varchar2 ( 3 char )
 ,  sub_account        varchar2 ( 20 char )
-)
-
-;
+);
   GRANT SELECT ON "STN"."POSTING_ACCOUNT_DERIVATION" TO "AAH_READ_ONLY";
