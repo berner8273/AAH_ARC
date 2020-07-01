@@ -1,0 +1,59 @@
+import com.aptitudesoftware.tasks.ExecSQLScript;
+import com.aptitudesoftware.util.LogUtil;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import org.apache.tools.ant.filters.ReplaceTokens;
+
+final Path PATH_TO_CODE_SETS    = Paths.get ( projectDir.toURI () ).resolve ( 'codeset' );
+final Path PATH_TO_LOG_FOLDER   = LogUtil.getPathToLogFolder ( Paths.get ( rootDir.toURI() ) , Paths.get ( projectDir.toURI() ) );
+final Path PATH_TO_DB_BUILD_DIR = Paths.get ( buildDir.toURI() ).resolve ( 'db' );
+
+task prepareCodeSet ( type: Copy , dependsOn : clean ) {
+    if ( project.hasProperty ( 'codeset' ) ) {
+        final Path PATH_TO_CODE_SET = PATH_TO_CODE_SETS.resolve ( codeset ).resolve ( 'sql' );
+
+        from    PATH_TO_CODE_SET.toFile ()
+        into    PATH_TO_DB_BUILD_DIR.toFile ()
+        filter  ( ReplaceTokens , tokens : [ env : env ] )
+        filter  ( ReplaceTokens , tokens : passwordProperties )
+        filter  ( ReplaceTokens , tokens : environmentProperties )
+        include '**/*'
+    }
+}
+
+task installCodeSet ( type : ExecSQLScript , dependsOn : prepareCodeSet ) {
+    mustRunAfter {
+        uninstallCodeset
+    }
+    if ( project.hasProperty ( 'codeset' ) ) {
+        final Path PATH_TO_TASK_LOG_FOLDER = PATH_TO_LOG_FOLDER.resolve ( "${name}" ).resolve ( codeset );
+        Files.createDirectories ( PATH_TO_TASK_LOG_FOLDER );
+
+        databasePlatform = environmentProperties.databasePlatform;
+        workingDir       = prepareCodeSet.destinationDir;
+        selfLogon        = true;
+        pathToSQLFile    = Paths.get ( workingDir.toURI () ).resolve ( 'install.sql' )
+        standardOutput   = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'install.log' ) , StandardOpenOption.CREATE )
+        errorOutput      = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'install.err' ) , StandardOpenOption.CREATE )    
+    }
+}
+
+task uninstallCodeset ( type : ExecSQLScript , dependsOn : prepareCodeSet ) {
+    if ( project.hasProperty ( 'codeset' ) ) {
+        final Path PATH_TO_TASK_LOG_FOLDER = PATH_TO_LOG_FOLDER.resolve ( "${name}" ).resolve ( codeset );
+        Files.createDirectories ( PATH_TO_TASK_LOG_FOLDER );
+
+        databasePlatform = environmentProperties.databasePlatform;
+        workingDir       = prepareCodeSet.destinationDir;
+        selfLogon        = true;
+        pathToSQLFile    = Paths.get ( workingDir.toURI () ).resolve ( 'uninstall.sql' )
+        standardOutput   = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'uninstall.log' ) , StandardOpenOption.CREATE )
+        errorOutput      = Files.newOutputStream ( PATH_TO_TASK_LOG_FOLDER.resolve ( 'uninstall.err' ) , StandardOpenOption.CREATE )    
+    }
+}
+
+task reinstallCodeset ( dependsOn : [ uninstallCodeset , installCodeSet ] ) {
+
+}

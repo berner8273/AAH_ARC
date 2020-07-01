@@ -1,0 +1,236 @@
+import com.aptitudesoftware.util.LogUtil;
+import com.aptitudesoftware.util.PropertiesUtil;
+import com.aptitudesoftware.util.TwoWayEncryptionUtil;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
+allprojects {
+    apply plugin: 'java'
+
+    repositories {
+        flatDir {
+            name 'libs'
+            dirs "${rootDir}/lib"
+        }
+    }
+
+    dependencies {
+        implementation 'com.beust:jcommander:1.27'
+        implementation 'log4j:log4j:1.2.17'
+        implementation 'org.testng:testng:6.11'
+        implementation 'org.apache.commons:commons-lang3:3.1'
+        implementation 'com.oracle.jdbc:ojdbc8:12.2.0.1'
+        implementation 'com.oracle.jdbc:osdt_core:12.2.0.1'
+        implementation 'com.oracle.jdbc:osdt_cert:12.2.0.1'
+        implementation 'com.oracle.jdbc:oraclepki:12.2.0.1'
+        implementation 'org.apache.poi:poi:3.12'
+        implementation 'org.apache.poi:poi-ooxml:3.12'
+        implementation 'org.apache.poi:poi-ooxml-schemas:3.12'
+        implementation 'com.jcraft:jsch:0.1.54'
+        implementation 'org.apache.commons:commons-exec:1.2'
+        implementation 'org.apache.xml:xmlbeans:2.6.0'
+    }
+}
+
+validateBuildParameters           ();
+captureEnvProperties              ();
+validateUsernames                 ();
+compareEnvironmentPropertiesFiles ();
+validatePasswords                 ();
+//printTargetEnvironmentInfo        ();
+sweepUpLogs                       ();
+
+def validateBuildParameters () {
+    if ( ! project.hasProperty ( 'env' ) ) {
+        throw new Exception ( "The parameter 'env', which specifies the target environment, has not been supplied." );
+    }
+}
+
+def captureEnvProperties () {
+    ext.env                   = new String ( "$env" );
+    Properties buildProps     = new Properties ();
+    Properties passwdProps    = new Properties ();
+    buildProps.putAll         ( PropertiesUtil.getProperties ( Paths.get ( "${rootDir}" ).resolve ( 'resources' ).resolve ( "${env}.properties" ) ) );
+    ext.environmentProperties = buildProps;
+    ext.passwordProperties    = passwdProps;
+
+    environmentProperties.stringPropertyNames ().each {
+        key -> String entry = environmentProperties.get ( key );
+               if ( key.endsWith ( 'Password' ) && ( entry.startsWith ( 'encrypted:' ) ) ) {
+                   passwdProps.setProperty ( key , TwoWayEncryptionUtil.decryptString ( entry.replaceFirst ( 'encrypted:' , '' ) ) );
+               }
+    }
+}
+
+def validateUsernames () {
+    def usernames  = [ environmentProperties.fdrUsername , environmentProperties.guiUsername , environmentProperties.rdrUsername , environmentProperties.slrUsername , environmentProperties.stnUsername , environmentProperties.slaUsername ];
+    boolean isPass = true;
+
+    usernames.each {
+        currentUsername -> def len = currentUsername.length();
+                           if ( currentUsername.length() == 0 || currentUsername.length() > 3 ) {
+                               isPass = false;
+                               println "The username '${currentUsername}' must consist of 1, 2 or 3 characters only"
+                           }
+    }
+
+    if ( ! isPass ) {
+        throw new Exception ( "One or more usernames were configured to have the wrong number of characters. See the messages above for more details." );
+    }
+}
+
+def compareEnvironmentPropertiesFiles () {
+    boolean isPass = true;
+    new File ( "${rootDir}/resources" ).eachFileMatch ( ~/.*\.properties$/ ) {
+
+        fileA -> if ( fileA.name != 'gradle.properties' && fileA.name != 'version.properties' ) {
+           Properties propsA = PropertiesUtil.getProperties ( Paths.get ( "$fileA" ) );
+
+           Set<String> propsAPropertyNames = propsA.stringPropertyNames ();
+
+           new File ( "${rootDir}/resources" ).eachFileMatch ( ~/.*\.properties$/ ) {
+               fileB -> if ( fileB.name != 'gradle.properties' && fileB.name != 'version.properties' ) {
+                   Properties propsB = PropertiesUtil.getProperties ( Paths.get ( "$fileB" ) );
+
+                   Set<String> propsBPropertyNames = propsB.stringPropertyNames();
+
+                   propsAPropertyNames.each {
+                       propsAPropertyName -> if ( ! propsBPropertyNames.contains ( propsAPropertyName ) ) {
+                           println "'$fileA.name' contains the property '$propsAPropertyName' - '$fileB.name' does not."
+                           isPass = false;
+                       }
+                   }
+               }
+           }
+        }
+    }
+
+    if ( ! isPass ) {
+        throw new Exception ( "There are inconsistencies between the environment definition (.properties) files. Review the report above & fix the inconsistencies." );
+    }
+}
+
+def validatePasswords () {
+    boolean isPass = true;
+    environmentProperties.stringPropertyNames ().each {
+        key -> String entry = environmentProperties.get ( key );
+               if ( key.endsWith ( 'Password' ) && ( entry.startsWith ( 'encrypted:' ) ) ) {
+                   String password = TwoWayEncryptionUtil.decryptString ( entry.replaceFirst ( 'encrypted:' , '' ) );
+                   boolean meetsLengthRequirements = ( password.length () >= 6 );
+                   boolean containsCharacters      = false;
+                   boolean containsNumbers         = false;
+
+                   for ( char c : password.toCharArray () ) {
+                        containsCharacters = containsCharacters || c.isLetter  ();
+                        containsNumbers    = containsNumbers    || "$c".isInteger ();
+                   }
+
+                   if ( ! meetsLengthRequirements ) {
+                       println "The password '${password}' is shorter than the minimum permitted length (8 characters)"
+                       isPass = false;
+                   }
+
+                   if ( ! containsCharacters ) {
+                       println "The password '${password}' does not contain any letters - add some letters to it"
+                       isPass = false;
+                   }
+
+                   if ( ! containsNumbers ) {
+                       println "The password '${password}' does not contain any numbers - add some numbers to it"
+                       isPass = false;
+                   }
+               }
+
+    }
+
+    if ( ! isPass ) {
+        throw new Exception ( "One or more passwords contravene the password standards." );
+    }
+}
+
+def printTargetEnvironmentInfo () {
+    println '*********************************************************************************************************'
+    println "* This build targets the '$env' environment"
+    println '*********************************************************************************************************'
+    println ''
+    println '*********************************************************************************************************'
+    println "* The database host is                         : $ext.environmentProperties.databaseHost"
+    println "* The Oracle TNS alias is                      : $ext.environmentProperties.oracleTnsAlias"
+    println "* The Oracle port is                           : $ext.environmentProperties.oraclePort"
+    println '*********************************************************************************************************'
+    println "* The application server is                    : $ext.environmentProperties.aptitudeHost"
+    println "* Aptitude is installed at                     : $ext.environmentProperties.aptitudeBaseDirectory"
+    println "* Aptitude is owned by the OS user             : $ext.environmentProperties.aptitudeLinuxUsername"
+    println "* Aptitude's server port is                    : $ext.environmentProperties.aptitudeServerPort"
+    println "* Aptitude's bus port is                       : $ext.environmentProperties.aptitudeBusPort"
+    println '*********************************************************************************************************'
+    println "* Automated unit tests connect to Oracle using : $ext.environmentProperties.databaseTestUsername"
+    println '*********************************************************************************************************'
+}
+
+def sweepUpLogs () {
+    final Path                  PATH_TO_ROOT_DIR    = Paths.get ( rootDir.toURI () );
+    final Path                  PATH_TO_CURRENT_LOG = LogUtil.getPathToCurrentLogFolder ( PATH_TO_ROOT_DIR );
+    final Pattern               FOLDER_NAME_PATTERN = Pattern.compile ( '[0-9]+' );
+          Matcher               folderNameMatcher   = null;
+          int                   maxDirNum           = 0;
+
+    if ( Files.exists ( PATH_TO_CURRENT_LOG ) ) {
+        final DirectoryStream<Path> DIR_STREAM = Files.newDirectoryStream ( LogUtil.getPathToLogFolder ( Paths.get ( rootDir.toURI () ) ) );
+
+        try
+        {
+            int currDirNum = 0;
+
+            DIR_STREAM.each {
+                folder -> if ( Files.isDirectory ( folder ) && ( folderNameMatcher = FOLDER_NAME_PATTERN.matcher ( folder.getFileName ().toString () ) ).find () ) {
+                              currDirNum = Integer.parseInt ( folderNameMatcher.group () );
+                              if ( currDirNum > maxDirNum ) {
+                                  maxDirNum = currDirNum;
+                              }
+                          }
+            }
+
+            Files.move ( PATH_TO_CURRENT_LOG , LogUtil.getPathToLogFolder ( PATH_TO_ROOT_DIR ).resolve ( "${maxDirNum+1}" ) );
+        }
+        catch ( Exception e )
+        {
+            throw e;
+        }
+        finally
+        {
+            DIR_STREAM.close ();
+        }
+    }
+}
+
+task encryptPasswords {
+    doLast {
+        environmentProperties.stringPropertyNames ().each {
+            key -> String entry = environmentProperties.get ( key );
+                   if ( key.endsWith ( 'Password' ) && ( ! entry.startsWith ( 'encrypted:' ) ) ) {
+                       println ( "The password '${entry}' is not encrypted. It should be replaced with the text 'encrypted: ${TwoWayEncryptionUtil.encryptString ( environmentProperties.get ( key ) )}' in the enviroment definition file" );
+                   }
+        }
+    }
+}
+
+task packageSource ( type: Tar ) {
+    group = "Custom"
+    description = "Task to package source"
+    final Path PATH_TO_PACKAGE_FILE = Paths.get ( buildDir.toURI () ).resolve ( "aah_${rootProject.name}.tar.gz" );
+
+    from           rootDir
+    exclude        '.gradle'
+    exclude        'log'
+    exclude        'libs'
+    exclude        '**/build'
+    destinationDirectory = PATH_TO_PACKAGE_FILE.parent.toFile()
+    archiveFileName    = PATH_TO_PACKAGE_FILE.fileName.toString()
+    compression    = Compression.GZIP
+}

@@ -1,0 +1,10 @@
+allprojects {
+    sourceSets {
+        test {
+            java {
+                srcDir 'testSuite/src/main/java'
+                srcDir 'testLibraryFunctions/src/main/java'
+            }
+        }
+    }
+}

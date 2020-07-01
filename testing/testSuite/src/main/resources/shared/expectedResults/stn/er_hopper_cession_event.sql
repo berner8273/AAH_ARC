@@ -1,0 +1,51 @@
+select
+       correlation_uuid
+     , event_seq_id
+     , business_unit
+     , book_cd
+     , chartfield_1
+     , dept_cd
+     , counterparty_le_cd
+     , affiliate_le_cd
+     , accident_yr
+     , underwriting_yr
+     , policy_id
+     , stream_id
+     , tax_jurisdiction_cd
+     , ledger_cd
+     , execution_typ
+     , business_typ
+     , owner_le_id
+     , premium_typ
+     , journal_descr
+     , ultimate_parent_stream_id
+     , event_typ
+     , functional_ccy
+     , functional_amt
+     , reporting_ccy
+     , reporting_amt
+     , is_mark_to_market
+     , vie_cd
+     , business_event_typ
+     , policy_typ
+     , basis_cd
+     , posting_indicator
+     , aah_event_typ
+     , transaction_ccy
+     , transaction_amt
+     , transaction_pos_neg
+     , sub_event
+     , accounting_dt
+     , party_business_le_cd
+     , party_business_system_cd
+     , srae_instr_super_class
+     , srae_static_sys_inst_code
+     , srae_instr_sys_inst_code
+     , srae_gl_person_code
+     , srae_source_system
+     , srae_instrument_code
+     , posting_dt
+     , event_status
+     , lpg_id
+  from
+       er_hopper_cession_event

@@ -1,0 +1,13 @@
+arguments=-Penv\=ci
+auto.sync=false
+build.scans.enabled=false
+connection.gradle.distribution=GRADLE_DISTRIBUTION(LOCAL_INSTALLATION(C\:\\Gradle\\gradle-6.5))
+connection.project.dir=
+eclipse.preferences.version=1
+gradle.user.home=
+java.home=C\:/Users/ptassinari/Downloads/java-se-8u41-ri
+jvm.arguments=
+offline.mode=true
+override.workspace.settings=true
+show.console.view=true
+show.executions.view=true

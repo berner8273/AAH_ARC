@@ -1,0 +1,1 @@
+include ':aah' , ':aah:aahCore', ':aah:aahCustom' , ':aah:aahCustom:aahStepTrigger' , ':aah:aahCustom:aahETL' , ':aah:aahCustom:aahStandardisation' , ':aah:aahCustom:aahGui' , ':aah:aahCustom:aahSubLedger' , ':aah:aahCustom:aahRDR' , ':appSvr' , ':testing' , ':testing:codeChecks' , ':testing:codeSets' , ':testing:testLibraryFunctions' , ':testing:testSuite'

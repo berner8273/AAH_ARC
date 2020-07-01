@@ -1,0 +1,54 @@
+select
+       feed_uuid
+     , policy_id
+     , policy_nm
+     , policy_abbr_nm
+     , original_policy_id
+     , underwriting_le_cd
+     , external_le_cd
+     , close_dt
+     , expected_maturity_dt
+     , policy_underwriting_yr
+     , policy_accident_yr
+     , policy_typ
+     , policy_premium_typ
+     , is_credit_default_swap
+     , is_mark_to_market
+     , execution_typ
+     , transaction_ccy
+     , is_uncollectible
+     , earnings_calc_method
+     , stream_id
+     , ultimate_parent_stream_id
+     , parent_stream_id
+     , le_cd
+     , cession_typ
+     , gross_par_pct
+     , net_par_pct
+     , gross_premium_pct
+     , ceding_commission_pct
+     , net_premium_pct
+     , start_dt
+     , effective_dt
+     , stop_dt
+     , termination_dt
+     , loss_pos
+     , vie_status
+     , vie_effective_dt
+     , vie_acct_dt
+     , accident_yr
+     , underwriting_yr
+     , policy_name_stream_id
+     , policy_holder_address
+     , portfolio_cd
+     , buy_or_sell
+     , system_cd
+     , policy_holder_le_cd
+     , instrument_type
+     , event_code
+     , financial_instrument_id
+     , policy_version
+     , event_status
+     , lpg_id
+  from
+       er_hopper_insurance_policy

@@ -1,0 +1,55 @@
+select
+       fd_entity
+     , fd_description
+     , fd_segment_1_name
+     , fd_segment_1_type
+     , fd_segment_1_gui_type
+     , fd_segment_1_desc
+     , fd_segment_1_balance_check
+     , fd_segment_2_name
+     , fd_segment_2_type
+     , fd_segment_2_gui_type
+     , fd_segment_2_desc
+     , fd_segment_2_balance_check
+     , fd_segment_3_name
+     , fd_segment_3_type
+     , fd_segment_3_gui_type
+     , fd_segment_3_desc
+     , fd_segment_3_balance_check
+     , fd_segment_4_name
+     , fd_segment_4_type
+     , fd_segment_4_gui_type
+     , fd_segment_4_desc
+     , fd_segment_4_balance_check
+     , fd_segment_5_name
+     , fd_segment_5_type
+     , fd_segment_5_gui_type
+     , fd_segment_5_desc
+     , fd_segment_5_balance_check
+     , fd_segment_6_name
+     , fd_segment_6_type
+     , fd_segment_6_gui_type
+     , fd_segment_6_desc
+     , fd_segment_6_balance_check
+     , fd_segment_7_name
+     , fd_segment_7_type
+     , fd_segment_7_gui_type
+     , fd_segment_7_desc
+     , fd_segment_7_balance_check
+     , fd_segment_8_name
+     , fd_segment_8_type
+     , fd_segment_8_gui_type
+     , fd_segment_8_desc
+     , fd_segment_8_balance_check
+     , fd_segment_9_name
+     , fd_segment_9_type
+     , fd_segment_9_gui_type
+     , fd_segment_9_desc
+     , fd_segment_9_balance_check
+     , fd_segment_10_name
+     , fd_segment_10_type
+     , fd_segment_10_gui_type
+     , fd_segment_10_desc
+     , fd_segment_10_balance_check
+  from
+       slr.slr_fak_definitions 

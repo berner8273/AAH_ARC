@@ -1,0 +1,17 @@
+apply plugin: 'groovy'
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'commons-codec:commons-codec:1.10'
+    implementation 'org.apache.commons:commons-exec:1.2'
+    implementation 'org.apache.tomcat:tomcat-jdbc:7.0.52'
+    implementation 'org.apache.tomcat:tomcat-juli:7.0.52'
+    implementation fileTree ( dir: "${projectDir}/lib" , include: "GUI.jar" )
+}
+
+repositories {
+    flatDir {
+        dirs "$rootDir/lib"
+    }
+}

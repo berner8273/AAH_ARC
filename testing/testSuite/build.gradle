@@ -1,0 +1,50 @@
+import com.aptitudesoftware.util.TwoWayEncryptionUtil;
+
+import java.net.InetAddress;
+
+dependencies {
+    implementation project ( ':testing:testLibraryFunctions' )
+}
+
+sourceSets{
+    test
+    {
+        resources
+        {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+
+test {
+    onlyIf {
+       ! ( env in [ 'prod' ] );
+    }
+    doFirst {
+        systemProperty 'test.env'                , "${env}";
+        systemProperty 'test.pathToOracleWallet' , "${rootDir}/resources/db/wallets/oracle";
+        systemProperty 'test.pathToSSHKey'       , "${rootDir}/resources/privateKeys/id_rsa.ppk";
+        environmentProperties.each {
+            final String KEY = 'test.' + it.key;
+            systemProperty "$KEY" , ( it.value.startsWith ( 'encrypted:' ) ? TwoWayEncryptionUtil.decryptString ( it.value.replaceAll ( 'encrypted:' , '' ) ) : it.value );
+        }
+    }
+
+    minHeapSize = "128m"
+    maxHeapSize = "512m"
+    
+    beforeTest {
+        println "\n${it} : STARTED\n"
+    }
+
+    afterTest { TestDescriptor, TestResult ->
+        println "${TestDescriptor} : ${TestResult}"
+    }
+
+    useTestNG();
+    testClassesDirs = sourceSets.main.output.classesDirs;
+    classpath       = sourceSets.main.runtimeClasspath;
+    options {
+        listeners << 'org.testng.reporters.XMLReporter'
+    }
+}
