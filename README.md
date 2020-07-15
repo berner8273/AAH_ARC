@@ -1,20 +1,29 @@
 # Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+This repository contains java test code that is intended to be 
 
 # Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+## Setup Java
+* Unzip Java to c:\Java
+    * Current version of java is java-se-8u41-ri
+    * Add JAVA_HOME environment variable and point to C:\java\java-se-8u41-ri
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+## Install Gradle
+* got to https://gradle.org/install/
+* Download the binary only and follow the manually installation for windows
+* Unzip gradle to c:\Gradle to be consistent with the vscode settings that have been committed to the repo
+    
+## Initialize Gradle    
+* Open up the AAH repository root foler with VS code
+* open a powershell command prompt run the commande to build java directly using the gradle wrapper
+    .\gradlew -version
+        
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://www.visualstudio.com/en-us/docs/git/create-a-readme). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+## Build with Gradle Wrapper
+* open a powershell command prompt run the commande to build java directly using the gradle wrapper
+    .\gradlew -compileJava
+
+
+## Run Tests
+* In vs code, click on the testing icon and confirm the aah tets show up
+* try running the com.aptitudesoftware.test.aah.tests.test.TestTheTestFramework from the Java test explorer
