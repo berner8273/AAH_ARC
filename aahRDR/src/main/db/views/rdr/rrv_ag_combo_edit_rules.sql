@@ -24,5 +24,5 @@ gc_general_code_id
 ,gc_valid_to          
 ,gc_delete_time
 from fdr.fr_general_codes
-where upper(gc_gct_code_type_id) = 'COMBO_%'
+where upper(gc_gct_code_type_id)  like 'COMBO_EDIT%';
 ;
