@@ -31,6 +31,7 @@ from (
                     on sedb.edb_eba_id = sec.ec_eba_id
             where 
                 sfc.fc_segment_2 in ('US_STAT', 'US_GAAP')
+                 AND  sfc.fc_segment_1  in ('CORE','GAAP_ADJ')
                     and sfc.fc_segment_7 in ('D','A')
                     and sedb.edb_balance_type=50)
         , edb_dt as (
