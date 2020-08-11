@@ -92,6 +92,7 @@ and not exists (
         ,   event_typ
         ,   business_event_typ
         ,   source_event_ts
+        ,   reclass_entity
         ,   transaction_ccy
         ,   transaction_amt
         ,   functional_ccy
@@ -115,6 +116,7 @@ and not exists (
         ,   cev.event_typ
         ,   cev.business_event_typ
         ,   cev.source_event_ts
+        ,   cev.reclass_entity
         ,   cev.transaction_ccy
         ,   cev.transaction_amt
         ,   cev.functional_ccy
@@ -132,7 +134,7 @@ and not exists (
          where
                cev.event_status = 'V'
         ;
-        
+--        select cev.reclass_entity from stn.cession_event cev
         v_no_cev_valid := sql%rowcount;
         
         dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_VALID' , estimate_percent => 30 , cascade => true );
@@ -231,6 +233,7 @@ and not exists (
                       , business_typ
                       , le_cd
                       , parent_cession_le_cd
+                      , reclass_entity
                       , owner_le_cd
                       , counterparty_le_cd
                       , transaction_amt
@@ -274,31 +277,18 @@ and not exists (
                                         else cev.premium_typ
                                         end premium_typ
                                 
-                                  , case
-                                                when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('C') and ce_data.counterparty_le_cd = 'FSAU')
-                                                      or (cev.event_typ like 'PGAAP%' and cev.business_typ in ('A','CA','AA','D') and ce_data.owner_le_cd = 'FSAU')
-                                                    then 'FSANY'
-                                                when cev.event_typ in ('DAC_CC_CONS_ADJUST', 'CONSOL_DAC_AMORT', 'CONSOL_CC_CAP_DEF') and cev.business_typ in ('C','A','D','AA')
-                                                    then 'CA005'
-                                                else ce_data.le_cd
-                                            end le_cd
-        
-                                  , case
-                                                when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('AA','CA') and ce_data.counterparty_le_cd = 'FSAU')
-                                                    then 'FSANY'
-                                                when cev.event_typ in ('DAC_CC_CONS_ADJUST', 'CONSOL_DAC_AMORT', 'CONSOL_CC_CAP_DEF') and cev.business_typ in ('CA')
-                                                    then 'CA005'
-                                                else ce_data.parent_cession_le_cd
-                                            end parent_cession_le_cd
-                                         , ce_data.owner_le_cd
-                                         , ce_data.counterparty_le_cd
-                                         , cev.transaction_amt
-                                         , cev.transaction_ccy
-                                         , cev.functional_amt
-                                         , cev.functional_ccy
-                                         , cev.reporting_amt
-                                         , cev.reporting_ccy
-                                         , cev.lpg_id
+                                  ,ce_data.le_cd
+                                  ,ce_data.parent_cession_le_cd
+                                  ,cev.reclass_entity
+                                  ,ce_data.owner_le_cd
+                                  ,ce_data.counterparty_le_cd
+                                  ,cev.transaction_amt
+                                  ,cev.transaction_ccy
+                                  ,cev.functional_amt
+                                  ,cev.functional_ccy
+                                  ,cev.reporting_amt
+                                  ,cev.reporting_ccy
+                                  ,cev.lpg_id
                                       from
                                                 stn.cev_valid               cev
                                            join                             ce_data on cev.stream_id = ce_data.stream_id
@@ -472,16 +462,16 @@ and not exists (
                                  , bt.generate_interco_accounting
                                  , case
                                        when bt.bu_derivation_method = 'CESSION'
-                                       then cev.le_cd
+                                       then nvl(cev.reclass_entity,cev.le_cd)
                                        when bt.bu_derivation_method = 'PARENT_CESSION'
-                                       then cev.parent_cession_le_cd
+                                       then nvl(cev.reclass_entity,cev.parent_cession_le_cd)
                                        else null
                                    end                                                       business_unit
                                  , case
                                        when bt.afflte_derivation_method = 'CESSION'
-                                       then cev.le_cd
+                                       then nvl(cev.reclass_entity,cev.le_cd)
                                        when bt.afflte_derivation_method = 'PARENT_CESSION'
-                                       then cev.parent_cession_le_cd
+                                       then nvl(cev.reclass_entity,cev.parent_cession_le_cd)
                                        else null
                                    end                                                       affiliate
                                  , case
