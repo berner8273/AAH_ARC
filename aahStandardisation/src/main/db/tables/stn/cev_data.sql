@@ -40,6 +40,7 @@ create global temporary table stn.cev_data
 ,  affiliate                      varchar2 ( 20 char )
 ,  owner_le_cd                    varchar2 ( 20 char )
 ,  counterparty_le_cd             varchar2 ( 20 char )
+,  reclass_entity			            varchar2 ( 20 char )
 ,  input_transaction_amt          number ( 38 , 9 )
 ,  partner_transaction_amt        number
 ,  transaction_ccy                varchar2 ( 3 char )
