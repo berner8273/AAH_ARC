@@ -1,4 +1,4 @@
-create global temporary table stn.cev_non_intercompany_data
+create table stn.cev_non_intercompany_data
 (
    posting_type                   varchar2 ( 20 char )
 ,  business_type_association_id   number
@@ -50,5 +50,4 @@ create global temporary table stn.cev_non_intercompany_data
 ,  input_reporting_amt            number
 ,  lpg_id                         number ( 38 )
 )
-on commit delete rows
 ;

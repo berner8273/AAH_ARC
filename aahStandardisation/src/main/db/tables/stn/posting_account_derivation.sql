@@ -1,4 +1,4 @@
-create global temporary table stn.posting_account_derivation
+create table stn.posting_account_derivation
 (
    posting_schema     varchar2 ( 20 char )
 ,  event_typ          varchar2 ( 20 char )
@@ -8,6 +8,5 @@ create global temporary table stn.posting_account_derivation
 ,  business_unit      varchar2 ( 50 char )
 ,  currency           varchar2 ( 3 char )
 ,  sub_account        varchar2 ( 20 char )
-)
-on commit delete rows
-;
+);
+  GRANT SELECT ON "STN"."POSTING_ACCOUNT_DERIVATION" TO "AAH_READ_ONLY";

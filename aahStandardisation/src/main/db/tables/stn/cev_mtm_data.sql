@@ -1,4 +1,4 @@
-create global temporary table stn.cev_mtm_data
+create table stn.cev_mtm_data
 (
    psm_cd                         varchar2 ( 20 char )
 ,  business_type_association_id   number
@@ -49,5 +49,6 @@ create global temporary table stn.cev_mtm_data
 ,  partner_reporting_amt          number
 ,  lpg_id                         number ( 38 )
 )
-on commit delete rows
 ;
+
+  GRANT SELECT ON "STN"."CEV_MTM_DATA" TO "AAH_READ_ONLY";

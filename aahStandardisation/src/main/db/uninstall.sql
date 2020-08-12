@@ -311,6 +311,7 @@ drop index fdr.fbi_fsrohs_message_id;
 drop index fdr.fbi_fsrpl_message_id;
 drop index fdr.fbi_fsra_message_id;
 drop index fdr.fbi_pl_global_id;
+drop index fdr.gc_event_status;
 
 conn ~gui_logon
 
