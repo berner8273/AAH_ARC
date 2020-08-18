@@ -95,14 +95,18 @@ select --In progress manual journals
               , case when jlu_reference_10 = 'NVS' then ' ' else jlu_reference_10 end                      jlu_reference_10
               , cast( jlu_tran_ccy as varchar2(3) )                                                        jlu_tran_ccy
               , round( jlu_tran_amount , 2 )                                                               jlu_tran_amount
-              , jlu_base_rate
               , case
-                  when jlu_segment_1 = 'UKGAAP_ADJ' 
+                  when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
+                  then jlu_local_rate
+                  else jlu_base_rate
+                end                                                                                        jlu_base_rate
+              , case
+                  when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                   then cast( jlu_local_ccy as varchar2(3) )
                   else cast( jlu_base_ccy as varchar2(3) )
                 end                                                                                        jlu_base_ccy
               , case
-                  when jlu_segment_1 = 'UKGAAP_ADJ'
+                  when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                   then round( jlu_local_amount , 2 )
                   else round( jlu_base_amount , 2 )
                 end                                                                                        jlu_base_amount

@@ -148,7 +148,7 @@ as
             gjlu.jhu_jrnl_description  jh_jrnl_description  
        from (select jlu_jrnl_hdr_id,
                     case
-                       when jt.ejt_madj_flag = 'y' then jlu_jrnl_hdr_id
+                       when jt.ejt_madj_flag = 'Y' then jlu_jrnl_hdr_id
                        else 0
                     end
                        jlu_jrnl_hdr_id2,
@@ -172,135 +172,142 @@ as
                     jlu_account jlu_sub_account,
                     cast (
                        case
-                          when jlu_segment_1 = 'nvs' then ' '
+                          when jlu_segment_1 = 'NVS' then ' '
                           else jlu_segment_1
                        end as varchar2 (10))
                        jlu_segment_1,
                     case
-                       when jlu_segment_2 = 'nvs' then ' '
+                       when jlu_segment_2 = 'NVS' then ' '
                        else jlu_segment_2
                     end
                        jlu_segment_2,
                     cast (
                        case
-                          when jlu_segment_3 = 'nvs' then ' '
+                          when jlu_segment_3 = 'NVS' then ' '
                           else jlu_segment_3
                        end as varchar2 (10))
                        jlu_segment_3,
                     cast (
                        case
-                          when jlu_segment_4 = 'nvs' then ' '
+                          when jlu_segment_4 = 'NVS' then ' '
                           else jlu_segment_4
                        end as varchar2 (5))
                        jlu_segment_4,
                     cast (
                        case
-                          when jlu_segment_5 = 'nvs' then ' '
+                          when jlu_segment_5 = 'NVS' then ' '
                           else jlu_segment_5
                        end as varchar2 (10))
                        jlu_segment_5,
-                    case when jlu_entity like 'e%' then 'mncon' else ' ' end
+                    case when jlu_entity like 'E%' then 'MNCON' else ' ' end
                        program_code,
                     case
-                       when jlu_segment_7 = 'nvs' then ' '
+                       when jlu_segment_7 = 'NVS' then ' '
                        else jlu_segment_7
                     end
                        jlu_segment_7,
                     case
-                       when jlu_segment_8 = 'nvs' then ' '
+                       when jlu_segment_8 = 'NVS' then ' '
                        else jlu_segment_8
                     end
                        jlu_segment_8,
                     case
-                       when jlu_segment_9 = 'nvs' then ' '
+                       when jlu_segment_9 = 'NVS' then ' '
                        else jlu_segment_9
                     end
                        jlu_segment_9,
                     case
-                       when jlu_segment_10 = 'nvs' then ' '
+                       when jlu_segment_10 = 'NVS' then ' '
                        else jlu_segment_10
                     end
                        jlu_segment_10,
                     case
-                       when jlu_attribute_1 = 'nvs' then ' '
+                       when jlu_attribute_1 = 'NVS' then ' '
                        else jlu_attribute_1
                     end
                        jlu_attribute_1,
                     case
-                       when jlu_attribute_2 = 'nvs' then ' '
+                       when jlu_attribute_2 = 'NVS' then ' '
                        else jlu_attribute_2
                     end
                        jlu_attribute_2,
                     case
-                       when jlu_attribute_3 = 'nvs' then ' '
+                       when jlu_attribute_3 = 'NVS' then ' '
                        else jlu_attribute_3
                     end
                        jlu_attribute_3,
                     case
-                       when jlu_attribute_4 = 'nvs' then ' '
+                       when jlu_attribute_4 = 'NVS' then ' '
                        else jlu_attribute_4
                     end
                        jlu_attribute_4,
                     case
-                       when jlu_attribute_5 = 'nvs' then ' '
+                       when jlu_attribute_5 = 'NVS' then ' '
                        else jlu_attribute_5
                     end
                        jlu_attribute_5,
                     case
-                       when jlu_reference_1 = 'nvs' then ' '
+                       when jlu_reference_1 = 'NVS' then ' '
                        else jlu_reference_1
                     end
                        jlu_reference_1,
                     case
-                       when jlu_reference_2 = 'nvs' then ' '
+                       when jlu_reference_2 = 'NVS' then ' '
                        else jlu_reference_2
                     end
                        jlu_reference_2,
                     case
-                       when jlu_reference_3 = 'nvs' then ' '
+                       when jlu_reference_3 = 'NVS' then ' '
                        else jlu_reference_3
                     end
                        jlu_reference_3,
                     case
-                       when jlu_reference_4 = 'nvs' then ' '
+                       when jlu_reference_4 = 'NVS' then ' '
                        else jlu_reference_4
                     end
                        jlu_reference_4,
                     case
-                       when jlu_reference_5 = 'nvs' then ' '
+                       when jlu_reference_5 = 'NVS' then ' '
                        else jlu_reference_5
                     end
                        jlu_reference_5,
                     case
-                       when jlu_reference_6 = 'nvs' then ' '
+                       when jlu_reference_6 = 'NVS' then ' '
                        else jlu_reference_6
                     end
                        jlu_reference_6,
                     case
-                       when jlu_reference_7 = 'nvs' then ' '
+                       when jlu_reference_7 = 'NVS' then ' '
                        else jlu_reference_7
                     end
                        jlu_reference_7,
                     case
-                       when jlu_reference_8 = 'nvs' then ' '
+                       when jlu_reference_8 = 'NVS' then ' '
                        else jlu_reference_8
                     end
                        jlu_reference_8,
                     case
-                       when jlu_reference_9 = 'nvs' then ' '
+                       when jlu_reference_9 = 'NVS' then ' '
                        else jlu_reference_9
                     end
                        jlu_reference_9,
                     case
-                       when jlu_reference_10 = 'nvs' then ' '
+                       when jlu_reference_10 = 'NVS' then ' '
                        else jlu_reference_10
                     end
                        jlu_reference_10,
                     cast (jlu_tran_ccy as varchar2 (3)) jlu_tran_ccy,
-                    round (jlu_tran_amount, 2) jlu_tran_amount,
-                    jlu_base_rate,
+                    round (jlu_tran_amount, 2) jlu_tran_amount,                   
                     case
-                       when jlu_segment_1 = 'ukgaap_adj'
+                       when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
+                       then
+                          jlu_local_rate
+                       else
+                          jlu_base_rate
+                    end
+                       jlu_base_rate,
+                    case
+                       when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                        then
                           cast (jlu_local_ccy as varchar2 (3))
                        else
@@ -308,7 +315,7 @@ as
                     end
                        jlu_base_ccy,
                     case
-                       when jlu_segment_1 = 'ukgaap_adj'
+                       when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                        then
                           round (jlu_local_amount, 2)
                        else
@@ -337,7 +344,7 @@ as
                     end
                        debit_amt,
                     case
-                       when jle.jle_jrnl_hdr_id is not null then 'e'
+                       when jle.jle_jrnl_hdr_id is not null then 'E'
                        else jl.jlu_jrnl_status
                     end
                        event_status,
@@ -348,7 +355,7 @@ as
                from gui.gui_jrnl_lines_unposted jl
                     left join fdr.fr_general_lookup fgl
                        on     jl.jlu_attribute_4 = fgl.lk_match_key1
-                          and fgl.lk_lkt_lookup_type_code = 'event_hierarchy'
+                          and fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
                     left join fdr.fr_gl_account gl
                        on jl.jlu_account = gl.ga_account_code
                     left join gui.gui_jrnl_headers_unposted jh
@@ -424,7 +431,7 @@ as
             sjlu.jhu_jrnl_description  jh_jrnl_description  
        from (select jlu_jrnl_hdr_id,
                     case
-                       when jt.ejt_madj_flag = 'y' then jlu_jrnl_hdr_id
+                       when jt.ejt_madj_flag = 'Y' then jlu_jrnl_hdr_id
                        else 0
                     end
                        jlu_jrnl_hdr_id2,
@@ -448,135 +455,142 @@ as
                     jlu_account jlu_sub_account,
                     cast (
                        case
-                          when jlu_segment_1 = 'nvs' then ' '
+                          when jlu_segment_1 = 'NVS' then ' '
                           else jlu_segment_1
                        end as varchar2 (10))
                        jlu_segment_1,
                     case
-                       when jlu_segment_2 = 'nvs' then ' '
+                       when jlu_segment_2 = 'NVS' then ' '
                        else jlu_segment_2
                     end
                        jlu_segment_2,
                     cast (
                        case
-                          when jlu_segment_3 = 'nvs' then ' '
+                          when jlu_segment_3 = 'NVS' then ' '
                           else jlu_segment_3
                        end as varchar2 (10))
                        jlu_segment_3,
                     cast (
                        case
-                          when jlu_segment_4 = 'nvs' then ' '
+                          when jlu_segment_4 = 'NVS' then ' '
                           else jlu_segment_4
                        end as varchar2 (5))
                        jlu_segment_4,
                     cast (
                        case
-                          when jlu_segment_5 = 'nvs' then ' '
+                          when jlu_segment_5 = 'NVS' then ' '
                           else jlu_segment_5
                        end as varchar2 (10))
                        jlu_segment_5,
-                    case when jlu_entity like 'e%' then 'mncon' else ' ' end
+                    case when jlu_entity like 'E%' then 'MNCON' else ' ' end
                        program_code,
                     case
-                       when jlu_segment_7 = 'nvs' then ' '
+                       when jlu_segment_7 = 'NVS' then ' '
                        else jlu_segment_7
                     end
                        jlu_segment_7,
                     case
-                       when jlu_segment_8 = 'nvs' then ' '
+                       when jlu_segment_8 = 'NVS' then ' '
                        else jlu_segment_8
                     end
                        jlu_segment_8,
                     case
-                       when jlu_segment_9 = 'nvs' then ' '
+                       when jlu_segment_9 = 'NVS' then ' '
                        else jlu_segment_9
                     end
                        jlu_segment_9,
                     case
-                       when jlu_segment_10 = 'nvs' then ' '
+                       when jlu_segment_10 = 'NVS' then ' '
                        else jlu_segment_10
                     end
                        jlu_segment_10,
                     case
-                       when jlu_attribute_1 = 'nvs' then ' '
+                       when jlu_attribute_1 = 'NVS' then ' '
                        else jlu_attribute_1
                     end
                        jlu_attribute_1,
                     case
-                       when jlu_attribute_2 = 'nvs' then ' '
+                       when jlu_attribute_2 = 'NVS' then ' '
                        else jlu_attribute_2
                     end
                        jlu_attribute_2,
                     case
-                       when jlu_attribute_3 = 'nvs' then ' '
+                       when jlu_attribute_3 = 'NVS' then ' '
                        else jlu_attribute_3
                     end
                        jlu_attribute_3,
                     case
-                       when jlu_attribute_4 = 'nvs' then ' '
+                       when jlu_attribute_4 = 'NVS' then ' '
                        else jlu_attribute_4
                     end
                        jlu_attribute_4,
                     case
-                       when jlu_attribute_5 = 'nvs' then ' '
+                       when jlu_attribute_5 = 'NVS' then ' '
                        else jlu_attribute_5
                     end
                        jlu_attribute_5,
                     case
-                       when jlu_reference_1 = 'nvs' then ' '
+                       when jlu_reference_1 = 'NVS' then ' '
                        else jlu_reference_1
                     end
                        jlu_reference_1,
                     case
-                       when jlu_reference_2 = 'nvs' then ' '
+                       when jlu_reference_2 = 'NVS' then ' '
                        else jlu_reference_2
                     end
                        jlu_reference_2,
                     case
-                       when jlu_reference_3 = 'nvs' then ' '
+                       when jlu_reference_3 = 'NVS' then ' '
                        else jlu_reference_3
                     end
                        jlu_reference_3,
                     case
-                       when jlu_reference_4 = 'nvs' then ' '
+                       when jlu_reference_4 = 'NVS' then ' '
                        else jlu_reference_4
                     end
                        jlu_reference_4,
                     case
-                       when jlu_reference_5 = 'nvs' then ' '
+                       when jlu_reference_5 = 'NVS' then ' '
                        else jlu_reference_5
                     end
                        jlu_reference_5,
                     case
-                       when jlu_reference_6 = 'nvs' then ' '
+                       when jlu_reference_6 = 'NVS' then ' '
                        else jlu_reference_6
                     end
                        jlu_reference_6,
                     case
-                       when jlu_reference_7 = 'nvs' then ' '
+                       when jlu_reference_7 = 'NVS' then ' '
                        else jlu_reference_7
                     end
                        jlu_reference_7,
                     case
-                       when jlu_reference_8 = 'nvs' then ' '
+                       when jlu_reference_8 = 'NVS' then ' '
                        else jlu_reference_8
                     end
                        jlu_reference_8,
                     case
-                       when jlu_reference_9 = 'nvs' then ' '
+                       when jlu_reference_9 = 'NVS' then ' '
                        else jlu_reference_9
                     end
                        jlu_reference_9,
                     case
-                       when jlu_reference_10 = 'nvs' then ' '
+                       when jlu_reference_10 = 'NVS' then ' '
                        else jlu_reference_10
                     end
                        jlu_reference_10,
                     cast (jlu_tran_ccy as varchar2 (3)) jlu_tran_ccy,
                     round (jlu_tran_amount, 2) jlu_tran_amount,
-                    jlu_base_rate,
                     case
-                       when jlu_segment_1 = 'ukgaap_adj'
+                       when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
+                       then
+                          jlu_local_rate
+                       else
+                          jlu_base_rate
+                    end                    
+                       jlu_base_rate,
+                    case
+                       when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                        then
                           cast (jlu_local_ccy as varchar2 (3))
                        else
@@ -584,7 +598,7 @@ as
                     end
                        jlu_base_ccy,
                     case
-                       when jlu_segment_1 = 'ukgaap_adj'
+                       when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                        then
                           round (jlu_local_amount, 2)
                        else
@@ -621,7 +635,7 @@ as
                from slr.slr_jrnl_lines_unposted sjl
                     left join fdr.fr_general_lookup fgl
                        on     sjl.jlu_attribute_4 = fgl.lk_match_key1
-                          and fgl.lk_lkt_lookup_type_code = 'event_hierarchy'
+                          and fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
                     left join fdr.fr_gl_account gl
                        on sjl.jlu_account = gl.ga_account_code
                     left join slr.slr_jrnl_headers_unposted jh
@@ -696,7 +710,7 @@ as
             gjl.jh_jrnl_description 
        from (select jl_jrnl_hdr_id,
                     case
-                       when jt.ejt_madj_flag = 'y' then jl_jrnl_hdr_id
+                       when jt.ejt_madj_flag = 'Y' then jl_jrnl_hdr_id
                        else 0
                     end
                        jl_jrnl_hdr_id2,
@@ -719,127 +733,127 @@ as
                     jl_account jl_sub_account,
                     cast (
                        case
-                          when jl_segment_1 = 'nvs' then ' '
+                          when jl_segment_1 = 'NVS' then ' '
                           else jl_segment_1
                        end as varchar2 (10))
                        jl_segment_1,
                     case
-                       when jl_segment_2 = 'nvs' then ' '
+                       when jl_segment_2 = 'NVS' then ' '
                        else jl_segment_2
                     end
                        jl_segment_2,
                     cast (
                        case
-                          when jl_segment_3 = 'nvs' then ' '
+                          when jl_segment_3 = 'NVS' then ' '
                           else jl_segment_3
                        end as varchar2 (10))
                        jl_segment_3,
                     cast (
                        case
-                          when jl_segment_4 = 'nvs' then ' '
+                          when jl_segment_4 = 'NVS' then ' '
                           else jl_segment_4
                        end as varchar2 (5))
                        jl_segment_4,
                     cast (
                        case
-                          when jl_segment_5 = 'nvs' then ' '
+                          when jl_segment_5 = 'NVS' then ' '
                           else jl_segment_5
                        end as varchar2 (10))
                        jl_segment_5,
-                    case when jl_entity like 'e%' then 'mncon' else ' ' end
+                    case when jl_entity like 'E%' then 'MNCON' else ' ' end
                        program_code,
                     case
-                       when jl_segment_7 = 'nvs' then ' '
+                       when jl_segment_7 = 'NVS' then ' '
                        else jl_segment_7
                     end
                        jl_segment_7,
                     case
-                       when jl_segment_8 = 'nvs' then ' '
+                       when jl_segment_8 = 'NVS' then ' '
                        else jl_segment_8
                     end
                        jl_segment_8,
                     case
-                       when jl_segment_9 = 'nvs' then ' '
+                       when jl_segment_9 = 'NVS' then ' '
                        else jl_segment_9
                     end
                        jl_segment_9,
                     case
-                       when jl_segment_10 = 'nvs' then ' '
+                       when jl_segment_10 = 'NVS' then ' '
                        else jl_segment_10
                     end
                        jl_segment_10,
                     case
-                       when jl_attribute_1 = 'nvs' then ' '
+                       when jl_attribute_1 = 'NVS' then ' '
                        else jl_attribute_1
                     end
                        jl_attribute_1,
                     case
-                       when jl_attribute_2 = 'nvs' then ' '
+                       when jl_attribute_2 = 'NVS' then ' '
                        else jl_attribute_2
                     end
                        jl_attribute_2,
                     case
-                       when jl_attribute_3 = 'nvs' then ' '
+                       when jl_attribute_3 = 'NVS' then ' '
                        else jl_attribute_3
                     end
                        jl_attribute_3,
                     case
-                       when jl_attribute_4 = 'nvs' then ' '
+                       when jl_attribute_4 = 'NVS' then ' '
                        else jl_attribute_4
                     end
                        jl_attribute_4,
                     case
-                       when jl_attribute_5 = 'nvs' then ' '
+                       when jl_attribute_5 = 'NVS' then ' '
                        else jl_attribute_5
                     end
                        jl_attribute_5,
                     case
-                       when jl_reference_1 = 'nvs' then ' '
+                       when jl_reference_1 = 'NVS' then ' '
                        else jl_reference_1
                     end
                        jl_reference_1,
                     case
-                       when jl_reference_2 = 'nvs' then ' '
+                       when jl_reference_2 = 'NVS' then ' '
                        else jl_reference_2
                     end
                        jl_reference_2,
                     case
-                       when jl_reference_3 = 'nvs' then ' '
+                       when jl_reference_3 = 'NVS' then ' '
                        else jl_reference_3
                     end
                        jl_reference_3,
                     case
-                       when jl_reference_4 = 'nvs' then ' '
+                       when jl_reference_4 = 'NVS' then ' '
                        else jl_reference_4
                     end
                        jl_reference_4,
                     case
-                       when jl_reference_5 = 'nvs' then ' '
+                       when jl_reference_5 = 'NVS' then ' '
                        else jl_reference_5
                     end
                        jl_reference_5,
                     case
-                       when jl_reference_6 = 'nvs' then ' '
+                       when jl_reference_6 = 'NVS' then ' '
                        else jl_reference_6
                     end
                        jl_reference_6,
                     case
-                       when jl_reference_7 = 'nvs' then ' '
+                       when jl_reference_7 = 'NVS' then ' '
                        else jl_reference_7
                     end
                        jl_reference_7,
                     case
-                       when jl_reference_8 = 'nvs' then ' '
+                       when jl_reference_8 = 'NVS' then ' '
                        else jl_reference_8
                     end
                        jl_reference_8,
                     case
-                       when jl_reference_9 = 'nvs' then ' '
+                       when jl_reference_9 = 'NVS' then ' '
                        else jl_reference_9
                     end
                        jl_reference_9,
                     case
-                       when jl_reference_10 = 'nvs' then ' '
+                       when jl_reference_10 = 'NVS' then ' '
                        else jl_reference_10
                     end
                        jl_reference_10,
@@ -847,7 +861,7 @@ as
                     round (jl_tran_amount, 2) jl_tran_amount,
                     jl_base_rate,
                     case
-                       when jl_segment_1 = 'ukgaap_adj'
+                       when jl_segment_1 = 'UKGAAP_ADJ'
                        then
                           cast (jl_local_ccy as varchar2 (3))
                        else
@@ -855,7 +869,7 @@ as
                     end
                        jl_base_ccy,
                     case
-                       when jl_segment_1 = 'ukgaap_adj'
+                       when jl_segment_1 = 'UKGAAP_ADJ'
                        then
                           round (jl_local_amount, 2)
                        else
@@ -891,14 +905,14 @@ as
                        on jl.jl_jrnl_hdr_id = jh.jh_jrnl_id
                     left join fdr.fr_general_lookup fgl
                        on     jl.jl_attribute_4 = fgl.lk_match_key1
-                          and fgl.lk_lkt_lookup_type_code = 'event_hierarchy'
+                          and fgl.lk_lkt_lookup_type_code = 'EVENT_HIERARCHY'
                     left join fdr.fr_gl_account gl
                        on jl.jl_account = gl.ga_account_code
                     left join slr.slr_ext_jrnl_types jt
                        on jt.ejt_type = jh.jh_jrnl_type
               where     jl.jl_jrnl_hdr_id not in (select gjh.jl_jrnl_hdr_id
                                                     from rdr.rr_glint_to_slr_ag gjh)
-                    and jh.jh_jrnl_internal_period_flag = 'n') gjl
+                    and jh.jh_jrnl_internal_period_flag = 'N') gjl
    group by gjl.jl_entity,
             gjl.jl_segment_1,
             gjl.jl_effective_date,
