@@ -1,40 +1,40 @@
 {
     "window.zoomLevel": 0,
-    
     "java.requirements.JDK11Warning": false,
     "editor.suggestSelection": "first",
-    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",    
-    
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
     "java.semanticHighlighting.enabled": true,
     "java.configuration.checkProjectSettingsExclusions": false,
-    "java.home": "C:\\Java\\java-se-8u41-ri",
+    "java.home": "C:\\Java\\java-11-openjdk-11.0.8.10-2.windows.redhat.x86_64",
     "java.import.gradle.arguments": "-Penv=ci",
     "java.test.config": [
-        {"name": "ciTestConfig",
-        "workingDirectory": "${workspaceFolder}",
-        "vmargs": [ "-Dtest.env=ci",
-            "-Dtest.databasePlatform=ORACLE",
-            "-Dtest.databaseTestUsername=unittest",
-            "-Dtest.pathToSSHKey=none",
-            "-Dtest.aptitudeHost=aptitudeci.agl.com",
-            "-Dtest.aptitudeLinuxUsername=aptitude",
-            "-Dtest.pathToStepScript=/aah/scripts/StartStep.sh",
-            "-Dtest.databaseHost=oraaptci.agl.com",
-            "-Dtest.oracleTnsAlias=aptci",
-            "-Dtest.pathToOracleWallet=none",
-            "-Dtest.teradataHost=none",
-            "-Dtest.teradataTestDefaultDatabase=none",
-            "-Dtest.oraclePort=1521",
-            "-Dtest.databaseLogMech=none",
-            "-Dtest.databaseTestPassword=bJGeTSP2PbMikw4d",
-            "-Dtest.aptitudeLinuxPassword=EFhFe9t2DLP6xkie",
-            "-Dtest.fdrUsername=fdr",
-            "-Dtest.stnUsername=stn",
-            "-Dtest.guiUsername=gui",
-            "-Dtest.slrUsername=slr",
-            "-Dtest.rdrUsername=rdr"            
-        ]
-    }
+        {
+            "name": "ciTestConfig",
+            "workingDirectory": "${workspaceFolder}",
+            "vmargs": [
+                "-Dtest.env=ci",
+                "-Dtest.databasePlatform=ORACLE",
+                "-Dtest.databaseTestUsername=unittest",
+                "-Dtest.pathToSSHKey=none",
+                "-Dtest.aptitudeHost=aptitudeci.agl.com",
+                "-Dtest.aptitudeLinuxUsername=aptitude",
+                "-Dtest.pathToStepScript=/aah/scripts/StartStep.sh",
+                "-Dtest.databaseHost=oraaptci.agl.com",
+                "-Dtest.oracleTnsAlias=aptci",
+                "-Dtest.pathToOracleWallet=none",
+                "-Dtest.teradataHost=none",
+                "-Dtest.teradataTestDefaultDatabase=none",
+                "-Dtest.oraclePort=1521",
+                "-Dtest.databaseLogMech=none",
+                "-Dtest.databaseTestPassword=bJGeTSP2PbMikw4d",
+                "-Dtest.aptitudeLinuxPassword=EFhFe9t2DLP6xkie",
+                "-Dtest.fdrUsername=fdr",
+                "-Dtest.stnUsername=stn",
+                "-Dtest.guiUsername=gui",
+                "-Dtest.slrUsername=slr",
+                "-Dtest.rdrUsername=rdr"
+            ]
+        }
     ],
     "gradle.autoDetect": "off",
     "gradle.debug": true,
@@ -42,5 +42,6 @@
     "gradle.focusTaskInExplorer": false,
     "java.import.gradle.home": "C:\\Gradle\\gradle-6.5",
     "java.import.maven.enabled": false,
-    "java.import.gradle.offline.enabled": true
+    "java.import.gradle.offline.enabled": true,
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

@@ -71,7 +71,7 @@ public class OracleExcelOperator implements IExcelOperator
 
             LOG.debug ( "The column '" + colDtls.colName + "' is " + ( colDtls.isSQL ? "" : "not " ) + "SQL" );
 
-            XLCOLDTLS.put ( new Integer ( colDtls.colIndex ) , colDtls );
+            XLCOLDTLS.put ( Integer.valueOf( colDtls.colIndex ) , colDtls );
         }
 
         return XLCOLDTLS;
@@ -402,7 +402,7 @@ public class OracleExcelOperator implements IExcelOperator
 
                         for ( int i = 0 ; i < SPREADSHEET_WIDTH ; i++ )
                         {
-                            ExcelColumnDetails currColDtls = XLCOLDTLS.get ( new Integer ( i ) );
+                            ExcelColumnDetails currColDtls = XLCOLDTLS.get ( Integer.valueOf ( i ) );
 
                             LOG.debug ( "Examining column '" + currColDtls.colName + "'" );
 
@@ -430,7 +430,7 @@ public class OracleExcelOperator implements IExcelOperator
 
                         for ( int i = 0 ; i < SPREADSHEET_WIDTH ; i++ )
                         {
-                            ExcelColumnDetails currColDtls = XLCOLDTLS.get ( new Integer ( i ) );
+                            ExcelColumnDetails currColDtls = XLCOLDTLS.get ( Integer.valueOf ( i ) );
 
                             if ( currColDtls.isSQL )
                             {
@@ -478,7 +478,7 @@ public class OracleExcelOperator implements IExcelOperator
                     {
                         for ( int i = 0 ; i < SPREADSHEET_WIDTH ; i++ )
                         {
-                            ExcelColumnDetails currColDtls = XLCOLDTLS.get ( new Integer ( i ) );
+                            ExcelColumnDetails currColDtls = XLCOLDTLS.get ( Integer.valueOf ( i ) );
 
                             LOG.debug ( "Examining column '" + currColDtls.colName + "'" );
 

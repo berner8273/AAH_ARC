@@ -21,9 +21,11 @@ This repository contains java test code that is intended to be
 
 ## Build with Gradle Wrapper
 * open a powershell command prompt run the commande to build java directly using the gradle wrapper
-    .\gradlew -compileJava
+    .\gradlew -Penv=CI compileJava
 
 
 ## Run Tests
 * In vs code, click on the testing icon and confirm the aah tets show up
 * try running the com.aptitudesoftware.test.aah.tests.test.TestTheTestFramework from the Java test explorer
+* Execute the tests directly with the gradle wrapper
+    ./gradlew -Penv=ci testing:testSuite:test --tests "*TestTheTestFramework*" --rerun-tasks
