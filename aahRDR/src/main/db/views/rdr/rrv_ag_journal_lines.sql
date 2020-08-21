@@ -26,11 +26,11 @@ SELECT
   , jl.jl_attribute_1 AS stream
   , jl.jl_attribute_4 AS acc_event_type
   , jl.jl_attribute_2 AS tax_jurisdiction
-  , CASE WHEN jl.jl_segment_1  ='UKGAAP_ADJ'
+  , CASE WHEN upper(jl.jl_segment_1) in ('UKGAAP_ADJ','EURGAAPADJ')
             THEN jl.jl_local_ccy 
             ELSE jl.jl_base_ccy
         END functional_ccy
-  , CASE WHEN jl.jl_segment_1 ='UKGAAP_ADJ'
+  , CASE WHEN upper(jl.jl_segment_1) in ('UKGAAP_ADJ','EURGAAPADJ')
             THEN jl.jl_local_amount
             ELSE jl.jl_base_amount
         END functional_ccy_amt
