@@ -5,8 +5,8 @@ select
 , al_lookup_1 as "business_typ"    
 , al_lookup_2 as "mtm_yn"   
 , al_lookup_3 as "business_unit"   
-, al_lookup_4    
-, al_lookup_5    
+, al_lookup_4 as "vie_business_unit"       
+, al_lookup_5 as "gl_account_cd"   
 , al_lookup_6    
 , al_lookup_7    
 , al_lookup_8    

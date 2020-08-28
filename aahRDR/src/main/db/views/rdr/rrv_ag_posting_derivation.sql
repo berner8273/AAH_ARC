@@ -32,6 +32,7 @@ select
      , fal.al_lookup_1               business_type
      , fal.al_lookup_3               business_unit
      , fal.al_lookup_4               vie_business_unit
+     , fal.al_lookup_5               gl_account_cd
      , fpd.pd_amount_type            amount_type
      , fpd.pd_dr_or_cr               debit_credit
      , fpd.pd_transaction_no         transaction_no
@@ -108,6 +109,7 @@ select
      , fal.al_lookup_1               business_type
      , fal.al_lookup_3               business_unit
      , fal.al_lookup_4               vie_business_unit
+     , fal.al_lookup_5               gl_account_cd
      , fpd.pd_amount_type            amount_type
      , fpd.pd_dr_or_cr               debit_credit
      , fpd.pd_transaction_no         transaction_no

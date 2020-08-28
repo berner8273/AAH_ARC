@@ -23,6 +23,7 @@ select
   , event_typ
   , business_event_typ
   , business_unit
+  , account_cd
   , bu_lookup
   , affiliate
   , owner_le_cd
@@ -65,6 +66,7 @@ select
   , event_typ
   , business_event_typ
   , business_unit
+  , account_cd
   , bu_lookup
   , affiliate
   , owner_le_cd
@@ -107,6 +109,7 @@ select
   , event_typ
   , business_event_typ
   , business_unit
+  , account_cd
   , bu_lookup
   , affiliate
   , owner_le_cd
