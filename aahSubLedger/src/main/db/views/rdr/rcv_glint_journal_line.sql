@@ -205,5 +205,7 @@ AS
                                     'EVENT_CLASS_PERIOD'
                              AND (fgl2.lk_lookup_value1 = 'C' or fgl2.lk_lookup_value5 = 'Y')
                              AND jl.jl_effective_date BETWEEN TO_DATE(fgl2.lk_lookup_value2, 'dd/mm/yyyy') AND TO_DATE(fgl2.lk_lookup_value3, 'dd/mm/yyyy')))
+                             /* US 53039 */
+                             AND  case when NVL(jl1.jl_segment_5,' ') <> 'DNP' 
 ;
 COMMENT ON TABLE RDR.RCV_GLINT_JOURNAL_LINE IS 'Configurable View on Journal Lines that should be considered for sending to the GL.';
