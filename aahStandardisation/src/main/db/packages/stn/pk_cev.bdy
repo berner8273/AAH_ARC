@@ -468,12 +468,12 @@ and not exists (
                                        when bt.bu_derivation_method = 'CESSION'
                                        then nvl(cev.reclass_entity,cev.le_cd)
                                        when bt.bu_derivation_method = 'PARENT_CESSION'
-                                       then nvl(cev.reclass_entity,cev.parent_cession_le_cd)
+                                       then cev.parent_cession_le_cd
                                        else null
                                    end                                                       business_unit
                                  , case
                                        when bt.afflte_derivation_method = 'CESSION'
-                                       then nvl(cev.reclass_entity,cev.le_cd)
+                                       then cev.le_cd
                                        when bt.afflte_derivation_method = 'PARENT_CESSION'
                                        then nvl(cev.reclass_entity,cev.parent_cession_le_cd)
                                        else null
