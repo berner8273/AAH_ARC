@@ -155,8 +155,11 @@ AS
           END
              AS jl_base_ccy,
           CASE
-             WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ') THEN ROUND (jl_local_amount, 2)
-             ELSE ROUND (jl_base_amount, 2)
+             WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ') 
+             THEN 
+                ROUND (jl_local_amount, 2)
+             ELSE 
+                ROUND (jl_base_amount, 2)
           END
              AS jl_base_amount,
           jl_local_rate,
@@ -210,7 +213,16 @@ AS
                        WHERE     fgl.lk_lookup_value3 = fgl2.lk_match_key1
                              AND fgl2.lk_lkt_lookup_type_code =
                                     'EVENT_CLASS_PERIOD'
-                             AND (fgl2.lk_lookup_value1 = 'C' or fgl2.lk_lookup_value5 = 'Y')
-                             AND jl.jl_effective_date BETWEEN TO_DATE(fgl2.lk_lookup_value2, 'dd/mm/yyyy') AND TO_DATE(fgl2.lk_lookup_value3, 'dd/mm/yyyy')))
+                             AND (fgl2.lk_lookup_value1 = 'C' 
+                             OR fgl2.lk_lookup_value5 = 'Y')
+                             AND jl.jl_effective_date BETWEEN TO_DATE(
+                                                                fgl2.lk_lookup_value2, 
+                                                                'dd/mm/yyyy') 
+                                                         AND TO_DATE (
+                                                              fgl2.lk_lookup_value3,
+                                                              'dd/mm/yyyy')))
+         /* US 53039 */
+        AND  NVL( CAST (CASE WHEN jl_segment_5 = 'NVS' THEN ' ' ELSE jl_segment_5 END AS VARCHAR2 (10)),' ') <> 'DNP' 
+        ;
 ;
 COMMENT ON TABLE RDR.RCV_GLINT_JOURNAL_LINE IS 'Configurable View on Journal Lines that should be considered for sending to the GL.';
