@@ -8,6 +8,7 @@ create table stn.cev_vie_data
 ,  row_sid                        number
 ,  sub_event                      varchar2 ( 100 char )
 ,  accounting_dt                  date
+,  account_cd											varchar2 ( 50 char )
 ,  policy_id                      varchar2 ( 40 char )
 ,  policy_abbr_nm                 varchar2 ( 80 char )
 ,  stream_id                      number ( 38 )
@@ -27,7 +28,6 @@ create table stn.cev_vie_data
 ,  event_typ                      varchar2 ( 30 char )
 ,  business_event_typ             varchar2 ( 50 char )
 ,  business_unit                  varchar2 ( 20 char )
-,  account_cd											varchar2 ( 50 char )
 ,  bu_lookup                      varchar2 ( 20 char )
 ,  affiliate                      varchar2 ( 20 char )
 ,  owner_le_cd                    varchar2 ( 20 char )

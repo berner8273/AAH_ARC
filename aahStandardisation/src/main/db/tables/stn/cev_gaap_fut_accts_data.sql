@@ -9,6 +9,7 @@ create table stn.cev_gaap_fut_accts_data
 ,  row_sid                        number
 ,  sub_event                      varchar2 ( 100 char )
 ,  accounting_dt                  date
+,  account_cd											varchar2 ( 50 char )
 ,  policy_id                      varchar2 ( 40 char )
 ,  policy_abbr_nm                 varchar2 ( 80 char )
 ,  stream_id                      number ( 38 )

@@ -13,6 +13,7 @@ create table stn.cev_data
 ,  input_basis_cd                 varchar2 ( 20 char )
 ,  partner_basis_cd               varchar2 ( 7 char )
 ,  accounting_dt                  date
+,  account_cd											varchar2 ( 50 char )
 ,  event_typ                      varchar2 ( 30 char )
 ,  event_typ_id                   number
 ,  business_event_typ             varchar2 ( 50 char )
