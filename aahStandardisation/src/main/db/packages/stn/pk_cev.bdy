@@ -282,33 +282,19 @@ and not exists (
                                         else cev.premium_typ
                                         end premium_typ
                                 
-                                  , case
-                                                when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('C') and ce_data.counterparty_le_cd = 'FSAU')
-                                                      or (cev.event_typ like 'PGAAP%' and cev.business_typ in ('A','CA','AA','D') and ce_data.owner_le_cd = 'FSAU')
-                                                    then 'FSANY'
-                                                when cev.event_typ = 'DAC_CC_CONS_ADJUST' and cev.business_typ in ('C','A','D','AA')
-                                                    then 'CA005'
-                                                else ce_data.le_cd
-                                            end le_cd
-        
-                                  , case
-                                                when (cev.event_typ like 'PGAAP%' and cev.business_typ in ('AA','CA') and ce_data.counterparty_le_cd = 'FSAU')
-                                                    then 'FSANY'
-                                                when cev.event_typ = 'DAC_CC_CONS_ADJUST' and cev.business_typ in ('CA')
-                                                    then 'CA005'
-                                                else ce_data.parent_cession_le_cd
-                                            end parent_cession_le_cd
-                                         , ce_data.reclass_entity
-                                         , ce_data.account_cd
-                                         , ce_data.owner_le_cd
-                                         , ce_data.counterparty_le_cd
-                                         , cev.transaction_amt
-                                         , cev.transaction_ccy
-                                         , cev.functional_amt
-                                         , cev.functional_ccy
-                                         , cev.reporting_amt
-                                         , cev.reporting_ccy
-                                         , cev.lpg_id
+                                  ,ce_data.le_cd
+                                  ,ce_data.parent_cession_le_cd
+                                  ,cev.reclass_entity
+				                  ,cev.account_cd
+                                  ,ce_data.owner_le_cd
+                                  ,ce_data.counterparty_le_cd
+                                  ,cev.transaction_amt
+                                  ,cev.transaction_ccy
+                                  ,cev.functional_amt
+                                  ,cev.functional_ccy
+                                  ,cev.reporting_amt
+                                  ,cev.reporting_ccy
+                                  ,cev.lpg_id
                                       from
                                                 stn.cev_valid               cev
                                            join                             ce_data on cev.stream_id = ce_data.stream_id
@@ -405,6 +391,7 @@ and not exists (
                             )                partner_reporting_amt
                       , reporting_ccy
                       , lpg_id
+                      , account_cd
                    from (
                             select /*+ parallel(8)*/
                                    nvl( gfa.gaap_fut_accts_flag , 'N' )                                    gaap_fut_accts_flag
@@ -482,9 +469,9 @@ and not exists (
                                  , bt.generate_interco_accounting
                                  , case
                                        when bt.bu_derivation_method = 'CESSION'
-                                       then cev.le_cd
+                                       then nvl(cev.reclass_entity,cev.le_cd)
                                        when bt.bu_derivation_method = 'PARENT_CESSION'
-                                       then cev.parent_cession_le_cd
+                                       then nvl(cev.reclass_entity,cev.parent_cession_le_cd)
                                        else null
                                    end                                                       business_unit
                                  , case
@@ -518,6 +505,7 @@ and not exists (
                                  , cev_sum.reporting_amt                                    basis_reporting_amt
                                  , cev.reporting_ccy
                                  , cev.lpg_id
+                                 , cev.account_cd
                               from
                                         cev_ex_in                        cev
                                    join stn.event_type                   et      on cev.event_typ              = et.event_typ
@@ -641,6 +629,7 @@ and not exists (
                       , cev_data.input_reporting_amt
                       , cev_data.partner_reporting_amt
                       , cev_data.lpg_id
+                      , cev_data.account_cd
                    from
                              stn.cev_data                       cev_data
                    left join stn.cev_premium_typ_override       cevpto   on cev_data.correlation_uuid  = cevpto.correlation_uuid
@@ -752,6 +741,7 @@ and not exists (
                               , cev_data.input_reporting_amt
                               , 0 partner_reporting_amt
                               , cev_data.lpg_id
+                              , cev_data.account_cd
                               from
                                         stn.cev_data                      cev_data
                                    join stn.posting_method                psm      on (psm.psm_cd = 'GAAP_FUT_ACCTS'
@@ -819,6 +809,7 @@ and not exists (
                     , sum (input_reporting_amt)   input_reporting_amt
                     , partner_reporting_amt
                     , lpg_id
+                    , account_cd
                  from
                       gfa_1
              group by
@@ -867,6 +858,7 @@ and not exists (
                     , reporting_ccy
                     , partner_reporting_amt
                     , lpg_id
+                    , account_cd
         ;
         
         v_no_cev_gaap_fut_accts_data := sql%rowcount;

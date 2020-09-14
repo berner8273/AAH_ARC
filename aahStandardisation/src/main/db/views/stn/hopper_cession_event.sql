@@ -18,7 +18,7 @@ select
      , fsrae.srae_dimension_13           owner_le_cd
      , fsrae.srae_dimension_14           premium_typ
      , fsrae.srae_dimension_15           journal_descr
-     , fsrae.srae_client_spare_id2       gl_account_cd
+     , fsrae.srae_client_spare_id2       account_cd
      , fsrae.srae_client_spare_id3       ultimate_parent_le_cd
      , fsrae.srae_client_spare_id4       event_typ
      , fsrae.srae_client_spare_id5       functional_ccy

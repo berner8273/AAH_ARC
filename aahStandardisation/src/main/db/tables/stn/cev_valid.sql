@@ -4,6 +4,7 @@ create table stn.cev_valid
 ,   correlation_uuid    raw ( 16 )
 ,   event_id            number ( 38 , 0 )
 ,   accounting_dt       date
+,   account_cd          varchar2 ( 20 char )
 ,   stream_id           number ( 38 , 0 )
 ,   basis_cd            varchar2 ( 20 char )
 ,   premium_typ         varchar2 ( 1 char )
