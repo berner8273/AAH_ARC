@@ -166,6 +166,8 @@ and not exists (
              , fal.al_lookup_1
              , fal.al_lookup_2
              , fal.al_lookup_3
+             , fal.al_lookup_4
+             , fal.al_lookup_5
              , fal.al_ccy
         ;       
            --and padt.amount_typ_descr   in ( 'DERIVED' , 'DERIVED_PLUS' )
