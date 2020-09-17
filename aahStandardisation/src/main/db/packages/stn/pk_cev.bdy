@@ -148,10 +148,10 @@ and not exists (
              , fal.al_lookup_1           business_typ
              , fal.al_lookup_2           is_mark_to_market
              , fal.al_lookup_3           business_unit
+             , fal.al_ccy                currency
+             , min(fal.al_account)       sub_account             
              , fal.al_lookup_4           vie_business_unit
              , fal.al_lookup_5           account_cd
-             , fal.al_ccy                currency
-             , min(fal.al_account)       sub_account
           from
                fdr.fr_posting_driver              fpd
           join fdr.fr_account_lookup              fal   on fpd.pd_posting_code    = fal.al_posting_code
