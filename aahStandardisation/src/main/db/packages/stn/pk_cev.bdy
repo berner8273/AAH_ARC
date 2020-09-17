@@ -914,7 +914,6 @@ and not exists (
                               , generate_interco_accounting
                               , business_unit
                               , affiliate
-                              , account_cd
                               , owner_le_cd
                               , counterparty_le_cd
                               , transaction_ccy
@@ -957,6 +956,7 @@ and not exists (
                                 end                                                         reporting_amt
                               , input_reporting_amt
                               , lpg_id
+                              , account_cd                              
                            from (
                                        select
                                               psm_cd
@@ -993,7 +993,6 @@ and not exists (
                                             , business_typ
                                             , generate_interco_accounting
                                             , business_unit
-                                            , account_cd
                                             , affiliate
                                             , owner_le_cd
                                             , counterparty_le_cd
@@ -1008,6 +1007,7 @@ and not exists (
                                             , input_reporting_amt
                                             , partner_reporting_amt
                                             , lpg_id
+                                            , account_cd                                            
                                          from
                                               stn.cev_mtm_data
                                     union all
@@ -1046,7 +1046,6 @@ and not exists (
                                             , business_typ
                                             , generate_interco_accounting
                                             , business_unit
-                                            , account_cd
                                             , affiliate
                                             , owner_le_cd
                                             , counterparty_le_cd
@@ -1061,6 +1060,7 @@ and not exists (
                                             , input_reporting_amt
                                             , partner_reporting_amt
                                             , lpg_id
+                                            , account_cd                                            
                                          from
                                               stn.cev_gaap_fut_accts_data
                                 )
@@ -1102,7 +1102,6 @@ and not exists (
                               , business_typ
                               , generate_interco_accounting
                               , business_unit
-                              , account_cd
                               , affiliate
                               , owner_le_cd
                               , counterparty_le_cd
@@ -1117,6 +1116,7 @@ and not exists (
                               , reporting_amt
                               , input_reporting_amt
                               , lpg_id
+                              , account_cd                              
                            from (
                                        select
                                               ad.posting_type
@@ -1158,7 +1158,6 @@ and not exists (
                                               end business_typ
                                             , ad.generate_interco_accounting
                                             , ad.business_unit
-                                            , ad.account_cd
                                             , ad.affiliate
                                             , ad.owner_le_cd
                                             , ad.counterparty_le_cd
@@ -1173,6 +1172,7 @@ and not exists (
                                             , ( ( ad.reporting_amt * nvl(pt.tax_jurisdiction_pct,100) ) / 100 )                             reporting_amt
                                             , ( ( ad.input_reporting_amt * nvl(pt.tax_jurisdiction_pct,100) ) / 100 )                       input_reporting_amt
                                             , ad.lpg_id
+                                            , ad.account_cd                                            
                                          from
                                               amount_derivation                  ad
                                          join stn.event_type                     et     on ad.event_typ         = et.event_typ
@@ -1208,7 +1208,6 @@ and not exists (
                                   , event_typ
                                   , business_event_typ
                                   , business_unit
-                                  , account_cd
                                   , business_unit bu_lookup
                                   , affiliate
                                   , owner_le_cd
@@ -1231,6 +1230,7 @@ and not exists (
                                   , reporting_amt
                                   , input_reporting_amt
                                   , lpg_id
+                                  , account_cd                                  
                                from
                                     non_intercompany_data
                 ;
@@ -1282,7 +1282,6 @@ and not exists (
                                      else cevnid.business_typ
                                  end business_typ
                               , coalesce( psmre.reins_le_cd , ele.elimination_le_cd )   business_unit
-                              , cevnid.account_cd
                               , cevnid.bu_lookup
                               , nvl2( psmre.reins_le_cd , null , cevnid.affiliate ) affiliate
                               , cevnid.owner_le_cd
@@ -1295,6 +1294,8 @@ and not exists (
                               , cevnid.reporting_ccy
                               , cevnid.reporting_amt * pdmic.negate_flag                               reporting_amt
                               , cevnid.lpg_id
+                              , cevnid.account_cd
+                             
                            from
                                      stn.cev_non_intercompany_data    cevnid
                                 join stn.posting_ledger               pldgrin  on cevnid.ledger_cd       = pldgrin.ledger_cd
@@ -1366,7 +1367,6 @@ and not exists (
                                   , event_typ
                                   , business_event_typ
                                   , business_unit
-                                  , account_cd
                                   , bu_lookup
                                   , affiliate
                                   , owner_le_cd
@@ -1386,6 +1386,7 @@ and not exists (
                                   , reporting_ccy
                                   , reporting_amt
                                   , lpg_id
+                                  , account_cd                                  
                                from
                                     intercompany_data;
                 v_no_cev_intercompany_data := sql%rowcount;
@@ -1658,6 +1659,7 @@ and not exists (
                               , hce.event_typ
                               , hce.business_event_typ
                               , hce.business_unit
+                              , hce.account_cd
                               , hce.affiliate_le_cd
                               , hce.owner_le_cd
                               , hce.counterparty_le_cd
@@ -1810,7 +1812,6 @@ and not exists (
                      , event_typ
                      , business_event_typ
                      , business_unit
-                     , account_cd
                      , bu_lookup
                      , affiliate
                      , owner_le_cd
@@ -1830,6 +1831,7 @@ and not exists (
                      , reporting_ccy
                      , reporting_amt
                      , lpg_id
+                     , account_cd                     
                   from
                        vie_data
                 union all
@@ -1861,7 +1863,6 @@ and not exists (
                      , event_typ
                      , business_event_typ
                      , business_unit
-                     , account_cd
                      , bu_lookup
                      , affiliate
                      , owner_le_cd
@@ -1881,6 +1882,7 @@ and not exists (
                      , reporting_ccy
                      , reporting_amt
                      , lpg_id
+                     , account_cd                     
                   from
                        vie_hist
                 ;
