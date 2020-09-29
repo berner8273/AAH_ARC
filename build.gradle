@@ -45,10 +45,12 @@ validatePasswords                 ();
 //printTargetEnvironmentInfo        ();
 sweepUpLogs                       ();
 
+
 def validateBuildParameters () {
     if ( ! project.hasProperty ( 'env' ) ) {
         throw new Exception ( "The parameter 'env', which specifies the target environment, has not been supplied." );
     }
+   
 }
 
 def captureEnvProperties () {
