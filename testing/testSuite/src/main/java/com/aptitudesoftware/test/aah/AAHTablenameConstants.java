@@ -247,7 +247,8 @@ public enum AAHTablenameConstants implements ITablename
 ,   RR_GLINT_JOURNAL_LINE      ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_GLINT_JOURNAL_LINE"    )    
 ,   RR_GLINT_JOURNAL           ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_GLINT_JOURNAL"         )    
 ,   RR_GLINT_BATCH_CONTROL     ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_GLINT_BATCH_CONTROL"   )    
-,   RR_INTERFACE_CONTROL       ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_INTERFACE_CONTROL"   )    
+,   RR_INTERFACE_CONTROL       ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_INTERFACE_CONTROL"   )  
+,   RDR_VIEW_COLUMNS           ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_INTERFACE_CONTROL"   )  
 
     /* RDR - expected result tables */
     ,   ER_RR_GLINT_BATCH_CONTROL      ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "ER_RR_GLINT_BATCH_CONTROL"    )
