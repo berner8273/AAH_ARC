@@ -19,4 +19,4 @@ select
   from
        fdr.fr_general_codes
  where
-       gc_gct_code_type_id = ?
+       gc_gct_code_type_id = 'POLICY_TAX'

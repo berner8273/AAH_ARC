@@ -27,6 +27,7 @@ public class TestInsurancePolicyStandardisation extends AAHTest
 	{		
         AAHCleardownOperations.clearTable(AAHTablenameConstants.FR_RATE_TYPE_LOOKUP,"RTYL_LOOKUP_KEY not in ( '1','SPOT','FORWARD','MAVG')");
         AAHCleardownOperations.clearTable(AAHTablenameConstants.FR_LOG_TEXT);
+        AAHCleardownOperations.clearTable(AAHTablenameConstants.LEGAL_ENTITY_LINK);
         AAHCleardownOperations.clearTable(AAHTablenameConstants.FR_TRADE, "T_FDR_TRAN_NO NOT IN ('DEFAULT')");
         AAHCleardownOperations.clearTable(AAHTablenameConstants.FR_BOOK_LOOKUP, "BOL_LOOKUP_KEY NOT IN ('DEFAULT')");
         AAHCleardownOperations.clearTable(AAHTablenameConstants.FR_BOOK, "BO_BOOK_CLICODE NOT IN ('DEFAULT')");
@@ -712,6 +713,7 @@ public class TestInsurancePolicyStandardisation extends AAHTest
             AAHResourceConstants.FR_LOG_AR));
             
         cleardown ();
+        setupTest();
         AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 2 , 1 ));
         ArrayList<AAHStep> steps = new ArrayList<AAHStep> ();
 
@@ -735,8 +737,10 @@ public class TestInsurancePolicyStandardisation extends AAHTest
 
         steps.add(AAHStep.StandardiseInsurancePolicies);
         steps.add(AAHStep.DSRInsurancePolicies);
-
-        runBasicTest(steps);
+        for (AAHStep pStep : steps) {
+        	runStep(pStep.getName());
+        }
+        compareResults();
         cleardown ();
     }
     	
