@@ -839,7 +839,7 @@ public class TestGLAccountStandardisation extends AAHTest
 
         compareResults();
 
-//        cleardown ();
+        cleardown ();
 
 
     } 
