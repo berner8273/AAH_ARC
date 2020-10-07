@@ -19,7 +19,7 @@ create table stn.cession_event
 ,   reporting_amt       number ( 38 , 9 )                                  not null
 ,   lpg_id              number   ( 38 , 0 ) default 2                      not null
 ,   event_status        varchar2 ( 1 char ) default 'U'                    not null
-, 	reclass_entity   	varchar2 ( 20 char )                               
+, 	reclass_entity   	  varchar2 ( 20 char )                               
 , 	account_cd         	varchar2 ( 20 char )                               
 ,   feed_uuid           raw ( 16 )                                         not null
 ,   no_retries          number ( 38 , 0 )   default 0                      not null

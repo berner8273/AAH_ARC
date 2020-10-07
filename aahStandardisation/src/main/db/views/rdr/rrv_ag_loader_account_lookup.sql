@@ -7,6 +7,7 @@ select
      , fal.al_lookup_2
      , fal.al_lookup_3
      , fal.al_lookup_4
+     , fal.al_lookup_5
      , fal.al_account
      , fal.al_valid_from
      , fal.al_valid_to

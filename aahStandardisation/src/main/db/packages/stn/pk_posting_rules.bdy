@@ -487,6 +487,7 @@ if p_no_load_total > 0 then
                              , fal_load.al_lookup_2
                              , fal_load.al_lookup_3
                              , fal_load.al_lookup_4
+                             , fal_load.al_lookup_5
                              , fal_load.al_account
                              , fal_load.al_valid_from
                              , fal_load.al_valid_to
@@ -499,6 +500,7 @@ if p_no_load_total > 0 then
                              , fal_source.al_lookup_2
                              , fal_source.al_lookup_3
                              , fal_source.al_lookup_4
+                             , fal_source.al_lookup_5
                              , fal_source.al_account
                              , fal_source.al_valid_from
                              , fal_source.al_valid_to
@@ -511,6 +513,7 @@ if p_no_load_total > 0 then
                              , fal_source.al_lookup_2
                              , fal_source.al_lookup_3
                              , fal_source.al_lookup_4
+                             , fal_source.al_lookup_5
                              , fal_source.al_account
                              , fal_source.al_valid_from
                              , fal_source.al_valid_to
@@ -523,6 +526,7 @@ if p_no_load_total > 0 then
                              , fal_load.al_lookup_2
                              , fal_load.al_lookup_3
                              , fal_load.al_lookup_4
+                             , fal_load.al_lookup_5
                              , fal_load.al_account
                              , fal_load.al_valid_from
                              , fal_load.al_valid_to
@@ -1218,7 +1222,7 @@ begin
          , fal_load.al_lookup_2
          , fal_load.al_lookup_3
          , fal_load.al_lookup_4
-         , 'ND~'                        al_lookup_5
+         , fal_load.al_lookup_5
          , 'ND~'                        al_lookup_6
          , 'ND~'                        al_lookup_7
          , 'ND~'                        al_lookup_8
@@ -1252,7 +1256,8 @@ begin
            and fal.al_lookup_1          =  fal_new.al_lookup_1
            and fal.al_lookup_2          =  fal_new.al_lookup_2
            and fal.al_lookup_3          =  fal_new.al_lookup_3
-           and fal.al_lookup_4          =  fal_new.al_lookup_4 )
+           and fal.al_lookup_4          =  fal_new.al_lookup_4 
+           and fal.al_lookup_5          =  fal_new.al_lookup_5 )
       when matched then
         update
            set
