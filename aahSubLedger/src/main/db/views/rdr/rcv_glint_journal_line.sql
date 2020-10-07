@@ -207,7 +207,7 @@ AS
           LEFT JOIN slr.slr_ext_jrnl_types jt
              ON jt.ejt_type = jh.jh_jrnl_type
     WHERE jh.jh_jrnl_internal_period_flag = 'N'
-          AND (EXISTS
+    AND (EXISTS
                      (SELECT NULL
                         FROM fdr.fr_general_lookup fgl2
                        WHERE     fgl.lk_lookup_value3 = fgl2.lk_match_key1
