@@ -2,6 +2,7 @@ package com.aptitudesoftware.test.aah.tests.glintextract;
 import com.aptitudesoftware.test.aah.AAHEventClassPeriodOperations;
 import com.aptitudesoftware.test.aah.AAHBusinessDateOperations;
 import com.aptitudesoftware.test.aah.AAHCleardownOperations;
+import com.aptitudesoftware.test.aah.AAHExecution;
 import com.aptitudesoftware.test.aah.AAHExpectedResult;
 import com.aptitudesoftware.test.aah.AAHResourceConstants;
 import com.aptitudesoftware.test.aah.AAHResources;
@@ -144,7 +145,8 @@ public class TestGLINTExtract extends AAHTest
         SEED_TABLES.add(
             new AAHSeedTable( AAHTablenameConstants.FR_GENERAL_LOOKUP,
             PATH_TO_TEST_RESOURCES,
-            "SeedData.xlsx"));
+            "SeedData.xlsx",
+            "LK_LKT_LOOKUP_TYPE_CODE IN ('ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_CLASS_PERIOD' , 'LEGAL_ENTITY_ALIAS' , 'COMBO_RULESET')"));            
 
         ER_TABLES.add(
             new AAHExpectedResult(AAHTablenameConstants.ER_BROKEN_FEED,
@@ -217,10 +219,16 @@ public class TestGLINTExtract extends AAHTest
         ArrayList<AAHStep> steps = new ArrayList<AAHStep> ();
 
         //list steps to run here
+
+        // fx rates
         steps.add(AAHStep.StandardiseFXRates);
         steps.add(AAHStep.DSRFXRates);
+
+        // departments        
         steps.add(AAHStep.StandardiseDepartments);
         steps.add(AAHStep.DSRDepartments);
+
+        // legal entities
         steps.add(AAHStep.StandardiseLegalEntities);
         steps.add(AAHStep.DSRLegalEntities);
         steps.add(AAHStep.DSRPartyBusiness);
@@ -230,28 +238,42 @@ public class TestGLINTExtract extends AAHTest
         steps.add(AAHStep.DSRLegalEntityHierLinks);
         steps.add(AAHStep.DSRLegalEntitySupplementalData);
         steps.add(AAHStep.DSRLegalEntityHierarchyData);
-
         steps.add(AAHStep.SLRUpdateDaysPeriods);
+
+        // GL Accounts
         steps.add(AAHStep.StandardiseGLAccounts);
-        steps.add(AAHStep.DSRGLAccounts);       
+        steps.add(AAHStep.DSRGLAccounts);    
+        
+        // tax jurisdictions
         steps.add(AAHStep.StandardiseTaxJurisdiction);
         steps.add(AAHStep.DSRTaxJurisdiction);
+
+        // Chartfields
         steps.add(AAHStep.StandardiseGLChartfields);
         steps.add(AAHStep.DSRGLChartfields);
+
+        // insurance policy
         steps.add(AAHStep.StandardiseInsurancePolicies);
         steps.add(AAHStep.DSRInsurancePolicies);
         steps.add(AAHStep.DSRFXRates);
         steps.add(AAHStep.DSRPolicyTaxJurisdictions);
+
+        // Event Hierarchy
         steps.add(AAHStep.StandardiseEventHierarchy);
         steps.add(AAHStep.DSREventHierarchy);
+
+        // Journal line
         steps.add(AAHStep.StandardiseJournalLine);
         steps.add(AAHStep.DSRJournalLine);
+
         for (AAHStep pStep : steps) {
         	runStep(pStep.getName());
         }
          
         AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2018 , 1 , 20 ) , 1 );
         ArrayList<AAHStep> steps2 = new ArrayList<AAHStep> ();
+
+        // SLR
         steps2.add(AAHStep.SLRUpdateDaysPeriods);			                           
         steps2.add(AAHStep.SLRAccounts);                                
         steps2.add(AAHStep.SLRFXRates);                                 
@@ -376,6 +398,507 @@ public class TestGLINTExtract extends AAHTest
             "SeedData.xlsx",
             "LK_LKT_LOOKUP_TYPE_CODE IN ('ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_CLASS_PERIOD' , 'LEGAL_ENTITY_ALIAS' , 'COMBO_RULESET')"));            
 
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_BROKEN_FEED,
+                AAHTablenameConstants.BROKEN_FEED,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.BROKEN_FEED_ER,
+                AAHResourceConstants.BROKEN_FEED_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_SUPERSEDED_FEED,
+                AAHTablenameConstants.SUPERSEDED_FEED,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.SUPERSEDED_FEED_ER,
+                AAHResourceConstants.SUPERSEDED_FEED_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_FEED_RECORD_COUNT,
+                AAHTablenameConstants.FEED_RECORD_COUNT,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.FEED_RECORD_COUNT_ER,
+                AAHResourceConstants.FEED_RECORD_COUNT_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_JOURNAL_LINE,
+                AAHTablenameConstants.RR_GLINT_JOURNAL_LINE,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.RR_GLINT_JOURNAL_LINE_ER,
+                AAHResourceConstants.RR_GLINT_JOURNAL_LINE_AR));
+            
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_SLR_JRNL_LINES,
+                AAHTablenameConstants.SLR_JRNL_LINES,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.SLR_JRNL_LINES_ER,
+                AAHResourceConstants.SLR_JRNL_LINES_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_JOURNAL,
+                AAHTablenameConstants.RR_GLINT_JOURNAL,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.RR_GLINT_JOURNAL_ER,
+                AAHResourceConstants.RR_GLINT_JOURNAL_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_BATCH_CONTROL,
+                AAHTablenameConstants.RR_GLINT_BATCH_CONTROL,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.RR_GLINT_BATCH_CONTROL_ER,
+                AAHResourceConstants.RR_GLINT_BATCH_CONTROL_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_RR_INTERFACE_CONTROL,
+                AAHTablenameConstants.RR_INTERFACE_CONTROL,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.RR_INTERFACE_CONTROL_ER,
+                AAHResourceConstants.RR_INTERFACE_CONTROL_AR));
+                                
+        cleardown ();
+        setupTest();
+        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 20 ) );
+
+        ArrayList<AAHStep> steps = new ArrayList<AAHStep> ();
+
+        //list steps to run here
+        steps.add(AAHStep.StandardiseFXRates);
+        steps.add(AAHStep.DSRFXRates);
+        steps.add(AAHStep.StandardiseDepartments);
+        steps.add(AAHStep.DSRDepartments);
+        steps.add(AAHStep.StandardiseLegalEntities);
+        steps.add(AAHStep.DSRLegalEntities);
+        steps.add(AAHStep.DSRPartyBusiness);
+        steps.add(AAHStep.DSRInternalProcessEntities);
+        steps.add(AAHStep.DSRLegalEntityHierNodes);
+        steps.add(AAHStep.StandardiseLegalEntityLinks);
+        steps.add(AAHStep.DSRLegalEntityHierLinks);
+        steps.add(AAHStep.DSRLegalEntitySupplementalData);
+        steps.add(AAHStep.DSRLegalEntityHierarchyData);
+
+        steps.add(AAHStep.SLRUpdateDaysPeriods);
+        steps.add(AAHStep.StandardiseGLAccounts);
+        steps.add(AAHStep.DSRGLAccounts);       
+        steps.add(AAHStep.StandardiseTaxJurisdiction);
+        steps.add(AAHStep.DSRTaxJurisdiction);
+        steps.add(AAHStep.StandardiseGLChartfields);
+        steps.add(AAHStep.DSRGLChartfields);
+        steps.add(AAHStep.StandardiseInsurancePolicies);
+        steps.add(AAHStep.DSRInsurancePolicies);
+        steps.add(AAHStep.DSRFXRates);
+        steps.add(AAHStep.DSRPolicyTaxJurisdictions);
+        steps.add(AAHStep.StandardiseEventHierarchy);
+        steps.add(AAHStep.DSREventHierarchy);
+        steps.add(AAHStep.StandardiseJournalLine);
+        steps.add(AAHStep.DSRJournalLine);
+        for (AAHStep pStep : steps) {
+        	runStep(pStep.getName());
+        }
+         
+        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2018 , 1 , 20 ) , 1 );
+        ArrayList<AAHStep> steps2 = new ArrayList<AAHStep> ();
+        steps2.add(AAHStep.SLRUpdateDaysPeriods);			                           
+        steps2.add(AAHStep.SLRAccounts);                                
+        steps2.add(AAHStep.SLRFXRates);                                 
+        steps2.add(AAHStep.SLRUpdateCurrencies);
+        steps2.add(AAHStep.SLRUpdateFakSeg3 ) ;                            
+        steps2.add(AAHStep.SLRUpdateFakSeg4 ) ;                            
+        steps2.add(AAHStep.SLRUpdateFakSeg5 ) ;                            
+        steps2.add(AAHStep.SLRUpdateFakSeg6 ) ;                            
+        steps2.add(AAHStep.SLRUpdateFakSeg7 ) ;                            
+        steps2.add(AAHStep.SLRUpdateFakSeg8 ) ;                            
+        steps2.add(AAHStep.SLRpUpdateJLU );                              
+        steps2.add(AAHStep.SLRpProcess);    
+        for (AAHStep pStep : steps2) {
+        	runStep(pStep.getName());
+        }
+
+        AAHEventClassPeriodOperations.setCloseStatus ( "C" , "2017" , "11" , "PREM_COMM" );
+        ArrayList<AAHStep> steps3 = new ArrayList<AAHStep> ();
+        steps.add(AAHStep.GLINTExtract);											
+        for (AAHStep pStep : steps3) {
+        	runStep(pStep.getName());
+        }
+
+        compareResults();
+        cleardown ();
+    }
+
+    @Test
+    public void testDayOnDayProcessing () throws Exception
+    {   	
+        //edit this line
+        final String TEST_NAME              = "testDayOnDayProcessing";
+        
+        final Path PATH_TO_TEST_RESOURCES   = PATH_TO_RESOURCES.resolve ( TEST_NAME );
+        LOG.info( "RESOURCES: " + this.getClass().getSimpleName() );
+        LOG.info( "Running " + this.getClass().getName() + "." + TEST_NAME );
+        LOG.info( "Reseting environment");
+        ER_TABLES.clear();
+        SEED_TABLES.clear();
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FEED,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FEED_RECORD_COUNT,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FX_RATE,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.DEPARTMENT,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.LEGAL_ENTITY,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.GL_ACCOUNT,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.TAX_JURISDICTION,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.GL_CHARTFIELD,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"));
+       
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.INSURANCE_POLICY,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.CESSION,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.CESSION_LINK,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.INSURANCE_POLICY_FX_RATE,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.INSURANCE_POLICY_TAX_JURISD,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.JOURNAL_LINE,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FR_GENERAL_LOOKUP,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day1.xlsx",
+             "LK_LKT_LOOKUP_TYPE_CODE IN ('ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_CLASS_PERIOD' , 'LEGAL_ENTITY_ALIAS' , 'COMBO_RULESET')"));
+
+             ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_BROKEN_FEED,
+                AAHTablenameConstants.BROKEN_FEED,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.BROKEN_FEED_ER,
+                AAHResourceConstants.BROKEN_FEED_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_SUPERSEDED_FEED,
+                AAHTablenameConstants.SUPERSEDED_FEED,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.SUPERSEDED_FEED_ER,
+                AAHResourceConstants.SUPERSEDED_FEED_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_FEED_RECORD_COUNT,
+                AAHTablenameConstants.FEED_RECORD_COUNT,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.FEED_RECORD_COUNT_ER,
+                AAHResourceConstants.FEED_RECORD_COUNT_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_JOURNAL_LINE,
+                AAHTablenameConstants.RR_GLINT_JOURNAL_LINE,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.RR_GLINT_JOURNAL_LINE_ER,
+                AAHResourceConstants.RR_GLINT_JOURNAL_LINE_AR));
+            
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_SLR_JRNL_LINES,
+                AAHTablenameConstants.SLR_JRNL_LINES,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.SLR_JRNL_LINES_ER,
+                AAHResourceConstants.SLR_JRNL_LINES_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_JOURNAL,
+                AAHTablenameConstants.RR_GLINT_JOURNAL,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.RR_GLINT_JOURNAL_ER,
+                AAHResourceConstants.RR_GLINT_JOURNAL_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_BATCH_CONTROL,
+                AAHTablenameConstants.RR_GLINT_BATCH_CONTROL,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.RR_GLINT_BATCH_CONTROL_ER,
+                AAHResourceConstants.RR_GLINT_BATCH_CONTROL_AR));
+    
+            ER_TABLES.add(
+                new AAHExpectedResult(AAHTablenameConstants.ER_RR_INTERFACE_CONTROL,
+                AAHTablenameConstants.RR_INTERFACE_CONTROL,
+                PATH_TO_TEST_RESOURCES,
+                "ExpectedResults.xlsx",
+                AAHResourceConstants.RR_INTERFACE_CONTROL_ER,
+                AAHResourceConstants.RR_INTERFACE_CONTROL_AR));
+    
+        cleardown ();
+        setupTest();
+        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 20 ) );
+           
+
+        //list steps to run here
+        // fx rates
+        AAHExecution.processFXRates();
+
+        // departments
+        AAHExecution.processDepartments();
+
+        // legal entities
+        AAHExecution.processLegalEntities();
+
+        // GL Accounts
+        AAHExecution.processGLAccounts();
+
+        // Tax Jurisdiction
+        AAHExecution.processTaxJurisdictions();
+
+        // Chartfields
+        AAHExecution.processGLChartfields();
+
+        // Insurance Policies
+        AAHExecution.processInsurancePolicies();
+
+        // Journal line
+        AAHExecution.processJournalLines();
+
+        // Event Hierarchy
+        AAHExecution.processEventHierarchies();
+
+        // SLR
+        AAHExecution.processSLR();
+
+        AAHEventClassPeriodOperations.setCloseStatus ( "C" , "2017" , "11" , "PREM_COMM" );
+
+        AAHExecution.processGLINTExtract();
+
+        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 21 ) );
+
+        LOG.debug ( "Set the business date" );
+
+        AAHEventClassPeriodOperations.setCloseStatus ( "O" , "2017" , "11" , "PREM_COMM" );        
+
+        SEED_TABLES.clear();        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FEED,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day2.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FEED_RECORD_COUNT,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day2.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.JOURNAL_LINE,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day2.xlsx"
+            ));
+
+
+        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 21 ) , 1 );
+        AAHEventClassPeriodOperations.setCloseStatus ( "O" , "2017" , "11" , "PREM_COMM" );      
+        
+        setupTest();   
+
+        // Journal line
+        AAHExecution.processJournalLines();
+         // SLR
+         AAHExecution.processSLR();
+
+        AAHEventClassPeriodOperations.setCloseStatus ( "C" , "2017" , "11" , "PREM_COMM" );      
+          
+        
+        AAHExecution.processGLINTExtract();
+
+        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 22 ) );
+        AAHEventClassPeriodOperations.setCloseStatus ( "O" , "2017" , "11" , "PREM_COMM" );
+
+        SEED_TABLES.clear();
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FEED,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day3.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FEED_RECORD_COUNT,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day3.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.JOURNAL_LINE,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData-day3.xlsx"
+            ));
+
+            setupTest();   
+  
+          AAHExecution.processJournalLines();
+          AAHExecution.processSLR();
+
+        compareResults();
+        cleardown ();
+    }
+    @Test
+    public void testDoubleExecution() throws Exception
+    {
+    	
+        //edit this line
+        final String TEST_NAME              = "testDoubleExecution";
+        
+        final Path PATH_TO_TEST_RESOURCES   = PATH_TO_RESOURCES.resolve ( TEST_NAME );
+        LOG.info( "RESOURCES: " + this.getClass().getSimpleName() );
+        LOG.info( "Running " + this.getClass().getName() + "." + TEST_NAME );
+        LOG.info( "Reseting environment");
+        ER_TABLES.clear();
+        SEED_TABLES.clear();
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FEED,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FEED_RECORD_COUNT,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FX_RATE,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.DEPARTMENT,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"));
+
+        SEED_TABLES.add(
+            // (Table, path to seed data, seed data file name, [optional where clause for cleardown])
+            new AAHSeedTable( AAHTablenameConstants.LEGAL_ENTITY,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.GL_ACCOUNT,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.TAX_JURISDICTION,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.GL_CHARTFIELD,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"));
+       
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.INSURANCE_POLICY,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.CESSION,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.CESSION_LINK,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.INSURANCE_POLICY_FX_RATE,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.INSURANCE_POLICY_TAX_JURISD,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"));
+
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.JOURNAL_LINE,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx"
+            ));
+        
+        SEED_TABLES.add(
+            new AAHSeedTable( AAHTablenameConstants.FR_GENERAL_LOOKUP,
+            PATH_TO_TEST_RESOURCES,
+            "SeedData.xlsx",
+            "LK_LKT_LOOKUP_TYPE_CODE IN ('ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_CLASS_PERIOD' , 'LEGAL_ENTITY_ALIAS' , 'COMBO_RULESET')"));            
+
         ER_TABLES.add(
             new AAHExpectedResult(AAHTablenameConstants.ER_BROKEN_FEED,
             AAHTablenameConstants.BROKEN_FEED,
@@ -408,7 +931,6 @@ public class TestGLINTExtract extends AAHTest
             AAHResourceConstants.RR_GLINT_JOURNAL_LINE_ER,
             AAHResourceConstants.RR_GLINT_JOURNAL_LINE_AR));
     	
-
         ER_TABLES.add(
             new AAHExpectedResult(AAHTablenameConstants.ER_SLR_JRNL_LINES,
             AAHTablenameConstants.SLR_JRNL_LINES,
@@ -434,275 +956,58 @@ public class TestGLINTExtract extends AAHTest
             AAHResourceConstants.RR_GLINT_BATCH_CONTROL_AR));
 
         ER_TABLES.add(
-            new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_INTERFACE_CONTROL,
-            AAHTablenameConstants.RR_GLINT_INTERFACE_CONTROL,
+            new AAHExpectedResult(AAHTablenameConstants.ER_RR_INTERFACE_CONTROL,
+            AAHTablenameConstants.RR_INTERFACE_CONTROL,
             PATH_TO_TEST_RESOURCES,
             "ExpectedResults.xlsx",
-            AAHResourceConstants.RR_GLINT_INTERFACE_CONTROL_ER,
-            AAHResourceConstants.RR_GLINT_INTERFACE_CONTROL_AR));
+            AAHResourceConstants.RR_INTERFACE_CONTROL_ER,
+            AAHResourceConstants.RR_INTERFACE_CONTROL_AR));
             
         cleardown ();
-        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 20 ) , 1 );
+        setupTest();
+        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 20 ) );
+
         ArrayList<AAHStep> steps = new ArrayList<AAHStep> ();
 
         //list steps to run here
-        steps.add(AAHStep.processFXRates);
-        steps.add(AAHStep.processDepartments);
-        steps.add(AAHStep.processLegalEntities);
-        steps.add(AAHStep.processGLAccounts);
-        steps.add(AAHStep.processTaxJurisdictions);
-				steps.add(AAHStep.processGLChartfields);
-				steps.add(AAHStep.processInsurancePolicies);
-				steps.add(AAHStep.processEventHierarchies);
-				steps.add(AAHStep.processJournalLines);
-				AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2018 , 1 , 20 ) , 1 );
-				steps.add(AAHStep.processSLR);			
+
+        // fx rates
+        AAHExecution.processFXRates()
+        // departments        
+        AAHExecution.processDepartments();
+        // legal entities
+        AAHExecution.processLegalEntities();
+
+        // GL Accounts
+        AAHExecution.processGLAccounts();
+
+        // tax jurisdictions
+        AAHExecution.processTaxJurisdictions();
+
+        // Chartfields
+        AAHExecution.processGLChartfields();
+
+        // insurance policy
+        AAHExecution.processInsurancePolicies();
+
+        // Event Hierarchy
+        AAHExecution.processEventHierarchies();
+
+        // Journal line
+        AAHExecution.processJournalLines();
+       
+        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2018 , 1 , 20 ) , 1 );
+
+        // SLR
+        AAHExecution.processSLR();
+
         AAHEventClassPeriodOperations.setCloseStatus ( "C" , "2017" , "11" , "PREM_COMM" );
-        steps.add(AAHStep.processGLINTExtract);											
-        runBasicTest(steps);
+        AAHExecution.processGLINTExtract();
+        AAHExecution.processGLINTExtract();
+
+
+        compareResults();
         cleardown ();
     }
 
-//     @Test
-//     public void testDayOnDayProcessing () throws Exception
-//     {   	
-//         //edit this line
-//         final String TEST_NAME              = "testDayOnDayProcessing";
-        
-//         final Path PATH_TO_TEST_RESOURCES   = PATH_TO_RESOURCES.resolve ( TEST_NAME );
-//         LOG.info( "RESOURCES: " + this.getClass().getSimpleName() );
-//         LOG.info( "Running " + this.getClass().getName() + "." + TEST_NAME );
-//         LOG.info( "Reseting environment");
-//         ER_TABLES.clear();
-//         SEED_TABLES.clear();
-
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.FEED,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"
-//             ));
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.FEED_RECORD_COUNT,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"));
-
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.FX_RATE,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"
-//             ));
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.DEPARTMENT,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"));
-
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.LEGAL_ENTITY,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"
-//             ));
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.GL_ACCOUNT,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"));
-
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.TAX_JURISDICTION,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"
-//             ));
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.GL_CHARTFIELD,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"));
-       
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.INSURANCE_POLICY,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"));
-
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.CESSION,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"
-//             ));
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.CESSION_LINK,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"));
-
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.INSURANCE_POLICY_FX_RATE,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"
-//             ));
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.INSURANCE_POLICY_TAX_JURISD,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"));
-
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.JOURNAL_LINE,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx"
-//             ));
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.FR_GENERAL_LOOKUP,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day1.xlsx",
-//              "LK_LKT_LOOKUP_TYPE_CODE IN ('ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'EVENT_CLASS_PERIOD' , 'LEGAL_ENTITY_ALIAS' , 'COMBO_RULESET')"));
-
-//         ER_TABLES.add(
-//             new AAHExpectedResult(AAHTablenameConstants.ER_BROKEN_FEED,
-//             AAHTablenameConstants.BROKEN_FEED,
-//             PATH_TO_TEST_RESOURCES,
-//             "ExpectedResults.xlsx",
-//             AAHResourceConstants.BROKEN_FEED_ER,
-//             AAHResourceConstants.BROKEN_FEED_AR));
-
-//         ER_TABLES.add(
-//             new AAHExpectedResult(AAHTablenameConstants.ER_SUPERSEDED_FEED,
-//             AAHTablenameConstants.SUPERSEDED_FEED,
-//             PATH_TO_TEST_RESOURCES,
-//             "ExpectedResults.xlsx",
-//             AAHResourceConstants.SUPERSEDED_FEED_ER,
-//             AAHResourceConstants.SUPERSEDED_FEED_AR));
-
-//         ER_TABLES.add(
-//             new AAHExpectedResult(AAHTablenameConstants.ER_FEED_RECORD_COUNT,
-//             AAHTablenameConstants.FEED_RECORD_COUNT,
-//             PATH_TO_TEST_RESOURCES,
-//             "ExpectedResults.xlsx",
-//             AAHResourceConstants.FEED_RECORD_COUNT_ER,
-//             AAHResourceConstants.FEED_RECORD_COUNT_AR));
-
-//         ER_TABLES.add(
-//             new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_JOURNAL_LINE,
-//             AAHTablenameConstants.RR_GLINT_JOURNAL_LINE,
-//             PATH_TO_TEST_RESOURCES,
-//             "ExpectedResults.xlsx",
-//             AAHResourceConstants.RR_GLINT_JOURNAL_LINE_ER,
-//             AAHResourceConstants.RR_GLINT_JOURNAL_LINE_AR));   	
-
-//         ER_TABLES.add(
-//             new AAHExpectedResult(AAHTablenameConstants.ER_SLR_JRNL_LINES,
-//             AAHTablenameConstants.SLR_JRNL_LINES,
-//             PATH_TO_TEST_RESOURCES,
-//             "ExpectedResults.xlsx",
-//             AAHResourceConstants.SLR_JRNL_LINES_ER,
-//             AAHResourceConstants.SLR_JRNL_LINES_AR));
-
-//         ER_TABLES.add(
-//             new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_JOURNAL,
-//             AAHTablenameConstants.RR_GLINT_JOURNAL,
-//             PATH_TO_TEST_RESOURCES,
-//             "ExpectedResults.xlsx",
-//             AAHResourceConstants.RR_GLINT_JOURNAL_ER,
-//             AAHResourceConstants.RR_GLINT_JOURNAL_AR));
-
-//         ER_TABLES.add(
-//             new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_BATCH_CONTROL,
-//             AAHTablenameConstants.RR_GLINT_BATCH_CONTROL,
-//             PATH_TO_TEST_RESOURCES,
-//             "ExpectedResults.xlsx",
-//             AAHResourceConstants.RR_GLINT_BATCH_CONTROL_ER,
-//             AAHResourceConstants.RR_GLINT_BATCH_CONTROL_AR));
-
-//         ER_TABLES.add(
-//             new AAHExpectedResult(AAHTablenameConstants.ER_RR_GLINT_INTERFACE_CONTROL,
-//             AAHTablenameConstants.RR_GLINT_INTERFACE_CONTROL,
-//             PATH_TO_TEST_RESOURCES,
-//             "ExpectedResults.xlsx",
-//             AAHResourceConstants.RR_GLINT_INTERFACE_CONTROL_ER,
-//             AAHResourceConstants.RR_GLINT_INTERFACE_CONTROL_AR));
-
-
-//         cleardown ();
-//         setupTest();
-//         AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 20 ) , 1 );
-//         ArrayList<AAHStep> steps = new ArrayList<AAHStep> ();
-            
-
-//         //list steps to run here
-//         steps.add(AAHStep.processFXRates);
-//         steps.add(AAHStep.processDepartments);
-//         steps.add(AAHStep.processLegalEntities);
-//         steps.add(AAHStep.processGLAccounts);
-//         steps.add(AAHStep.processTaxJurisdictions);
-// 				steps.add(AAHStep.processGLChartfields);
-// 				steps.add(AAHStep.processInsurancePolicies);
-// 				steps.add(AAHStep.processJournalLines);				
-// 				steps.add(AAHStep.processEventHierarchies);
-// 				steps.add(AAHStep.processSLR);							
-// 				AAHEventClassPeriodOperations.setCloseStatus ( "C" , "2017" , "11" , "PREM_COMM" );        
-//         steps.add(AAHStep.processGLINTExtract);											
-//         runBasicTest(steps);
-//         cleardown ();
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.FEED,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day2.xlsx"
-//             ));
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.FEED_RECORD_COUNT,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day2.xlsx"));
-
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.JOURNAL_LINE,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day2.xlsx"
-//             ));
-
-//         setupTest();
-//         AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 21 ) , 1 );
-//         AAHEventClassPeriodOperations.setCloseStatus ( "O" , "2017" , "11" , "PREM_COMM" );        
-// 				steps.add(AAHStep.processJournalLines);
-// 				steps.add(AAHStep.processSLR);              
-// 				AAHEventClassPeriodOperations.setCloseStatus ( "C" , "2017" , "11" , "PREM_COMM" );        
-// 				steps.add(AAHStep.processGLINTExtract);															
-//         for (AAHStep pStep : steps) {
-//         	runStep(pStep.getName());
-//         }
-//         SEED_TABLES.clear();
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.FEED,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day3.xlsx"
-//             ));
-        
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.FEED_RECORD_COUNT,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day3.xlsx"));
-
-//         SEED_TABLES.add(
-//             new AAHSeedTable( AAHTablenameConstants.JOURNAL_LINE,
-//             PATH_TO_TEST_RESOURCES,
-//             "SeedData-day3.xlsx"
-//             ));
-
-//         setupTest();
-//         AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 22 ) , 1 );
-//         AAHEventClassPeriodOperations.setCloseStatus ( "O" , "2017" , "11" , "PREM_COMM" );        
-// 				steps.add(AAHStep.processJournalLines);
-// 				steps.add(AAHStep.processSLR);              
-// 				AAHEventClassPeriodOperations.setCloseStatus ( "C" , "2017" , "11" , "PREM_COMM" );        
-// 				steps.add(AAHStep.processGLINTExtract);															
-//         for (AAHStep pStep : steps) {
-//         	runStep(pStep.getName());
-//         }
-//         compareResults();
-//         cleardown ();
-//     }
  }    

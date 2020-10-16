@@ -244,11 +244,11 @@ public enum AAHTablenameConstants implements ITablename
     ,   ER_SLR_JRNL_LINES              ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "ER_SLR_JRNL_LINES"            )
 
 /* RDR - actual result tables */
-,   RR_GLINT_JOURNAL_LINE      ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_GLINT_JOURNAL_LINE"    )    
-,   RR_GLINT_JOURNAL           ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_GLINT_JOURNAL"         )    
-,   RR_GLINT_BATCH_CONTROL     ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_GLINT_BATCH_CONTROL"   )    
-,   RR_INTERFACE_CONTROL       ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_INTERFACE_CONTROL"   )  
-,   RDR_VIEW_COLUMNS           ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "RR_INTERFACE_CONTROL"   )  
+,   RR_GLINT_JOURNAL_LINE      ( AAHEnvironmentConstants.AAH_RDR_DB , "RR_GLINT_JOURNAL_LINE"    )    
+,   RR_GLINT_JOURNAL           ( AAHEnvironmentConstants.AAH_RDR_DB  , "RR_GLINT_JOURNAL"         )    
+,   RR_GLINT_BATCH_CONTROL     ( AAHEnvironmentConstants.AAH_RDR_DB  , "RR_GLINT_BATCH_CONTROL"   )    
+,   RR_INTERFACE_CONTROL       ( AAHEnvironmentConstants.AAH_RDR_DB  , "RR_INTERFACE_CONTROL"   )  
+,   RDR_VIEW_COLUMNS           ( AAHEnvironmentConstants.AAH_RDR_DB  , "RR_INTERFACE_CONTROL"   )  
 
     /* RDR - expected result tables */
     ,   ER_RR_GLINT_BATCH_CONTROL      ( AAHEnvironmentConstants.DATABASE_TEST_USERNAME , "ER_RR_GLINT_BATCH_CONTROL"    )
