@@ -1,0 +1,5 @@
+insert into gui.ui_component (uc_id,uc_schema_name,uc_object_name,uc_object_alias,uc_filter,uc_column_name,uc_display_column_name1,uc_display_column_name2,uc_display_column_name3,uc_default_value) values (1000,'GUI','UI_INPUT_FIELD_VALUE','uif',null,'uif_code','uif_text',null,null,null);
+insert into gui.ui_component (uc_id,uc_schema_name,uc_object_name,uc_object_alias,uc_filter,uc_column_name,uc_display_column_name1,uc_display_column_name2,uc_display_column_name3,uc_default_value) values (50000,'GLINT','GLINT','GLINT',null,'GLINT','GLINT',null,null,null);
+insert into gui.ui_component (uc_id,uc_schema_name,uc_object_name,uc_object_alias,uc_filter,uc_column_name,uc_display_column_name1,uc_display_column_name2,uc_display_column_name3,uc_default_value) values (10000,'GUI','UI_INPUT_FIELD_VALUE','uif',null,'uif_code','uif_text',null,null,null);
+insert into gui.ui_component (uc_id,uc_schema_name,uc_object_name,uc_object_alias,uc_filter,uc_column_name,uc_display_column_name1,uc_display_column_name2,uc_display_column_name3,uc_default_value) values (20000,'SLR','SRV_COMBINATION_CHECK_EJT','ejt',null,'ejt_type','ejt_description',null,null,'Any');
+commit;

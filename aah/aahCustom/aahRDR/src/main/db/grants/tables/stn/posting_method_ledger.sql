@@ -1,0 +1,1 @@
+grant select on stn.posting_method_ledger to rdr with grant option;

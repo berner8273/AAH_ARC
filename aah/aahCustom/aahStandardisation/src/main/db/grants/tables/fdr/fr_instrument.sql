@@ -1,0 +1,1 @@
+grant select on fdr.fr_instrument to stn with grant option;

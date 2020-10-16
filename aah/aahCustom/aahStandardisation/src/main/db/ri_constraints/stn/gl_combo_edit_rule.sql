@@ -1,0 +1,1 @@
+alter table stn.gl_combo_edit_rule add constraint fk_cep_cer foreign key ( prc_cd , feed_uuid ) references stn.gl_combo_edit_process ( prc_cd , feed_uuid );

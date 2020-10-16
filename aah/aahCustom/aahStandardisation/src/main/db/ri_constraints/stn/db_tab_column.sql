@@ -1,0 +1,1 @@
+alter table stn.db_tab_column add constraint fk_dbt_dtc foreign key ( dbt_id ) references stn.db_table ( dbt_id );

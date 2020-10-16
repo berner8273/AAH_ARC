@@ -1,0 +1,1 @@
+grant select on stn.vie_event_type to rdr with grant option;

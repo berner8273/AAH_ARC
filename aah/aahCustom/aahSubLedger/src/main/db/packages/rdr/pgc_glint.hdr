@@ -1,0 +1,13 @@
+Create or Replace Package rdr.pgc_glint
+/* Package for Custom GL Interface Process(es). */
+/* A custom procedure can be defined when calling the GL interface.
+   When defined, the procedure within this package is called when the journals identified to be (re-)sent to the GL have been populated in RR_GLINT_TEMP_JOURNAL. */
+AuthID Definer
+As
+
+/* Public Procedure. */
+Procedure pCustom(
+  pinControlID in rr_interface_control.rgic_id%TYPE);
+
+End pgc_glint;
+/

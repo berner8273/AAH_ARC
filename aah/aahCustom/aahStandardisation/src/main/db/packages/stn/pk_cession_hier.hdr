@@ -1,0 +1,30 @@
+create or replace package stn.pk_cession_hier
+as
+    type le_cession_rec is record
+    (
+        insurance_policy_row_sid        stn.insurance_policy.row_sid%type
+    ,   feed_uuid                       stn.insurance_policy.feed_uuid%type
+    ,   policy_id                       stn.insurance_policy.policy_id%type
+    ,   child_stream_id                 stn.cession.stream_id%type
+    ,   child_cession_typ               stn.cession.cession_typ%type
+    ,   child_le_id                     stn.cession.le_id%type
+    ,   parent_stream_id                stn.cession.stream_id%type
+    ,   parent_cession_typ              stn.cession.cession_typ%type
+    ,   parent_le_id                    stn.cession.le_id%type
+    ,   ceding_stream_id                stn.cession.stream_id%type
+    ,   ledger_entity_le_id             stn.cession.le_id%type
+    ,   ledger_entity_le_cd             stn.legal_entity.le_cd%type
+    ,   ultimate_parent_stream_id       stn.cession.stream_id%type
+    ,   path_to_child_stream            varchar2 ( 2000 char )
+    ,   hierarchy_level                 number
+    );
+
+    type le_cession_tab is table of le_cession_rec;
+
+    function fn_get_cession_hierarchy
+    return stn.pk_cession_hier.le_cession_tab pipelined;
+
+    procedure pr_gen_cession_hierarchy;
+
+end pk_cession_hier;
+/

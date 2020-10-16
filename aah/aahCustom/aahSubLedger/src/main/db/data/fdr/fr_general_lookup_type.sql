@@ -1,0 +1,5 @@
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'FXREVAL_GL_MAPPINGS' , 'FXReval Account and Event Type Mappings' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'FXREVAL_PARAMETERS' , 'FXReval Process Parameters' );
+insert into fdr.fr_general_lookup_type ( lkt_lookup_type_code , lkt_lookup_type_name ) values ( 'FXREVAL_RUN_VALUES' , 'FXReval Parameter Values for current process run' );
+insert into fdr.fr_general_lookup_type (lkt_lookup_type_code,lkt_lookup_type_name,lkt_input_by,lkt_input_time,lkt_valid_from,lkt_valid_to,lkt_auth_by,lkt_auth_status,lkt_delete_time,lkt_active) values ('COMBO_SUSPENSE','Combination Check: Suspense Values',user,sysdate,to_date('2000-01-01 00:00:00','YYYY-MM-DD HH24:MI:SS'),to_date('2999-12-31 00:00:00','YYYY-MM-DD HH24:MI:SS'),user,'A',null,'A');
+commit;

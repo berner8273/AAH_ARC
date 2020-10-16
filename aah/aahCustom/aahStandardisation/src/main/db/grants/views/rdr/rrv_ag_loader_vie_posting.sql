@@ -1,0 +1,1 @@
+grant select on rdr.rrv_ag_loader_vie_posting to stn with grant option;

@@ -235,4 +235,3 @@ task packageSource ( type: Tar ) {
     destinationDirectory = PATH_TO_PACKAGE_FILE.parent.toFile()
     archiveFileName    = PATH_TO_PACKAGE_FILE.fileName.toString()
     compression    = Compression.GZIP
-}

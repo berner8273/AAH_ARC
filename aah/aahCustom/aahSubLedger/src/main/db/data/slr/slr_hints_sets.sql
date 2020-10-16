@@ -1,0 +1,4 @@
+insert into slr.slr_hints_sets ( hs_set , hs_statement , hs_hint , hs_description ) values ( 'DEFAULT' , 'FX_REVALUATION_ADJUST' , '/*+ no_use_nl(edb slr_fak_combinations slr_eba_combinations) index(edb i_bm_bal_tmp_eba) */' , 'Hint is used during generation of FX revaluation adjustment entries' );
+insert into slr.slr_hints_sets ( hs_set , hs_statement , hs_hint , hs_description ) values ( 'DEFAULT' , 'PL_REPATRIATION'       , '/*+ no_use_nl(edb slr_fak_combinations slr_eba_combinations) index(edb i_bm_bal_tmp_eba) */' , 'Hint is used during generation of PL repatriation entries' );
+insert into slr.slr_hints_sets ( hs_set , hs_statement , hs_hint , hs_description ) values ( 'DEFAULT' , 'PL_RETAINED_EARNINGS'  , '/*+ no_use_nl(edb slr_fak_combinations slr_eba_combinations) */'                             , 'Hint is used during generation of PL retained earnings entries' );
+commit;

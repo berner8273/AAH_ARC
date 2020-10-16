@@ -1,0 +1,1 @@
+create unique index fbi_fsra_message_id on fdr.fr_stan_raw_adjustment ( to_number ( message_id ) );

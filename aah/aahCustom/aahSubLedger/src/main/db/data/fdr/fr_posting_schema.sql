@@ -1,0 +1,12 @@
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'BUDGET'    , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'CORE'      , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'GAAP_ADJ'  , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'GO_CONSOL' , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'HREGAAP'   , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'HREGO'     , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'NG_GOCON'  , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'NON_GAAP'  , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'REGAAP'    , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'REGO'      , 'MAIN' , 'A' , user , sysdate );
+insert into fdr.fr_posting_schema ( ps_posting_schema , ps_posting_schema_group , ps_active , ps_input_by , ps_input_time ) values ( 'STAT_ADJ'  , 'MAIN' , 'A' , user , sysdate );
+commit;

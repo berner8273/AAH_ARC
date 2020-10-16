@@ -1,0 +1,37 @@
+create or replace package fdr.pg_combination_check
+/* Package for Code Combination Checking. */
+AuthID Current_User
+As
+/* Global Constants. */
+gcLookupType_RuleSet    Constant fr_general_lookup_type.lkt_lookup_type_code%TYPE := 'COMBO_RULESET';
+gcLookupType_Applicable Constant fr_general_lookup_type.lkt_lookup_type_code%TYPE := 'COMBO_APPLICABLE';
+gcLookupType_Check      Constant fr_general_lookup_type.lkt_lookup_type_code%TYPE := 'COMBO_CHECK';
+gcLookupType_Suspense   Constant fr_general_lookup_type.lkt_lookup_type_code%TYPE := 'COMBO_SUSPENSE';
+gcAttribute_1           Constant all_tab_columns.column_name%TYPE := 'ci_attribute_1';
+gcAttribute_2           Constant all_tab_columns.column_name%TYPE := 'ci_attribute_2';
+gcAttribute_3           Constant all_tab_columns.column_name%TYPE := 'ci_attribute_3';
+gcAttribute_4           Constant all_tab_columns.column_name%TYPE := 'ci_attribute_4';
+gcAttribute_5           Constant all_tab_columns.column_name%TYPE := 'ci_attribute_5';
+gcAttribute_6           Constant all_tab_columns.column_name%TYPE := 'ci_attribute_6';
+gcAttribute_7           Constant all_tab_columns.column_name%TYPE := 'ci_attribute_7';
+gcAttribute_8           Constant all_tab_columns.column_name%TYPE := 'ci_attribute_8';
+gcAttribute_9           Constant all_tab_columns.column_name%TYPE := 'ci_attribute_9';
+gcAttribute_10          Constant all_tab_columns.column_name%TYPE := 'ci_attribute_10';
+
+/* Global Variables. */
+gSQLHint_DeleteComboInput Varchar2(200) := '';
+gSQLHint_DeleteComboError Varchar2(200) := '';
+gSQLHint_InsertInput      Varchar2(200) := '';
+gSQLHint_SelectInput      Varchar2(200) := '';
+gSQLHint_InsertComboError Varchar2(200) := '';
+gSQLHint_SelectComboError Varchar2(200) := '';
+
+/* Combination Check Procedure. */
+Procedure pCombinationCheck (
+  pinObjectName   in     all_objects.object_name%TYPE,
+  pinFilter       in     Varchar2,
+  pinBusinessDate in     fr_global_parameter.gp_todays_bus_date%TYPE,
+  poutErrorCount     out Pls_Integer); --Will be 0 if no errors.
+
+End pg_combination_check;
+/
