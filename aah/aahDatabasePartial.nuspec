@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>aahDatabasePartial</id>
+    <version>0.0.0</version>
+    <title>AAH Database Partial Deployment</title>
+    <authors>Elli Wang</authors>
+    <owners>Elli Wang</owners>
+    <description>Aptitude AAH database partial deployment.</description>
+    <tags>AAH database partial</tags>
+  </metadata>
+  <files>
+    <file src="aahCustom\**" target="aahCustom" />
+    <file src="Deploy_aahDatabasePartial.sh" target="" />
+    <file src="Deploy_aahDatabasePartial.sh" target="Deploy.sh" />
+    <file src="PreDeploy_aahDatabasePartial.sh" target="" />
+    <file src="PreDeploy_aahDatabasePartial.sh" target="PreDeploy.sh" />
+  </files>
+</package>

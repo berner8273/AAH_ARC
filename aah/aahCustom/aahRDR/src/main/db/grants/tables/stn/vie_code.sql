@@ -1,0 +1,1 @@
+grant select on stn.vie_code to rdr with grant option;

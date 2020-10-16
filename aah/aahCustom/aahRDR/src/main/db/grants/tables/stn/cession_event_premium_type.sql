@@ -1,0 +1,1 @@
+grant select on stn.cession_event_premium_type to rdr with grant option;

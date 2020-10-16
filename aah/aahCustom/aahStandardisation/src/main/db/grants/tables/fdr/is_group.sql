@@ -1,0 +1,1 @@
+grant select on fdr.is_group to stn;

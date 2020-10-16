@@ -1,0 +1,1 @@
+grant select on fdr.fr_gl_account to stn with grant option;

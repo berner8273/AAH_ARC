@@ -1,0 +1,1 @@
+create unique index fbi_fsrohs_message_id on fdr.fr_stan_raw_org_hier_struc ( to_number ( message_id ) );

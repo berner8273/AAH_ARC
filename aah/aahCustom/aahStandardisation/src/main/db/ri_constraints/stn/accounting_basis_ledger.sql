@@ -1,0 +1,1 @@
+alter table stn.accounting_basis_ledger add constraint fk_l_abl foreign key ( ledger_cd , feed_uuid ) references stn.ledger ( ledger_cd , feed_uuid );

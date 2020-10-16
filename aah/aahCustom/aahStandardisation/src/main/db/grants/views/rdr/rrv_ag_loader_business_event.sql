@@ -1,0 +1,1 @@
+grant select on rdr.rrv_ag_loader_business_event to stn with grant option;

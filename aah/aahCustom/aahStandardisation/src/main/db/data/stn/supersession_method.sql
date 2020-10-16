@@ -1,0 +1,4 @@
+insert into stn.supersession_method ( supersession_method_id , supersession_method_cd , supersession_method_descr ) values ( 1 , 'GLTSEED' , 'Greatest loaded timestamp within each effective date' );
+insert into stn.supersession_method ( supersession_method_id , supersession_method_cd , supersession_method_descr ) values ( 2 , 'GLTSGED' , 'Greatest loaded timestamp within greatest effective date' );
+insert into stn.supersession_method ( supersession_method_id , supersession_method_cd , supersession_method_descr ) values ( 3 , 'N/A'     , 'No method of calculating supersession is applicable' );
+commit;

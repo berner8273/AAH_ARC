@@ -1,0 +1,2 @@
+create index idx_eba_bop_amounts_tmp3_01 on slr.slr_eba_bop_amounts_tmp3 (edb_fak_id, edb_eba_id, edb_balance_date, edb_id, last_in_yr);
+create index idx_eba_bop_amounts_tmp3_02 on slr.slr_eba_bop_amounts_tmp3 (edb_id, edb_period_month, edb_period_qtr, edb_period_year, edb_period_ltd);

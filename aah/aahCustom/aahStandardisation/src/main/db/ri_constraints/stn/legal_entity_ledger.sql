@@ -1,0 +1,1 @@
+alter table stn.legal_entity_ledger add constraint fk_l_lel foreign key ( ledger_cd , feed_uuid ) references stn.ledger ( ledger_cd , feed_uuid );

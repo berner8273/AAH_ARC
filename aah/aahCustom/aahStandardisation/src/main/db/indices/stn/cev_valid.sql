@@ -1,0 +1,1 @@
+create index i_cevv_uuid on stn.cev_valid ( correlation_uuid );

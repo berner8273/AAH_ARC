@@ -1,0 +1,3 @@
+insert into fdr.fr_instrument_type (it_instr_type_id,it_ip_pattern_id,it_prt_def_price_type_id,it_itc_instr_type_class_id,it_instr_type_client_code,it_instr_type_name,it_valid_to_report_flag,it_instr_type_ledger_code,it_on_balance_ind,it_active,it_input_by,it_auth_by,it_auth_status,it_input_time,it_valid_from,it_valid_to,it_delete_time,it_complexity_type_id,it_cit_collateral_type_id,it_coit_collateralised_id,it_asset_flag,it_ccf,it_credit_margin_calc_permit,it_irr_flag)
+  values ('INSURANCE_POLICY',1,NULL,'INSURANCE_POLICY','INSURANCE_POLICY','INSURANCE_POLICY','N','PSL',NULL,'A','CUST','CUST','A',sysdate,TO_DATE('2016/04/02 12:51:33','YYYY/MM/DD HH24:MI:SS'),TO_DATE('1999/12/31 00:00:00','YYYY/MM/DD HH24:MI:SS'),null,'2',null,null,null,null,null,null);
+commit;

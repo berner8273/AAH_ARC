@@ -1,0 +1,1 @@
+grant select on stn.insurance_policy_reference to aah_ssis;

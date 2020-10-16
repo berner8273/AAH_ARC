@@ -1,0 +1,1 @@
+grant select on gui.gui_jrnl_headers_unposted to rdr with grant option;

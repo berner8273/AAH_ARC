@@ -1,0 +1,2 @@
+ALTER TABLE rdr.rr_glint_to_slr_ag ADD CONSTRAINT xpk_rr_glint_to_slr_ag PRIMARY KEY (RGJL_ID, JL_JRNL_HDR_ID, JL_JRNL_LINE_NUMBER);
+CREATE UNIQUE INDEX rdr.idx_rr_glint_to_slr_ag_hdr ON rdr.rr_glint_to_slr_ag (JL_JRNL_HDR_ID, JL_JRNL_LINE_NUMBER);

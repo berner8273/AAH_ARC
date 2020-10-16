@@ -1,0 +1,1 @@
+create index idx_eba_bop_amounts_tmp2_01 on slr.slr_eba_bop_amounts_tmp2 (edb_fak_id, edb_eba_id, edb_balance_date);

@@ -1,0 +1,1 @@
+grant select on rdr.rcv_combination_check_glint to fdr;

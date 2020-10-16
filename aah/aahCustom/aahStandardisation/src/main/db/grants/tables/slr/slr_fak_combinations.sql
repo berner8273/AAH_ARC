@@ -1,0 +1,1 @@
+grant select on slr.slr_fak_combinations to stn with grant option;

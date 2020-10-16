@@ -1,0 +1,1 @@
+grant select on gui.t_ui_roles to stn;

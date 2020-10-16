@@ -1,0 +1,1 @@
+grant select on slr.scv_combination_check_jlu to fdr;

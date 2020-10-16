@@ -1,0 +1,2 @@
+insert into gui.ui_gen_lookup_type_properties (ugltp_lookup_type_code,ugltp_order_exp_search,ugltp_order_exp_user,ugltp_add_button_disabled,ugltp_edit_button_disabled,ugltp_delete_button_disabled) values ('COMBO_SUSPENSE','LK_MATCH_KEY1 asc, LK_MATCH_KEY2 asc',null,'N','N','N');
+commit;

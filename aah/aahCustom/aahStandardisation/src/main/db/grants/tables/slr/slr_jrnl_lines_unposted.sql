@@ -1,0 +1,1 @@
+grant select on slr.slr_jrnl_lines_unposted to stn;

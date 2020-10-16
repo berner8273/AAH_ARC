@@ -1,0 +1,1 @@
+grant select on fdr.fr_stan_raw_adjustment to stn with grant option;

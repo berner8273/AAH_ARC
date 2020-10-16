@@ -1,0 +1,1 @@
+alter table stn.legal_entity add constraint fk_let_le foreign key ( legal_entity_typ ) references stn.legal_entity_type ( legal_entity_typ );

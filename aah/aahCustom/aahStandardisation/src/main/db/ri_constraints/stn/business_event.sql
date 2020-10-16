@@ -1,0 +1,1 @@
+alter table stn.business_event add constraint fk_bec_be foreign key ( business_event_category_cd ) references stn.business_event_category ( business_event_category_cd );
