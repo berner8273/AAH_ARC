@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>aahDBCoreUpgrade</id>
+    <version>0.0.0</version>
+    <title>AAH Database Core Upgrade</title>
+    <authors>Elli Wang</authors>
+    <owners>Elli Wang</owners>
+    <description>Aptitude AAH core database upgrade.</description>
+    <tags>AAH database core upgrade</tags>
+  </metadata>
+  <files>
+    <file src="aahCore\**" target="aahCore" />
+	<file src="Deploy_aahDBCoreUpgrade.sh" target="" />
+    <file src="Deploy_aahDBCoreUpgrade.sh" target="Deploy.sh" />
+  </files>  
+</package>

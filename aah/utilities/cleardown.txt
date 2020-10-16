@@ -1,0 +1,176 @@
+THE CONTENTS OF THIS FILE SHOULD BE USED WITH GREAT CAUTION
+THIS SET OF COMMANDS WILL DELETE ALL RELEVANT DATA IN AAH!!
+THIS IS NOT A SQL FILE TO AVOID IT BEING CALLED BY A SCRIPT
+
+truncate table stn.feed_record_count;
+truncate table stn.broken_feed;
+truncate table stn.superseded_feed;
+delete from stn.feed;
+truncate table stn.step_run_param;
+truncate table stn.step_run_state;
+delete from stn.step_run;
+delete from stn.fx_rate;
+truncate table stn.step_run_log;
+truncate table stn.gl_account;
+truncate table stn.department;
+truncate table stn.gl_chartfield;
+truncate table stn.legal_entity_link;
+delete from stn.legal_entity;
+truncate table stn.elimination_legal_entity;
+truncate table stn.vie_legal_entity;
+truncate table stn.cession_event;
+truncate table stn.insurance_policy_fx_rate;
+truncate table stn.insurance_policy_tax_jurisd;
+truncate table stn.tax_jurisdiction;
+truncate table stn.cession_link;
+delete from stn.cession;
+delete from stn.insurance_policy;
+truncate table stn.gl_combo_edit_assignment;
+truncate table stn.gl_combo_edit_rule;
+delete from stn.gl_combo_edit_process;
+truncate table stn.journal_line;
+truncate table stn.accounting_basis_ledger;
+truncate table stn.legal_entity_ledger;
+delete from stn.ledger;
+truncate table stn.event_hierarchy;
+commit;
+
+truncate table fdr.fr_stan_raw_fx_rate;
+truncate table fdr.fr_fx_rate;
+delete from fdr.fr_rate_type_lookup              where rtyl_lookup_key           not in ( '1' , 'SPOT' , 'FORWARD' , 'MAVG' );
+delete from fdr.fr_rate_type                     where rty_rate_type_id          not in ( '1' , 'SPOT' , 'FORWARD' , 'MAVG' );
+truncate table fdr.fr_stan_raw_party_legal;
+truncate table fdr.fr_stan_raw_party_business;
+alter table fdr.fr_log_text disable constraint fk_lo_lot_i;
+truncate table fdr.fr_log_text;
+truncate table fdr.fr_log;
+alter table fdr.fr_log_text enable constraint fk_lo_lot_i;
+truncate table fdr.fr_stan_raw_int_entity;
+truncate table fdr.fr_stan_raw_gl_account;
+truncate table fdr.fr_stan_raw_book;
+truncate table fdr.fr_stan_raw_general_codes;
+truncate table fdr.fr_stan_raw_general_lookup;
+truncate table fdr.fr_stan_raw_org_hier_node;
+truncate table fdr.fr_stan_raw_org_hier_struc;
+truncate table fdr.fr_stan_raw_insurance_policy;
+truncate table fdr.fr_stan_raw_adjustment;
+delete from fdr.fr_general_codes                 where gc_gct_code_type_id       in ( 'GL_CHARTFIELD' , 'TAX_JURISDICTION' , 'POLICY_TAX' , 'JOURNAL_LINE' );
+delete from fdr.fr_general_codes                 where gc_gct_code_type_id       like 'COMBO%';
+delete from fdr.fr_general_code_types            where gct_code_type_id          like 'COMBO%';
+delete from fdr.fr_general_lookup                where lk_lkt_lookup_type_code   like 'COMBO%';
+delete from fdr.fr_general_lookup                where lk_lkt_lookup_type_code   in ( 'ACCOUNTING_BASIS_LEDGER' , 'LEGAL_ENTITY_LEDGER' , 'LEGAL_ENTITY_ALIAS' );
+delete from fdr.fr_gl_account_lookup gal         where gal_ga_lookup_key         != '1' and not exists ( select null from fdr.fr_gl_account ga where ga.ga_account_code = gal.gal_ga_account_code and ga.ga_input_by = 'AG_SEED' );
+delete from fdr.fr_gl_account                    where ga_account_code           != '1' and ga_input_by != 'AG_SEED';
+update fdr.fr_batch_schedule set bs_records_processed = 0 , bs_records_failed = 0;
+truncate table fdr.fr_batch_schedule_hist_details;
+delete from fdr.fr_trade                         where t_fdr_tran_no             not in ( 'DEFAULT' );
+delete from fdr.fr_book_lookup                   where bol_lookup_key            != 'DEFAULT';
+delete from fdr.fr_book                          where bo_book_clicode           != 'DEFAULT';
+delete from fdr.fr_instrument                    where i_instrument_id           not in ( '1' , 'INSURANCE_POLICY' );
+delete from fdr.fr_instrument_lookup             where ilo_i_instr_id            not in ( 'INSURANCE_POLICY' );
+truncate table fdr.fr_instr_insure_extend;
+delete from fdr.fr_int_proc_entity_lookup        where ipel_lookup_key           not in ('NVS' , 'DEFAULT');
+delete from fdr.fr_internal_proc_entity          where ipe_entity_client_code    not in ('NVS' , 'DEFAULT');
+delete from fdr.fr_posting_schema                where ps_input_by               not in ( 'FDR' );
+delete from fdr.fr_party_business_lookup         where pbl_sil_sys_inst_clicode  not in ('DEFAULT');
+delete from fdr.fr_party_business                where pbu_party_bus_client_code not in ('DEFAULT');
+delete from fdr.fr_org_node_structure            where ons_on_child_org_node_id  != 1;
+delete from fdr.fr_org_network                   where on_org_node_client_code   not in ('DEFAULT');
+truncate table fdr.fr_entity_schema;
+delete from fdr.fr_party_legal_lookup            where pll_lookup_key            not in ('1','NVS');
+delete from fdr.fr_party_legal_type              where plt_pl_party_legal_id     != '1';
+delete from fdr.fr_party_legal                   where pl_party_legal_clicode    not in ('1','NVS');
+truncate table fdr.fr_lpg_config;
+truncate table fdr.fr_accounting_event;
+truncate table fdr.fr_accounting_event_imp;
+truncate table fdr.fr_stan_raw_acc_event;
+delete
+from stn.event_type et
+where exists (
+select
+null
+from
+fdr.fr_acc_event_type faet
+where
+faet.aet_acc_event_type_id = et.event_typ
+and upper ( aet_input_by )     = 'STN'
+)
+and not exists (
+select
+null
+from
+stn.posting_method_derivation_mtm psmdm
+where
+psmdm.event_typ_id = et.event_typ_id
+);
+delete from fdr.fr_acc_event_type                where upper ( aet_input_by )     = 'STN';
+truncate table fdr.fr_instr_insure_extend;
+delete from fdr.fr_posting_schema                where ps_input_by               not in ( 'FDR' );
+commit;
+
+begin
+    for i in (
+                 select
+                        'truncate table ' || lower ( owner ) || '.' || lower ( table_name ) truncate_stmt
+                   from
+                        all_tables
+                  where
+                        lower ( owner )      = 'fdr'
+                    and lower ( table_name ) like ( 'fr_auth_%' )
+             )
+    loop
+        execute immediate i.truncate_stmt;
+    end loop;
+end;
+/
+truncate table gui.t_ui_static_auth_ctl;
+commit;
+
+delete from slr.slr_bm_entity_processing_set;
+delete from slr.slr_entities;
+truncate table slr.slr_eba_definitions;
+truncate table slr.slr_fak_definitions;
+truncate table slr.slr_entity_accounts;
+truncate table slr.slr_entity_currencies;
+truncate table slr.slr_entity_days;
+truncate table slr.slr_entity_periods;
+truncate table slr.slr_entity_periods_aud;
+truncate table slr.slr_entity_grace_days;
+truncate table slr.slr_entity_proc_group;
+truncate table slr.slr_entity_rates;
+truncate table slr.slr_fak_daily_balances;
+truncate table slr.slr_eba_daily_balances;
+truncate table slr.slr_fak_bop_amounts;
+truncate table slr.slr_eba_bop_amounts;
+truncate table slr.slr_eba_combinations;
+truncate table slr.slr_fak_combinations;
+truncate table slr.slr_jrnl_lines_unposted;
+truncate table slr.slr_jrnl_lines;
+truncate table slr.slr_jrnl_headers_unposted;
+truncate table slr.slr_jrnl_headers;
+truncate table slr.slr_jrnl_line_errors;
+delete from slr.slr_fak_segment_3                where fs3_segment_value         not in ( 'NVS' );
+delete from slr.slr_fak_segment_4                where fs4_segment_value         not in ( 'NVS' );
+delete from slr.slr_fak_segment_5                where fs5_segment_value         not in ( 'NVS' );
+delete from slr.slr_fak_segment_6                where fs6_segment_value         not in ( 'NVS' );
+delete from slr.slr_fak_segment_7                where fs7_segment_value         not in ( 'NVS' );
+delete from slr.slr_fak_segment_8                where fs8_segment_value         not in ( 'NVS' );
+truncate table slr.slr_job_statistics;
+truncate table slr.slr_job_trace;
+truncate table slr.slr_log;
+commit;
+Delete /*+ parallel */ from rdr.rr_glint_journal_line;
+Commit;
+Delete /*+ parallel */ from rdr.rr_glint_journal_mapping;
+Commit;
+Delete /*+ parallel */ from rdr.rr_glint_journal;
+Commit;
+Delete from rdr.rr_glint_batch_control;
+Delete from rdr.rr_interface_control;
+Delete from fdr.fr_log_text where lt_lo_event_id in (Select lo_event_id from fdr.fr_log where lo_error_rule_ident like 'PG_GLINT%');
+Delete from fdr.fr_log_text where lt_lo_event_id in (Select lo_event_id from fdr.fr_log where lo_error_rule_ident like 'PG_COMMON%' and lo_processing_stage = 'RDR');
+Commit;
+Delete /*+ parallel */ from fdr.fr_log where lo_error_rule_ident like 'PG_GLINT%';
+Commit;
+Delete /*+ parallel */ from fdr.fr_log where lo_error_rule_ident like 'PG_COMMON%' and lo_processing_stage = 'RDR';
+Commit;

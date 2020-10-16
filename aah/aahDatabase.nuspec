@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>aahDatabase</id>
+    <version>0.0.0</version>
+    <title>AAH Database Full Deployment</title>
+    <authors>Elli Wang</authors>
+    <owners>Elli Wang</owners>
+    <description>Aptitude AAH database full deployment.</description>
+    <tags>AAH database</tags>
+  </metadata>
+  <files>
+    <file src="aahCore\**" target="aahCore" />
+    <file src="aahCustom\**" target="aahCustom" />
+    <file src="Deploy_aahDatabase.sh" target="" />
+    <file src="Deploy_aahDatabase.sh" target="Deploy.sh" />
+    <file src="PreDeploy_aahDatabase.sh" target="" />
+    <file src="PreDeploy_aahDatabase.sh" target="PreDeploy.sh" />
+  </files>  
+</package>

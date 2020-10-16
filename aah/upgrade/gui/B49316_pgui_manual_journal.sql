@@ -1,0 +1,1 @@
+@@../aahCustom/aahSubLedger/src/main/db/packages/gui/pgui_manual_journal.bdy

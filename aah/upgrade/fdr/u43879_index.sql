@@ -1,0 +1,14 @@
+DECLARE
+  COUNT_INDEXES1 INTEGER;
+BEGIN
+  SELECT COUNT(*) INTO COUNT_INDEXES1
+    FROM USER_INDEXES
+    WHERE UPPER(INDEX_NAME) = 'IDX_AE_ACC_EVENT_ID';
+
+  IF COUNT_INDEXES1 = 0 THEN
+    execute immediate 'CREATE INDEX FDR.IDX_AE_ACC_EVENT_ID ON FDR.FR_ACCOUNTING_EVENT_IMP(AE_ACC_EVENT_ID)';
+  END IF;
+ 
+END;
+/
+@@../aahCustom/aahStandardisation/src/main/db/indices/fdr/fr_accounting_event_imp.sql
