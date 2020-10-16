@@ -711,15 +711,11 @@ public class TestGLAccountStandardisation extends AAHTest
         LOG.info( "Reseting environment");
         ER_TABLES.clear();
         SEED_TABLES.clear();
-     
-
-        //Setup arrays here
 
         SEED_TABLES.add(
             new AAHSeedTable( AAHTablenameConstants.FEED,
             PATH_TO_TEST_RESOURCES,
             "SeedData-Day1.xlsx"
-            //,"FEED_ID = -2"
             ));
      
         SEED_TABLES.add(
@@ -784,6 +780,7 @@ public class TestGLAccountStandardisation extends AAHTest
         setupTest();
         AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 9 , 8 ) , 1 );
         ArrayList<AAHStep> steps = new ArrayList<AAHStep> ();
+
         //list steps to run here
         steps.add(AAHStep.StandardiseGLAccounts);
         steps.add(AAHStep.DSRGLAccounts);
@@ -796,7 +793,6 @@ public class TestGLAccountStandardisation extends AAHTest
             new AAHSeedTable( AAHTablenameConstants.FEED,
             PATH_TO_TEST_RESOURCES,
             "SeedData-Day2.xlsx"
-            //,"FEED_ID = -2"
             ));
      
         SEED_TABLES.add(
@@ -809,17 +805,22 @@ public class TestGLAccountStandardisation extends AAHTest
             PATH_TO_TEST_RESOURCES,
             "SeedData-Day2.xlsx"));
 
-        setupTest();
-        for (AAHStep pStep : steps) {
-        	runStep(pStep.getName());
-        }
+
+
+            //list steps to run here
+
+            setupTest();
+            ArrayList<AAHStep> steps2 = new ArrayList<AAHStep> ();
+            steps2.add(AAHStep.StandardiseGLAccounts);
+            for (AAHStep pStep : steps2) {
+                runStep(pStep.getName());
+            }
 
         SEED_TABLES.clear();
         SEED_TABLES.add(
             new AAHSeedTable( AAHTablenameConstants.FEED,
             PATH_TO_TEST_RESOURCES,
             "SeedData-Day3.xlsx"
-            //,"FEED_ID = -2"
             ));
      
         SEED_TABLES.add(

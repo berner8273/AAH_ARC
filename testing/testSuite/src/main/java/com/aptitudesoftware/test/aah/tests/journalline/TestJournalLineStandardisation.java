@@ -1266,7 +1266,7 @@ ER_TABLES.add(
             AAHResourceConstants.FR_LOG_AR));
  
          cleardown ();
-        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 20 ) , 1 );
+        AAHBusinessDateOperations.setBusinessDate ( LocalDate.of ( 2017 , 11 , 20 ) );
         ArrayList<AAHStep> steps = new ArrayList<AAHStep> ();
 
         //list steps to run here
