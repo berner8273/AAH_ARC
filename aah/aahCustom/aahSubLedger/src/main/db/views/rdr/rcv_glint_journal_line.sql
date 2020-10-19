@@ -207,21 +207,14 @@ AS
           LEFT JOIN slr.slr_ext_jrnl_types jt
              ON jt.ejt_type = jh.jh_jrnl_type
     WHERE jh.jh_jrnl_internal_period_flag = 'N'
+/*44041*/
     AND (EXISTS
-                     (SELECT NULL
-                        FROM fdr.fr_general_lookup fgl2
-                       WHERE     fgl.lk_lookup_value3 = fgl2.lk_match_key1
-                             AND fgl2.lk_lkt_lookup_type_code =
-                                    'EVENT_CLASS_PERIOD'
-                             AND (fgl2.lk_lookup_value1 = 'C' 
-                             OR fgl2.lk_lookup_value5 = 'Y')
-                             AND jl.jl_effective_date BETWEEN TO_DATE(
-                                                                fgl2.lk_lookup_value2, 
-                                                                'dd/mm/yyyy') 
-                                                         AND TO_DATE (
-                                                              fgl2.lk_lookup_value3,
-                                                              'dd/mm/yyyy')))
-         /* US 53039 */
+        (SELECT NULL
+        FROM fdr.fr_general_lookup fgl2
+        WHERE     fgl.lk_lookup_value3 = fgl2.lk_match_key1
+                AND fgl2.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
+                AND jl.jl_effective_date <= (select min(period_end) from stn.period_status)))
+/* US 53039 */
         AND  NVL( CAST (CASE WHEN jl_segment_5 = 'NVS' THEN ' ' ELSE jl_segment_5 END AS VARCHAR2 (10)),' ') <> 'DNP' 
         ;
 ;
