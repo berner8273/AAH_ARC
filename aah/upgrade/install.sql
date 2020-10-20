@@ -26,13 +26,18 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
+conn ~rdr_logon
+@@rdr/us53060_rdr_views.sql
 
 conn ~stn_logon
+@@stn/us53060_stn_columns.sql
 
 conn ~rdr_logon
-@@rdr/us53039_rcv_glint_journal_line_views.sql
+@@rdr/us53060_rdr_views2.sql
 
 conn ~stn_logon
+@@stn/us53060_stn_views.sql
+@@stn/us53060_packages.sql
 
 
 conn ~fdr_logon
@@ -47,11 +52,6 @@ conn ~stn_logon
 conn~gui_logon
 @@gui/us53060_gui_event_class.sql
 
-conn ~fdr_logon
-
-
-conn ~rdr_logon
-@@rdr/US53039_glint_journal_line.sql
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
