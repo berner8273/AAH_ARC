@@ -26,32 +26,18 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-
 conn ~stn_logon
-
-conn ~rdr_logon
-@@rdr/us53039_rcv_glint_journal_line_views.sql
-
-conn ~stn_logon
-
-
-conn ~fdr_logon
-@@fdr/us53060_fr_account_lookup_param.sql
-@@fdr/us53060_fdr_cleardown.sql 
-@@fdr/us50700_gl_account_fix.sql 
-@@fdr/hotfix_fr_general_lookup_cash_offset.sql
-
-conn ~stn_logon
-@@stn/us53060_aah_posting_rules_data_loader.sql
-
-conn~gui_logon
-@@gui/us53060_gui_event_class.sql
-
-conn ~fdr_logon
-
+@@stn/us44041_period_status.sql
 
 conn ~rdr_logon
 @@rdr/US53039_glint_journal_line.sql
+@@rdr/us44041_rdr_pkg_bdy.sql
+
+conn ~fdr_logon
+
+conn ~gui_logon
+@@gui/us44041_ui_field.sql
+
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
