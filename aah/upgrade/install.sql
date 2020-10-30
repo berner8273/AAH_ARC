@@ -26,31 +26,12 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~rdr_logon
-@@rdr/us53060_rdr_views.sql
-
-conn ~stn_logon
-@@stn/us53060_stn_columns.sql
-
-conn ~rdr_logon
-@@rdr/us53060_rdr_views2.sql
-
-conn ~stn_logon
-@@stn/us53060_stn_views.sql
-@@stn/us53060_packages.sql
-
-
 conn ~fdr_logon
-@@fdr/us53060_fr_account_lookup_param.sql
 @@fdr/us53060_fdr_cleardown.sql 
-@@fdr/us50700_gl_account_fix.sql 
-@@fdr/hotfix_fr_general_lookup_cash_offset.sql
 
 conn ~stn_logon
-@@stn/us53060_aah_posting_rules_data_loader.sql
+@@stn/rob2_bug55905_aah_posting_rules_data_loader.sql
 
-conn~gui_logon
-@@gui/us53060_gui_event_class.sql
 
 /* End AAH custom upgrades */
 
