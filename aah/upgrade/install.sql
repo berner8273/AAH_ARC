@@ -26,17 +26,8 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
-@@stn/us44041_period_status.sql
-
-conn ~rdr_logon
-@@rdr/US53039_glint_journal_line.sql
-@@rdr/us44041_rdr_pkg_bdy.sql
-
 conn ~fdr_logon
-
-conn ~gui_logon
-@@gui/us44041_ui_field.sql
+@@fdr/B55706_stan_raw_general_codes_ld.sql
 
 /* End AAH custom upgrades */
 
