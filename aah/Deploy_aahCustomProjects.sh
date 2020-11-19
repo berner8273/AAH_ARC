@@ -90,7 +90,6 @@ RUN $APTCMD -deploy -project_file_path $AAH_PROJECT_BRD_FILE \
 	-folder $AAH_PROJECT_FOLDER $APTCMD_OPTS \
 	|| ERR_EXIT "Cannot deploy project $AAH_PROJECT_FOLDER: $AAH_PROJECT_BRD_FILE!"
 
-
 # Start all Aptitude projects -------------------------------------------------
 printf "* Start Aptitude projects ...\n"
 RUN $STARTPROJECTS || ERR_EXIT "Cannot start Aptitude projects!"
