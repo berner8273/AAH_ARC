@@ -9,7 +9,9 @@
     <description>Deploy the Aah Dsr reference project.</description>
     <tags>AAH server</tags>
   </metadata>
-  <files>
+  <files>  
+    <file src="aah\aahCustom\aahStandardisation\src\main\aptitude\custom\DSRReferenceData.brd"/>
+    <file src="aah\aahCustom\aahStandardisation\src\main\aptitude\custom\DSRReferenceData.brd.config"/>
 	  <file src="Deploy_aahCustomProjects.sh" target="" />
     <file src="Deploy_aahCustomProjects.sh" target="Deploy.sh" />
   </files>  
