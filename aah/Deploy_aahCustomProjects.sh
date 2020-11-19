@@ -73,23 +73,23 @@ if [[ $(get_octopusvariable "AAH.Octopus.RunScripts"|tr '[A-Z]' '[a-z]') \
 fi
 
 # Get AAH octopus brd file name
-AAH_PROJECT_BRD_FILE = $(get_octopusvariable "BrdFileName")
-printf "Octopus BrdFileName: $AAH_PROJECT_BRD_FILE"
+AAH_PROJECT_BRD_FILE=$(get_octopusvariable "BrdFileName")
+printf "Octopus BrdFileName: $AAH_PROJECT_BRD_FILE ...\n"
 
 # Get AAH octopus folder name
-AAH_PROJECT_FOLDER = $(get_octopusvariable "DeployFolder")
-printf "Octopus DeployFolder: $AAH_PROJECT_FOLDER"
+AAH_PROJECT_FOLDER=$(get_octopusvariable "DeployFolder")
+printf "Octopus DeployFolder: $AAH_PROJECT_FOLDER ...\n"
 
 
 # Deploy Aptitude projects ----------------------------------------------------
 printf "* Deploy Aptitude projects ...\n"
-pwd
+current_dir=$(pwd)
 
-printf "* Deploy project: $AAH_PROJECT_BRD_FILE.config to folder: custom ...\n"
-RUN $APTCMD -deploy -project_file_path $AAH_PROJECT_BRD_FILE \
-	-config_file_path $AAH_PROJECT_BRD_FILE.config -redeployment_type full \
+printf "* Deploy project: $current_dir/$AAH_PROJECT_BRD_FILE.config to folder: custom ...\n"
+RUN $APTCMD -deploy -project_file_path $current_dir/$AAH_PROJECT_BRD_FILE \
+	-config_file_path $current_dir/$AAH_PROJECT_BRD_FILE.config -redeployment_type full \
 	-folder $AAH_PROJECT_FOLDER $APTCMD_OPTS \
-	|| ERR_EXIT "Cannot deploy project $AAH_PROJECT_FOLDER: $AAH_PROJECT_BRD_FILE!"
+	|| ERR_EXIT "Cannot deploy project $AAH_PROJECT_FOLDER: $current_dir/$AAH_PROJECT_BRD_FILE!"
 
 # Start all Aptitude projects -------------------------------------------------
 printf "* Start Aptitude projects ...\n"
