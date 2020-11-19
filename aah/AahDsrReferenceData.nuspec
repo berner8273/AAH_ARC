@@ -10,8 +10,8 @@
     <tags>AAH server</tags>
   </metadata>
   <files>  
-    <file src="aah\aahCustom\aahStandardisation\src\main\aptitude\custom\DSRReferenceData.brd"/>
-    <file src="aah\aahCustom\aahStandardisation\src\main\aptitude\custom\DSRReferenceData.brd.config"/>
+    <file src="aahCustom\aahStandardisation\src\main\aptitude\custom\DSRReferenceData.brd"/>
+    <file src="aahCustom\aahStandardisation\src\main\aptitude\custom\DSRReferenceData.brd.config"/>
 	  <file src="Deploy_aahCustomProjects.sh" target="" />
     <file src="Deploy_aahCustomProjects.sh" target="Deploy.sh" />
   </files>  

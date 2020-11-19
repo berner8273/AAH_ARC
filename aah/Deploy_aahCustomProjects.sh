@@ -83,6 +83,7 @@ printf "Octopus DeployFolder: $AAH_PROJECT_FOLDER"
 
 # Deploy Aptitude projects ----------------------------------------------------
 printf "* Deploy Aptitude projects ...\n"
+pwd
 
 printf "* Deploy project: $AAH_PROJECT_BRD_FILE.config to folder: custom ...\n"
 RUN $APTCMD -deploy -project_file_path $AAH_PROJECT_BRD_FILE \
