@@ -77,4 +77,4 @@ function runStep()
 
 
 # Run all steps and print standard out and err to screen and log file
-runIntraDay "$@" 2>&1 | tee runIntraDay_$(date +"%b-%d-%y").log
+runIntraDay "$@" 2>&1 | tee /aah/logs/runIntraDay_$(date +"%b-%d-%y").log
