@@ -26,8 +26,16 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
+conn ~slr_logon
+@@slr/Customisations_SLR.sql
+
+conn ~gui_logon
+@@gui/Customisations_GUI.sql
+
+conn ~rdr_logon
+@@gui/Customisations_RDR.sql
+
 conn ~fdr_logon
-@@fdr/B55706_stan_raw_general_codes_ld.sql
 
 /* End AAH custom upgrades */
 
