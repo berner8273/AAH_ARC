@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>AahDsrReferenceData</id>
+    <version>0.0.0</version>
+    <title>Aah Dsr Reference Data</title>
+    <authors>Elli Wang</authors>
+    <owners>Elli Wang</owners>
+    <description>Deploy the Aah Dsr reference project.</description>
+    <tags>AAH server</tags>
+  </metadata>
+  <files>  
+    <file src="aahCustom\aahStandardisation\src\main\aptitude\custom\DSRReferenceData.brd"/>
+    <file src="aahCustom\aahStandardisation\src\main\aptitude\custom\DSRReferenceData.brd.config"/>
+	  <file src="Deploy_aahCustomProjects.sh" target="" />
+    <file src="Deploy_aahCustomProjects.sh" target="Deploy.sh" />
+  </files>  
+</package>
