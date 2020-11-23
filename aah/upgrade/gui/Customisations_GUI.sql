@@ -5,5 +5,3 @@ set echo on
 @@PGUI_MANUAL_JOURNAL.sql
 
 show errors
-
-exit

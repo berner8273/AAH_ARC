@@ -22,4 +22,3 @@ set echo on
 
 show errors
 
-exit

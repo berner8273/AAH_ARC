@@ -37,4 +37,3 @@ drop table SLR.SLR_EBA_BOP_AMOUNTS_TMP3;
 
 show errors
 
-exit
