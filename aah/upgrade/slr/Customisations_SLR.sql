@@ -22,18 +22,18 @@ drop table SLR.SLR_EBA_BOP_AMOUNTS_TMP3;
 @@021_V_SLR_JOURNAL_LINES.sql
 
 -- Load the SLR packages
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_BALANCE_MOVEMENT_PKG.hdr
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_BALANCE_MOVEMENT_PKG.bdy
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_CLIENT_PROCEDURES_PKG.hdr
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_CLIENT_PROCEDURES_PKG.bdy
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_PKG.hdr
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_PKG.bdy
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_POST_JOURNALS_PKG.hdr
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_POST_JOURNALS_PKG.bdy
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_TRANSLATE_JOURNALS_PKG.hdr
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_TRANSLATE_JOURNALS_PKG.bdy
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_VALIDATE_JOURNALS_PKG.hdr
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_VALIDATE_JOURNALS_PKG.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_client_procedures_pkg.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_client_procedures_pkg.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_post_journals_pkg.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_post_journals_pkg.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_translate_journals_pkg.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_translate_journals_pkg.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_validate_journals_pkg.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_validate_journals_pkg.bdy
 
 show errors
 
