@@ -26,6 +26,7 @@ PROCEDURE pPROCESS_SLR
 );
 
 PROCEDURE pCHECK_JRNL_ERRORS(p_entity in VARCHAR2);
+PROCEDURE pUpdateJLU;
 
 ---------------------------------------------------------------------------------
 -- Entity or entity set specifc date routines. See SLR_UTILITIES_PKG for others.
@@ -58,6 +59,10 @@ PROCEDURE pIMPORT_SLR_JRNLS
 ---------------------------------------------------------------------------------
 -- Static Data Loads
 ---------------------------------------------------------------------------------
+
+PROCEDURE PR_ACCOUNT(p_lpg_id IN NUMBER,p_no_processed_records OUT NUMBER,p_no_failed_records OUT NUMBER);
+PROCEDURE PR_FX_RATE(p_lpg_id IN NUMBER, p_no_processed_records OUT NUMBER,p_no_failed_records OUT NUMBER);
+
 PROCEDURE pUPDATE_SLR_ACCOUNTS(p_entity in VARCHAR2);
 PROCEDURE pUPDATE_SLR_CURRENCIES(pLPG_ID IN NUMBER, o_records_processed OUT NUMBER, o_records_failed OUT NUMBER);
 PROCEDURE pUPDATE_SLR_ENTITY_RATES(p_entity in VARCHAR2,
@@ -90,8 +95,37 @@ procedure pCustRunBalanceMovementProcess( pProcess     IN slr_process.p_process%
                                          ,pRateSet     IN slr_entity_rates.er_entity_set%TYPE
                                         );
 
-END SLR_PKG;
+PROCEDURE pSLR_DAYS_PERIODS;
+PROCEDURE pEVENT_CLASS_PERIODS;
+PROCEDURE pGENERATE_EBA_BOP_VALUES;
+PROCEDURE pGENERATE_FAK_BOP_VALUES;
+PROCEDURE pYECleardown(pConfig      IN slr_process_config.pc_config%TYPE
+                                      ,pSource      IN slr_process_source.sps_source_name%TYPE
+                                      ,pBalanceDate IN DATE );
+PROCEDURE pYEJLU(pProcessId IN NUMBER);
+PROCEDURE pFX_REVAL(p_month IN NUMBER, p_year IN NUMBER, p_event_class VARCHAR2, p_acc_basis VARCHAR2);
 
+PROCEDURE pFX_REVAL_RULE0_USSTAT(v_date IN DATE);
+PROCEDURE pFX_REVAL_RULE2_USSTAT(v_date IN DATE);
+PROCEDURE pFX_REVAL_RULE0_USGAAP(v_date IN DATE);
+PROCEDURE pFX_REVAL_RULE2_USGAAP(v_date IN DATE);
+PROCEDURE pFX_REVAL_RULE0_UKGAAP(v_date IN DATE);
+PROCEDURE pFX_REVAL_RULE2_UKGAAP(v_date IN DATE);
+
+PROCEDURE pFX_REVAL_UPDATE_UNPOSTED( p_fx_rule       IN VARCHAR2
+                                   , p_fx_rate_set   IN VARCHAR2
+                                   , p_basis         IN VARCHAR2
+                                   , p_GPROCID       IN NUMBER
+                                   , p_PENTPROCSET   IN VARCHAR2 );
+
+Procedure pCombinationCheck_JLU (
+  pinEPGID     in slr_entity_proc_group.epg_id%TYPE,
+  pinProcessID in slr_job_statistics.js_process_id%TYPE,
+  pinStatus    in slr_jrnl_lines_unposted.jlu_jrnl_status%TYPE := 'U'
+);
+
+
+END SLR_PKG;
 /
 
 --------------------------------------------------------
@@ -140,21 +174,6 @@ END SLR_PKG;
         p_calendar_name in FR_HOLIDAY_DATE.HD_CA_CALENDAR_NAME%TYPE := 'DEFAULT'
     );
     PROCEDURE pSLR_ENTITY_PERIODS;
-    PROCEDURE pEVENT_CLASS_PERIODS;
-    PROCEDURE pGENERATE_FAK_BOP_VALUES;
-    PROCEDURE pGENERATE_EBA_BOP_VALUES;
-    PROCEDURE pFX_REVAL_RULE0_USSTAT(v_date IN DATE);
-    PROCEDURE pFX_REVAL_RULE0_USGAAP(v_date IN DATE);
-    PROCEDURE pFX_REVAL_RULE0_UKGAAP(v_date IN DATE);
-    PROCEDURE pFX_REVAL_RULE2_USSTAT(v_date IN DATE);
-    PROCEDURE pFX_REVAL_RULE2_USGAAP(v_date IN DATE);
-    PROCEDURE pFX_REVAL_RULE2_UKGAAP(v_date IN DATE);
-    PROCEDURE pFX_REVAL_UPDATE_UNPOSTED(
-        p_fx_rule     IN VARCHAR2,
-        p_fx_rate_set IN VARCHAR2,
-        p_basis       IN VARCHAR2,
-        p_GPROCID     IN NUMBER, p_PENTPROCSET IN VARCHAR2
-    );
 
 ---------------------------------------------------------------------------------
 -- Private package attributes
@@ -708,7 +727,7 @@ BEGIN
       
     SLR_ADMIN_PKG.Debug('Importing AE', lv_sql);
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    EXECUTE IMMEDIATE lv_sql USING lv_business_date, lv_business_date, p_process_id, p_process_id, lv_business_date, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date;
+    EXECUTE IMMEDIATE lv_sql USING lv_business_date, lv_business_date, p_process_id, p_process_id, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date;
 
     IF SQL%ROWCOUNT = 0 THEN
         COMMIT;
