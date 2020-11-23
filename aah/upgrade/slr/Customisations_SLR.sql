@@ -22,12 +22,18 @@ drop table SLR.SLR_EBA_BOP_AMOUNTS_TMP3;
 @@021_V_SLR_JOURNAL_LINES.sql
 
 -- Load the SLR packages
-@@SLR_BALANCE_MOVEMENT_PKG.sql
-@@SLR_CLIENT_PROCEDURES_PKG.sql
-@@/SLR_PKG.sql
-@@SLR_POST_JOURNALS_PKG.sql
-@@SLR_TRANSLATE_JOURNALS_PKG.sql
-@@SLR_VALIDATE_JOURNALS_PKG.sql
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_BALANCE_MOVEMENT_PKG.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_BALANCE_MOVEMENT_PKG.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_CLIENT_PROCEDURES_PKG.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_CLIENT_PROCEDURES_PKG.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_PKG.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_PKG.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_POST_JOURNALS_PKG.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_POST_JOURNALS_PKG.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_TRANSLATE_JOURNALS_PKG.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_TRANSLATE_JOURNALS_PKG.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_VALIDATE_JOURNALS_PKG.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_VALIDATE_JOURNALS_PKG.bdy
 
 show errors
 
