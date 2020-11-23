@@ -33,7 +33,7 @@ conn ~gui_logon
 @@gui/Customisations_GUI.sql
 
 conn ~rdr_logon
-@@gui/Customisations_RDR.sql
+@@rdr/Customisations_RDR.sql
 
 conn ~fdr_logon
 
