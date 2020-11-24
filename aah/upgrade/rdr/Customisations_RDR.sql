@@ -4,7 +4,7 @@ set echo on
 -- Migrate GLINT tables with journal header IDs in them...
 @@101_migrate_RR_GLINT_TO_SLR_AG.sql
 @@102_migrate_RR_GLINT_JOURNAL_LINE.sql
-@@102__2_migrate_rr_glint_journal_line.sql
+@@102_2_migrate_rr_glint_journal_line.sql
 
 -- Recreate the temp tables with columns updated
 @@103_RR_GLINT_TEMP_JOURNAL.sql
