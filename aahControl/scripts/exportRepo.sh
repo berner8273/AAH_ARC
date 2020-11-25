@@ -1,20 +1,19 @@
-#!/bin/bash
-NOW=`date +"%C%y%m%d%H%M%S"`
-BASE=/opt/aptitude
-BKPS=$HOME/aptitude/bkp/${NOW}
+#!/usr/bin/env bash
+PATH="/usr/bin"
+NOW=`date +"%Y%m%d%H%M%S"`
+APT_BASE=/opt/aptitude
+AAH_BASE=/aah
+SCRIPT_BASE=${AAH_BASE}/scripts
+BKPS=${AAH_BASE}/backups/${NOW}
 
 mkdir -p ${BKPS}
 
-cd ${BASE}/scripts
+${SCRIPT_BASE}/stopApt.sh
 
-./stopApt.sh
+${APT_BASE}/bin/aptsrv --import_export_mode bin --export ${BKPS}/srv_exp.xml
 
-cd ${BASE}/bin
+tar -zcvf ${BKPS}/server_sqlite.tgz -C ${APT_BASE}/db server_sqlite
 
-./aptsrv --import_export_mode bin --export ${BKPS}/srv_exp.xml
+${SCRIPT_BASE}/startApt.sh
 
-zip -r ${BKPS}/server_sqlite.zip ${BASE}/db/server_sqlite
-
-cd ${BASE}/scripts
-
-./startApt.sh
+exit
