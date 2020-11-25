@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 ###############################################################################
 # File    : aahBuildServer.sh
 # Info    : Octopus Deploy.sh script for aahBuildServer package
