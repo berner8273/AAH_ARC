@@ -46,6 +46,7 @@ TAR="/usr/bin/tar"
 # Exit with an error
 ERR_EXIT () {
 	printf "Error: $@\n"
+	RC=1
 	exit 1
 }
 
@@ -153,7 +154,7 @@ RUN $APTCMD -add_bus_server -bus_server_name $APT_BUS_NAME \
 	|| ERR_EXIT "Cannot add bus server!"
 
 # Load configuration definitions
-ls ./config_definitions/*.config | \
+ls $PWD/config_definitions/*.config | \
 	while read file; do
 		printf "* Load configuration definition: $file ...\n"
 		
