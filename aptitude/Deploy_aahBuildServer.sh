@@ -4,7 +4,7 @@
 # Info    : Octopus Deploy.sh script for aahBuildServer package
 # Date    : 2018-01-23
 # Author  : Elli Wang
-# Version : 2020112501
+# Version : 2020120101
 # Note    :
 #   2018-10-25	Elli	Remove deploying aah.war, which moved to aahGUI
 #   2018-10-02	Elli	GA 1.8.0. Add ojdbc7-12.1.0.2.jar to aah.war
@@ -24,7 +24,7 @@ RC=0
 
 # Aptitude variables
 APT_BASE="/opt/aptitude"
-APT_HOST=$(hostname)
+APT_HOST=localhost
 APT_BUS_NAME="APT_BUS"
 APT_SRV_PORT=2500
 APT_BUS_PORT=2503
@@ -152,12 +152,8 @@ RUN $APTCMD -add_bus_server -bus_server_name $APT_BUS_NAME \
 	-bus_server_description $APT_BUS_NAME $APTCMD_OPTS \
 	|| ERR_EXIT "Cannot add bus server!"
 
-# End =========================================================================
-printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
-exit $RC
-
 # Load configuration definitions
-ls $SRC_BASE/config_definitions/*.config | \
+ls ./config_definitions/*.config | \
 	while read file; do
 		printf "* Load configuration definition: $file ...\n"
 		
@@ -197,6 +193,10 @@ for f in trigger core custom; do
 	RUN $APTCMD -add_folder -folder $f $APTCMD_OPTS \
 		|| ERR_EXIT "Cannot add Aptitude execution folder $f!"
 done
+
+# End =========================================================================
+printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
+exit $RC
 
 # Deploy Aptitude projects ----------------------------------------------------
 printf "* Deploy Aptitude projects ...\n"
