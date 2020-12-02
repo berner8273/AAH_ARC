@@ -19,7 +19,7 @@
 # Variables
 PATH="/usr/bin"
 PROGRAM="${0##*/}"
-IS_DEBUG=0
+IS_DEBUG=1
 RC=0
 AAH_PROJECT_BRD_FILE="${1}"
 AAH_PROJECT_FOLDER="${2}"
@@ -66,11 +66,11 @@ RUN () {
 printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 
 # Check if debug mode
-if [[ $(get_octopusvariable "AAH.Octopus.RunScripts"|tr '[A-Z]' '[a-z]') \
-		= "false" ]]; then
-	printf "** Run scripts in debug mode!!!\n"
-	IS_DEBUG=1
-fi
+# if [[ $(get_octopusvariable "AAH.Octopus.RunScripts"|tr '[A-Z]' '[a-z]') \
+# 		= "false" ]]; then
+# 	printf "** Run scripts in debug mode!!!\n"
+# 	IS_DEBUG=1
+# fi
 
 [[ -n $AAH_PROJECT_BRD_FILE ]] \
 	|| ERR_EXIT "AAH_PROJECT_BRD_FILE variable is empty!"
