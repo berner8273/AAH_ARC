@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>AahTrigger</id>
+    <id>AahMadj_Posting_Engine</id>
     <version>0.0.0</version>
     <title>Aah Madj_Posting_Engine</title>
     <authors>Ryan Quigley</authors>
