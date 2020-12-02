@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>AahMah_Common</id>
+    <version>0.0.0</version>
+    <title>Aah mah_common</title>
+    <authors>Ryan Quigley</authors>
+    <owners>Ryan Quigley</owners>
+    <description>Deploy the mah_common project.</description>
+    <tags>AAH server</tags>
+  </metadata>
+  <files>  
+    <file src="aahCustom\aahStandardisation\src\main\aptitude\core\mah_common.brd"/>
+    <file src="aahCustom\aahStandardisation\src\main\aptitude\core\mah_common.brd.config"/>
+	  <file src="Deploy_aahCustomProjects.sh"/>
+  </files>  
+</package>

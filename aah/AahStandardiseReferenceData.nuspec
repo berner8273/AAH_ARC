@@ -3,10 +3,10 @@
   <metadata>
     <id>AahStandardiseReferenceData</id>
     <version>0.0.0</version>
-    <title>Aah Dsr Reference Data</title>
+    <title>Aah StandardiseReferenceData</title>
     <authors>Ryan Quigley</authors>
     <owners>Ryan Quigley</owners>
-    <description>Deploy the Aah Dsr reference project.</description>
+    <description>Deploy the Aah StandardiseReferenceData project.</description>
     <tags>AAH server</tags>
   </metadata>
   <files>  
