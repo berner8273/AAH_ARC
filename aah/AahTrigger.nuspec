@@ -10,8 +10,8 @@
     <tags>AAH server</tags>
   </metadata>
   <files>  
-    <file src="aahCustom\aahStepTrigger\src\main\aptitude\custom\Trigger.brd"/>
-    <file src="aahCustom\aahStepTrigger\src\main\aptitude\custom\Trigger.brd.config"/>
+    <file src="aahCustom\aahStepTrigger\src\main\aptitude\trigger\Trigger.brd"/>
+    <file src="aahCustom\aahStepTrigger\src\main\aptitude\trigger\Trigger.brd.config"/>
 	  <file src="Deploy_aahCustomProjects.sh"/>
   </files>  
 </package>
