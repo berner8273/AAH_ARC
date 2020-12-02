@@ -19,7 +19,7 @@
 # Variables
 PATH="/usr/bin"
 PROGRAM="${0##*/}"
-IS_DEBUG=1
+IS_DEBUG=0
 RC=0
 AAH_PROJECT_BRD_FILE="${1}"
 AAH_PROJECT_FOLDER="${2}"
@@ -93,7 +93,7 @@ printf "Octopus DeployFolder: $AAH_PROJECT_FOLDER ...\n"
 printf "* Deploy Aptitude projects ...\n"
 current_dir=$(pwd)
 
-printf "* Deploy project: $current_dir/$AAH_PROJECT_BRD_FILE.config to folder: custom ...\n"
+printf "* Deploy project: $current_dir/$AAH_PROJECT_BRD_FILE.config to folder: $AAH_PROJECT_FOLDER ...\n"
 RUN $APTCMD -deploy -project_file_path $current_dir/$AAH_PROJECT_BRD_FILE \
 	-config_file_path $current_dir/$AAH_PROJECT_BRD_FILE.config -redeployment_type full \
 	-folder $AAH_PROJECT_FOLDER $APTCMD_OPTS \
