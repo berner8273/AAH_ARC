@@ -21,8 +21,8 @@ PATH="/usr/bin"
 PROGRAM="${0##*/}"
 IS_DEBUG=0
 RC=0
-AAH_PROJECT_BRD_FILE=""
-AAH_PROJECT_FOLDER=""
+AAH_PROJECT_BRD_FILE="${1}"
+AAH_PROJECT_FOLDER="${2}"
 
 # Aptitude variables
 APT_BASE="/opt/aptitude"
@@ -72,13 +72,21 @@ if [[ $(get_octopusvariable "AAH.Octopus.RunScripts"|tr '[A-Z]' '[a-z]') \
 	IS_DEBUG=1
 fi
 
-# Get AAH octopus brd file name
-AAH_PROJECT_BRD_FILE=$(get_octopusvariable "BrdFileName")
+[[ -n $AAH_PROJECT_BRD_FILE ]] \
+	|| ERR_EXIT "AAH_PROJECT_BRD_FILE variable is empty!"
 printf "Octopus BrdFileName: $AAH_PROJECT_BRD_FILE ...\n"
-
-# Get AAH octopus folder name
-AAH_PROJECT_FOLDER=$(get_octopusvariable "DeployFolder")
+[[ -n $AAH_PROJECT_FOLDER ]] \
+	|| ERR_EXIT "AAH_PROJECT_FOLDER variable is empty!"
 printf "Octopus DeployFolder: $AAH_PROJECT_FOLDER ...\n"
+
+
+# # Get AAH octopus brd file name
+# AAH_PROJECT_BRD_FILE=$(get_octopusvariable "BrdFileName")
+# printf "Octopus BrdFileName: $AAH_PROJECT_BRD_FILE ...\n"
+
+# # Get AAH octopus folder name
+# AAH_PROJECT_FOLDER=$(get_octopusvariable "DeployFolder")
+# printf "Octopus DeployFolder: $AAH_PROJECT_FOLDER ...\n"
 
 
 # Deploy Aptitude projects ----------------------------------------------------
