@@ -1,8 +1,8 @@
 declare
     c_prior_upgrade    constant varchar2 ( 50 char )  := '1-8-2';
     c_current_upgrade  constant varchar2 ( 50 char )  := '1-8-2';
-    c_core_version     constant varchar2 ( 50 char )  := 'V4.10b2.6 /O';
-    -- c_core_version     constant varchar2 ( 50 char )  := 'V4.40b5 /O';
+--    c_core_version     constant varchar2 ( 50 char )  := 'V4.10b2.6 /O';
+    c_core_version     constant varchar2 ( 50 char )  := 'V4.40b5 /O';
         
     v_custom_error_msg varchar2 ( 300 char ) := 'The upgrade must be applied to AAH customized version ' || c_prior_upgrade || ' or ' || c_current_upgrade || ', this environment is version ';
     v_core_error_msg   varchar2 ( 300 char ) := 'The upgrade must be applied to AAH core version ' || c_core_version || ', this environment is version ';
