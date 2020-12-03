@@ -73,8 +73,8 @@ printf "Octopus BrdFileName: $AAH_PROJECT.brd ...\n"
 printf "Octopus DeployFolder: $AAH_PROJECT_FOLDER ...\n"
 
 # Stop Aptitude Project ------------------------------------------------------
-printf "Stopping project $AAH_PROJECT_FOLDER/$AAH_PROJECT\n"
-RUN $APTCMD -stop -project "$AAH_PROJECT_FOLDER/$AAH_PROJECT" $APTCMD_OPTS 
+#printf "Stopping project $AAH_PROJECT_FOLDER/$AAH_PROJECT\n"
+#RUN $APTCMD -stop -project "$AAH_PROJECT_FOLDER/$AAH_PROJECT" $APTCMD_OPTS 
 
 # Deploy Aptitude project ----------------------------------------------------
 printf "* Deploy Aptitude projects ...\n"
