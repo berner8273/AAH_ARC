@@ -21,7 +21,7 @@ PATH="/usr/bin"
 PROGRAM="${0##*/}"
 IS_DEBUG=0
 RC=0
-AAH_PROJECT_BRD_FILE="${1}"
+AAH_PROJECT="${1}"
 AAH_PROJECT_FOLDER="${2}"
 
 # Aptitude variables
@@ -65,43 +65,30 @@ RUN () {
 # Main ========================================================================
 printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 
-# Check if debug mode
-# if [[ $(get_octopusvariable "AAH.Octopus.RunScripts"|tr '[A-Z]' '[a-z]') \
-# 		= "false" ]]; then
-# 	printf "** Run scripts in debug mode!!!\n"
-# 	IS_DEBUG=1
-# fi
-
-[[ -n $AAH_PROJECT_BRD_FILE ]] \
-	|| ERR_EXIT "AAH_PROJECT_BRD_FILE variable is empty!"
-printf "Octopus BrdFileName: $AAH_PROJECT_BRD_FILE ...\n"
+[[ -n $AAH_PROJECT ]] \
+	|| ERR_EXIT "AAH_PROJECT variable is empty!"
+printf "Octopus BrdFileName: $AAH_PROJECT.brd ...\n"
 [[ -n $AAH_PROJECT_FOLDER ]] \
 	|| ERR_EXIT "AAH_PROJECT_FOLDER variable is empty!"
 printf "Octopus DeployFolder: $AAH_PROJECT_FOLDER ...\n"
 
+# Stop Aptitude Project ------------------------------------------------------
+printf "Stopping project $AAH_PROJECT_FOLDER/$AAH_PROJECT"
+RUN $APTCMD -stop -project "$AAH_PROJECT_FOLDER/$AAH_PROJECT" $APTCMD_OPTS 
 
-# # Get AAH octopus brd file name
-# AAH_PROJECT_BRD_FILE=$(get_octopusvariable "BrdFileName")
-# printf "Octopus BrdFileName: $AAH_PROJECT_BRD_FILE ...\n"
-
-# # Get AAH octopus folder name
-# AAH_PROJECT_FOLDER=$(get_octopusvariable "DeployFolder")
-# printf "Octopus DeployFolder: $AAH_PROJECT_FOLDER ...\n"
-
-
-# Deploy Aptitude projects ----------------------------------------------------
+# Deploy Aptitude project ----------------------------------------------------
 printf "* Deploy Aptitude projects ...\n"
 current_dir=$(pwd)
 
-printf "* Deploy project: $current_dir/$AAH_PROJECT_BRD_FILE.config to folder: $AAH_PROJECT_FOLDER ...\n"
-RUN $APTCMD -deploy -project_file_path $current_dir/$AAH_PROJECT_BRD_FILE \
-	-config_file_path $current_dir/$AAH_PROJECT_BRD_FILE.config -redeployment_type full \
+printf "* Deploy project: $current_dir/$AAH_PROJECT.brd.config to folder: $AAH_PROJECT_FOLDER ...\n"
+RUN $APTCMD -deploy -project_file_path $current_dir/$AAH_PROJECT.brd \
+	-config_file_path $current_dir/$AAH_PROJECT.brd.config -redeployment_type full \
 	-folder $AAH_PROJECT_FOLDER $APTCMD_OPTS \
-	|| ERR_EXIT "Cannot deploy project $AAH_PROJECT_FOLDER: $current_dir/$AAH_PROJECT_BRD_FILE!"
+	|| ERR_EXIT "Cannot deploy project $AAH_PROJECT_FOLDER: $current_dir/$AAH_PROJECT.brd!"
 
-# Start all Aptitude projects -------------------------------------------------
-printf "* Start Aptitude projects ...\n"
-RUN $STARTPROJECTS || ERR_EXIT "Cannot start Aptitude projects!"
+# Stop Aptitude Project ------------------------------------------------------
+printf "Starting project $AAH_PROJECT_FOLDER/$AAH_PROJECT"
+RUN $APTCMD -start -project "$AAH_PROJECT_FOLDER/$AAH_PROJECT" $APTCMD_OPTS 
 
 # End =========================================================================
 printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
