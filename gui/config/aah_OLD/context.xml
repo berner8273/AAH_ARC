@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context xmlValidation="false" debug="1" docBase="aah_OLD" path="/aah_OLD"
+	antiResourceLocking="true" useHttpOnly="true" >
+    <!-- commented above reloadable="true" crossContext="true" - not recommended on the production environment --> 
+    <!--  disable session persistence as per advice given by Microgen TTP#1997  --> 
+    <Manager pathname=""/> 
+
+	<Resource name="jdbc/fdr" auth="Container"
+		type="javax.sql.DataSource"
+		factory="uk.co.microgen.tomcat.EncryptedDataSourceFactory"
+		driverClassName="oracle.jdbc.OracleDriver"
+		connectionProperties="oracle.net.disableOob=true"
+		url="jdbc:oracle:thin:@//#{aptitudeDatabaseHost}:1521/#{aptitudeDatbaseServiceName}"
+		username="P1SDTn1ByYw=" password="dFP9XmhjDcidcr5gTQcOFIsQm9+1JmWi"
+		initialSize="10"
+		maxActive="250"
+		maxIdle="100"
+		minIdle="10"
+		maxWait="10000"
+		removeAbandoned="true"
+		removeAbandonedTimeout="600"
+		abandonWhenPercentageFull="0"
+        jmxEnabled="true"
+        jdbcInterceptors="org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;
+                          org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer"
+		defaultTransactionIsolation="READ_COMMITTED"
+		defaultAutoCommit="true"
+		validationQuery="select 1 from dual"
+		validationInterval="30000"
+		testOnBorrow="true"
+		testWhileIdle="true"
+		testOnReturn="false"
+		minEvictableIdleTimeMillis="600000"
+		timeBetweenEvictionRunsMillis="10000"
+	/>
+</Context>
