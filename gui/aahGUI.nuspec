@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>aahGUI</id>
+    <version>0.0.0</version>
+    <title>AAH GUI</title>
+    <authors>Elli Wang</authors>
+    <owners>Elli Wang</owners>
+    <description>Aptitude AAH rebuild GUI.</description>
+    <tags>AAH GUI</tags>
+  </metadata>
+  <files>
+    <file src="**\*" target="" />
+    <file src="Deploy_aahGUI.sh" target="Deploy.sh" />
+  </files>
+</package>
