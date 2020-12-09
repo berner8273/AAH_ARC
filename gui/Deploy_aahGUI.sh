@@ -4,8 +4,9 @@
 # Info    : Octopus Deploy.sh script for aahGUI package
 # Date    : 2018-10-03
 # Author  : Elli Wang
-# Version : 2018100301
+# Version : 2020120901
 # Note    :
+#   2020-12-09	Elli	GA 20.3.1.164
 #   2018-10-02	Elli	GA 1.8.0
 ###############################################################################
 # Variables
@@ -14,8 +15,11 @@ PROGRAM="${0##*/}"
 IS_DEBUG=0
 RC=0
 
-# Aptitude variables
-AAH_CORE_BASE="$PWD/aah/aahCore"
+# AAH variables
+AAH_SRC="/aah/src"
+AAH_ZIP="$AAH_SRC/AAH.zip"
+BUILD_DIR="build"
+WORK_BASE="$PWD"
 
 # Command variables
 INSTALL="/usr/bin/install"
@@ -50,66 +54,158 @@ if [[ $(get_octopusvariable "AAH.Octopus.RunScripts"|tr '[A-Z]' '[a-z]') \
 	IS_DEBUG=1
 fi
 
-# Prepare aah.war file --------------------------------------------------------
-printf "* Prepare aah.war (GUI.war) file ...\n"
+# Prepare aah.war file ----------------------------------------------
+printf "* Prepare aah.war file ...\n"
 
-# Extract GUI.war file
-AAH_ZIP="$AAH_CORE_BASE/src/main/aah/AAH.zip"
-GUI_WAR="gui_application/Oracle/GUI.war"
-BUILD_DIR="build"
-printf "* Extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR ...\n"
-RUN $UNZIP -oj $AAH_ZIP $GUI_WAR -d $BUILD_DIR \
+# Create $BUILD_DIR
+printf "* Create $BUILD_DIR ...\n"
+[[ mkdir $BUILD_DIR ]] || ERR_EXIT "Cannot create $BUILD_DIR!"
+
+# Extract scheduler-web.war file
+WAR="gui_application/Oracle/aah-web.war"
+printf "* Extract $WAR to $BUILD_DIR ...\n"
+RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
+[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] || \
 	|| ERR_EXIT "Cannot extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR!"
 
-# Reset GUI.war file location
-GUI_WAR="$BUILD_DIR/GUI.war"
-
-# Unzip GUI.war
-TMP_DIR="tmp"
-printf "* Unzip $GUI_WAR to $TMP_DIR ...\n"
-RUN $UNZIP -q $GUI_WAR -d $TMP_DIR \
-	|| ERR_EXIT "Cannot unzip $GUI_WAR to $TMP_DIR!"
-
-# Copy web.xml
-file="$AAH_CORE_BASE/src/main/resources/gui/web.xml"
-printf "* Copy web.xml file ...\n"
-RUN $INSTALL -pv $file $TMP_DIR/WEB-INF/ || ERR_EXIT "Cannot copy $file!"
-
-# Copy 3 property files
-printf "* Copy 3 property files ...\n"
-for f in ApplicationResources.properties \
-		ApplicationResourcesSorted.properties \
-		log4j.properties; do
-	RUN $INSTALL -pv $AAH_CORE_BASE/src/main/resources/gui/$f \
-		$TMP_DIR/WEB-INF/classes/resources/ \
-		|| ERR_EXIT "Cannot copy property file!"
+# Copy lib files
+for f in ojdbc8.jar orai18n.jar; do
+	printf "* Copy $f to $BUILD_DIR/WEB-INF/lib/ ...\n"
+	RUN $INSTALL -pv ./lib/$f $BUILD_DIR/WEB-INF/lib/ \
+		|| ERR_EXIT "Cannot copy $f to $BUILD_DIR/WEB-INF/lib/!"
 done
 
-# Copy UploadTemplate.csv
-file="$AAH_CORE_BASE/src/main/resources/gui/UploadTemplate.csv"
-printf "* Copy UploadTemplate.csv file ...\n"
-RUN $INSTALL -pv $file $TMP_DIR/client_specific/ || ERR_EXIT "Cannot copy $file!"
+# Copy application.properties
+# Need Octopus variable substitution
+RUN $INSTALL -pv ./config/aah/application.properties \
+	$BUILD_DIR/WEB-INF/classes/ \
+	|| ERR_EXIT "Cannot copy application.properties to $BUILD_DIR/WEB-INF/classes/!"
 
-# Copy ojdbc7-12.1.0.2.jar
-file="$AAH_CORE_BASE/src/main/resources/gui/ojdbc7-12.1.0.2.jar"
-printf "* Copy ojdbc7-12.1.0.2.jar file ...\n"
-RUN $INSTALL -pv $file $TMP_DIR/WEB-INF/lib/ || ERR_EXIT "Cannot copy $file!"
+# Copy core.properties
+# Need Octopus variable substitution
+# Need to encrypt passwords
+RUN $INSTALL -pv ./config/aah/core.properties \
+	$BUILD_DIR/WEB-INF/classes/ \
+	|| ERR_EXIT "Cannot copy core.properties to $BUILD_DIR/WEB-INF/classes/!"
 
-# Remove context.xml
-printf "* Remove ./META-INF/context.xml file ...\n"
-RUN $RM -f $TMP_DIR/META-INF/context.xml
+# Copy logback.xml
+RUN $INSTALL -pv ./config/aah/logback.xml \
+	$BUILD_DIR/WEB-INF/classes/ \
+	|| ERR_EXIT "Cannot copy logback.xml to $BUILD_DIR/WEB-INF/classes/!"
 
-# Create aah.war
-AAH_WAR="aah.war"
-printf "* Create $AAH_WAR file ...\n"
-RUN $JAR cf $AAH_WAR -C $TMP_DIR . \
-	|| ERR_EXIT "Cannot create $AAH_WAR from $TMP_DIR!"
+# Create aah`.war
+WAR="aah.war"
+printf "* Create $WAR file ...\n"
+RUN $JAR cf $WAR -C $BUILD_DIR . \
+	|| ERR_EXIT "Cannot create $_WAR from $BUILD_DIR!"
 
 # Deploy aah.war
-printf "* Deploy aah.war ...\n"
-RUN $SUDO /usr/bin/install -m 640 -o tomcat -g tomcat \
-	-pv aah.war /opt/tomcat/webapps/aah.war \
-	|| ERR_EXIT "cannot deploy aah.war!"
+printf "* Deploy $WAR ...\n"
+# RUN $SUDO $INSTALL -m 640 -o tomcat -g tomcat \
+	# -pv $WAR /opt/tomcat/webapps/ \
+	# || ERR_EXIT "cannot deploy $WAR!"
+
+# Clean up $BUILD_DIR
+printf "* Clean up $BUILD_DIR ...\n"
+RUN $RM -rf $BUILD_DIR || ERR_EXIT "Cannot remove $BUILD_DIR!"
+
+# Clean up aah-web.war
+printf "* Clean up $WAR ...\n"
+# RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
+
+# Prepare aah_OLD.war file ----------------------------------------------
+printf "* Prepare aah_OLD.war file ...\n"
+
+# Create $BUILD_DIR
+printf "* Create $BUILD_DIR ...\n"
+[[ mkdir $BUILD_DIR ]] || ERR_EXIT "Cannot create $BUILD_DIR!"
+
+# Extract scheduler-web.war file
+WAR="gui_application/Oracle/GUI.war"
+printf "* Extract $WAR to $BUILD_DIR ...\n"
+RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
+[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] || \
+	|| ERR_EXIT "Cannot extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR!"
+
+# Copy lib files
+printf "* Copy ojdbc8.jar to $BUILD_DIR/WEB-INF/lib/ ...\n"
+RUN $INSTALL -pv ./lib/ojdbc8.jar $BUILD_DIR/WEB-INF/lib/ \
+	|| ERR_EXIT "Cannot copy ojdbc8.jar to $BUILD_DIR/WEB-INF/lib/!"
+
+# Copy context.xml
+# Need Octopus variable substitution
+# Need to encrypt passwords
+RUN $INSTALL -pv ./config/aah_OLD/context.xml \
+	$BUILD_DIR/META-INF/ \
+	|| ERR_EXIT "Cannot copy context.xml to $BUILD_DIR/META-INF/!"
+
+# Create aah_OLD.war
+WAR="aah_OLD.war"
+printf "* Create $WAR file ...\n"
+RUN $JAR cf $WAR -C $BUILD_DIR . \
+	|| ERR_EXIT "Cannot create $_WAR from $BUILD_DIR!"
+
+# Deploy aah_OLD.war
+printf "* Deploy $WAR ...\n"
+# RUN $SUDO $INSTALL -m 640 -o tomcat -g tomcat \
+	# -pv $WAR /opt/tomcat/webapps/ \
+	# || ERR_EXIT "cannot deploy $WAR!"
+
+# Clean up $BUILD_DIR
+printf "* Clean up $BUILD_DIR ...\n"
+RUN $RM -rf $BUILD_DIR || ERR_EXIT "Cannot remove $BUILD_DIR!"
+
+# Clean up scheduler-web.war
+printf "* Clean up $WAR ...\n"
+# RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
+
+# Prepare scheduler-web.war file ----------------------------------------------
+printf "* Prepare scheduler-web.war file ...\n"
+
+# Create $BUILD_DIR
+printf "* Create $BUILD_DIR ...\n"
+[[ mkdir $BUILD_DIR ]] || ERR_EXIT "Cannot create $BUILD_DIR!"
+
+# Extract scheduler-web.war file
+WAR="gui_application/scheduler/scheduler-web.war"
+printf "* Extract $WAR to $BUILD_DIR ...\n"
+RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
+[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] || \
+	|| ERR_EXIT "Cannot extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR!"
+
+# Copy lib files
+for f in ojdbc8.jar orai18n.jar; do
+	printf "* Copy $f to $BUILD_DIR/WEB-INF/lib/ ...\n"
+	RUN $INSTALL -pv ./lib/$f $BUILD_DIR/WEB-INF/lib/ \
+		|| ERR_EXIT "Cannot copy $f to $BUILD_DIR/WEB-INF/lib/!"
+done
+
+# Copy application.properties
+# Need Octopus variable substitution
+# Need to encrypt passwords
+RUN $INSTALL -pv ./config/scheduler-web/application.properties \
+	$BUILD_DIR/WEB-INF/classes/ \
+	|| ERR_EXIT "Cannot copy application.properties to $BUILD_DIR/WEB-INF/classes/!"
+
+# Create scheduler-web.war
+WAR="scheduler-web.war"
+printf "* Create $WAR file ...\n"
+RUN $JAR cf $WAR -C $BUILD_DIR . \
+	|| ERR_EXIT "Cannot create $_WAR from $BUILD_DIR!"
+
+# Deploy scheduler-web.war
+printf "* Deploy $WAR ...\n"
+# RUN $SUDO $INSTALL -m 640 -o tomcat -g tomcat \
+	# -pv $WAR /opt/tomcat/webapps/ \
+	# || ERR_EXIT "cannot deploy $WAR!"
+
+# Clean up $BUILD_DIR
+printf "* Clean up $BUILD_DIR ...\n"
+RUN $RM -rf $BUILD_DIR || ERR_EXIT "Cannot remove $BUILD_DIR!"
+
+# Clean up scheduler-web.war
+printf "* Clean up $WAR ...\n"
+# RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
 
 # End =========================================================================
 printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
