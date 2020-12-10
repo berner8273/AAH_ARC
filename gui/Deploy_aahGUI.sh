@@ -24,6 +24,7 @@ WORK_BASE="$PWD"
 # Command variables
 INSTALL="/usr/bin/install"
 JAR="/usr/bin/jar"
+MKDIR="/usr/bin/mkdir"
 RM="/usr/bin/rm"
 SUDO="/usr/bin/sudo"
 UNZIP="/usr/bin/unzip"
@@ -44,6 +45,18 @@ RUN () {
 	fi
 }
 
+# Clean up $BUILD_DIR directory and $WAR file
+CLEANUP () {
+
+	# Clean up $BUILD_DIR directory
+	printf "* Clean up $BUILD_DIR directory ...\n"
+	RUN $RM -rf $BUILD_DIR || ERR_EXIT "Cannot remove $BUILD_DIR directory!"
+
+	# Clean up $WAR
+	printf "* Clean up $WAR ...\n"
+	# RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
+}
+
 # Main ========================================================================
 printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 
@@ -57,9 +70,9 @@ fi
 # Prepare aah.war file ----------------------------------------------
 printf "* Prepare aah.war file ...\n"
 
-# Create $BUILD_DIR
-printf "* Create $BUILD_DIR ...\n"
-[[ mkdir $BUILD_DIR ]] || ERR_EXIT "Cannot create $BUILD_DIR!"
+# Create $BUILD_DIR directory
+printf "* Create $BUILD_DIR directory ...\n"
+RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
 
 # Extract aah.war file
 WAR="gui_application/Oracle/aah-web.war"
@@ -108,20 +121,15 @@ printf "* Deploy $WAR ...\n"
 	# -pv $WAR /opt/tomcat/webapps/ \
 	# || ERR_EXIT "cannot deploy $WAR!"
 
-# Clean up $BUILD_DIR
-printf "* Clean up $BUILD_DIR ...\n"
-RUN $RM -rf $BUILD_DIR || ERR_EXIT "Cannot remove $BUILD_DIR!"
-
-# Clean up aah-web.war
-printf "* Clean up $WAR ...\n"
-# RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
+# Clean up
+CLEANUP
 
 # Prepare aah_OLD.war file ----------------------------------------------
 printf "* Prepare aah_OLD.war file ...\n"
 
-# Create $BUILD_DIR
-printf "* Create $BUILD_DIR ...\n"
-[[ mkdir $BUILD_DIR ]] || ERR_EXIT "Cannot create $BUILD_DIR!"
+# Create $BUILD_DIR directory
+printf "* Create $BUILD_DIR directory ...\n"
+RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
 
 # Extract aah_OLD.war file
 WAR="gui_application/Oracle/GUI.war"
@@ -155,20 +163,15 @@ printf "* Deploy $WAR ...\n"
 	# -pv $WAR /opt/tomcat/webapps/ \
 	# || ERR_EXIT "cannot deploy $WAR!"
 
-# Clean up $BUILD_DIR
-printf "* Clean up $BUILD_DIR ...\n"
-RUN $RM -rf $BUILD_DIR || ERR_EXIT "Cannot remove $BUILD_DIR!"
-
-# Clean up scheduler-web.war
-printf "* Clean up $WAR ...\n"
-# RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
+# Clean up
+CLEANUP
 
 # Prepare scheduler-web.war file ----------------------------------------------
 printf "* Prepare scheduler-web.war file ...\n"
 
-# Create $BUILD_DIR
-printf "* Create $BUILD_DIR ...\n"
-[[ mkdir $BUILD_DIR ]] || ERR_EXIT "Cannot create $BUILD_DIR!"
+# Create $BUILD_DIR directory
+printf "* Create $BUILD_DIR directory ...\n"
+RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
 
 # Extract scheduler-web.war file
 WAR="gui_application/scheduler/scheduler-web.war"
@@ -204,13 +207,8 @@ printf "* Deploy $WAR ...\n"
 	# -pv $WAR /opt/tomcat/webapps/ \
 	# || ERR_EXIT "cannot deploy $WAR!"
 
-# Clean up $BUILD_DIR
-printf "* Clean up $BUILD_DIR ...\n"
-RUN $RM -rf $BUILD_DIR || ERR_EXIT "Cannot remove $BUILD_DIR!"
-
-# Clean up scheduler-web.war
-printf "* Clean up $WAR ...\n"
-# RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
+# Clean up
+CLEANUP
 
 # End =========================================================================
 printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
