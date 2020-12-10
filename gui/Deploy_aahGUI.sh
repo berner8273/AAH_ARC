@@ -113,7 +113,6 @@ RUN $INSTALL -pv ./config/aah/application.properties \
 
 # Copy core.properties
 # Need Octopus variable substitution
-# Need to encrypt passwords
 # Encrypt passwords
 file="config/aah/core.properties"
 for p in aah_ui security_ui; do
@@ -165,10 +164,20 @@ RUN $INSTALL -pv ./lib/ojdbc8.jar $BUILD_DIR/WEB-INF/lib/ \
 
 # Copy context.xml
 # Need Octopus variable substitution
-# Need to encrypt passwords
+# Encrypt passwords
+file="config/aah_OLD/context.xml"
+printf "* Encrypt fdr password ...\n"
+p="fdrPassword"
+class_path="commons-codec-1.10.jar:tomcat-jdbc-7.0.52.jar:tomcat-juli-7.0.52.jar:GUI.jar"
+enc_string=$(cd $BUILD_DIR/WEB-INF/lib && \
+	RUN $JAVA -cp $class_path uk.co.microgen.tomcat.EncryptedDataSourceFactory -s fdr)		-q encrypt -t $(get_octopusvariable $p))
+[[ $? = 0 ]] || ERR_EXIT "Cannot encrypt password!"
+RUN $PERL -pi -e "s!###\($p\)###!$enc_string!" $file \
+	|| ERR_EXIT "Cannot modify $file!"
+
+# Copy file
 printf "* Copy context.xml to $BUILD_DIR/META-INF/ ...\n"
-RUN $INSTALL -pv ./config/aah_OLD/context.xml \
-	$BUILD_DIR/META-INF/ \
+RUN $INSTALL -pv $file $BUILD_DIR/META-INF/ \
 	|| ERR_EXIT "Cannot copy context.xml to $BUILD_DIR/META-INF/!"
 
 # Modify log4j2.xml
