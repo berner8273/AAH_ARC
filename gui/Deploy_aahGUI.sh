@@ -69,6 +69,23 @@ EXTRACT_WAR_FILE () {
 	RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
 }
 
+# Create webapp
+CREATE_WEBAPP () {
+	WAR=$1
+	printf "* Create $WAR file ...\n"
+	RUN $JAR cf $WAR -C $BUILD_DIR . \
+		|| ERR_EXIT "Cannot create $WAR from $BUILD_DIR!"
+}
+
+# Deploy webapp
+DEPLOY_WEBAPP () {
+	WAR=$1
+	printf "* Deploy $WAR ...\n"
+	RUN $SUDO $INSTALL -m 640 -o tomcat -g tomcat \
+		-pv $WAR /opt/tomcat/webapps/$WAR \
+		|| ERR_EXIT "cannot deploy $WAR!"
+}
+
 # Clean up $BUILD_DIR directory and $WAR file
 CLEANUP () {
 
@@ -138,15 +155,10 @@ RUN $INSTALL -pv ./config/aah/logback.xml \
 
 # Create aah.war
 WAR="aah.war"
-printf "* Create $WAR file ...\n"
-RUN $JAR cf $WAR -C $BUILD_DIR . \
-	|| ERR_EXIT "Cannot create $_WAR from $BUILD_DIR!"
+CREATE_WEBAPP $WAR
 
 # Deploy aah.war
-printf "* Deploy $WAR ...\n"
-# RUN $SUDO $INSTALL -m 640 -o tomcat -g tomcat \
-	# -pv $WAR /opt/tomcat/webapps/ \
-	# || ERR_EXIT "cannot deploy $WAR!"
+DEPLOY_WEBAPP $WAR
 
 # Clean up
 CLEANUP
@@ -189,15 +201,10 @@ RUN $PERL -pi -e 's/GUI_/aah_OLD/' $file \
 
 # Create aah_OLD.war
 WAR="aah_OLD.war"
-printf "* Create $WAR file ...\n"
-RUN $JAR cf $WAR -C $BUILD_DIR . \
-	|| ERR_EXIT "Cannot create $_WAR from $BUILD_DIR!"
+CREATE_WEBAPP $WAR
 
 # Deploy aah_OLD.war
-printf "* Deploy $WAR ...\n"
-# RUN $SUDO $INSTALL -m 640 -o tomcat -g tomcat \
-	# -pv $WAR /opt/tomcat/webapps/ \
-	# || ERR_EXIT "cannot deploy $WAR!"
+DEPLOY_WEBAPP $WAR
 
 # Clean up
 CLEANUP
@@ -236,15 +243,10 @@ RUN $INSTALL -pv $file $BUILD_DIR/WEB-INF/classes/ \
 
 # Create scheduler-web.war
 WAR="scheduler-web.war"
-printf "* Create $WAR file ...\n"
-RUN $JAR cf $WAR -C $BUILD_DIR . \
-	|| ERR_EXIT "Cannot create $_WAR from $BUILD_DIR!"
+CREATE_WEBAPP $WAR
 
 # Deploy scheduler-web.war
-printf "* Deploy $WAR ...\n"
-# RUN $SUDO $INSTALL -m 640 -o tomcat -g tomcat \
-	# -pv $WAR /opt/tomcat/webapps/ \
-	# || ERR_EXIT "cannot deploy $WAR!"
+DEPLOY_WEBAPP $WAR
 
 # Clean up
 CLEANUP
