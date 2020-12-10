@@ -170,7 +170,7 @@ printf "* Encrypt fdr password ...\n"
 p="fdrPassword"
 class_path="commons-codec-1.10.jar:tomcat-jdbc-7.0.52.jar:tomcat-juli-7.0.52.jar:GUI.jar"
 enc_string=$(cd $BUILD_DIR/WEB-INF/lib && \
-	RUN $JAVA -cp $class_path uk.co.microgen.tomcat.EncryptedDataSourceFactory -s fdr)		-q encrypt -t $(get_octopusvariable $p))
+	RUN $JAVA -cp $class_path uk.co.microgen.tomcat.EncryptedDataSourceFactory -s $p)
 [[ $? = 0 ]] || ERR_EXIT "Cannot encrypt password!"
 RUN $PERL -pi -e "s!###\($p\)###!$enc_string!" $file \
 	|| ERR_EXIT "Cannot modify $file!"
