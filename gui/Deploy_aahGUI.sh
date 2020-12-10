@@ -45,6 +45,25 @@ RUN () {
 	fi
 }
 
+# Extract WAR file
+EXTRACT_WAR_FILE () {
+
+	# Create $BUILD_DIR directory
+	printf "* Create $BUILD_DIR directory ...\n"
+	RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
+
+	# Extract $WAR file from $AAH_ZIP
+	WAR=$1
+	printf "* Extract $WAR ...\n"
+	RUN $UNZIP -j $AAH_ZIP $WAR \
+		|| ERR_EXIT "Cannot extract $WAR from $AAH_ZIP!"
+
+	# Unpack $WAR file to $BUILD_DIR
+	WAR=${WAR##*/}
+	RUN $UNZIP -q $WAR -d $BUILD_DIR \
+		|| ERR_EXIT "Cannot extract $WAR to $BUILD_DIR!"
+}
+
 # Clean up $BUILD_DIR directory and $WAR file
 CLEANUP () {
 
@@ -54,7 +73,7 @@ CLEANUP () {
 
 	# Clean up $WAR
 	printf "* Clean up $WAR ...\n"
-	# RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
+	# RUN $RM -f *.war || ERR_EXIT "Cannot remove war files!"
 }
 
 # Main ========================================================================
@@ -70,16 +89,8 @@ fi
 # Prepare aah.war file ----------------------------------------------
 printf "* Prepare aah.war file ...\n"
 
-# Create $BUILD_DIR directory
-printf "* Create $BUILD_DIR directory ...\n"
-RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
-
 # Extract aah.war file
-WAR="gui_application/Oracle/aah-web.war"
-printf "* Extract $WAR to $BUILD_DIR ...\n"
-RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
-[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] \
-	|| ERR_EXIT "Cannot extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR!"
+EXTRACT_WAR_FILE "gui_application/Oracle/aah-web.war"
 
 # Copy lib files
 for f in ojdbc8.jar orai18n.jar; do
@@ -127,16 +138,8 @@ CLEANUP
 # Prepare aah_OLD.war file ----------------------------------------------
 printf "* Prepare aah_OLD.war file ...\n"
 
-# Create $BUILD_DIR directory
-printf "* Create $BUILD_DIR directory ...\n"
-RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
-
 # Extract aah_OLD.war file
-WAR="gui_application/Oracle/GUI.war"
-printf "* Extract $WAR to $BUILD_DIR ...\n"
-RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
-[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] \
-	|| ERR_EXIT "Cannot extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR!"
+EXTRACT_WAR_FILE "gui_application/Oracle/GUI.war"
 
 # Copy lib files
 printf "* Copy ojdbc8.jar to $BUILD_DIR/WEB-INF/lib/ ...\n"
@@ -169,16 +172,8 @@ CLEANUP
 # Prepare scheduler-web.war file ----------------------------------------------
 printf "* Prepare scheduler-web.war file ...\n"
 
-# Create $BUILD_DIR directory
-printf "* Create $BUILD_DIR directory ...\n"
-RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
-
 # Extract scheduler-web.war file
-WAR="gui_application/scheduler/scheduler-web.war"
-printf "* Extract $WAR to $BUILD_DIR ...\n"
-RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
-[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] \
-	|| ERR_EXIT "Cannot extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR!"
+EXTRACT_WAR_FILE "gui_application/scheduler/scheduler-web.war"
 
 # Copy lib files
 for f in ojdbc8.jar orai18n.jar; do
