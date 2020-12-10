@@ -10,7 +10,7 @@
 		factory="uk.co.microgen.tomcat.EncryptedDataSourceFactory"
 		driverClassName="oracle.jdbc.OracleDriver"
 		connectionProperties="oracle.net.disableOob=true"
-		url="jdbc:oracle:thin:@//#{aptitudeDatabaseHost}:1521/#{aptitudeDatbaseServiceName}"
+		url="jdbc:oracle:thin:@//#{aptitudeDatabaseHost}:1521/#{aptitudeDatabaseServiceName}"
 		username="P1SDTn1ByYw=" password="dFP9XmhjDcidcr5gTQcOFIsQm9+1JmWi"
 		initialSize="10"
 		maxActive="250"
