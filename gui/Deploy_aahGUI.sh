@@ -4,9 +4,9 @@
 # Info    : Octopus Deploy.sh script for aahGUI package
 # Date    : 2018-10-03
 # Author  : Elli Wang
-# Version : 2020120901
+# Version : 2020121001
 # Note    :
-#   2020-12-09	Elli	GA 20.3.1.164
+#   2020-12-10	Elli	GA 20.3.1.164
 #   2018-10-02	Elli	GA 1.8.0
 ###############################################################################
 # Variables
@@ -61,7 +61,7 @@ printf "* Prepare aah.war file ...\n"
 printf "* Create $BUILD_DIR ...\n"
 [[ mkdir $BUILD_DIR ]] || ERR_EXIT "Cannot create $BUILD_DIR!"
 
-# Extract scheduler-web.war file
+# Extract aah.war file
 WAR="gui_application/Oracle/aah-web.war"
 printf "* Extract $WAR to $BUILD_DIR ...\n"
 RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
@@ -77,6 +77,7 @@ done
 
 # Copy application.properties
 # Need Octopus variable substitution
+printf "* Copy application.properties to $BUILD_DIR/WEB-INF/classes/ ...\n"
 RUN $INSTALL -pv ./config/aah/application.properties \
 	$BUILD_DIR/WEB-INF/classes/ \
 	|| ERR_EXIT "Cannot copy application.properties to $BUILD_DIR/WEB-INF/classes/!"
@@ -84,16 +85,18 @@ RUN $INSTALL -pv ./config/aah/application.properties \
 # Copy core.properties
 # Need Octopus variable substitution
 # Need to encrypt passwords
+printf "* Copy core.properties to $BUILD_DIR/WEB-INF/classes/ ...\n"
 RUN $INSTALL -pv ./config/aah/core.properties \
 	$BUILD_DIR/WEB-INF/classes/ \
 	|| ERR_EXIT "Cannot copy core.properties to $BUILD_DIR/WEB-INF/classes/!"
 
 # Copy logback.xml
+printf "* Copy logback.xml to $BUILD_DIR/WEB-INF/classes/ ...\n"
 RUN $INSTALL -pv ./config/aah/logback.xml \
 	$BUILD_DIR/WEB-INF/classes/ \
 	|| ERR_EXIT "Cannot copy logback.xml to $BUILD_DIR/WEB-INF/classes/!"
 
-# Create aah`.war
+# Create aah.war
 WAR="aah.war"
 printf "* Create $WAR file ...\n"
 RUN $JAR cf $WAR -C $BUILD_DIR . \
@@ -120,7 +123,7 @@ printf "* Prepare aah_OLD.war file ...\n"
 printf "* Create $BUILD_DIR ...\n"
 [[ mkdir $BUILD_DIR ]] || ERR_EXIT "Cannot create $BUILD_DIR!"
 
-# Extract scheduler-web.war file
+# Extract aah_OLD.war file
 WAR="gui_application/Oracle/GUI.war"
 printf "* Extract $WAR to $BUILD_DIR ...\n"
 RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
@@ -135,6 +138,7 @@ RUN $INSTALL -pv ./lib/ojdbc8.jar $BUILD_DIR/WEB-INF/lib/ \
 # Copy context.xml
 # Need Octopus variable substitution
 # Need to encrypt passwords
+printf "* Copy context.xml to $BUILD_DIR/META-INF/ ...\n"
 RUN $INSTALL -pv ./config/aah_OLD/context.xml \
 	$BUILD_DIR/META-INF/ \
 	|| ERR_EXIT "Cannot copy context.xml to $BUILD_DIR/META-INF/!"
@@ -183,6 +187,7 @@ done
 # Copy application.properties
 # Need Octopus variable substitution
 # Need to encrypt passwords
+printf "* Copy application.properties to $BUILD_DIR/WEB-INF/classes/ ...\n"
 RUN $INSTALL -pv ./config/scheduler-web/application.properties \
 	$BUILD_DIR/WEB-INF/classes/ \
 	|| ERR_EXIT "Cannot copy application.properties to $BUILD_DIR/WEB-INF/classes/!"
