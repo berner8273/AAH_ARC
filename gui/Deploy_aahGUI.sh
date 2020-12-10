@@ -164,13 +164,14 @@ RUN $INSTALL -pv ./lib/ojdbc8.jar $BUILD_DIR/WEB-INF/lib/ \
 
 # Copy context.xml
 # Need Octopus variable substitution
-# Encrypt passwords
+# Encrypt fdr password
 file="config/aah_OLD/context.xml"
 printf "* Encrypt fdr password ...\n"
 p="fdrPassword"
 class_path="commons-codec-1.10.jar:tomcat-jdbc-7.0.52.jar:tomcat-juli-7.0.52.jar:GUI.jar"
-enc_string=$(cd $BUILD_DIR/WEB-INF/lib && \
-	RUN $JAVA -cp $class_path uk.co.microgen.tomcat.EncryptedDataSourceFactory -s $p)
+enc_string=$(cd $BUILD_DIR/WEB-INF/lib && RUN $JAVA -cp $class_path \
+				uk.co.microgen.tomcat.EncryptedDataSourceFactory \
+				-s $(get_octopusvariable $p))
 [[ $? = 0 ]] || ERR_EXIT "Cannot encrypt password!"
 RUN $PERL -pi -e "s!###\($p\)###!$enc_string!" $file \
 	|| ERR_EXIT "Cannot modify $file!"
