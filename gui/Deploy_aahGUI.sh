@@ -78,7 +78,7 @@ RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
 WAR="gui_application/Oracle/aah-web.war"
 printf "* Extract $WAR to $BUILD_DIR ...\n"
 RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
-[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] || \
+[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] \
 	|| ERR_EXIT "Cannot extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR!"
 
 # Copy lib files
@@ -135,7 +135,7 @@ RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
 WAR="gui_application/Oracle/GUI.war"
 printf "* Extract $WAR to $BUILD_DIR ...\n"
 RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
-[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] || \
+[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] \
 	|| ERR_EXIT "Cannot extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR!"
 
 # Copy lib files
@@ -177,7 +177,7 @@ RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
 WAR="gui_application/scheduler/scheduler-web.war"
 printf "* Extract $WAR to $BUILD_DIR ...\n"
 RUN $UNZIP -p $AAH_ZIP $WAR | (cd $BUILD_DIR && RUN $JAR x)
-[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] || \
+[[ $(echo $PIPESTATUS[@]|grep -cE '^[0 ]+$') = 1 ]] \
 	|| ERR_EXIT "Cannot extract $GUI_WAR from $AAH_ZIP to $BUILD_DIR!"
 
 # Copy lib files
