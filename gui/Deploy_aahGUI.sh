@@ -24,7 +24,9 @@ WORK_BASE="$PWD"
 # Command variables
 INSTALL="/usr/bin/install"
 JAR="/usr/bin/jar"
+JAVA="/usr/bin/java"
 MKDIR="/usr/bin/mkdir"
+PERL="/usr/bin/perl"
 RM="/usr/bin/rm"
 SUDO="/usr/bin/sudo"
 UNZIP="/usr/bin/unzip"
@@ -62,6 +64,9 @@ EXTRACT_WAR_FILE () {
 	WAR=${WAR##*/}
 	RUN $UNZIP -q $WAR -d $BUILD_DIR \
 		|| ERR_EXIT "Cannot extract $WAR to $BUILD_DIR!"
+	
+	# Remove $WAR file
+	RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
 }
 
 # Clean up $BUILD_DIR directory and $WAR file
@@ -109,9 +114,21 @@ RUN $INSTALL -pv ./config/aah/application.properties \
 # Copy core.properties
 # Need Octopus variable substitution
 # Need to encrypt passwords
+# Encrypt passwords
+file="config/aah/core.properties"
+for p in aah_ui security_ui; do
+	printf "* Encrypt $p password ...\n"
+	p="${p}Password"
+	enc_string=$(RUN $JAVA -jar lib/aptitude-crypto-encryptor-cli-1.0-all.jar \
+		-q encrypt -t $(get_octopusvariable $p))
+	[[ $? = 0 ]] || ERR_EXIT "Cannot encrypt password!"
+	RUN $PERL -pi -e "s!###\($p\)###!$enc_string!" $file \
+		|| ERR_EXIT "Cannot modify $file!"
+done
+
+# Copy file
 printf "* Copy core.properties to $BUILD_DIR/WEB-INF/classes/ ...\n"
-RUN $INSTALL -pv ./config/aah/core.properties \
-	$BUILD_DIR/WEB-INF/classes/ \
+RUN $INSTALL -pv $file $BUILD_DIR/WEB-INF/classes/ \
 	|| ERR_EXIT "Cannot copy core.properties to $BUILD_DIR/WEB-INF/classes/!"
 
 # Copy logback.xml
@@ -154,6 +171,12 @@ RUN $INSTALL -pv ./config/aah_OLD/context.xml \
 	$BUILD_DIR/META-INF/ \
 	|| ERR_EXIT "Cannot copy context.xml to $BUILD_DIR/META-INF/!"
 
+# Modify log4j2.xml
+file="$BUILD_DIR/WEB-INF/classes/log4j2.xml"
+printf "* Modify $file ...\n"
+RUN $PERL -pi -e 's/GUI_/aah_OLD/' $file \
+	|| ERR_EXIT "Cannot modify $file!"
+
 # Create aah_OLD.war
 WAR="aah_OLD.war"
 printf "* Create $WAR file ...\n"
@@ -184,10 +207,21 @@ done
 
 # Copy application.properties
 # Need Octopus variable substitution
-# Need to encrypt passwords
+# Encrypt passwords
+file="config/scheduler-web/application.properties"
+for p in scheduler_ui security_ui; do
+	printf "* Encrypt $p password ...\n"
+	p="${p}Password"
+	enc_string=$(RUN $JAVA -jar lib/aptitude-crypto-encryptor-cli-1.0-all.jar \
+		-q encrypt -t $(get_octopusvariable $p))
+	[[ $? = 0 ]] || ERR_EXIT "Cannot encrypt password!"
+	RUN $PERL -pi -e "s!###\($p\)###!$enc_string!" $file \
+		|| ERR_EXIT "Cannot modify $file!"
+done
+
+# Copy file
 printf "* Copy application.properties to $BUILD_DIR/WEB-INF/classes/ ...\n"
-RUN $INSTALL -pv ./config/scheduler-web/application.properties \
-	$BUILD_DIR/WEB-INF/classes/ \
+RUN $INSTALL -pv $file $BUILD_DIR/WEB-INF/classes/ \
 	|| ERR_EXIT "Cannot copy application.properties to $BUILD_DIR/WEB-INF/classes/!"
 
 # Create scheduler-web.war
