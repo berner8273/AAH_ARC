@@ -4,9 +4,9 @@
 # Info    : Octopus Deploy.sh script for aahGUI package
 # Date    : 2018-10-03
 # Author  : Elli Wang
-# Version : 2020121001
+# Version : 2020121101
 # Note    :
-#   2020-12-10	Elli	GA 20.3.1.164
+#   2020-12-11	Elli	GA 20.3.1.164
 #   2018-10-02	Elli	GA 1.8.0
 ###############################################################################
 # Variables
@@ -47,12 +47,19 @@ RUN () {
 	fi
 }
 
+# Copy file
+COPY_FILE () {
+	printf "* Copy $1 to $2 ...\n"
+	RUN $INSTALL -pv $1 $2 || ERR_EXIT "Cannot copy $1 to $2!"
+}
+
 # Extract WAR file
 EXTRACT_WAR_FILE () {
 
 	# Create $BUILD_DIR directory
 	printf "* Create $BUILD_DIR directory ...\n"
-	RUN $MKDIR $BUILD_DIR || ERR_EXIT "Cannot create $BUILD_DIR directory!"
+	RUN $MKDIR $BUILD_DIR \
+		|| ERR_EXIT "Cannot create $BUILD_DIR directory!"
 
 	# Extract $WAR file from $AAH_ZIP
 	WAR=$1
@@ -91,7 +98,8 @@ CLEANUP () {
 
 	# Clean up $BUILD_DIR directory
 	printf "* Clean up $BUILD_DIR directory ...\n"
-	RUN $RM -rf $BUILD_DIR || ERR_EXIT "Cannot remove $BUILD_DIR directory!"
+	RUN $RM -rf $BUILD_DIR \
+		|| ERR_EXIT "Cannot remove $BUILD_DIR directory!"
 
 	# Clean up $WAR
 	printf "* Clean up $WAR ...\n"
@@ -116,17 +124,13 @@ EXTRACT_WAR_FILE "gui_application/Oracle/aah-web.war"
 
 # Copy lib files
 for f in ojdbc8.jar orai18n.jar; do
-	printf "* Copy $f to $BUILD_DIR/WEB-INF/lib/ ...\n"
-	RUN $INSTALL -pv ./lib/$f $BUILD_DIR/WEB-INF/lib/ \
-		|| ERR_EXIT "Cannot copy $f to $BUILD_DIR/WEB-INF/lib/!"
+	COPY_FILE "lib/$f" "$BUILD_DIR/WEB-INF/lib/"
 done
 
 # Copy application.properties
 # Need Octopus variable substitution
-printf "* Copy application.properties to $BUILD_DIR/WEB-INF/classes/ ...\n"
-RUN $INSTALL -pv ./config/aah/application.properties \
-	$BUILD_DIR/WEB-INF/classes/ \
-	|| ERR_EXIT "Cannot copy application.properties to $BUILD_DIR/WEB-INF/classes/!"
+COPY_FILE "config/aah/application.properties" \
+	"$BUILD_DIR/WEB-INF/classes/"
 
 # Copy core.properties
 # Need Octopus variable substitution
@@ -136,22 +140,17 @@ for p in aah_ui security_ui; do
 	printf "* Encrypt $p password ...\n"
 	p="${p}Password"
 	enc_string=$(RUN $JAVA -jar lib/aptitude-crypto-encryptor-cli-1.0-all.jar \
-		-q encrypt -t $(get_octopusvariable $p))
+				-q encrypt -t $(get_octopusvariable $p))
 	[[ $? = 0 ]] || ERR_EXIT "Cannot encrypt password!"
 	RUN $PERL -pi -e "s!###\($p\)###!$enc_string!" $file \
 		|| ERR_EXIT "Cannot modify $file!"
 done
 
 # Copy file
-printf "* Copy core.properties to $BUILD_DIR/WEB-INF/classes/ ...\n"
-RUN $INSTALL -pv $file $BUILD_DIR/WEB-INF/classes/ \
-	|| ERR_EXIT "Cannot copy core.properties to $BUILD_DIR/WEB-INF/classes/!"
+COPY_FILE $file "$BUILD_DIR/WEB-INF/classes/"
 
 # Copy logback.xml
-printf "* Copy logback.xml to $BUILD_DIR/WEB-INF/classes/ ...\n"
-RUN $INSTALL -pv ./config/aah/logback.xml \
-	$BUILD_DIR/WEB-INF/classes/ \
-	|| ERR_EXIT "Cannot copy logback.xml to $BUILD_DIR/WEB-INF/classes/!"
+COPY_FILE "config/aah/logback.xml" "$BUILD_DIR/WEB-INF/classes/"
 
 # Create aah.war
 WAR="aah.war"
@@ -170,9 +169,7 @@ printf "* Prepare aah_OLD.war file ...\n"
 EXTRACT_WAR_FILE "gui_application/Oracle/GUI.war"
 
 # Copy lib files
-printf "* Copy ojdbc8.jar to $BUILD_DIR/WEB-INF/lib/ ...\n"
-RUN $INSTALL -pv ./lib/ojdbc8.jar $BUILD_DIR/WEB-INF/lib/ \
-	|| ERR_EXIT "Cannot copy ojdbc8.jar to $BUILD_DIR/WEB-INF/lib/!"
+COPY_FILE "lib/ojdbc8.jar" "$BUILD_DIR/WEB-INF/lib/"
 
 # Copy context.xml
 # Need Octopus variable substitution
@@ -189,15 +186,21 @@ RUN $PERL -pi -e "s!###\($p\)###!$enc_string!" $file \
 	|| ERR_EXIT "Cannot modify $file!"
 
 # Copy file
-printf "* Copy context.xml to $BUILD_DIR/META-INF/ ...\n"
-RUN $INSTALL -pv $file $BUILD_DIR/META-INF/ \
-	|| ERR_EXIT "Cannot copy context.xml to $BUILD_DIR/META-INF/!"
+COPY_FILE $file "$BUILD_DIR/META-INF/"
 
 # Modify log4j2.xml
 file="$BUILD_DIR/WEB-INF/classes/log4j2.xml"
 printf "* Modify $file ...\n"
 RUN $PERL -pi -e 's/GUI_/aah_OLD/' $file \
 	|| ERR_EXIT "Cannot modify $file!"
+
+# Copy ApplicationResources.properties
+COPY_FILE "config/aah_OLD/ApplicationResources.properties" \
+	"$BUILD_DIR/WEB-INF/classes/resources/"
+
+# Copy UploadTemplate.csv
+COPY_FILE "config/aah_OLD/UploadTemplate.csv" \
+	"$BUILD_DIR/aah_OLD/client_specific/"
 
 # Create aah_OLD.war
 WAR="aah_OLD.war"
@@ -217,9 +220,7 @@ EXTRACT_WAR_FILE "gui_application/scheduler/scheduler-web.war"
 
 # Copy lib files
 for f in ojdbc8.jar orai18n.jar; do
-	printf "* Copy $f to $BUILD_DIR/WEB-INF/lib/ ...\n"
-	RUN $INSTALL -pv ./lib/$f $BUILD_DIR/WEB-INF/lib/ \
-		|| ERR_EXIT "Cannot copy $f to $BUILD_DIR/WEB-INF/lib/!"
+	COPY_FILE "lib/$f" "$BUILD_DIR/WEB-INF/lib/"
 done
 
 # Copy application.properties
@@ -237,9 +238,7 @@ for p in scheduler_ui security_ui; do
 done
 
 # Copy file
-printf "* Copy application.properties to $BUILD_DIR/WEB-INF/classes/ ...\n"
-RUN $INSTALL -pv $file $BUILD_DIR/WEB-INF/classes/ \
-	|| ERR_EXIT "Cannot copy application.properties to $BUILD_DIR/WEB-INF/classes/!"
+COPY_FILE $file "$BUILD_DIR/WEB-INF/classes/"
 
 # Create scheduler-web.war
 WAR="scheduler-web.war"
