@@ -1,0 +1,6 @@
+00101,Generic Upload Template,user,dd-MM-yyyy,N,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+LH,Source Journal Id,Coding Convention,Journal Type,Entity,Source System,Effective Date,Reversing Date,Comment,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+LL,Line Number,Value Date,Account,Transaciton Currency,Transaction Amount,Transaction Debit/Credit Indicator,Base Currency,Base Rate,Base Amount,Base Debit/Credit Indicator,Local Currency,Local Rate,Local Amount,Local Debit/Credit Indicator,Segment1,Segment2,Segment3,Segment4,Segment5,Segment6,Segment7,Segment8,Segment9,Segment10,Attribute1,Attribute2,Attribute3,Attribute4,Attribute5,Reference1,Reference2,Reference3,Reference4,Reference5,Reference6,Reference7,Reference8,Reference9,Reference10,Comment
+H,,Client Static,MADJPERC,SLRENTITY,GLOSS,07-01-2008,,Journal Header Comment,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+L,1,07-01-2008,ACCT1,USD,10,D,,,,,,,,,POSTSCHEMA,GAAP,BOOK,PRODUCT,INSTRUMENT,CPTY,,,,,NVS,SOURCESYS,,,,,,,,,,,,,,Comment
+L,2,07-01-2008,ACCT2,USD,-10,C,,,,,,,,,POSTSCHEMA,GAAP,BOOK,PRODUCT,INSTRUMENT,CPTY,,,,,NVS,SOURCESYS,,,,,,,,,,,,,,Comment
