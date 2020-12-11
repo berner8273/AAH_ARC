@@ -199,8 +199,7 @@ COPY_FILE "config/aah_OLD/ApplicationResources.properties" \
 	"$BUILD_DIR/WEB-INF/classes/resources/"
 
 # Copy UploadTemplate.csv
-COPY_FILE "config/aah_OLD/UploadTemplate.csv" \
-	"$BUILD_DIR/aah_OLD/client_specific/"
+COPY_FILE "config/aah_OLD/UploadTemplate.csv" "$BUILD_DIR/client_specific/"
 
 # Create aah_OLD.war
 WAR="aah_OLD.war"
