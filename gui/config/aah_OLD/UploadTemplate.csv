@@ -1,6 +1,0 @@
-101,Generic Upload Template,username,MM/dd/yyyy,N,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-LH,Source Journal Id,Coding Convention,Journal Type,Entity,Source System,Effective Date,Reversing Date,Comment,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-LL,* Line Number,* Value Date,* Account,* Transaction Currency,* Transaction Amount,* Transaction Debit/Credit Indicator, Base Currency, Base Rate,Base Amount,Base Debit/Credit Indicator,Local Currency, Local Rate,Local Amount,Local Debit/Credit Indicator,Ledger,Accounting Basis,Department,Affiliate,Chartfield1,Execution Type,Business Type,Policy/Policy sub,Spare,Spare,Stream,Tax Jurisdiction,Premium Type,Acc Event Type,Spare,Journal Description,Gross Stream Owner,Underwriting Year,Owner Entity,Business Event Type,Accident Year,Int/Ext Counterparty,Spare,Spare,Spare,* Comment
-H,12345,Client Static,MADJ_NONREVERSING,AGLTD,MADJGEN,8/30/2018,,Test Journal Entry,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-L,1,8/30/2018,13400320-01,USD,1,D,USD,1,1,D,USD,1,1,D,GAAP_ADJ,NVS,NVS,FSANY,NVS,NON_MTM,AA,60161,NVS,NVS,60509006,UK,M,,NVS,Test,,,,,,,,,,Test
-L,2,8/30/2018,13400320-01,USD,-1,C,USD,1,-1,C,USD,1,-1,C,GAAP_ADJ,NVS,NVS,FSANY,NVS,NON_MTM,AA,60161,NVS,NVS,60509006,UK,M,,NVS,Test,,,,,,,,,,Test
