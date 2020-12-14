@@ -30,7 +30,7 @@ conn ~slr_logon
 @@slr/Customisations_SLR.sql
 
 conn ~gui_logon
-/* @@gui/Customisations_GUI.sql */
+@@gui/Customisations_GUI.sql
 
 conn ~rdr_logon
 @@rdr/Customisations_RDR.sql
