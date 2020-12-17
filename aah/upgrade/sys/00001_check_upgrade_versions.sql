@@ -3,7 +3,7 @@ declare
 --    c_current_upgrade  constant varchar2 ( 50 char )  := '1-8-2';
     c_prior_upgrade    constant varchar2 ( 50 char )  := '1.10';
     c_current_upgrade  constant varchar2 ( 50 char )  := '1.10';
--
+
 --    c_core_version     constant varchar2 ( 50 char )  := 'V4.10b2.6 /O';
     c_core_version     constant varchar2 ( 50 char )  := 'V4.40b5 /O';
         
