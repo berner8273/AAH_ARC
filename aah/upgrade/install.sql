@@ -21,6 +21,9 @@ define unittest_login=~8
 
 
 /* Check AAH upgrade versions - do not remove */
+conn ~fdr_logon
+@@fdr/hot_fix_remove_old_upgrade.sql
+
 conn ~sys_logon
 @@sys/00001_check_upgrade_versions.sql
 
