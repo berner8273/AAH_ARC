@@ -1,5 +1,5 @@
 declare
-    v_version         varchar2 ( 50 char ) := '1.10';
+    v_version         varchar2 ( 50 char ) := '1-8-2';
     v_version_exists  varchar2 ( 1 char );
 begin
     select
