@@ -8593,7 +8593,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
           raise batch_critical_exception;
       END;
 
-      IF fnui_anything_to_post(journal_id_list,gSTATUS_VALIDATED) THEN
+      IF fnui_anything_to_post(lv_journal_id_list,gSTATUS_VALIDATED) THEN
         begin
 
             -- Set the flag used for Generating Last Balances for the current Bussiness date
@@ -8611,17 +8611,17 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
      
         --delete journals that failed posting from slr unposted tables, update journal status and copy errors to gui.--
-        prui_rollback_err_slr_journals(epg_id => epg_id,journal_id_list => journal_id_list, rollback_all => FALSE);
+        prui_rollback_err_slr_journals(epg_id => epg_id,journal_id_list => lv_journal_id_list, rollback_all => FALSE);
       COMMIT;
       
         --delete successfuly posted or future dated (awaiting posting 'W') journals from gui tables--
-        prui_delete_gui_journals(journal_id_list);
+        prui_delete_gui_journals(lv_journal_id_list);
         
       COMMIT;
       
       BEGIN
           --execute custom procedure after posting--
-          PGUI_JRNL_CUSTOM.prui_post_queued_journals(epg_id,journal_id_list);
+          PGUI_JRNL_CUSTOM.prui_post_queued_journals(epg_id,lv_journal_id_list);
           
       EXCEPTION
         WHEN OTHERS THEN
@@ -8639,7 +8639,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       WHEN batch_critical_exception THEN
         --delete all copied to slr journals, copy errors to gui--
         prui_rollback_err_slr_journals(epg_id => epg_id,journal_id_list => journal_id_list, rollback_all => TRUE);
-        prui_log_posting_error(epg_id => epg_id,journal_id_list => journal_id_list, error_message => 'There was an unexpected error during post to the subledger. Please inspect fr_log for details.');
+        prui_log_posting_error(epg_id => epg_id,journal_id_list => lv_journal_id_list, error_message => 'There was an unexpected error during post to the subledger. Please inspect fr_log for details.');
         commit;
         lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
         status := 'S';
@@ -8648,7 +8648,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         rollback;
         lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
         pr_error(1, SQLERRM, 0, 'prui_post_queued_journals', 'unexpected_error', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-        prui_log_posting_error(epg_id => epg_id,journal_id_list => journal_id_list, error_message => 'There was an unexpected error during post to the subledger. Please inspect fr_log for details.');
+        prui_log_posting_error(epg_id => epg_id,journal_id_list => lv_journal_id_list, error_message => 'There was an unexpected error during post to the subledger. Please inspect fr_log for details.');
         commit;
         status := 'E';
 
