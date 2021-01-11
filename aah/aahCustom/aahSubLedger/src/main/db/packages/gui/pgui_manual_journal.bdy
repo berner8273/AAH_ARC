@@ -1572,6 +1572,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     IS
         vEntityProcGroupName	VARCHAR2(20);
         lvValidateState CHAR(1);
+        vProcessID             VARCHAR2 (30) := '1';
         lvReversingDate DATE;
         v_jrnl_num_of_lines number(10,0);
 
@@ -1592,7 +1593,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         
 		  begin
 		  -- Combo Edit Check
-          pCombinationCheck_GJLU ('AG', SEQ_PROCESS_NUMBER.CURRVAL, 'M');
+          pCombinationCheck_GJLU ('AG', vProcessID, 'M');
 
           /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
           prui_lock_journal(journal_id,updated_by);
