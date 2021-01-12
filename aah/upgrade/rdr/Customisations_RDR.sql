@@ -19,7 +19,7 @@ set echo on
 @@112_RRV_AG_SLR_JRNL_LINES.sql
 
 -- load fixe up RDR_PKG
-@@rdr_pkg_body.sql
+--@@rdr_pkg_body.sql
 
 show errors
 

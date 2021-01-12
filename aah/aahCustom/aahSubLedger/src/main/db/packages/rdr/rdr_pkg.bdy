@@ -6,10 +6,8 @@ AS
 
     BEGIN
 
-    dbms_stats.gather_table_stats ( ownname => 'RDR' , tabname => 'RR_GLINT_JOURNAL_LINE' , cascade => true, no_invalidate => false );
-    commit;
 
-	 -- SET MANUALS PERIODS REQUESTS BACK TO N AND RECORD DATE
+      -- SET MANUALS PERIODS REQUESTS BACK TO N AND RECORD DATE
 
 		UPDATE fdr.fr_general_lookup
 			SET lk_lookup_value5 = 'N',
@@ -20,6 +18,10 @@ AS
 		WHERE     lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
              AND lk_lookup_value5 = 'Y';
 		COMMIT;
+
+
+    dbms_stats.gather_table_stats ( ownname => 'RDR' , tabname => 'RR_GLINT_JOURNAL_LINE' , cascade => true, no_invalidate => false );
+    commit;
 
     -- STORE THE MAPPING FROM SLR JOURNALS TO GLINT JOURNALS
     SELECT NVL (MAX (RGJL_ID), 0) INTO max_glint_id FROM RDR.RR_GLINT_TO_SLR_AG GTS;
@@ -43,7 +45,7 @@ AS
                     ,GJL.LEDGER_GROUP       AS G_LEDGER_GROUP
                     ,GJL.EVENT_CLASS        AS G_EVENT_CLASS
                     ,GJL.JH_JRNL_TYPE       AS G_JRNL_TYPE
-                    ,CASE WHEN GJL.MANUAL_JE = 'Y' THEN GJL.AAH_JRNL_HDR_NBR ELSE 0 END AS G_MANUAL_HEADER_ID
+                    ,CASE WHEN GJL.MANUAL_JE = 'Y' THEN GJL.AAH_JRNL_HDR_NBR ELSE '0' END AS G_MANUAL_HEADER_ID
             FROM RDR.RR_GLINT_JOURNAL_LINE GJL
         ) GJL
     JOIN
@@ -62,7 +64,7 @@ AS
                     ,SJL.JL_SEGMENT_1           AS S_LEDGER_GROUP        
                     ,sjh.JH_JRNL_TYPE           AS S_JRNL_TYPE
                     ,eh.EVENT_CLASS             AS S_EVENT_CLASS
-                    ,CASE WHEN jh_jrnl_type like 'MADJ%' THEN sjl.JL_JRNL_HDR_ID ELSE 0 END AS S_MANUAL_HEADER_ID
+                    ,CASE WHEN jh_jrnl_type like 'MADJ%' THEN sjl.JL_JRNL_HDR_ID ELSE '0' END AS S_MANUAL_HEADER_ID
             FROM     SLR.SLR_JRNL_LINES SJL
                 JOIN SLR.SLR_JRNL_HEADERS sjh ON sjh.JH_JRNL_ID = sjl.JL_JRNL_HDR_ID 
                 JOIN 
