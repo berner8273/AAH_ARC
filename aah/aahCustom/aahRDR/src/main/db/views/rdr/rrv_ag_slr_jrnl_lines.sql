@@ -1,7 +1,6 @@
 create or replace view rdr.rrv_ag_slr_jrnl_lines
 as
-select
-       jl.jl_jrnl_hdr_id
+select jl.jl_jrnl_hdr_id
      , jl.jl_jrnl_line_number
      , jl.jl_fak_id
      , jl.jl_eba_id
@@ -78,32 +77,26 @@ select
      , null                                                          jlu_period_ltd
      , null                                                          jlu_jrnl_internal_period_flag
      , null                                                          jlu_jrnl_ent_rate_set
-  from
-       slr.slr_jrnl_lines jl
-  left join ( select
-                     jl2.jl_eba_id
-                   , jl2.jl_epg_id
-                   , min( jl2.jl_reference_2 ) gross_stream_owner
-                   , min( jl2.jl_reference_4 ) owner_entity
-                   , min( jl2.jl_reference_7 ) int_ext_counterparty
-                from
-                     slr.slr_jrnl_lines jl2
-               group by
-                     jl2.jl_eba_id
-                   , jl2.jl_epg_id ) jl_reference        on jl.jl_eba_id = jl_reference.jl_eba_id
-                                                        and jl.jl_epg_id = jl_reference.jl_epg_id
-  left join ( select
-                     min( faei2.ae_client_spare_id14 )  correlation_uuid
-                   , min( faei2.ae_client_spare_id12 )  event_seq_id
-                   , min( faei2.ae_client_spare_id16 )  posting_indicator
-                   , ae_acc_event_id
-                from
-                     fdr.fr_accounting_event_imp faei2
-               group by
-                     faei2.ae_acc_event_id ) faei        on jl.jl_source_jrnl_id = faei.ae_acc_event_id
+from slr.slr_jrnl_lines jl
+left join (select jl2.jl_eba_id
+                , jl2.jl_epg_id
+                , min( jl2.jl_reference_2 ) gross_stream_owner
+                , min( jl2.jl_reference_4 ) owner_entity
+                , min( jl2.jl_reference_7 ) int_ext_counterparty
+           from slr.slr_jrnl_lines jl2
+           group by jl2.jl_eba_id
+                  , jl2.jl_epg_id ) jl_reference
+       on jl.jl_eba_id = jl_reference.jl_eba_id
+      and jl.jl_epg_id = jl_reference.jl_epg_id
+left join (select min( faei2.ae_client_spare_id14 )  correlation_uuid
+                , min( faei2.ae_client_spare_id12 )  event_seq_id
+                , min( faei2.ae_client_spare_id16 )  posting_indicator
+                , ae_acc_event_id
+           from fdr.fr_accounting_event_imp faei2
+           group by faei2.ae_acc_event_id) faei
+       on jl.jl_source_jrnl_id = faei.ae_acc_event_id
 union all
-select
-       jlu.jlu_jrnl_hdr_id
+select jlu.jlu_jrnl_hdr_id
      , jlu.jlu_jrnl_line_number
      , jlu.jlu_fak_id
      , jlu.jlu_eba_id
@@ -148,12 +141,12 @@ select
      , jlu.jlu_created_on
      , jlu.jlu_amended_by
      , jlu.jlu_amended_on
-     , null                                  jl_recon_status
-     , null                                  jl_translation_date
-     , null                                  jl_bus_posting_date
-     , null                                  jl_period_month
-     , null                                  jl_period_year
-     , null                                  jl_period_ltd
+     , null jl_recon_status
+     , null jl_translation_date
+     , null jl_bus_posting_date
+     , null jl_period_month
+     , null jl_period_year
+     , null jl_period_ltd
      , jlu.jlu_type
      , faei.correlation_uuid
      , faei.event_seq_id
@@ -180,23 +173,19 @@ select
      , jlu.jlu_period_ltd
      , jlu.jlu_jrnl_internal_period_flag
      , jlu.jlu_jrnl_ent_rate_set
-  from
-       slr.slr_jrnl_lines_unposted jlu
-  left join ( select
-                     min( faei2.ae_client_spare_id14 )  correlation_uuid
-                   , min( faei2.ae_client_spare_id12 )  event_seq_id
-                   , min( faei2.ae_client_spare_id16 )  posting_indicator
-                   , ae_acc_event_id
-                from
-                     fdr.fr_accounting_event_imp faei2
-               group by
-                     faei2.ae_acc_event_id ) faei        on jlu.jlu_source_jrnl_id = faei.ae_acc_event_id
+from slr.slr_jrnl_lines_unposted jlu
+left join (select min( faei2.ae_client_spare_id14 )  correlation_uuid
+                , min( faei2.ae_client_spare_id12 )  event_seq_id
+                , min( faei2.ae_client_spare_id16 )  posting_indicator
+                , ae_acc_event_id
+           from fdr.fr_accounting_event_imp faei2
+           group by faei2.ae_acc_event_id) faei
+       on jlu.jlu_source_jrnl_id = faei.ae_acc_event_id
 union all
-select
-       gjlu.jlu_jrnl_hdr_id
+select CAST(STANDARD_HASH(gjlu.jlu_jrnl_hdr_id, 'MD5') AS VARCHAR2(32))
      , gjlu.jlu_jrnl_line_number
-     , gjlu.jlu_fak_id
-     , gjlu.jlu_eba_id
+     , CAST(gjlu.jlu_fak_id AS VARCHAR2(32))
+     , CAST(gjlu.jlu_eba_id AS VARCHAR2(32))
      , decode (jle.jle_error_code, null, gjlu.jlu_jrnl_status, 'E')               jlu_jrnl_status
      , nvl( substr( jle.jle_error_string , 1 , 20 ) , gjlu.jlu_jrnl_status_text ) jlu_jrnl_status_text
      , jlu_jrnl_process_id
@@ -238,16 +227,16 @@ select
      , jlu_created_on
      , jlu_amended_by
      , jlu_amended_on
-     , null                                                                   jl_recon_status
-     , null                                                                   jl_translation_date
-     , null                                                                   jl_bus_posting_date
-     , null                                                                   jl_period_month
-     , null                                                                   jl_period_year
-     , null                                                                   jl_period_ltd
-     , null                                                                   jl_type
-     , null                                                                   correlation_uuid
-     , null                                                                   event_seq_id
-     , null                                                                   posting_indicator
+     , null jl_recon_status
+     , null jl_translation_date
+     , null jl_bus_posting_date
+     , null jl_period_month
+     , null jl_period_year
+     , null jl_period_ltd
+     , null jl_type
+     , null correlation_uuid
+     , null event_seq_id
+     , null posting_indicator
      , jlu_jrnl_type
      , jlu_jrnl_date
      , jlu_jrnl_description
@@ -262,21 +251,18 @@ select
      , jlu_jrnl_total_hash_debit
      , jlu_jrnl_total_hash_credit
      , jlu_jrnl_pref_static_src
-     , jlu_jrnl_ref_id
+     , CAST(DECODE(jlu_jrnl_ref_id, NULL, NULL, STANDARD_HASH(jlu_jrnl_ref_id, 'MD5')) AS VARCHAR2(32)) jlu_jrnl_ref_id
      , jlu_jrnl_rev_date
      , jlu_translation_date
      , jlu_period_month
      , jlu_period_year
      , jlu_period_ltd
-     , null                                                                   jlu_jrnl_internal_period_flag
-     , null                                                                   jlu_jrnl_ent_rate_set
-  from
-       gui.gui_jrnl_lines_unposted gjlu
-  left join ( select
-                     jle1.jle_jrnl_hdr_id
-                   , min( jle1.jle_error_code )   jle_error_code
-                   , min( jle1.jle_error_string ) jle_error_string
-                from
-                     gui.gui_jrnl_line_errors jle1
-               group by
-                     jle1.jle_jrnl_hdr_id ) jle   on gjlu.jlu_jrnl_hdr_id = jle.jle_jrnl_hdr_id;
+     , null jlu_jrnl_internal_period_flag
+     , null jlu_jrnl_ent_rate_set
+from gui.gui_jrnl_lines_unposted gjlu
+left join (select jle1.jle_jrnl_hdr_id
+                , min( jle1.jle_error_code )   jle_error_code
+                , min( jle1.jle_error_string ) jle_error_string
+           from gui.gui_jrnl_line_errors jle1
+           group by jle1.jle_jrnl_hdr_id ) jle
+       on gjlu.jlu_jrnl_hdr_id = jle.jle_jrnl_hdr_id;
