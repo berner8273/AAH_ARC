@@ -43,7 +43,7 @@ conn ~rdr_logon
 
 conn ~fdr_logon
 
-conn ~stn_logo
+conn ~stn_logon
 @@stn/us44041_period_status.sql
 
 /* End AAH custom upgrades */
