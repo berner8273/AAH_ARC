@@ -38,7 +38,7 @@ conn ~gui_logon
 
 conn ~rdr_logon
 @@rdr/Customisations_RDR.sql
-@@rdr/US53039_glint_journal_line_views.sql
+@@rdr/us53039_glint_journal_line_views.sql
 @@rdr/us44041_rdr_pkg_bdy.sql
 
 conn ~fdr_logon

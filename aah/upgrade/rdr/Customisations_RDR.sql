@@ -14,7 +14,7 @@ set echo on
 @@106_migrate_RR_GLINT_JOURNAL_MAPPING.sql
 
 -- fix glint views that the upgrade causes problems for (types changed by hashing)
-@@110_RCV_GLINT_JOURNAL_LINE.sql
+--@@110_RCV_GLINT_JOURNAL_LINE.sql
 @@111_RRV_AG_SLR_JRNL_HEADERS.sql
 @@112_RRV_AG_SLR_JRNL_LINES.sql
 
