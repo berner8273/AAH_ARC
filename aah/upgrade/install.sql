@@ -34,11 +34,17 @@ conn ~slr_logon
 
 conn ~gui_logon
 @@gui/Customisations_GUI.sql
+@@gui/us44041_ui_field.sql
 
 conn ~rdr_logon
 @@rdr/Customisations_RDR.sql
+@@rdr/US53039_glint_journal_line.sql
+@@rdr/us44041_rdr_pkg_bdy.sql
 
 conn ~fdr_logon
+
+conn ~stn_logo
+@@stn/us44041_period_status.sql
 
 /* End AAH custom upgrades */
 
