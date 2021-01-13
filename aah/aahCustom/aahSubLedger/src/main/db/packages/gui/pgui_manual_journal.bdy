@@ -2573,10 +2573,6 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
             lvSuccess := gSTATE_ERRORED;
         END IF;
 
-        IF NOT fnui_validate_account THEN
-            lvSuccess := gSTATE_ERRORED;
-        END IF;
-
         IF NOT fnui_validate_acc_event_type THEN
             lvSuccess := gSTATE_ERRORED;
         END IF;
