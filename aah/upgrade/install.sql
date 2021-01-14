@@ -26,7 +26,6 @@ conn ~fdr_logon
 
 conn ~sys_logon
 @@sys/00001_check_upgrade_versions.sql
-@@sys/add_back_security.sql
 
 /* Begin AAH custom upgrades */
 
@@ -46,6 +45,9 @@ conn ~fdr_logon
 
 conn ~stn_logon
 @@stn/us44041_period_status.sql
+
+conn ~sys_logon
+@@sys/add_back_security.sql
 
 /* End AAH custom upgrades */
 
