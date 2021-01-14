@@ -26,6 +26,7 @@ conn ~fdr_logon
 
 conn ~sys_logon
 @@sys/00001_check_upgrade_versions.sql
+@@sys/add_back_security.sql
 
 /* Begin AAH custom upgrades */
 

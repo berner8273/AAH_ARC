@@ -54,7 +54,8 @@ function runIntraDay()
     runStep SLRpUpdateJLU
     runStep SLRpProcess
 
-    runStep GLINTExtract
+    # glint no longer run as part of intraday
+    #runStep GLINTExtract
 
     runStep AutoResubmitTransactions
     runStep CheckResubmittedErrors
