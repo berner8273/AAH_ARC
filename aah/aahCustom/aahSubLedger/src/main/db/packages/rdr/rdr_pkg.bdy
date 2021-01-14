@@ -8,16 +8,12 @@ AS
 
 
       -- SET MANUALS PERIODS REQUESTS BACK TO N AND RECORD DATE
-
 		UPDATE fdr.fr_general_lookup
 			SET lk_lookup_value5 = 'N',
-				lk_lookup_value6 =
-                CONCAT (
-                   CONCAT (TO_CHAR (SYSDATE, 'MM-DD-YYYY HH:MI:SS'), '  '),
-                   lk_input_by)
+				lk_lookup_value6 =  TO_CHAR (SYSDATE, 'MM-DD-YYYY HH:MI:SS')
 		WHERE     lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
-             AND lk_lookup_value5 = 'Y';
-		COMMIT;
+             and lk_match_key4 = (select min(lk_match_key4) from fdr.fr_general_lookup where lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD' and lk_lookup_value1 = 'O' );
+		COMMIT;      
 
 
     dbms_stats.gather_table_stats ( ownname => 'RDR' , tabname => 'RR_GLINT_JOURNAL_LINE' , cascade => true, no_invalidate => false );
