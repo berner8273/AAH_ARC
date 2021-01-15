@@ -4,8 +4,9 @@
 # Info    : Octopus Deploy.sh script for aahGUI package
 # Date    : 2018-10-03
 # Author  : Elli Wang
-# Version : 2020121101
+# Version : 2021011501
 # Note    :
+#   2021-01-15	Elli	Add session timeout
 #   2020-12-11	Elli	GA 20.3.1.164
 #   2018-10-02	Elli	GA 1.8.0
 ###############################################################################
@@ -20,6 +21,7 @@ AAH_SRC="/aah/src"
 AAH_ZIP="$AAH_SRC/AAH.zip"
 BUILD_DIR="build"
 WORK_BASE="$PWD"
+session_timeout=$(get_octopusvariable SessionTimeout)
 
 # Command variables
 INSTALL="/usr/bin/install"
@@ -74,6 +76,17 @@ EXTRACT_WAR_FILE () {
 	
 	# Remove $WAR file
 	RUN $RM -f $WAR || ERR_EXIT "Cannot remove $WAR!"
+}
+
+# Update session timeout
+UPDATE_SESSION_TIMEOUT () {
+	file= $1
+	timeout=$2
+	printf "* Update session timeout on $file ...\n"
+	[[ $timeout =~ ^[0-9]+$ ]] \
+		|| ERR_EXIT "Timeout ($timeout) is not a valid!"
+	RUN $PERL -pi -e "s/>\d+</>${timeout}</ if /^\s*<session-timeout>/" $file \
+		|| ERR_EXIT "Cannot modify $file!"
 }
 
 # Create webapp
@@ -152,6 +165,10 @@ COPY_FILE $file "$BUILD_DIR/WEB-INF/classes/"
 # Copy logback.xml
 COPY_FILE "config/aah/logback.xml" "$BUILD_DIR/WEB-INF/classes/"
 
+# Update session timeout
+UPDATE_SESSION_TIMEOUT \
+	"$BUILD_DIR/WEB-INF/web.xml" $session_timeout
+
 # Create aah.war
 WAR="aah.war"
 CREATE_WEBAPP $WAR
@@ -200,6 +217,10 @@ COPY_FILE "config/aah_OLD/ApplicationResources.properties" \
 
 # Copy UploadTemplate.csv
 COPY_FILE "config/aah_OLD/UploadTemplate.csv" "$BUILD_DIR/client_specific/"
+
+# Update session timeout
+UPDATE_SESSION_TIMEOUT \
+	"$BUILD_DIR/WEB-INF/web.xml" $session_timeout
 
 # Create aah_OLD.war
 WAR="aah_OLD.war"
