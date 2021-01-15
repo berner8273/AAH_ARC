@@ -115,7 +115,8 @@ SELECT /*+parallel*/
         CASE WHEN jl_reference_8 = 'NVS' THEN ' ' ELSE jl_reference_8 END AS jl_reference_8,
         CASE WHEN jl_reference_9 = 'NVS' THEN ' ' ELSE jl_reference_9 END AS jl_reference_9,
         CASE WHEN jl_reference_10 = 'NVS' THEN ' ' ELSE jl_reference_10 END AS jl_reference_10,
-        CAST (jl_tran_ccy AS VARCHAR2 (3)) AS jl_tran_ccy,        
+        CAST (jl_tran_ccy AS VARCHAR2 (3)) AS jl_tran_ccy,  
+        ROUND (jl_tran_amount, 2) AS jl_tran_amount,      
         CASE
              WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ')
              THEN
