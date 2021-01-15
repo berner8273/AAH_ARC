@@ -50,20 +50,25 @@ SELECT /*+parallel*/
         CASE WHEN jl_reference_8 = 'NVS' THEN ' ' ELSE jl_reference_8 END AS jl_reference_8,
         CASE WHEN jl_reference_9 = 'NVS' THEN ' ' ELSE jl_reference_9 END AS jl_reference_9,
         CASE WHEN jl_reference_10 = 'NVS' THEN ' ' ELSE jl_reference_10 END AS jl_reference_10,
-        CAST (jl_tran_ccy AS VARCHAR2 (3)) AS jl_tran_ccy,
-        ROUND (jl_tran_amount, 2) AS jl_tran_amount,
-        jl_base_rate,
+        CAST (jl_tran_ccy AS VARCHAR2 (3)) AS jl_tran_ccy,        
         CASE
-             WHEN JL_SEGMENT_1 = 'UKGAAP_ADJ'
+             WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ')
+             THEN
+                jl_local_rate
+             ELSE
+                jl_base_rate
+          END jl_base_rate,
+          CASE
+             WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ')
              THEN
                 CAST (jl_local_ccy AS VARCHAR2 (3))
              ELSE
                 CAST (jl_base_ccy AS VARCHAR2 (3))
-        END AS jl_base_ccy,
-        CASE
-             WHEN JL_SEGMENT_1 = 'UKGAAP_ADJ' THEN ROUND (jl_local_amount, 2)
+          END AS jl_base_ccy,
+          CASE
+             WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ') THEN ROUND (jl_local_amount, 2)
              ELSE ROUND (jl_base_amount, 2)
-        END AS jl_base_amount,
+          END AS jl_base_amount,
         jl_local_rate,
         jl_local_ccy,
         ROUND (jl_local_amount, 2) AS jl_local_amount,
