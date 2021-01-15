@@ -80,13 +80,13 @@ EXTRACT_WAR_FILE () {
 
 # Update session timeout
 UPDATE_SESSION_TIMEOUT () {
-	file= $1
+	f=$1
 	timeout=$2
-	printf "* Update session timeout on $file ...\n"
+	printf "* Update session timeout on $f ...\n"
 	[[ $timeout =~ ^[0-9]+$ ]] \
 		|| ERR_EXIT "Timeout ($timeout) is not a valid!"
-	RUN $PERL -pi -e "s/>\d+</>${timeout}</ if /^\s*<session-timeout>/" $file \
-		|| ERR_EXIT "Cannot modify $file!"
+	RUN $PERL -pi -e "s/>\d+</>${timeout}</ if /^\s*<session-timeout>/" $f \
+		|| ERR_EXIT "Cannot modify $f!"
 }
 
 # Create webapp
