@@ -15,8 +15,8 @@ set echo on
 
 -- fix glint views that the upgrade causes problems for (types changed by hashing)
 
-@@../aahCustom/aahRDR/src/main/db/views/rdr/rrv_ag_slr_jrnl_headers.sql
-@@../aahCustom/aahRDR/src/main/db/views/rdr/rrv_ag_slr_jrnl_lines.sql
+--@@../aahCustom/aahRDR/src/main/db/views/rdr/rrv_ag_slr_jrnl_headers.sql
+--@@../aahCustom/aahRDR/src/main/db/views/rdr/rrv_ag_slr_jrnl_lines.sql
 
 
 show errors
