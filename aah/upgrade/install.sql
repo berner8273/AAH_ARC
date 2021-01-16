@@ -30,21 +30,15 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~slr_logon
-@@slr/Customisations_SLR.sql
 
 conn ~gui_logon
-@@gui/Customisations_GUI.sql
-@@gui/us44041_ui_field.sql
 
 conn ~rdr_logon
---@@rdr/Customisations_RDR.sql --moved this to a separate branch and deploy
-@@rdr/us53039_rcv_glint_journal_line_views.sql
-@@rdr/us44041_rdr_pkg_bdy.sql
+@@rdr/Customisations_RDR.sql
 
 conn ~fdr_logon
 
 conn ~stn_logon
-@@stn/us44041_period_status.sql
 
 conn ~sys_logon
 @@sys/add_back_security.sql
