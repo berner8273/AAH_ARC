@@ -40,6 +40,7 @@ conn ~rdr_logon
 --@@rdr/Customisations_RDR.sql --moved this to a separate branch and deploy
 @@rdr/us53039_rcv_glint_journal_line_views.sql
 @@rdr/us44041_rdr_pkg_bdy.sql
+@@rdr/pg_glint_hdr.sql
 
 conn ~fdr_logon
 
