@@ -28,5 +28,5 @@ create global temporary table slr.slr_fak_bop_amounts_tmp3
 	YEAR_QTR VARCHAR2(5 BYTE),
 	YEAR VARCHAR2(4 BYTE),
 	LAST_IN_YR VARCHAR2(2 BYTE)
-)
+	)
 on commit preserve rows; 
