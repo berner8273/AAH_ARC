@@ -43,6 +43,7 @@ conn ~rdr_logon
 @@rdr/pg_glint_hdr.sql
 
 conn ~fdr_logon
+@@fdr/purge_dup_combo_rules.sql
 
 conn ~stn_logon
 @@stn/us44041_period_status.sql
