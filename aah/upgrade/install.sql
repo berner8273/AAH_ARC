@@ -36,6 +36,9 @@ conn ~gui_logon
 @@gui/Customisations_GUI.sql
 @@gui/us44041_ui_field.sql
 
+conn ~stn_logon
+@@stn/us44041_period_status.sql
+
 conn ~rdr_logon
 --@@rdr/Customisations_RDR.sql --moved this to a separate branch and deploy
 @@rdr/us53039_rcv_glint_journal_line_views.sql
@@ -45,8 +48,6 @@ conn ~rdr_logon
 conn ~fdr_logon
 @@fdr/purge_dup_combo_rules.sql
 
-conn ~stn_logon
-@@stn/us44041_period_status.sql
 
 conn ~sys_logon
 @@sys/add_back_security.sql
