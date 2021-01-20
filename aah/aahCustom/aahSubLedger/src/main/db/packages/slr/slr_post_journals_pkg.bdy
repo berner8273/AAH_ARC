@@ -650,7 +650,7 @@ PROCEDURE pPostJournals
             FROM V_SLR_JRNL_LINES_UNPOSTED_JT
             WHERE JLU_EPG_ID = ''' || p_epg_id || '''
               AND JLU_JRNL_STATUS = ''' || p_status || '''
-              AND JT_BALANCE_TYPE_NUMBER = 1
+              AND JT_BALANCE_TYPE = 1
         ';
         SLR_ADMIN_PKG.PerfInfo( 'JL. Journal lines query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
         SLR_ADMIN_PKG.Debug('Lines inserted into SLR_JRNL_LINES');
