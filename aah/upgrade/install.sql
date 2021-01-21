@@ -24,14 +24,35 @@ define unittest_login=~8
 conn ~fdr_logon
 @@fdr/hot_fix_remove_old_upgrade.sql
 
+conn ~stn_logon
+@@stn/us44041_period_status.sql
+@@stn/hotfix_cev_hint.sql
+
 conn ~sys_logon
 @@sys/00001_check_upgrade_versions.sql
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
-@@stn/hotfix_cev_hint.sql
+conn ~slr_logon
+@@slr/Customisations_SLR.sql
 
+conn ~gui_logon
+@@gui/Customisations_GUI.sql
+@@gui/us44041_ui_field.sql
+
+conn ~rdr_logon
+--@@rdr/Customisations_RDR.sql --moved this to a separate branch and deploy
+@@rdr/us53039_rcv_glint_journal_line_views.sql
+@@rdr/us44041_rdr_pkg_bdy.sql
+@@rdr/pg_glint_hdr.sql
+
+conn ~fdr_logon
+@@fdr/purge_dup_combo_rules.sql
+
+
+
+conn ~sys_logon
+@@sys/add_back_security.sql
 
 /* End AAH custom upgrades */
 
