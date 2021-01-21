@@ -395,7 +395,7 @@ and not exists (
                       , lpg_id
                       , account_cd
                    from (
-                            select /*+ parallel(8)*/
+                            select 
                                    nvl( gfa.gaap_fut_accts_flag , 'N' )                                    gaap_fut_accts_flag
                                  , nvl2( pmdl.le_cd , 'Y' , 'N' )                                          le_flag
                                  , rank () over ( order by
