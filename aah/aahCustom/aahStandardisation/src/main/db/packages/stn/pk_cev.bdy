@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY     PK_CEV AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_CEV AS
     PROCEDURE pr_cession_event_idf
         (
             p_lpg_id IN NUMBER,
@@ -390,7 +390,7 @@ and not exists (
                       , reporting_ccy
                       , lpg_id
                    from (
-                            select 
+                            select
                                    nvl( gfa.gaap_fut_accts_flag , 'N' )                                    gaap_fut_accts_flag
                                  , nvl2( pmdl.le_cd , 'Y' , 'N' )                                          le_flag
                                  , rank () over ( order by
@@ -2210,7 +2210,7 @@ end AS VIE_BU_ACCOUNT_LOOKUP
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
                 --LEFT  JOIN stn.insurance_policy_reference ipr ON ipr.stream_id = ce.STREAM_ID
                 LEFT  JOIN fdr.fr_trade ipr ON   ce.STREAM_ID = ipr.t_source_tran_no
-            WHERE
+            WHERE 
             ce.EVENT_STATUS='U' and
              --ipr.stream_id is null
             ipr.t_source_tran_no is null
@@ -2549,7 +2549,7 @@ and not exists (
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
                     vdl.VALIDATION_CD = 'ce-correlation_uuid_dup'
-                and ce.EVENT_STATUS = 'U'
+                and ce.EVENT_STATUS = 'U' 
                 and exists (
                    select
                            1
