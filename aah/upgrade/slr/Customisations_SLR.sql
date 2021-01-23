@@ -18,8 +18,10 @@ drop table SLR.SLR_EBA_BOP_AMOUNTS_TMP3;
 @@013_SLR_EBA_BOP_AMOUNTS_TMP3.sql;
 
 -- Reload the views - make sure we have the QTD and QTR values in them.
-@@020_V_SLR_JRNL_LINES_UNPOSTED_JT.sql
-@@021_V_SLR_JOURNAL_LINES.sql
+--@@020_V_SLR_JRNL_LINES_UNPOSTED_JT.sql
+--@@021_V_SLR_JOURNAL_LINES.sql
+@@../aahCustom/aahSubLedger/src/main/db/views/slr/v_slr_jrnl_lines_unposted_jt.sql
+@@../aahCustom/aahSubLedger/src/main/db/views/slr/v_slr_jrnl_lines.sql
 
 -- Load the SLR packages
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.hdr

@@ -1,13 +1,13 @@
-create or replace package slr.slr_balance_movement_pkg as
+create or replace PACKAGE SLR_BALANCE_MOVEMENT_PKG AS 
 
-
+  
 procedure pBMRunBalanceMovementProcess( pProcess     IN slr_process.p_process%TYPE
                                          ,pEntProcSet  IN slr_bm_entity_processing_set.bmeps_set_id%TYPE
                                          ,pConfig      IN slr_process_config.pc_config%TYPE
                                          ,pSource      IN slr_process_source.sps_source_name%TYPE
                                          ,pBalanceDate IN DATE
                                          ,pRateSet     IN slr_entity_rates.er_entity_set%type
-										 ,gProcId OUT number
+										 ,gProcId OUT number 
                                         );
 PROCEDURE pBMUpdateJLUFakEbaId(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type);
 
@@ -38,7 +38,7 @@ PROCEDURE pBMFxPnLSweep(lines_created out INTEGER);
 PROCEDURE pBMPositionRebalancing(lines_created out INTEGER);
 PROCEDURE pBMFXClearDown(lines_created out INTEGER);
 PROCEDURE pBMPLRepatriation(lines_created out INTEGER);
-PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER);
+PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER); 
 PROCEDURE pBMValidateConfigForEPG;
 
 
@@ -84,4 +84,3 @@ TYPE gtFAKBalanceKey IS record (
 /*global declarations*/
 
 END SLR_BALANCE_MOVEMENT_PKG;
-/
