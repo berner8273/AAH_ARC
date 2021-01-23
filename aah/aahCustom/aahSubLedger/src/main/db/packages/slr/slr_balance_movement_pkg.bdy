@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY     slr_balance_movement_pkg as
+create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
   PROCEDURE pBMTraceJob(pDescription IN VARCHAR2, pSQL IN VARCHAR2) AS
     PRAGMA AUTONOMOUS_TRANSACTION;
