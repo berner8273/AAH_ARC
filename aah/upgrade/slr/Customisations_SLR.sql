@@ -21,7 +21,7 @@ drop table SLR.SLR_EBA_BOP_AMOUNTS_TMP3;
 --@@020_V_SLR_JRNL_LINES_UNPOSTED_JT.sql
 --@@021_V_SLR_JOURNAL_LINES.sql
 @@../aahCustom/aahSubLedger/src/main/db/views/slr/v_slr_jrnl_lines_unposted_jt.sql
-@@../aahCustom/aahSubLedger/src/main/db/views/slr/v_slr_jrnl_lines.sql
+@@../aahCustom/aahSubLedger/src/main/db/views/slr/v_slr_journal_lines.sql
 
 -- Load the SLR packages
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.hdr
