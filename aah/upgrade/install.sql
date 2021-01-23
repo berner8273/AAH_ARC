@@ -24,14 +24,14 @@ define unittest_login=~8
 conn ~fdr_logon
 @@fdr/hot_fix_remove_old_upgrade.sql
 
-conn ~stn_logon
-@@stn/us44041_period_status.sql
-@@stn/hotfix_cev_hint.sql
-
 conn ~sys_logon
 @@sys/00001_check_upgrade_versions.sql
 
 /* Begin AAH custom upgrades */
+
+conn ~stn_logon
+@@stn/us44041_period_status.sql
+@@stn/hotfix_cev_hint.sql
 
 conn ~slr_logon
 @@slr/Customisations_SLR.sql
