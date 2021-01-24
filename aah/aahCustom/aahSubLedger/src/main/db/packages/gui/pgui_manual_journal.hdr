@@ -297,3 +297,4 @@ CREATE OR REPLACE PACKAGE GUI.PGUI_MANUAL_JOURNAL AS
 --    gJournalLineNumber	NUMBER(12) := -1;
 
 END pgui_manual_journal;
+/
