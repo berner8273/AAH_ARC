@@ -1,8 +1,4 @@
---------------------------------------------------------
---  DDL for Package Body SLR_CLIENT_PROCEDURES_PKG
---------------------------------------------------------
-
-  create or replace PACKAGE BODY        "SLR"."SLR_CLIENT_PROCEDURES_PKG" AS
+create or replace PACKAGE BODY        SLR.SLR_CLIENT_PROCEDURES_PKG AS
 ---------------------------------------------------------------------------------
 -- Id:          $Id: SLR_CLIENT_PROCEDURES_PKG.sql,v 1 2007/08/22 11:17:51 jporter Exp $
 --
