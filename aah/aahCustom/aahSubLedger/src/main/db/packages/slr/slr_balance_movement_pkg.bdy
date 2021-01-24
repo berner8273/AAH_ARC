@@ -2464,3 +2464,4 @@ BEGIN
 end pBMGetLatestBalance;
 
 END SLR_BALANCE_MOVEMENT_PKG;
+/

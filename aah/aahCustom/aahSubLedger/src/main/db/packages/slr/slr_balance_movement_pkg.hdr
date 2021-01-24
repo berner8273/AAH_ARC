@@ -84,3 +84,4 @@ TYPE gtFAKBalanceKey IS record (
 /*global declarations*/
 
 END SLR_BALANCE_MOVEMENT_PKG;
+/
