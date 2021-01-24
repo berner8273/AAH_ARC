@@ -29,12 +29,12 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
+conn ~slr_logon
+@@slr/Customisations_SLR.sql
+
 conn ~stn_logon
 @@stn/us44041_period_status.sql
 @@stn/hotfix_cev_hint.sql
-
-conn ~slr_logon
-@@slr/Customisations_SLR.sql
 
 conn ~gui_logon
 @@gui/Customisations_GUI.sql
