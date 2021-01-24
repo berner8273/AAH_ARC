@@ -3,40 +3,40 @@
 
 function runIntraDay()
 {
-    runStep StandardiseEventHierarchy
-    runStep DSREventHierarchy
-    runStep StandardiseTaxJurisdiction
-    runStep DSRTaxJurisdiction
-    runStep StandardiseGLChartfields
-    runStep DSRGLChartfields
-    runStep StandardiseDepartments
-    runStep DSRDepartments
-    runStep StandardiseFXRates
-    runStep DSRFXRates
-    runStep StandardiseGLAccounts
-    runStep DSRGLAccounts
-    runStep StandardiseLegalEntities
-    runStep DSRLegalEntities
-    runStep DSRPartyBusiness
-    runStep DSRInternalProcessEntities
-    runStep DSRDepartments
-    runStep DSRLegalEntityHierNodes
-    runStep StandardiseLegalEntityLinks
-    runStep DSRLegalEntityHierLinks
-    runStep DSRLegalEntityHierarchyData
-    runStep DSRLegalEntitySupplementalData
-    runStep SLRUpdateDaysPeriods
+    # runStep StandardiseEventHierarchy
+    # runStep DSREventHierarchy
+    # runStep StandardiseTaxJurisdiction
+    # runStep DSRTaxJurisdiction
+    # runStep StandardiseGLChartfields
+    # runStep DSRGLChartfields
+    # runStep StandardiseDepartments
+    # runStep DSRDepartments
+    # runStep StandardiseFXRates
+    # runStep DSRFXRates
+    # runStep StandardiseGLAccounts
+    # runStep DSRGLAccounts
+    # runStep StandardiseLegalEntities
+    # runStep DSRLegalEntities
+    # runStep DSRPartyBusiness
+    # runStep DSRInternalProcessEntities
+    # runStep DSRDepartments
+    # runStep DSRLegalEntityHierNodes
+    # runStep StandardiseLegalEntityLinks
+    # runStep DSRLegalEntityHierLinks
+    # runStep DSRLegalEntityHierarchyData
+    # runStep DSRLegalEntitySupplementalData
+    # runStep SLRUpdateDaysPeriods
 
-    runStep StandardiseInsurancePolicies
-    runStep DSRInsurancePolicies
-    runStep DSRPolicyTaxJurisdictions
-    runStep StandardiseLedgers
-    runStep DSRLedgers
-    runStep StandardiseGLComboEdit
-    runStep DSRGLComboEdit
+    # runStep StandardiseInsurancePolicies
+    # runStep DSRInsurancePolicies
+    # runStep DSRPolicyTaxJurisdictions
+    # runStep StandardiseLedgers
+    # runStep DSRLedgers
+    # runStep StandardiseGLComboEdit
+    # runStep DSRGLComboEdit
 
-    runStep StandardiseJournalLine
-    runStep DSRJournalLine
+    # runStep StandardiseJournalLine
+    # runStep DSRJournalLine
 
     runStep StandardiseCessionEvents
     runStep DSRCessionEvents
@@ -52,12 +52,12 @@ function runIntraDay()
     runStep SLRUpdateFakSeg7
     runStep SLRUpdateFakSeg8
     runStep SLRpUpdateJLU
-    runStep SLRpProcess
+    # runStep SLRpProcess
 
-    runStep GLINTExtract
+    # runStep GLINTExtract
 
-    runStep AutoResubmitTransactions
-    runStep CheckResubmittedErrors
+    # runStep AutoResubmitTransactions
+    # runStep CheckResubmittedErrors
 
 }
 
