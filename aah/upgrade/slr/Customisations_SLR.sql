@@ -24,7 +24,15 @@ drop table SLR.SLR_EBA_BOP_AMOUNTS_TMP3;
 @@../aahCustom/aahSubLedger/src/main/db/views/slr/v_slr_journal_lines.sql
 
 -- Load the SLR packages
-drop package SLR.SLR_BALANCE_MOVEMENT_PKG
+
+begin
+   execute immediate 'drop package SLR.SLR_BALANCE_MOVEMENT_PKG';
+exception when others then
+   if sqlcode != -4043 then
+      raise;
+   end if;
+end;
+/
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.hdr
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.bdy
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_client_procedures_pkg.hdr
