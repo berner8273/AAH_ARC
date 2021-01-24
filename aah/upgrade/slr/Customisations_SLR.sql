@@ -24,18 +24,19 @@ drop table SLR.SLR_EBA_BOP_AMOUNTS_TMP3;
 @@../aahCustom/aahSubLedger/src/main/db/views/slr/v_slr_journal_lines.sql
 
 -- Load the SLR packages
+drop package SLR.SLR_BALANCE_MOVEMENT_PKG
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.hdr
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.bdy
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_client_procedures_pkg.hdr
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_client_procedures_pkg.bdy
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.hdr
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.bdy
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_post_journals_pkg.hdr
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_post_journals_pkg.bdy
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_translate_journals_pkg.hdr
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_translate_journals_pkg.bdy
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_validate_journals_pkg.hdr
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_validate_journals_pkg.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.hdr
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.bdy
 
 show errors
 
