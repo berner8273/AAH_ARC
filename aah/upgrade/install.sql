@@ -34,7 +34,7 @@ conn ~slr_logon
 
 conn ~stn_logon
 @@stn/us44041_period_status.sql
-@@stn/hotfix_cev_hint.sql
+--@@stn/hotfix_cev_hint.sql
 
 conn ~gui_logon
 @@gui/Customisations_GUI.sql
@@ -48,8 +48,6 @@ conn ~rdr_logon
 
 conn ~fdr_logon
 @@fdr/purge_dup_combo_rules.sql
-
-
 
 conn ~sys_logon
 @@sys/add_back_security.sql
