@@ -1,5 +1,5 @@
-spool Customisations_SLR.log
-set echo on
+--spool Customisations_SLR.log
+--set echo on
 
 -- drop and rebuild the FAK_BOP_AMOUNTS GTTs
 drop table SLR.SLR_FAK_BOP_AMOUNTS_TMP;
@@ -40,5 +40,5 @@ drop table SLR.SLR_EBA_BOP_AMOUNTS_TMP3;
 
 @@slr_indexes.sql;
 
-show errors
+--show errors
 
