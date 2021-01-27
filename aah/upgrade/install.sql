@@ -30,7 +30,7 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~slr_logon
-@@slr/Customisations_SLR.sql
+@@slr/Customisations_SLR.sql;
 
 conn ~stn_logon
 @@stn/us44041_period_status.sql
@@ -48,6 +48,7 @@ conn ~rdr_logon
 
 conn ~fdr_logon
 @@fdr/purge_dup_combo_rules.sql
+@@fdr/add_gen_lookup_close_trigger.sql
 
 conn ~sys_logon
 @@sys/add_back_security.sql

@@ -1,8 +1,7 @@
---journal lines
 DECLARE
     i INTEGER;
 BEGIN
-    ------------------journal lines ----------------------------------
+
     SELECT COUNT(*) INTO i FROM user_indexes WHERE index_name= 'IDX_JL_SOURCE_JRNL_ID' and table_name = 'BAK_SLR_JRNL_LINES';
     IF i = 1 THEN
         EXECUTE IMMEDIATE 'ALTER INDEX IDX_JL_SOURCE_JRNL_ID RENAME TO BAK_IDX_JL_SOURCE_JRNL_ID';        
@@ -24,7 +23,6 @@ BEGIN
     END IF;
 END;
 /
-------------------journal headers ----------------------------------
 DECLARE
     i INTEGER;
 BEGIN
@@ -58,5 +56,3 @@ BEGIN
     END IF;
     
 END; 
-
-  
