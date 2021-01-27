@@ -588,7 +588,7 @@ BEGIN
         null as jlu_jrnl_ref_id,
         ae_reverse_date as jlu_jrnl_rev_date,
         nvl(ae_translation_date, ae_posting_date) as jlu_translation_date,
-        ep_bus_period as jlu_period_month, ep_bus_year as jlu_period_year, case when ea_account_type_flag = ''P'' then ep_bus_year else 1 end as jlu_period_ltd
+        null as jlu_period_month, null as jlu_period_year, null as jlu_period_ltd
       from (select ae.*, rownum as rn from fr_accounting_event ae where ae_epg_id = '''||p_entity_proc_group||''' and ae_posting_date <= :business_date___7) ae
         left join slr_entities on ent_entity = ae_gl_entity
         left join slr_entity_accounts on ea_account = ae_gl_account and ea_entity_set = ent_accounts_set 
