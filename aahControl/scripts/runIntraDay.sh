@@ -35,11 +35,11 @@ function runIntraDay()
     # runStep StandardiseGLComboEdit
     # runStep DSRGLComboEdit
 
-    # runStep StandardiseJournalLine
-    # runStep DSRJournalLine
+    runStep StandardiseJournalLine
+    runStep DSRJournalLine
 
-    runStep StandardiseCessionEvents
-    runStep DSRCessionEvents
+    # runStep StandardiseCessionEvents
+    # runStep DSRCessionEvents
 
     runStep SLRUpdateDaysPeriods
     runStep SLRAccounts
@@ -52,12 +52,12 @@ function runIntraDay()
     runStep SLRUpdateFakSeg7
     runStep SLRUpdateFakSeg8
     runStep SLRpUpdateJLU
-    # runStep SLRpProcess
+    runStep SLRpProcess
 
     # runStep GLINTExtract
 
-    # runStep AutoResubmitTransactions
-    # runStep CheckResubmittedErrors
+    runStep AutoResubmitTransactions
+    runStep CheckResubmittedErrors
 
 }
 
