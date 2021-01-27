@@ -23,7 +23,7 @@ BEGIN
         EXECUTE IMMEDIATE 'CREATE INDEX SLR.IDX_JRNL_LINES_SLRPROCESS ON SLR.SLR_JRNL_LINES (JL_EFFECTIVE_DATE, JL_EPG_ID, JL_JRNL_HDR_ID)';        
     END IF;
 END;
-
+/
 ------------------journal headers ----------------------------------
 DECLARE
     i INTEGER;
