@@ -14,3 +14,4 @@ This is a hack because in version 20.3 THE LK_INPUT_TIME value is not being udpa
          end if;
     end if;
 END;
+/
