@@ -11,7 +11,8 @@ AS
 		UPDATE fdr.fr_general_lookup
 			SET lk_lookup_value5 = 'N',
 				lk_lookup_value6 =  TO_CHAR (SYSDATE, 'MM-DD-YYYY HH:MI:SS')
-		WHERE     lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
+		WHERE   lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
+                and lk_lookup_value1 = 'O' 
              and lk_match_key4 = (select min(lk_match_key4) from fdr.fr_general_lookup where lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD' and lk_lookup_value1 = 'O' );
 		COMMIT;      
 
