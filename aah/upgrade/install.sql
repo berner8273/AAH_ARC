@@ -35,6 +35,7 @@ conn ~slr_logon
 conn ~stn_logon
 @@stn/us44041_period_status.sql;
 @@stn/hotfix_cev_hint2.sql;
+@@stn/BUG58333_missing_vie_events.sql;
 
 conn ~gui_logon
 @@gui/Customisations_GUI.sql;
