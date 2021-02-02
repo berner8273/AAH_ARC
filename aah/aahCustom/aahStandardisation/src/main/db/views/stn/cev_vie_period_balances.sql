@@ -42,7 +42,7 @@ from (
                 last_day(add_months((select min(balance_date) from edb_dt), level-1 )) dt,
                 1 is_eom
             from dual
-            connect by level <= months_between((select max(balance_date) from edb_dt),(select min(balance_date) from edb_dt))+1)
+            connect by level <= months_between((select max(balance_date) from edb_dt),(select min(balance_date) from edb_dt))+2)
         , no_eom_dt as (
             select 
                 balance_date dt,
