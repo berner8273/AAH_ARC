@@ -300,17 +300,6 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
       RAISE_APPLICATION_ERROR(-20001,'Unsupported process: ' || gProcess);
     end if;
 
-
-    --for each entity processing group
-    FOR cEntityProcGroup IN cEntityProcGroups
-      LOOP
-        --set lju periods (jlu_period_month,jlu_period_year,jlu_period_ltd) in created journal lines
-       -- pBMUpdateJLUPeriods(cEntityProcGroup.JLU_EPG_ID);
-
-        --set fak eba id in created journal lines
-        pBMUpdateJLUFakEbaId(cEntityProcGroup.JLU_EPG_ID);
-      END LOOP;
-
     begin
       SELECT MIN(jlu_jrnl_hdr_id), MAX(jlu_jrnl_hdr_id) into v_min_id, v_max_id
       FROM slr_jrnl_lines_unposted
