@@ -398,6 +398,8 @@ end;
 @@packages/slr/slr_balance_movement_pkg.hdr
 @@packages/slr/slr_balance_movement_pkg.bdy
 
+@@packages/slr/slr_utilities_pkg.hdr
+@@packages/slr/slr_utilities_pkg.bdy
 
 --Add compile statements to created packages
 
