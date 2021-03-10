@@ -987,6 +987,46 @@ and not exists (
                )
 and jl.STREAM_ID is not null and jl.POLICY_ID is not null;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-policy-stream', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : journal-line-validate-usd-trans-vs-reportingt-amt', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                (CASE
+                    WHEN vdl.COLUMN_NM = 'stream_id' THEN TO_CHAR(jl.STREAM_ID)
+                    WHEN vdl.COLUMN_NM = 'policy_id' THEN jl.POLICY_ID
+                END) AS ERROR_VALUE,
+                jl.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER fgp ON jl.LPG_ID = fgp.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    vdl.VALIDATION_CD = 'jl-trans_vs_reporting_amt'
+                    AND (JL.REPORTING_AMT <> 0 and JL.TRANSACTION_AMT <> 0)
+                    AND JL.LEDGER_CD not in ('EURGAAPADJ','UKGAAP_ADJ')
+                    AND JL.TRANSACTION_CCY = 'USD'
+                    AND (JL.REPORTING_AMT <> JL.TRANSACTION_AMT);
+
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-usd-trans-vs-reportingt-amt', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        
+        
     END;
     
     PROCEDURE pr_journal_line_bval
