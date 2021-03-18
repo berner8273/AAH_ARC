@@ -295,9 +295,24 @@ as
                        when jlu_reference_10 = 'NVS' then ' '
                        else jlu_reference_10
                     end
-                       jlu_reference_10,
-                    cast (jlu_tran_ccy as varchar2 (3)) jlu_tran_ccy,
-                    round (jlu_tran_amount, 2) jlu_tran_amount,                   
+                       jlu_reference_10, 
+                    ---- replace tran_ccy with local_ccy
+                    CASE
+                        WHEN JLU_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JLU_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE')
+                        THEN
+                            CAST (jlu_local_ccy AS VARCHAR2 (3))
+                        ELSE
+                            CAST (jlu_tran_ccy AS VARCHAR2 (3))
+                    END as jlu_tran_ccy,
+                    --- repalce tran_amount with local_amount
+                    CASE
+                        WHEN JLU_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JLU_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE')
+                        THEN
+                            ROUND (jlu_local_amount, 2)
+                        ELSE
+                            ROUND (jlu_tran_amount, 2)
+                    END AS jlu_tran_amount,
+                    ----
                     case
                        when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                        then
@@ -330,19 +345,21 @@ as
                     jlu_amended_by,
                     jlu_amended_on,
                     (nvl (substr(fgl.lk_lookup_value3,1,50), ' ')) event_class,
-                    case
-                       when jlu_tran_amount < 0 then round (jlu_tran_amount, 2)
-                       else null
-                    end
-                       credit_amt,
-                    case
-                       when jlu_tran_amount >= 0
-                       then
-                          round (jlu_tran_amount, 2)
-                       else
-                          null
-                    end
-                       debit_amt,
+                    ---Adapt the credit and debit accordingly: based on local amount instead of transaction amount for the ledger / event type combinations
+                    CASE
+                        WHEN JLU_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JLU_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE') 
+                                AND jlu_local_amount < 0 THEN ROUND (jlu_local_amount, 2)
+                        WHEN jlu_tran_amount < 0 THEN ROUND (jlu_tran_amount, 2)
+                        ELSE null
+                    END
+                        AS credit_amt,
+                    CASE
+                        WHEN JLU_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JLU_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE') 
+                                AND jlu_local_amount >= 0 THEN ROUND (jlu_local_amount, 2)
+                        WHEN jlu_tran_amount >= 0 THEN ROUND (jlu_tran_amount, 2)
+                        ELSE null
+                    END
+                        AS debit_amt,
                     case
                        when jle.jle_jrnl_hdr_id is not null then 'E'
                        else jl.jlu_jrnl_status
@@ -861,7 +878,7 @@ as
                     round (jl_tran_amount, 2) jl_tran_amount,
                     jl_base_rate,
                     case
-                       when jl_segment_1 = 'UKGAAP_ADJ'
+                       when jl_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                        then
                           cast (jl_local_ccy as varchar2 (3))
                        else
@@ -869,7 +886,7 @@ as
                     end
                        jl_base_ccy,
                     case
-                       when jl_segment_1 = 'UKGAAP_ADJ'
+                       when jl_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                        then
                           round (jl_local_amount, 2)
                        else

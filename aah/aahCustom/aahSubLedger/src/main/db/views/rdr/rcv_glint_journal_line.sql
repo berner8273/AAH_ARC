@@ -115,8 +115,23 @@ SELECT /*+parallel*/
         CASE WHEN jl_reference_8 = 'NVS' THEN ' ' ELSE jl_reference_8 END AS jl_reference_8,
         CASE WHEN jl_reference_9 = 'NVS' THEN ' ' ELSE jl_reference_9 END AS jl_reference_9,
         CASE WHEN jl_reference_10 = 'NVS' THEN ' ' ELSE jl_reference_10 END AS jl_reference_10,
-        CAST (jl_tran_ccy AS VARCHAR2 (3)) AS jl_tran_ccy,  
-        ROUND (jl_tran_amount, 2) AS jl_tran_amount,      
+        --- replace tran_ccy with local_ccy
+        CASE
+            WHEN JL_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JL_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE')
+            THEN
+                CAST (jl_local_ccy AS VARCHAR2 (3))
+            ELSE
+                CAST (jl_tran_ccy AS VARCHAR2 (3))
+        END as jl_tran_ccy,
+        --- repalce tran_amount with local_amount
+        CASE
+            WHEN JL_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JL_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE')
+            THEN
+                ROUND (jl_local_amount, 2)
+            ELSE
+                ROUND (jl_tran_amount, 2)
+        END AS jl_tran_amount,
+        ----     
         CASE
              WHEN JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ')
              THEN
@@ -144,14 +159,21 @@ SELECT /*+parallel*/
         jl_amended_on,
         jl_recon_status,
         NVL (fgl.lk_lookup_value3, ' ') AS event_class,
-        CASE
+        ---Adapt the credit and debit accordingly: based on local amount instead of transaction amount for the ledger / event type combinations
+          CASE
+             WHEN JL_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JL_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE') 
+                     AND jl_local_amount < 0 THEN ROUND (jl_local_amount, 2)
              WHEN jl_tran_amount < 0 THEN ROUND (jl_tran_amount, 2)
              ELSE 0
-        END AS credit_amt,
-        CASE
+          END
+             AS credit_amt,
+           CASE
+              WHEN JL_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JL_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE') 
+                     AND jl_local_amount >= 0 THEN ROUND (jl_local_amount, 2)
              WHEN jl_tran_amount >= 0 THEN ROUND (jl_tran_amount, 2)
              ELSE 0
-        END AS debit_amt,
+          END
+             AS debit_amt,
         'U' AS event_status,
         jl.jl_jrnl_process_id,
         jt.ejt_madj_flag,

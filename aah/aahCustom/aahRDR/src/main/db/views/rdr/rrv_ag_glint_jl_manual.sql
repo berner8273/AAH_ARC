@@ -93,8 +93,24 @@ select --In progress manual journals
               , case when jlu_reference_8 = 'NVS' then ' ' else jlu_reference_8 end                        jlu_reference_8
               , case when jlu_reference_9 = 'NVS' then ' ' else jlu_reference_9 end                        jlu_reference_9
               , case when jlu_reference_10 = 'NVS' then ' ' else jlu_reference_10 end                      jlu_reference_10
-              , cast( jlu_tran_ccy as varchar2(3) )                                                        jlu_tran_ccy
-              , round( jlu_tran_amount , 2 )                                                               jlu_tran_amount
+              ---- replace tran_ccy with local_ccy
+              ,CASE
+                 WHEN JLU_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JLU_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE')
+                 THEN
+                     CAST (jlu_local_ccy AS VARCHAR2 (3))
+                 ELSE
+                     CAST (jlU_tran_ccy AS VARCHAR2 (3))
+              END as jlu_tran_ccy
+              --- repalce tran_amount with local_amount
+              ,CASE
+                 WHEN JLU_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JLU_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE')
+                 THEN
+                     ROUND (jlu_local_amount, 2)
+                 ELSE
+                     ROUND (jlu_tran_amount, 2)
+              END AS jlu_tran_amount
+              ----        
+
               , case
                   when jlu_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ')
                   then jlu_local_rate
@@ -118,8 +134,21 @@ select --In progress manual journals
               , jlu_amended_by
               , jlu_amended_on
               , nvl( substr( fgl.lk_lookup_value3 , 1 , 50 ) , ' ' )                                       event_class
-              , case when jlu_tran_amount < 0 then round( jlu_tran_amount , 2 ) else null end              credit_amt
-              , case when jlu_tran_amount >= 0 then round( jlu_tran_amount , 2 ) else null end             debit_amt
+              ---Adapt the credit and debit accordingly: based on local amount instead of transaction amount for the ledger / event type combinations
+              ,CASE
+                 WHEN JLU_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JLU_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE') 
+                         AND jlu_local_amount < 0 THEN ROUND (jlu_local_amount, 2)
+                 WHEN jlu_tran_amount < 0 THEN ROUND (jlu_tran_amount, 2)
+                 ELSE 0
+              END
+                 AS credit_amt
+              ,CASE
+                  WHEN JLU_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JLU_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE') 
+                         AND jlu_local_amount >= 0 THEN ROUND (jlu_local_amount, 2)
+                 WHEN jlu_tran_amount >= 0 THEN ROUND (jlu_tran_amount, 2)
+                 ELSE 0
+              END
+                 AS debit_amt
               , jl.jlu_jrnl_status   event_status
               , jl.jlu_jrnl_process_id
               , jt.ejt_madj_flag

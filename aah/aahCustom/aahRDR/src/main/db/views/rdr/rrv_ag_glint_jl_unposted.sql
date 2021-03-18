@@ -90,9 +90,24 @@ select --Posted SLR journals not yet GLINT processed
               , case when jl_reference_8 = 'NVS' then ' ' else jl_reference_8 end                          jl_reference_8
               , case when jl_reference_9 = 'NVS' then ' ' else jl_reference_9 end                          jl_reference_9
               , case when jl_reference_10 = 'NVS' then ' ' else jl_reference_10 end                        jl_reference_10
-              , cast( jl_tran_ccy as varchar2(3) )                                                         jl_tran_ccy
-              , round( jl_tran_amount , 2 )                                                                jl_tran_amount
-              , case
+              -- replace tran_ccy with local_ccy
+              , CASE
+                 WHEN JL_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JL_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE')
+                 THEN
+                     CAST (jl_local_ccy AS VARCHAR2 (3))
+                 ELSE
+                     CAST (jl_tran_ccy AS VARCHAR2 (3))
+              END as jl_tran_ccy
+              --- repalce tran_amount with local_amount
+              , CASE
+                 WHEN JL_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JL_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE')
+                 THEN
+                     ROUND (jl_local_amount, 2)
+                 ELSE
+                     ROUND (jl_tran_amount, 2)
+              END AS jl_tran_amount
+             ----       
+            , case
                   when jl_segment_1 in ('UKGAAP_ADJ','EURGAAPADJ' )
                   then jl_local_rate
                   else jl_base_rate
@@ -116,8 +131,21 @@ select --Posted SLR journals not yet GLINT processed
               , jl_amended_on
               , jh.jh_jrnl_authorised_by
               , nvl( fgl.lk_lookup_value3 , ' ' )                                                          event_class
-              , case when jl_tran_amount < 0 then round( jl_tran_amount , 2 ) else null end                credit_amt
-              , case when jl_tran_amount >= 0 then round( jl_tran_amount , 2 ) else null end               debit_amt
+               ---Adapt the credit and debit accordingly: based on local amount instead of transaction amount for the ledger / event type combinations
+              , CASE
+                 WHEN JL_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JL_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE') 
+                         AND jl_local_amount < 0 THEN ROUND (jl_local_amount, 2)
+                 WHEN jl_tran_amount < 0 THEN ROUND (jl_tran_amount, 2)
+                 ELSE null
+              END
+                  AS credit_amt
+              , CASE
+                  WHEN JL_SEGMENT_1 IN ('UKGAAP_ADJ', 'EURGAAPADJ') AND JL_ATTRIBUTE_4 in ('FV_UPR_INITIAL','FV_UPR_WRITTEN','FV_UPR_CHANGE') 
+                         AND jl_local_amount >= 0 THEN ROUND (jl_local_amount, 2)
+                 WHEN jl_tran_amount >= 0 THEN ROUND (jl_tran_amount, 2)
+                 ELSE null
+              END
+                 AS debit_amt
               , null                                                                                       event_status
               , jl.jl_jrnl_process_id
               , jt.ejt_madj_flag
@@ -134,8 +162,8 @@ select --Posted SLR journals not yet GLINT processed
                 jl.jl_jrnl_hdr_id              not in ( select gjh.jl_jrnl_hdr_id
                                                           from rdr.rr_glint_to_slr_ag  gjh )
             and jh.jh_jrnl_internal_period_flag = 'N'              
-            and ((jl.jl_segment_1 = 'UKGAAP_ADJ' and fgl.lk_lookup_value5 = 'N')
-                 or jl.jl_segment_1 <> 'UKGAAP_ADJ') ) gjl
+            and ((jl.jl_segment_1 in ('EURGAAPADJ','UKGAAP_ADJ') and fgl.lk_lookup_value5 = 'N')
+                 or jl.jl_segment_1 not in ('EURGAAPADJ','UKGAAP_ADJ')) ) gjl
  group by
        gjl.jl_entity
      , gjl.jl_segment_1
