@@ -30,29 +30,18 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~slr_logon
-@@slr/Customisations_SLR.sql;
+
 
 conn ~stn_logon
-@@stn/us44041_period_status.sql;
-@@stn/hotfix_cev_hint2.sql;
-@@stn/BUG58333_missing_vie_events.sql;
 
 conn ~gui_logon
-@@gui/Customisations_GUI.sql;
-@@gui/us44041_ui_field.sql;
 
 conn ~rdr_logon
---@@rdr/Customisations_RDR.sql --moved this to a separate branch and deploy
-@@rdr/us53039_rcv_glint_journal_line_views.sql;
-@@rdr/us44041_rdr_pkg_bdy.sql;
-@@rdr/pg_glint_hdr.sql;
+@@rdr/us58323_rcv_glint_journal_line_views.sql
 
 conn ~fdr_logon
-@@fdr/purge_dup_combo_rules.sql;
-@@fdr/add_gen_lookup_close_trigger.sql;
 
 conn ~sys_logon
-@@sys/add_back_security.sql;
 
 /* End AAH custom upgrades */
 
