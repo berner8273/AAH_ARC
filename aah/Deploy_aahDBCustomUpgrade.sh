@@ -68,6 +68,7 @@ fi
 # Get Oracle host name
 printf "* Get Oracle host name ...\n"
 oraHost=$(get_octopusvariable "aptitudeDatabaseHost")
+arc_password=$(get_octopusvariable "arcPassword")
 [[ -n $oraHost ]] || ERR_EXIT "aptitudeDatabaseHost variable is empty!"
 
 # Get Oracle service name
@@ -77,7 +78,7 @@ oraServiceName=$(get_octopusvariable "aptitudeDatabaseServiceName")
 	|| ERR_EXIT "aptitudeDatabaseServiceName variable is empty!"
 
 # Get user information
-for u in fdr gui rdr sla slr stn sys unittest; do
+for u in fdr gui rdr sla slr stn sys unittest arc; do
 	printf "* Get $u information ...\n"
 	v_user="${u}Username"
 	v_pwd="${u}Password"
@@ -130,7 +131,10 @@ RUN $SQLPLUS $OPTS_SQLPLUS /nolog <<- EOF! 2>&1 >> $LOG | tee -a $LOG
 	$slrLogon \
 	$stnLogon \
 	$sysLogon \
-	$unittestLogon
+	$unittestLogon \
+	$arcLogon \
+	$oraServiceName \
+	$arc_password
 	exit
 EOF!
 RC=${PIPESTATUS[0]}
