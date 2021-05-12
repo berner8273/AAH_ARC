@@ -1022,7 +1022,7 @@ and jl.STREAM_ID is not null and jl.POLICY_ID is not null;
                     AND (
                      (JL.TRANSACTION_CCY = JL.FUNCTIONAL_CCY AND JL.TRANSACTION_AMT <> JL.FUNCTIONAL_AMT)
                         OR              
-                        ( JL.REPORTING_AMT <> 0 OR JL.FUNCTIONAL_CCY = CASE JL.LEDGER_CD
+                        ( JL.REPORTING_AMT <> 0 OR JL.FUNCTIONAL_CCY <> CASE JL.LEDGER_CD
                                 WHEN 'EURGAAPADJ'
                                     THEN 'EUR'
                                     ELSE 'GBP'
