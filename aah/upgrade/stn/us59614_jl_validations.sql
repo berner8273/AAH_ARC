@@ -2,7 +2,7 @@
 delete from stn.validation_column where validation_id = 86;
 delete from stn.validation where validation_id = 86;
 delete from stn.validation_type where validation_typ_id = 54;
-insert into stn.validation_type ( validation_typ_id , validation_typ_cd , validation_typ_descr , validation_typ_err_msg ) values ( 54 , 'JLUSDAMTS'     , 'Check USD transaction reporting amounts equal transaction amounts for non EURGAAP/UKGAAP lines'          , 'The transaction amount is not equal to the reporting amount for USD non EUR/UK GAAP lines.' );
+insert into stn.validation_type ( validation_typ_id , validation_typ_cd , validation_typ_descr , validation_typ_err_msg ) values ( 54 , 'JLUSDAMTS'     , 'Check currency types and reporting amounts vs transaction amounts based on Ledger' , 'The trans amt is not equal to the reporting amt or CCY invalid based on Ledger.' );
 insert into stn.validation ( validation_id , validation_cd , code_module_id , validation_typ_id , validation_level_id ) values(  86 ,  'jl-trans_vs_reporting_amt'      , ( select code_module_id from stn.code_module where code_module_nm = 'stn.pr_journal_line_rval' )       , ( select validation_typ_id from stn.validation_type where validation_typ_cd = 'JLUSDAMTS' )     , ( select validation_level_id from stn.validation_level where validation_level_cd = 'row' ) );
 insert into stn.validation_column ( validation_id , dtc_id ) values ( ( select validation_id from stn.validation where validation_cd = 'jl-trans_vs_reporting_amt' )      , ( select dtc_id from stn.db_tab_column where dbt_id = ( select dbt_id from stn.db_table where db_nm = 'stn' and table_nm = 'journal_line' )                and column_nm = 'row_sid' ) );
 COMMIT;
