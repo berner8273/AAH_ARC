@@ -465,6 +465,7 @@ and not exists (
             WHERE
                     vdl.VALIDATION_CD = 'jl-chartfield_1'
 and jl.CHARTFIELD_1 is not null
+and jl.CHARTFIELD_1 <> 'DNP'
 and not exists (
                    select
                           null
