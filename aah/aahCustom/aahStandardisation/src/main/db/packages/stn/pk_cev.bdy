@@ -178,7 +178,7 @@ and not exists (
         with
           ce_data
           as (
-          select
+         select /*+ MATERIALIZE*/
                            ipr.policy_id
                          , ipr.policy_abbr_nm
                          , ipr.stream_id

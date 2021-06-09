@@ -37,6 +37,8 @@ drop table SLR.SLR_EBA_BOP_AMOUNTS_TMP3;
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_validate_journals_pkg.bdy;
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.hdr;
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.bdy;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_utilities_pkg.hdr;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_utilities_pkg.bdy;
 
 @@slr_indexes.sql;
 
