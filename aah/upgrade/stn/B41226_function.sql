@@ -1,1 +1,0 @@
-@@../aahCustom/aahStandardisation/src/main/db/packages/stn/f_event_status_desc.sql

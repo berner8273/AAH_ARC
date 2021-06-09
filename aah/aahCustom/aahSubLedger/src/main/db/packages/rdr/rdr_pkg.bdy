@@ -6,20 +6,19 @@ AS
 
     BEGIN
 
-    dbms_stats.gather_table_stats ( ownname => 'RDR' , tabname => 'RR_GLINT_JOURNAL_LINE' , cascade => true, no_invalidate => false );
-    commit;
 
-	 -- SET MANUALS PERIODS REQUESTS BACK TO N AND RECORD DATE
-
+      -- SET MANUALS PERIODS REQUESTS BACK TO N AND RECORD DATE
 		UPDATE fdr.fr_general_lookup
 			SET lk_lookup_value5 = 'N',
-				lk_lookup_value6 =
-                CONCAT (
-                   CONCAT (TO_CHAR (SYSDATE, 'MM-DD-YYYY HH:MI:SS'), '  '),
-                   lk_input_by)
-		WHERE     lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
-             AND lk_lookup_value5 = 'Y';
-		COMMIT;
+				lk_lookup_value6 =  TO_CHAR (SYSDATE, 'MM-DD-YYYY HH:MI:SS')
+		WHERE   lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
+                and lk_lookup_value1 = 'O' 
+             and lk_match_key4 = (select min(lk_match_key4) from fdr.fr_general_lookup where lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD' and lk_lookup_value1 = 'O' );
+		COMMIT;      
+
+
+    dbms_stats.gather_table_stats ( ownname => 'RDR' , tabname => 'RR_GLINT_JOURNAL_LINE' , cascade => true, no_invalidate => false );
+    commit;
 
     -- STORE THE MAPPING FROM SLR JOURNALS TO GLINT JOURNALS
     SELECT NVL (MAX (RGJL_ID), 0) INTO max_glint_id FROM RDR.RR_GLINT_TO_SLR_AG GTS;
@@ -43,7 +42,7 @@ AS
                     ,GJL.LEDGER_GROUP       AS G_LEDGER_GROUP
                     ,GJL.EVENT_CLASS        AS G_EVENT_CLASS
                     ,GJL.JH_JRNL_TYPE       AS G_JRNL_TYPE
-                    ,CASE WHEN GJL.MANUAL_JE = 'Y' THEN GJL.AAH_JRNL_HDR_NBR ELSE 0 END AS G_MANUAL_HEADER_ID
+                    ,CASE WHEN GJL.MANUAL_JE = 'Y' THEN GJL.AAH_JRNL_HDR_NBR ELSE '0' END AS G_MANUAL_HEADER_ID
             FROM RDR.RR_GLINT_JOURNAL_LINE GJL
         ) GJL
     JOIN
@@ -52,7 +51,7 @@ AS
                     ,SJL.JL_JRNL_LINE_NUMBER    AS S_JL_JRNL_LINE_NUMBER               
                     ,SJL.JL_EFFECTIVE_DATE      AS S_JL_EFFECTIVE_DATE
                     ,SJL.JL_TRAN_CCY            AS S_JL_TRAN_CCY
-                    ,CASE WHEN SJL.JL_SEGMENT_1 = 'UKGAAP_ADJ' THEN  SJL.JL_LOCAL_CCY ELSE SJL.JL_BASE_CCY END AS S_JL_BASE_CCY
+                    ,CASE WHEN SJL.JL_SEGMENT_1 in ('UKGAAP_ADJ','EURGAAPADJ') THEN  SJL.JL_LOCAL_CCY ELSE SJL.JL_BASE_CCY END AS S_JL_BASE_CCY
                     ,SUBSTR (SJL.JL_ACCOUNT, 1, 8) AS S_ACCOUNT
                     ,CASE WHEN SJL.JL_SEGMENT_3 = 'NVS' THEN ' '  ELSE SJL.JL_SEGMENT_3 END  AS S_DEPTID
                     ,CASE WHEN SJL.JL_SEGMENT_5 = 'NVS' THEN ' ' ELSE SUBSTR (SJL.JL_SEGMENT_5, 1, 10) END AS S_CHARTFIELD1
@@ -62,7 +61,7 @@ AS
                     ,SJL.JL_SEGMENT_1           AS S_LEDGER_GROUP        
                     ,sjh.JH_JRNL_TYPE           AS S_JRNL_TYPE
                     ,eh.EVENT_CLASS             AS S_EVENT_CLASS
-                    ,CASE WHEN jh_jrnl_type like 'MADJ%' THEN sjl.JL_JRNL_HDR_ID ELSE 0 END AS S_MANUAL_HEADER_ID
+                    ,CASE WHEN jh_jrnl_type like 'MADJ%' THEN sjl.JL_JRNL_HDR_ID ELSE '0' END AS S_MANUAL_HEADER_ID
             FROM     SLR.SLR_JRNL_LINES SJL
                 JOIN SLR.SLR_JRNL_HEADERS sjh ON sjh.JH_JRNL_ID = sjl.JL_JRNL_HDR_ID 
                 JOIN 

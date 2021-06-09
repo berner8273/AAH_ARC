@@ -21,49 +21,51 @@ define unittest_login=~8
 
 
 /* Check AAH upgrade versions - do not remove */
+conn ~fdr_logon
+@@fdr/hot_fix_remove_old_upgrade.sql
+
 conn ~sys_logon
 @@sys/00001_check_upgrade_versions.sql
 
 /* Begin AAH custom upgrades */
 
+conn ~slr_logon
+@@slr/Customisations_SLR.sql;
 
 conn ~stn_logon
+@@stn/us44041_period_status.sql;
+@@stn/hotfix_cev_hint2.sql;
+@@stn/BUG58333_missing_vie_events.sql;
+
+conn ~gui_logon
+@@gui/Customisations_GUI.sql;
+@@gui/us44041_ui_field.sql;
 
 conn ~rdr_logon
-@@rdr/us53039_rcv_glint_journal_line_views.sql
-
-conn ~stn_logon
-
-
-conn ~fdr_logon
-@@fdr/us53060_fr_account_lookup_param.sql
-@@fdr/us53060_fdr_cleardown.sql 
-@@fdr/us50700_gl_account_fix.sql 
-@@fdr/hotfix_fr_general_lookup_cash_offset.sql
-
-conn ~stn_logon
-@@stn/us53060_aah_posting_rules_data_loader.sql
-
-conn~gui_logon
-@@gui/us53060_gui_event_class.sql
+--@@rdr/Customisations_RDR.sql --moved this to a separate branch and deploy
+@@rdr/us53039_rcv_glint_journal_line_views.sql;
+@@rdr/us44041_rdr_pkg_bdy.sql;
+@@rdr/pg_glint_hdr.sql;
 
 conn ~fdr_logon
+@@fdr/purge_dup_combo_rules.sql;
+@@fdr/add_gen_lookup_close_trigger.sql;
 
+conn ~sys_logon
+@@sys/add_back_security.sql;
 
-conn ~rdr_logon
-@@rdr/US53039_glint_journal_line.sql
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
 conn ~sys_logon as sysdba
-@@sys/99999_refresh_aah_roles.sql
+@@sys/99999_refresh_aah_roles.sql;
 
 /* recompile any packages or procedures that are not compiled */
 @@sys/recompile_objects.sql
 
 /* Register upgrade - do not remove */
 conn ~fdr_logon
-@@fdr/99999_register_upgrade.sql
+@@fdr/99999_register_upgrade.sql;
 
 
 exit

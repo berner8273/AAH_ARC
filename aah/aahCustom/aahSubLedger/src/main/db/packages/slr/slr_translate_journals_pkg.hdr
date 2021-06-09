@@ -1,0 +1,60 @@
+CREATE OR REPLACE PACKAGE SLR.SLR_TRANSLATE_JOURNALS_PKG AS
+/* ****************************************************************************
+*
+* Id:          $Id: SLR_TRANSLATE_JOURNALS_PKG.sql,v 1.1 2007/11/21 14:35:34 michalg Exp $
+*
+* Description: Translate Journals
+*
+* MHC 24-NOV-2004 BASELINE CODE FOR RELEASE 2
+* ASH 26-JAN-2005 COMPLETE CODE FOR RELEASE 2
+**************************************************************************** */
+
+    /************************************************************************
+    * Declare public procedures
+    ************************************************************************ */
+    PROCEDURE pTranslateJournals(   pProcessId       in NUMBER,
+                                    pJournalEntityList   in VARCHAR2,
+	                                  pCurrencySet     in SLR_ENTITIES.ENT_CURRENCY_SET%TYPE,
+                                    pRateSet         in SLR_ENTITIES.ENT_RATE_SET%TYPE,
+                                    pBaseCcy         in SLR_ENTITIES.ENT_BASE_CCY%TYPE,
+                                    pLocalCcy        in SLR_ENTITIES.ENT_LOCAL_CCY%TYPE,
+                                    p_epg_id         in SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+                                    p_status         in CHAR := 'U'
+                                );
+                                
+
+    PROCEDURE pTranslateJournals (
+                                    pEpgId IN slr_entity_proc_group.epg_id%TYPE,
+                                    pProcessId IN NUMBER DEFAULT NULL,
+                                    pRateSet IN slr_entities.ent_rate_set%TYPE DEFAULT NULL,
+                                    pStatus IN CHAR DEFAULT 'U',
+                                    pJournalEntity IN VARCHAR2 DEFAULT NULL
+                                  );
+                            
+
+    FUNCTION fApplyTranslation(     pCurrencySet    in SLR_ENTITIES.ENT_CURRENCY_SET%TYPE,
+	                                  pRateSet        in SLR_ENTITIES.ENT_RATE_SET%TYPE,
+                                    pBaseCcy        in SLR_ENTITIES.ENT_BASE_CCY%TYPE,
+                                    pLocalCcy       in SLR_ENTITIES.ENT_LOCAL_CCY%TYPE)
+								RETURN BOOLEAN;
+
+
+    FUNCTION fValidateTranslation RETURN BOOLEAN;
+
+	-- NOTE: This function should be private but such a definition creates a compilation error.
+	FUNCTION fSelectCurrencyRate(
+                                    pRateSet         in SLR_ENTITIES.ENT_RATE_SET%TYPE,
+                                    pRateDate        in DATE,
+                                    pFromCcy         in SLR_ENTITY_RATES.ER_CCY_FROM%TYPE,
+                                    pToCcy           in SLR_ENTITY_RATES.ER_CCY_TO%TYPE
+                                )
+                                RETURN  SLR_ENTITY_RATES.ER_RATE%TYPE;
+
+
+    /************************************************************************
+    * Declare public exception
+    ************************************************************************ */
+	ge_bad_translate                EXCEPTION;
+
+END SLR_TRANSLATE_JOURNALS_PKG;
+/

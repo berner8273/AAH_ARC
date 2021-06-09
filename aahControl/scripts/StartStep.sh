@@ -11,12 +11,12 @@
 
 C_SUCCESS_RETURN_CODE=0
 C_FAILURE_RETURN_CODE=3
-C_APTITUDE_HOST=#{aptitudeHost}
-C_APTITUDE_BUS_PORT=#{aptitudeBusPort}
+C_APTITUDE_HOST=localhost
+C_APTITUDE_BUS_PORT=2503
 p_step_cd=$1
 
 C_PATH_TO_THIS_FOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-C_PATH_TO_LOG_FOLDER=${C_PATH_TO_THIS_FOLDER}/log
+C_PATH_TO_LOG_FOLDER=/aah/logs
 C_TIMESTAMP=`date +"%C%y%m%d%H%M%S"`
 C_PATH_TO_LOG_FILE=${C_PATH_TO_LOG_FOLDER}/${p_step_cd}_${C_TIMESTAMP}.log
 
@@ -82,7 +82,7 @@ function printCompletionMessage
 
     echo "*StartStep log contents"
     printDivider
-    more "${C_PATH_TO_LOG_FILE}"
+    #more "${C_PATH_TO_LOG_FILE}"
 
 
 

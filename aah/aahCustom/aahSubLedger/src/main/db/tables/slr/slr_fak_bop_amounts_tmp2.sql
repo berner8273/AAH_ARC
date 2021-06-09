@@ -1,10 +1,10 @@
 create global temporary table slr.slr_fak_bop_amounts_tmp2
 (
-  fdb_fak_id        number(12)                  not null,
-  fdb_balance_date  date                        not null,
-  fdb_balance_type  number(2)                   not null,
-  fdb_entity        varchar2(20 byte)           not null,
-  fdb_epg_id        varchar2(18 byte)           not null,
-  fdb_id            varchar2(100 byte)          not null
+	FDB_FAK_ID VARCHAR2(32) NOT NULL ENABLE,
+	FDB_BALANCE_DATE DATE NOT NULL ENABLE,
+	FDB_BALANCE_TYPE NUMBER(2,0) NOT NULL ENABLE,
+	FDB_ENTITY VARCHAR2(20 BYTE) NOT NULL ENABLE,
+	FDB_EPG_ID VARCHAR2(18 BYTE) NOT NULL ENABLE,
+	FDB_ID VARCHAR2(100 BYTE) NOT NULL ENABLE
 )
 on commit preserve rows;

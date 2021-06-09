@@ -1,1 +1,0 @@
-@@../aahCustom/aahRDR/src/main/db/views/rdr/rrv_ag_journal_lines.sql
