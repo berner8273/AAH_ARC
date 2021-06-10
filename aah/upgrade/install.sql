@@ -22,10 +22,8 @@ define unittest_login=~8
 
 /* Check AAH upgrade versions - do not remove */
 conn ~fdr_logon
-@@fdr/hot_fix_remove_old_upgrade.sql
 
 conn ~sys_logon
-@@sys/00001_check_upgrade_versions.sql
 
 /* Begin AAH custom upgrades */
 
@@ -41,20 +39,20 @@ conn ~fdr_logon
 conn ~stn_logon
 
 conn ~sys_logon
-@@sys/add_back_security.sql
+@@sys/add_back_security.sql;
 
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
 conn ~sys_logon as sysdba
-@@sys/99999_refresh_aah_roles.sql
+@@sys/99999_refresh_aah_roles.sql;
 
 /* recompile any packages or procedures that are not compiled */
 @@sys/recompile_objects.sql
 
 /* Register upgrade - do not remove */
 conn ~fdr_logon
-@@fdr/99999_register_upgrade.sql
+@@fdr/99999_register_upgrade.sql;
 
 
 exit

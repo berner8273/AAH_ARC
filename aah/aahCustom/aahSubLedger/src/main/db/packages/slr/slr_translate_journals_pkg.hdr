@@ -21,7 +21,7 @@ CREATE OR REPLACE PACKAGE SLR.SLR_TRANSLATE_JOURNALS_PKG AS
                                     p_epg_id         in SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
                                     p_status         in CHAR := 'U'
                                 );
-
+                                
 
     PROCEDURE pTranslateJournals (
                                     pEpgId IN slr_entity_proc_group.epg_id%TYPE,
@@ -30,7 +30,7 @@ CREATE OR REPLACE PACKAGE SLR.SLR_TRANSLATE_JOURNALS_PKG AS
                                     pStatus IN CHAR DEFAULT 'U',
                                     pJournalEntity IN VARCHAR2 DEFAULT NULL
                                   );
-
+                            
 
     FUNCTION fApplyTranslation(     pCurrencySet    in SLR_ENTITIES.ENT_CURRENCY_SET%TYPE,
 	                                  pRateSet        in SLR_ENTITIES.ENT_RATE_SET%TYPE,

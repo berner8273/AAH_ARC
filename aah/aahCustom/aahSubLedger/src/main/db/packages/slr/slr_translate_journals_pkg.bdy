@@ -151,7 +151,7 @@ CREATE OR REPLACE PACKAGE BODY SLR.SLR_TRANSLATE_JOURNALS_PKG AS
         RAISE_APPLICATION_ERROR(-20003, gv_msg);
 
     END pTranslateJournals;
-
+    
     PROCEDURE pTranslateJournals (
       pEpgId IN slr_entity_proc_group.epg_id%TYPE,
       pProcessId IN NUMBER DEFAULT NULL,
@@ -162,9 +162,9 @@ CREATE OR REPLACE PACKAGE BODY SLR.SLR_TRANSLATE_JOURNALS_PKG AS
       lSql VARCHAR2(32767);
       sProcName CONSTANT VARCHAR2(80) := 'SLR_TRANSLATE_JOURNALS_PKG.pTranslateJournals';
       lStartTime PLS_INTEGER DEFAULT 0;
-      lRateSet slr_entities.ent_rate_set%TYPE;
+      lRateSet slr_entities.ent_rate_set%TYPE; 
     BEGIN
-
+    
       IF pRateSet IS NOT NULL THEN
         lRateSet:=''''||pRateSet||'''';
       END IF;
@@ -174,36 +174,36 @@ CREATE OR REPLACE PACKAGE BODY SLR.SLR_TRANSLATE_JOURNALS_PKG AS
       gJournalEntityList := pJournalEntity;
       gJournalEpgId := pEpgId;
       gStatus := pStatus;
-
-      EXECUTE IMMEDIATE 'alter table slr_jrnl_lines_fx truncate partition for ('''||pEpgId||''')';
+      
+      EXECUTE IMMEDIATE 'alter table slr_jrnl_lines_fx truncate partition for ('''||pEpgId||''')';          
 
       lSql:='
         insert /*+ append */ into slr_jrnl_lines_fx partition for ('''||pEpgId||''')
         with src as (
-        select '||SLR_UTILITIES_PKG.fHint(gJournalEpgId, 'FX_APPLY_TRANS_INSERT_SUBQUERY')||'
+        select '||SLR_UTILITIES_PKG.fHint(gJournalEpgId, 'FX_APPLY_TRANS_INSERT_SUBQUERY')||'     
           jlu_jrnl_hdr_id,
           jlu_jrnl_line_number,
           jlu_tran_amount,
           jlu_jrnl_ref_id,
           jlu_tran_ccy,
           coalesce(jlu_base_ccy, ent_base_ccy) as jlu_base_ccy,
-          nvl2(jlu_base_amount, jlu_base_rate, r_base.er_rate) as jlu_base_rate,
+          nvl2(jlu_base_amount, jlu_base_rate, r_base.er_rate) as jlu_base_rate,  
           coalesce(jlu_local_ccy, ent_local_ccy) as jlu_local_ccy,
           nvl2(jlu_local_amount, jlu_local_rate, r_local.er_rate) as jlu_local_rate,
           c_base.ec_digits_after_point as base_digits_after_point,
-          c_local.ec_digits_after_point as local_digits_after_point,
+          c_local.ec_digits_after_point as local_digits_after_point, 
           coalesce(jlu_base_amount, round(jlu_tran_amount * r_base.er_rate, c_base.ec_digits_after_point)) as jlu_base_amount,
           coalesce(jlu_local_amount, round(jlu_tran_amount * r_local.er_rate, c_local.ec_digits_after_point)) as jlu_local_amount
-        from slr_jrnl_lines_unposted
+        from slr_jrnl_lines_unposted 
           join slr_entities on jlu_entity = ent_entity and ent_apply_fx_translation = ''Y''
           join slr_entity_rates r_base
-            on r_base.er_date = nvl(jlu_translation_date, jlu_effective_date)
+            on r_base.er_date = nvl(jlu_translation_date, jlu_effective_date) 
             and r_base.er_entity_set = coalesce('||COALESCE(lRateSet, 'null')||', jlu_jrnl_ent_rate_set, ent_rate_set)
             and r_base.er_ccy_from = jlu_tran_ccy
             and r_base.er_ccy_to = coalesce(jlu_base_ccy, ent_base_ccy)
             and r_base.er_rate_type = ''SPOT''
           join slr_entity_rates r_local
-            on r_local.er_date = nvl(jlu_translation_date, jlu_effective_date)
+            on r_local.er_date = nvl(jlu_translation_date, jlu_effective_date) 
             and r_local.er_entity_set = coalesce('||COALESCE(lRateSet, 'null')||', jlu_jrnl_ent_rate_set, ent_rate_set)
             and r_local.er_ccy_from = jlu_tran_ccy
             and r_local.er_ccy_to = coalesce(jlu_local_ccy, ent_local_ccy)
@@ -211,13 +211,13 @@ CREATE OR REPLACE PACKAGE BODY SLR.SLR_TRANSLATE_JOURNALS_PKG AS
           join slr_entity_currencies c_base on c_base.ec_entity_set = ent_currency_set and c_base.ec_ccy = coalesce(jlu_base_ccy, ent_base_ccy) and c_base.ec_status = ''A''
           join slr_entity_currencies c_local on c_local.ec_entity_set = ent_currency_set and c_local.ec_ccy = coalesce(jlu_local_ccy, ent_local_ccy) and c_local.ec_status = ''A''
         where jlu_epg_id = '''||pEpgId||'''
-          and jlu_jrnl_status = '''||pStatus||''' '||CASE WHEN pJournalEntity IS NOT NULL THEN 'jlu_entity = '''||pJournalEntity||'''' END ||'
-        ), lines as (
+          and jlu_jrnl_status = '''||pStatus||''' '||CASE WHEN pJournalEntity IS NOT NULL THEN 'jlu_entity = '''||pJournalEntity||'''' END ||'        
+        ), lines as ( 
           select
             jlu_jrnl_hdr_id,
             jlu_jrnl_line_number,
             jlu_base_ccy,
-            jlu_base_rate,
+            jlu_base_rate,  
             jlu_local_ccy,
             jlu_local_rate,
             count(jlu_jrnl_hdr_id) over (partition by jlu_jrnl_hdr_id, jlu_tran_ccy order by (case when jlu_jrnl_ref_id is null then jlu_tran_amount else -1 *  jlu_tran_amount end) desc, jlu_jrnl_line_number asc) as line_no,
@@ -225,22 +225,22 @@ CREATE OR REPLACE PACKAGE BODY SLR.SLR_TRANSLATE_JOURNALS_PKG AS
             sum(coalesce(jlu_base_amount, round(jlu_tran_amount * jlu_base_rate, base_digits_after_point))) over (partition by jlu_jrnl_hdr_id, jlu_tran_ccy) as base_sum,
             coalesce(jlu_local_amount, round(jlu_tran_amount * jlu_local_rate, local_digits_after_point)) as jlu_local_amount,
             sum(coalesce(jlu_local_amount, round(jlu_tran_amount * jlu_local_rate, local_digits_after_point))) over (partition by jlu_jrnl_hdr_id, jlu_tran_ccy) as local_sum
-          from src
-        ) select
-          '''||pEpgId||''',
+          from src 
+        ) select 
+          '''||pEpgId||''',  
           jlu_jrnl_hdr_id,
-          jlu_jrnl_line_number,
-          jlu_base_rate,
+          jlu_jrnl_line_number,   
+          jlu_base_rate,  
           jlu_base_ccy,
           case when (line_no = 1 and base_sum != 0) then jlu_base_amount - base_sum else jlu_base_amount end as jlu_base_amount,
-          jlu_local_rate,
+          jlu_local_rate,  
           jlu_local_ccy,
           case when (line_no = 1 and local_sum != 0) then jlu_local_amount - local_sum else jlu_local_amount end as jlu_local_amount
         from lines';
 
       SLR_ADMIN_PKG.Debug('FX Translate - translate journals', lSql);
       lStartTime:=DBMS_UTILITY.get_time();
-      EXECUTE IMMEDIATE lSql;
+      EXECUTE IMMEDIATE lSql;      
 
       COMMIT;
       slr_admin_pkg.PerfInfo( 'FXT. FX Translate query execution time: ' || (DBMS_UTILITY.get_time() - lStartTime)/100.0 || ' s.');
@@ -308,8 +308,8 @@ CREATE OR REPLACE PACKAGE BODY SLR.SLR_TRANSLATE_JOURNALS_PKG AS
 			WHEN OTHERS THEN
 				lvLocalCcyNumOfDPs := 2;
         END;
-
-     /*
+     
+     /* 
 		 SELECT ENT_RATE_SET INTO lv_ent_rate_set FROM SLR_ENTITIES
          WHERE ENT_ENTITY = gJournalEntity;*/
 
@@ -490,7 +490,7 @@ CREATE OR REPLACE PACKAGE BODY SLR.SLR_TRANSLATE_JOURNALS_PKG AS
       lv_START_TIME:=DBMS_UTILITY.GET_TIME();
       EXECUTE IMMEDIATE lv_sql;
       COMMIT;
-      SLR_ADMIN_PKG.PerfInfo( 'FXTV. FX Translate - validate translation query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+      SLR_ADMIN_PKG.PerfInfo( 'FXTV. FX Translate - validate translation query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');		        
       RETURN TRUE;
 
     EXCEPTION

@@ -2833,6 +2833,138 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         AND   user_session_id = gSessionId
         AND	  jlu_entity IS NULL;
 
+        -- Check business event type
+        INSERT INTO temp_gui_jrnl_line_errors (
+                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                jle_amended_by, jle_amended_on
+        )
+        SELECT /* jle_jrnl_process_id */         0,
+                  /* user_session_id */            gSessionId,
+                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
+                  /* jle_error_code */              'MADJ-1051',
+                  /* jle_error_string */        'Invalid Business Event Type - ||jlu_reference_5',
+                  /* jle_created_by */            'SYSTEM',
+                  /* jle_created_on */            SYSDATE,
+                  /* jle_amended_by */            'SYSTEM',
+                  /* jle_amended_on */             SYSDATE
+        FROM temp_gui_jrnl_lines_unposted
+        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+        AND   user_session_id = gSessionId
+        AND  NVL(jlu_reference_5,'NVS') <> 'NVS' 
+        AND  upper(jlu_reference_5) NOT IN (select business_event_cd from rdr.RRV_AG_BUSINESS_EVENT);
+           
+        -- Check underwriting year
+        INSERT INTO temp_gui_jrnl_line_errors (
+                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                jle_amended_by, jle_amended_on
+        )
+        SELECT /* jle_jrnl_process_id */         0,
+                  /* user_session_id */            gSessionId,
+                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
+                  /* jle_error_code */              'MADJ-1051',
+                  /* jle_error_string */        'Invalid Underwriting Year - '||jlu_reference_3,
+                  /* jle_created_by */            'SYSTEM',
+                  /* jle_created_on */            SYSDATE,
+                  /* jle_amended_by */            'SYSTEM',
+                  /* jle_amended_on */             SYSDATE
+        FROM temp_gui_jrnl_lines_unposted
+        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+        AND   user_session_id = gSessionId
+        AND NVL(jlu_reference_3,'NVS') <> 'NVS'                                
+        AND TO_NUMBER(NVL2(LENGTH(TRIM(TRANSLATE (jlu_reference_3, '0123456789',' '))),0,jlu_reference_3))  NOT between 1980 AND 2100;
+
+        -- Check accident year
+        INSERT INTO temp_gui_jrnl_line_errors (
+                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                jle_amended_by, jle_amended_on
+        )
+        SELECT /* jle_jrnl_process_id */         0,
+                  /* user_session_id */            gSessionId,
+                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
+                  /* jle_error_code */              'MADJ-1051',
+                  /* jle_error_string */        'Invalid Accident Year - '||jlu_reference_6,
+                  /* jle_created_by */            'SYSTEM',
+                  /* jle_created_on */            SYSDATE,
+                  /* jle_amended_by */            'SYSTEM',
+                  /* jle_amended_on */             SYSDATE
+        FROM temp_gui_jrnl_lines_unposted
+        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+        AND   user_session_id = gSessionId
+        AND NVL(jlu_reference_6,'NVS') <> 'NVS'                                
+        AND TO_NUMBER(NVL2(LENGTH(TRIM(TRANSLATE (jlu_reference_6, '0123456789',' '))),0,jlu_reference_6))  NOT between 1980 AND 2100;
+
+        -- Check gross stream owner
+        INSERT INTO temp_gui_jrnl_line_errors (
+                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                jle_amended_by, jle_amended_on
+        )
+        SELECT /* jle_jrnl_process_id */         0,
+                  /* user_session_id */            gSessionId,
+                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
+                  /* jle_error_code */              'MADJ-1051',
+                  /* jle_error_string */        'Invalid Gross Stream Owner - '||jlu_reference_2,
+                  /* jle_created_by */            'SYSTEM',
+                  /* jle_created_on */            SYSDATE,
+                  /* jle_amended_by */            'SYSTEM',
+                  /* jle_amended_on */             SYSDATE
+        FROM temp_gui_jrnl_lines_unposted
+        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+        AND   user_session_id = gSessionId
+        AND  NVL(jlu_reference_2,'NVS') <> 'NVS'
+        AND upper(jlu_reference_2) NOT IN  (select pl_party_legal_id from fdr.fr_party_legal WHERE pl_pt_party_type_id in (10,11) and length(pl_party_legal_id) < 6); 
+
+        -- Check owner entity
+        INSERT INTO temp_gui_jrnl_line_errors (
+                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                jle_amended_by, jle_amended_on
+        )
+        SELECT /* jle_jrnl_process_id */         0,
+                  /* user_session_id */            gSessionId,
+                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
+                  /* jle_error_code */              'MADJ-1051',
+                  /* jle_error_string */        'Invalid Owner Entity - '||jlu_reference_4,
+                  /* jle_created_by */            'SYSTEM',
+                  /* jle_created_on */            SYSDATE,
+                  /* jle_amended_by */            'SYSTEM',
+                  /* jle_amended_on */             SYSDATE
+        FROM temp_gui_jrnl_lines_unposted
+        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+        AND   user_session_id = gSessionId
+        AND  NVL(jlu_reference_4,'NVS') <> 'NVS'
+        AND upper(jlu_reference_4) NOT IN  (select pl_party_legal_id from fdr.fr_party_legal WHERE pl_pt_party_type_id in (10,11) and length(pl_party_legal_id) < 6);
+               
+        -- Check int/ext counterparty
+        INSERT INTO temp_gui_jrnl_line_errors (
+                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                jle_amended_by, jle_amended_on
+        )
+        SELECT /* jle_jrnl_process_id */         0,
+                  /* user_session_id */            gSessionId,
+                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
+                  /* jle_error_code */              'MADJ-1051',
+                  /* jle_error_string */        'Invalid Int/Ext Counterparty - '||jlu_reference_7,
+                  /* jle_created_by */            'SYSTEM',
+                  /* jle_created_on */            SYSDATE,
+                  /* jle_amended_by */            'SYSTEM',
+                  /* jle_amended_on */             SYSDATE
+        FROM temp_gui_jrnl_lines_unposted
+        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+        AND   user_session_id = gSessionId
+        AND  NVL(jlu_reference_7,'NVS') <> 'NVS' 
+        AND upper(jlu_reference_7) NOT IN  (select pl_party_legal_id from fdr.fr_party_legal WHERE pl_pt_party_type_id in (10,11) and length(pl_party_legal_id) < 6);
+
         -- Check Account
         INSERT INTO temp_gui_jrnl_line_errors (
                 jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,

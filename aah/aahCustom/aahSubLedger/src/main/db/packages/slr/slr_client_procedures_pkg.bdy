@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY SLR."SLR_CLIENT_PROCEDURES_PKG" AS
+create or replace PACKAGE BODY        SLR.SLR_CLIENT_PROCEDURES_PKG AS
 ---------------------------------------------------------------------------------
 -- Id:          $Id: SLR_CLIENT_PROCEDURES_PKG.sql,v 1 2007/08/22 11:17:51 jporter Exp $
 --
@@ -63,7 +63,7 @@ AS
     lv_lock_result INTEGER;
     lvCount NUMBER;
     lv_use_headers 	boolean;
-
+    
 	lv_START_TIME 	PLS_INTEGER := 0;
 
 BEGIN
@@ -92,7 +92,7 @@ BEGIN
     IF lv_lock_result != 0 THEN
 		 gv_msg := 'Can''t acquire lock for pProcessSlr for entity group ' || p_entity_proc_group ||
 	                '. Probably another processing for this entity group is running.';
-
+        
 	    pr_error(slr_global_pkg.C_MAJERR, gv_msg, slr_global_pkg.C_SLRFUNC, s_proc_name, null, null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
         SLR_ADMIN_PKG.Error('ERROR in ' || s_proc_name || ': ' || gv_msg);
         RAISE e_lock_acquire_error;
@@ -111,13 +111,13 @@ BEGIN
 		lv_START_TIME:=DBMS_UTILITY.GET_TIME();
         SLR_UTILITIES_PKG.pResetFailedJournals(p_entity_proc_group, lv_process_id, lv_use_headers);
 		SLR_ADMIN_PKG.PerfInfo( 'Reset Failed JL function. Reset Failed JL function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-
+       
 		BEGIN
 		lv_START_TIME:=DBMS_UTILITY.GET_TIME();
         DBMS_STATS.GATHER_TABLE_STATS(ownname=>'SLR',tabname=>'SLR_JRNL_LINES_UNPOSTED',estimate_percent=>dbms_stats.auto_sample_size,degree=>8, granularity => 'ALL');
-
+		
 		SLR_ADMIN_PKG.PerfInfo( 'Gather table statistics. Execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-		END;
+		END; 
 
 	   ----------------------------------------------------------------------------------------
         -- Check that there are actually some records in the unposted table before calling
@@ -188,7 +188,7 @@ BEGIN
 		ELSE
 			p_process := p_process_id;
 		end if;
-
+  
 		pIMPORT_SLR_JRNLS(p_entity_proc_group, p_process);
 
 EXCEPTION
@@ -232,7 +232,7 @@ PROCEDURE pIMPORT_SLR_JRNLS
 )
 AS
     cJOURNAL_HEADER_EXPRESSION CONSTANT VARCHAR2(500) := 'ae_aet_acc_event_type_id||ae_posting_date||ae_gl_entity||ae_acc_event_id||ae_posting_schema||ae_gaap||ae_source_system||to_char(ae_reverse_date, ''YYYYMMDD'')||ae_journal_type';
-
+    
     s_proc_name CONSTANT VARCHAR2(80) := 'SLR_CLIENT_PROCEDURES_PKG.pIMPORT_SLR_JRNLS';
     lv_business_date SLR_ENTITIES.ENT_BUSINESS_DATE%TYPE;
     lv_user VARCHAR2(30);
@@ -248,9 +248,9 @@ AS
     lv_START_TIME PLS_INTEGER := 0;
     lvAuthOn            DATE;
     TYPE cur_type IS REF CURSOR;
-    cValidateRows cur_type;
-    v_posting_date FR_ACCOUNTING_EVENT.AE_POSTING_DATE%TYPE;
-
+    cValidateRows cur_type;	   
+    v_posting_date FR_ACCOUNTING_EVENT.AE_POSTING_DATE%TYPE;  
+    
 BEGIN
     SLR_ADMIN_PKG.InitLog(p_entity_proc_group, p_process_id);
     SLR_ADMIN_PKG.Debug('pIMPORT_SLR_JRNLS - begin');
@@ -266,47 +266,47 @@ BEGIN
     SELECT SYSDATE INTO lvAuthOn FROM DUAL;
 
     lv_sql := '
-      insert /*+ append */ first
+      insert /*+ append */ first 
        when jlu_effective_date <= :v_business_date then into slr_jrnl_lines_unposted subpartition for ('''||p_entity_proc_group||''', ''U'') (
-        jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_fak_id, jlu_eba_id, jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id, jlu_effective_date, jlu_value_date,
-        jlu_entity, jlu_epg_id, jlu_account, jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6, jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10,
-        jlu_attribute_1, jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1, jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6,
-        jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy, jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate, jlu_local_ccy, jlu_local_amount,
-        jlu_created_by, jlu_created_on, jlu_amended_by, jlu_amended_on, jlu_jrnl_type, jlu_jrnl_description, jlu_jrnl_source, jlu_jrnl_source_jrnl_id, jlu_jrnl_authorised_by, jlu_jrnl_authorised_on,
+        jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_fak_id, jlu_eba_id, jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id, jlu_effective_date, jlu_value_date, 
+        jlu_entity, jlu_epg_id, jlu_account, jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6, jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10, 
+        jlu_attribute_1, jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1, jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6, 
+        jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy, jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate, jlu_local_ccy, jlu_local_amount, 
+        jlu_created_by, jlu_created_on, jlu_amended_by, jlu_amended_on, jlu_jrnl_type, jlu_jrnl_description, jlu_jrnl_source, jlu_jrnl_source_jrnl_id, jlu_jrnl_authorised_by, jlu_jrnl_authorised_on, 
         jlu_jrnl_validated_by, jlu_jrnl_validated_on, jlu_jrnl_posted_by, jlu_jrnl_posted_on, jlu_jrnl_total_hash_debit, jlu_jrnl_total_hash_credit, jlu_jrnl_ref_id, jlu_jrnl_rev_date, jlu_translation_date,
         jlu_period_month,  jlu_period_year, jlu_period_ltd
       ) values (
-        jlu_jrnl_hdr_id, jlu_jrnl_line_number,
+        jlu_jrnl_hdr_id, jlu_jrnl_line_number, 
         standard_hash(jlu_entity||jlu_epg_id||jlu_account||jlu_segment_1||jlu_segment_2||jlu_segment_3||jlu_segment_4||jlu_segment_5||jlu_segment_6||jlu_segment_7||jlu_segment_8||jlu_segment_9||jlu_segment_10||jlu_tran_ccy, ''MD5''),
         standard_hash(
           jlu_entity||jlu_epg_id||jlu_account||jlu_segment_1||jlu_segment_2||jlu_segment_3||jlu_segment_4||jlu_segment_5||jlu_segment_6||jlu_segment_7||jlu_segment_8||jlu_segment_9||jlu_segment_10||jlu_tran_ccy||
           jlu_attribute_1||jlu_attribute_2||jlu_attribute_3||jlu_attribute_4||jlu_attribute_5,
-        ''MD5''),
-        jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id, jlu_effective_date, jlu_value_date,
-        jlu_entity, jlu_epg_id, jlu_account, jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6, jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10,
-        jlu_attribute_1, jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1, jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6,
-        jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy, jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate, jlu_local_ccy, jlu_local_amount,
-        jlu_created_by, jlu_created_on, jlu_amended_by, jlu_amended_on, jlu_jrnl_type, jlu_jrnl_description, jlu_jrnl_source, jlu_jrnl_source_jrnl_id, jlu_jrnl_authorised_by, jlu_jrnl_authorised_on,
+        ''MD5''), 
+        jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id, jlu_effective_date, jlu_value_date, 
+        jlu_entity, jlu_epg_id, jlu_account, jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6, jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10, 
+        jlu_attribute_1, jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1, jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6, 
+        jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy, jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate, jlu_local_ccy, jlu_local_amount, 
+        jlu_created_by, jlu_created_on, jlu_amended_by, jlu_amended_on, jlu_jrnl_type, jlu_jrnl_description, jlu_jrnl_source, jlu_jrnl_source_jrnl_id, jlu_jrnl_authorised_by, jlu_jrnl_authorised_on, 
         jlu_jrnl_validated_by, jlu_jrnl_validated_on, jlu_jrnl_posted_by, jlu_jrnl_posted_on, jlu_jrnl_total_hash_debit, jlu_jrnl_total_hash_credit, jlu_jrnl_ref_id, jlu_jrnl_rev_date, jlu_translation_date,
-        jlu_period_month,  jlu_period_year, jlu_period_ltd
-      ) when jlu_effective_date > :v_business_date then into slr_jrnl_lines_unposted subpartition for ('''||p_entity_proc_group||''', ''W'') (
-        jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_fak_id, jlu_eba_id,
-        jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id, jlu_effective_date, jlu_value_date,
-        jlu_entity, jlu_epg_id, jlu_account, jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6, jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10,
-        jlu_attribute_1, jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1, jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6,
-        jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy, jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate, jlu_local_ccy, jlu_local_amount,
-        jlu_created_by, jlu_created_on, jlu_amended_by, jlu_amended_on, jlu_jrnl_type, jlu_jrnl_description, jlu_jrnl_source, jlu_jrnl_source_jrnl_id, jlu_jrnl_authorised_by, jlu_jrnl_authorised_on,
+        jlu_period_month,  jlu_period_year, jlu_period_ltd        
+      ) when jlu_effective_date > :v_business_date then into slr_jrnl_lines_unposted subpartition for ('''||p_entity_proc_group||''', ''W'') ( 
+        jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_fak_id, jlu_eba_id, 
+        jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id, jlu_effective_date, jlu_value_date, 
+        jlu_entity, jlu_epg_id, jlu_account, jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6, jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10, 
+        jlu_attribute_1, jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1, jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6, 
+        jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy, jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate, jlu_local_ccy, jlu_local_amount, 
+        jlu_created_by, jlu_created_on, jlu_amended_by, jlu_amended_on, jlu_jrnl_type, jlu_jrnl_description, jlu_jrnl_source, jlu_jrnl_source_jrnl_id, jlu_jrnl_authorised_by, jlu_jrnl_authorised_on, 
         jlu_jrnl_validated_by, jlu_jrnl_validated_on, jlu_jrnl_posted_by, jlu_jrnl_posted_on, jlu_jrnl_total_hash_debit, jlu_jrnl_total_hash_credit, jlu_jrnl_ref_id, jlu_jrnl_rev_date, jlu_translation_date,
         jlu_period_month,  jlu_period_year, jlu_period_ltd
       ) values (
-        jlu_jrnl_hdr_id, jlu_jrnl_line_number, null, null, jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id, jlu_effective_date, jlu_value_date,
-        jlu_entity, jlu_epg_id, jlu_account, jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6, jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10,
-        jlu_attribute_1, jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1, jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6,
-        jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy, jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate, jlu_local_ccy, jlu_local_amount,
-        jlu_created_by, jlu_created_on, jlu_amended_by, jlu_amended_on, jlu_jrnl_type, jlu_jrnl_description, jlu_jrnl_source, jlu_jrnl_source_jrnl_id, jlu_jrnl_authorised_by, jlu_jrnl_authorised_on,
+        jlu_jrnl_hdr_id, jlu_jrnl_line_number, null, null, jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id, jlu_effective_date, jlu_value_date, 
+        jlu_entity, jlu_epg_id, jlu_account, jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6, jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10, 
+        jlu_attribute_1, jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1, jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6, 
+        jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy, jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate, jlu_local_ccy, jlu_local_amount, 
+        jlu_created_by, jlu_created_on, jlu_amended_by, jlu_amended_on, jlu_jrnl_type, jlu_jrnl_description, jlu_jrnl_source, jlu_jrnl_source_jrnl_id, jlu_jrnl_authorised_by, jlu_jrnl_authorised_on, 
         jlu_jrnl_validated_by, jlu_jrnl_validated_on, jlu_jrnl_posted_by, jlu_jrnl_posted_on, jlu_jrnl_total_hash_debit, jlu_jrnl_total_hash_credit, jlu_jrnl_ref_id, jlu_jrnl_rev_date, jlu_translation_date,
-        jlu_period_month,  jlu_period_year, jlu_period_ltd
-      )
+        jlu_period_month,  jlu_period_year, jlu_period_ltd        
+      ) 
       select ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'IMPORT_INSERT_UNPOSTED') || '
         standard_hash('|| cJOURNAL_HEADER_EXPRESSION ||'||to_char(:process_id___1), ''MD5'') as jlu_jrnl_hdr_id,
         rn as jlu_jrnl_line_number,
@@ -375,10 +375,10 @@ BEGIN
         ep_bus_period as jlu_period_month, ep_bus_year as jlu_period_year, case when ea_account_type_flag = ''P'' then ep_bus_year else 1 end as jlu_period_ltd
       from (select ae.*, rownum as rn from fr_accounting_event ae where ae_epg_id = '''||p_entity_proc_group||''' and ae_posting_date <= :business_date___7) ae
         left join slr_entities on ent_entity = ae_gl_entity
-        left join slr_entity_accounts on ea_account = ae_gl_account and ea_entity_set = ent_accounts_set
+        left join slr_entity_accounts on ea_account = ae_gl_account and ea_entity_set = ent_accounts_set 
         left join slr_entity_periods on ae_posting_date between ep_cal_period_start and ep_cal_period_end and ep_entity = ae_gl_entity and ep_period_type != 0
     ';
-
+      
     SLR_ADMIN_PKG.Debug('Importing AE', lv_sql);
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
     EXECUTE IMMEDIATE lv_sql USING lv_business_date, lv_business_date, p_process_id, p_process_id, lv_business_date, lv_user, lv_gp_todays_bus_date, lv_user, lv_gp_todays_bus_date, lv_business_date;
@@ -409,7 +409,7 @@ BEGIN
         SUBPARTITION (' || lv_subpartition_name || ') WHERE ROWNUM < 2'
     INTO lv_rows_on_subpartition;
 
-
+  
 
     IF lv_rows_on_subpartition > 0 THEN
         SLR_ADMIN_PKG.Debug('Processing without exchanging partition');
@@ -432,12 +432,12 @@ BEGIN
                 to SLR_JRNL_LINES_UNPOSTED: can''t acquire lock to exchange partitions');
             RAISE e_lock_acquire_error;
         END IF;
-
+       
         lv_rollback_exchange := TRUE;
         EXECUTE IMMEDIATE 'ALTER TABLE FDR.FR_ACCOUNTING_EVENT EXCHANGE SUBPARTITION '
             || lv_subpartition_name || ' WITH TABLE ' || lv_part_move_table_name || ' WITHOUT VALIDATION';
 
-
+       
         EXECUTE IMMEDIATE 'ALTER TABLE FDR.FR_ACCOUNTING_EVENT_IMP EXCHANGE SUBPARTITION '
             || lv_subpartition_name || ' WITH TABLE ' || lv_part_move_table_name || ' WITHOUT VALIDATION';
 
@@ -685,11 +685,11 @@ BEGIN
 
     SLR_ADMIN_PKG.Info('Rows copied to FR_ACCOUNTING_EVENT_IMP');
 
-
+    
 	BEGIN
 		lv_sql :=  'SELECT ' || SLR_UTILITIES_PKG.fHint(p_entity_proc_group, 'SELECT_ACC_EVENT') || ' DISTINCT AE_POSTING_DATE FROM FR_ACCOUNTING_EVENT
             WHERE AE_POSTING_DATE <= to_date(''' || lv_business_date || ''') AND AE_EPG_ID = ''' || p_entity_proc_group || ''' ';
-
+  
 		OPEN cValidateRows FOR lv_sql;
 		LOOP
 			FETCH cValidateRows INTO v_posting_date;
@@ -697,13 +697,13 @@ BEGIN
         TRUNC_AE_SUBPART( SLR_UTILITIES_PKG.fSubpartitionName(p_entity_proc_group, v_posting_date) );
 		END LOOP;
 		CLOSE cValidateRows;
-
+	
 	EXCEPTION
         WHEN OTHERS THEN
             SLR_VALIDATE_JOURNALS_PKG.pWriteLogError(s_proc_name, 'FR_ACCOUNTING_EVENT',
                 'Import finished but records from FR_ACCOUNTING_EVENT were not removed due to error.',
                 p_process_id,p_entity_proc_group);
-            SLR_ADMIN_PKG.Error('Import finished but records from FR_ACCOUNTING_EVENT were not removed due to error.');
+            SLR_ADMIN_PKG.Error('Import finished but records from FR_ACCOUNTING_EVENT were not removed due to error.');		
 	END;
     SLR_ADMIN_PKG.Info('Imported rows removed from FR_ACCOUNTING_EVENT');
 
@@ -1156,9 +1156,9 @@ BEGIN
 
         IF v_count = 0 THEN
             raise e_entity_not_in_epg;
-        END IF;
+        END IF;        
 
-    END IF;
+    END IF;    
 
     DELETE FROM SLR_AET_JOURNAL_REC WHERE SAJR_GL_ENTITY = p_entity;
 
@@ -1415,7 +1415,7 @@ BEGIN
 
     SLR_RECONCILIATION_PKG.pReconcileAccountsMovement(p_epg_id, p_entity, lvPriorBusinessDate, lvBusinessDate);
 
-
+   
 
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
@@ -1458,18 +1458,18 @@ BEGIN
         ELSE
             lvBusinessDate := p_business_date;
         END IF;
-
+        
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
             pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates, unable to get business date: '
-                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);    
             RAISE e_raise_exception;
     END;
 
     SLR_CALENDAR_PKG.pSetEntityBusinessDate(p_entity, lvBusinessDate);
-
+    
     --find business year
-    BEGIN
+    BEGIN   
        SELECT EP_BUS_YEAR
             INTO lvBusinessYear
             FROM SLR_ENTITY_PERIODS
@@ -1480,7 +1480,7 @@ BEGIN
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
             pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates, business year not defined: '
-                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);    
             RAISE e_raise_exception;
     END;
 
@@ -1495,7 +1495,7 @@ BEGIN
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
             pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates, no final period defined for a business year: '
-                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);    
             RAISE e_raise_exception;
     END;
 
@@ -1510,7 +1510,7 @@ BEGIN
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
             pr_error(slr_global_pkg.C_MAJERR, 'Failure to roll entity dates, unable to get business date or no final period defined for a business year.'
-                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);
+                     ||sqlerrm, slr_global_pkg.C_TECHNICAL, s_proc_name, 'SLR_ENTITIES', null, 'Entity', gs_stage, 'PL/SQL', SQLCODE);        
             RAISE e_raise_exception;
     END;
     /*IF TO_CHAR(lvBusinessDate,'MM') in ('11','12') THEN
@@ -1883,7 +1883,7 @@ AS
   v_min_status CHAR(1);
   v_max_status CHAR(1);
   pprocessId NUMBER;
-
+  
   CURSOR cEntityProcGroups(pEntProcSet IN slr_bm_entity_processing_set.bmeps_set_id%TYPE,pConfig IN slr_process_config.pc_config%TYPE,pProcess IN slr_process.p_process%TYPE) IS
         SELECT DISTINCT JLU_EPG_ID
         FROM SLR_JRNL_LINES_UNPOSTED
@@ -1892,60 +1892,60 @@ AS
         OR JLU_ENTITY IN (SELECT PCD_ENTITY FROM SLR_PROCESS_CONFIG_DETAIL WHERE pcd_pc_config = pConfig AND pcd_pc_P_process = pProcess AND NVL(PCD_ENTITY,'**SOURCE**') <> '**SOURCE**')
         ;
 
-
+        
 begin
 
     --logic for previous year balances <begin> --
     --we need to run processes for the end of the previous year as long as it's not closed, --
     --in case that there were any backdated transactions that would not be otherwise taken as source for balance movement processes --
-    --and therefore render the end year reports invalid --
-
+    --and therefore render the end year reports invalid -- 
+    
     --check if balance date is the same for all entities within processing set--
     SELECT min(ENT_BUSINESS_DATE), max(ENT_BUSINESS_DATE) into v_min_date, v_max_date FROM
     slr_entities where ent_entity in (select BMEPS_ENTITY from SLR_BM_ENTITY_PROCESSING_SET where BMEPS_SET_ID = pEntProcSet);
-
+    
     IF v_min_date <> v_max_date THEN
         RAISE_APPLICATION_ERROR(-20001,'Entity business date not consistent within entity processing set: '|| NVL(pEntProcSet, ''));
     end if;
-
+    
     --last working day of the previous year and period status must be the same for all entities within entity processing set
-    SELECT MIN( b.ep_bus_period_end), MAX( b.ep_bus_period_end), MIN(b.EP_STATUS), MAX(b.EP_STATUS)
+    SELECT MIN( b.ep_bus_period_end), MAX( b.ep_bus_period_end), MIN(b.EP_STATUS), MAX(b.EP_STATUS) 
     into v_min_period_end, v_max_period_end, v_min_status, v_max_status FROM
     SLR_BM_ENTITY_PROCESSING_SET LEFT JOIN slr_entity_periods a ON (a.EP_ENTITY = BMEPS_ENTITY)
     LEFT JOIN slr_entity_periods b ON (a.EP_ENTITY = b.EP_ENTITY AND a.EP_BUS_YEAR-1 = b.EP_BUS_YEAR )
     WHERE BMEPS_SET_ID = pEntProcSet
     AND v_min_date BETWEEN a.ep_cal_period_start AND a.ep_cal_period_end
-    AND b.ep_period_type = 2;
-
+    AND b.ep_period_type = 2;    
+    
     IF v_min_status <> v_max_status THEN
         RAISE_APPLICATION_ERROR(-20001,'The status of the last working day of the previous year is not consistent within entity processing set: '|| NVL(pEntProcSet, ''));
     END IF;
-
+  
   --if previous business year is still open run process for the end of previous year and post created journals
     if v_min_status = 'O' then
         --providing that last working day of the previous year is the same for all entities
         IF v_min_period_end <> v_max_period_end THEN
             RAISE_APPLICATION_ERROR(-20001,'Last working day of the previous year is not consistent within entity processing set: '|| NVL(pEntProcSet, ''));
         end if;
-
+        
         SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess(pProcess,pEntProcSet,pConfig,pSource,v_min_period_end,pRateSet,pprocessId);
-
+        
         FOR cEntityProcGroup IN cEntityProcGroups(pEntProcSet,pConfig,pProcess)
         LOOP
            SLR_UTILITIES_PKG.pRunValidateAndPost(cEntityProcGroup.JLU_EPG_ID,NULL, pprocessId);
         END LOOP;
-
-
+    
+        
     END IF;
     --logic for previous year balances <end> --
-
+  
   SLR_BALANCE_MOVEMENT_PKG.pBMRunBalanceMovementProcess(pProcess,pEntProcSet,pConfig,pSource,pBalanceDate,pRateSet,pprocessId);
-
+        
         FOR cEntityProcGroup IN cEntityProcGroups(pEntProcSet,pConfig,pProcess)
         LOOP
             SLR_UTILITIES_PKG.pRunValidateAndPost(cEntityProcGroup.JLU_EPG_ID,NULL, pprocessId);
         END LOOP;
-
+        
    COMMIT;
 EXCEPTION
     WHEN OTHERS THEN

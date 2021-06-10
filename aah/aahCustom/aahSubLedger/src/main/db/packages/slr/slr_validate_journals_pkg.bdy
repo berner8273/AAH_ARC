@@ -35,7 +35,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
                                   p_entity       IN slr_entities.ent_entity%TYPE:=NULL,
                                   p_status IN CHAR := 'U');
 
-      PROCEDURE pValidateSegmentDiff
+    PROCEDURE pValidateSegmentDiff
     ( p_process_id IN NUMBER,
         p_seg_no IN NUMBER,
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
@@ -55,7 +55,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_status IN CHAR := 'U',
         p_UseHeaders IN BOOLEAN := FALSE,
-        lv_sql_group_by IN VARCHAR2
+		lv_sql_group_by IN VARCHAR2
         );
 
    PROCEDURE pValidateBalanceDiff
@@ -70,9 +70,17 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         p_process_id IN NUMBER,
         p_status IN CHAR
     );
+    
+    PROCEDURE pValidateFuturePeriod     
+    (
+        p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+        p_process_id IN NUMBER,
+        p_status IN CHAR:= 'U',
+        p_UseHeaders IN BOOLEAN := FALSE
+    );
 
+    PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_process_id in NUMBER, p_status IN CHAR);
 
-PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_process_id in NUMBER, p_status IN CHAR);
 
     /**************************************************************************
     * Declare private global variables
@@ -82,7 +90,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     gProcessIdStr               VARCHAR(30) := NULL;
     gEntityConfiguration        SLR_ENTITIES%ROWTYPE;
     gJournalEntity               slr_entities.ent_entity%TYPE;
-    gJournalEpgId               SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
+	  gJournalEpgId               SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
     gJournalType                SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE;
     gJournalStatus              CHAR(1);
     gJournalDate                SLR_JRNL_HEADERS.JH_JRNL_DATE%TYPE;
@@ -127,7 +135,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     gTotalUpdates               NUMBER(10);
 
     gv_table_name               VARCHAR2(30);
-    gErrorsNumber                NUMBER;
+	  gErrorsNumber				NUMBER;
 
     -- Static global data
     gs_stage CHAR(3) := 'SLR';
@@ -223,1124 +231,896 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
 
 -- -------------------------------------------------------------------------------
 
-PROCEDURE pValidateJournals
-(
-    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
-    p_process_id IN NUMBER,
-    p_status IN CHAR := 'U',
-    p_UseHeaders IN BOOLEAN := FALSE,
-    p_rate_set IN slr_entities.ent_rate_set%TYPE
-)
-AS
-    lv_entity_configuration SLR_ENTITIES%ROWTYPE;
-    lv_fak_definition SLR_FAK_DEFINITIONS%ROWTYPE;
-    lv_sql VARCHAR2(32000);
-    lv_sql_group_by VARCHAR2(500);
-    lv_found NUMBER(2);
+    PROCEDURE pValidateJournals (
+      p_epg_id IN slr_entity_proc_group.epg_id%TYPE,
+      p_process_id IN NUMBER,
+      p_status IN CHAR := 'U',
+      p_useheaders IN BOOLEAN := FALSE,
+      p_rate_set IN slr_entities.ent_rate_set%TYPE
+    ) IS
 
-    v_msg             VARCHAR2(1000);
-    s_proc_name       VARCHAR2(50) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateJournals';
-    e_bad_status      EXCEPTION;
+      cROWLIMIT CONSTANT NUMBER := 10000;
+      lDateFormat CHAR(10) DEFAULT 'yyyy-mm-dd';
+      cPROC_NAME VARCHAR2(50) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateJournals';
+      lCurrBusDate CONSTANT DATE := SLR_UTILITIES_PKG.fEntityGroupCurrBusDate(p_epg_id);
 
-    v_rev_err_msg varchar2(1500);
-    v_ent_business_date                timestamp(6);
-    v_ent_next_business_date        timestamp(6);
-    v_rev_compare_start_date                 timestamp(6);
-    v_rev_compare_end_date                 timestamp(6);
-    lvPeriodStartDate                         timestamp(6);
-    v_rev_compare_date                 timestamp(6);
-    lvPeriodEndDate                         timestamp(6);
-    lvPrevBusDate                                 timestamp(6);
-    lvNextBusDate                                 timestamp(6);
-    lvNextPeriodEndDate                timestamp(6);
-    lvNextPeriodStartDate                timestamp(6);
-    lvPrevPeriodEndDate                timestamp(6);
-    lvPrevPeriodStartDate    timestamp(6);
-    v_sqlcode SMALLINT;
-    gv_msg                 varchar2(4000);
-    val varchar2(60);
-    v_epg_validation SMALLINT := 0;
-
-    TYPE cur_type IS REF CURSOR;
-    cValidateRows cur_type;
-    v_counter INTEGER;
-    v_definition varchar2(1000);
-    lv_segment varchar2(500);
-    lv_allSegments varchar2(1000);
-    v_defin varchar2(100);
-    v_def BOOLEAN;
-
-BEGIN
-
-
-    SLR_ADMIN_PKG.InitLog(p_epg_id, p_process_id);
-    SLR_ADMIN_PKG.Info('Validation start');
-
-    EXECUTE IMMEDIATE 'ALTER SESSION ENABLE PARALLEL DML';
-
-
-    pInitializeProcedure(p_epg_id, p_process_id);
-
-    pDeleteLineErrors(p_epg_id, p_process_id, p_status);
-
-    -- EPG validation
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
-            jlu_entity, jlu_epg_id
-        FROM
-            slr_jrnl_lines_unposted where jlu_epg_id = ''' || p_epg_id || '''
-
-        MINUS
-
-        SELECT
-            epg_entity, epg_id
-        FROM
-            slr_entity_proc_group where epg_id = ''' || p_epg_id || '''
-    ';
-
-    DECLARE
-        v_jlu_epg_id SLR.SLR_JRNL_LINES_UNPOSTED.JLU_EPG_ID%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_entity, v_jlu_epg_id;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            v_epg_validation := 1;
-            gv_msg := 'Missing entity definition in SLR_ENTITY_PROC_GROUP for epg_id [' || v_jlu_epg_id || '] and entity [' || v_jlu_entity || ']';
-            slr.PR_ERROR(1,gv_msg, 1,'pValidateJournals', 'SLR_ENTITY_PROC_GROUP', null, null,null,'PL/SQL', null, null, null, null, null,'', null);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    IF(v_epg_validation = 1) THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during SLR_ENTITY_PROC_GROUP validation');
-    END IF;
-
-    SLR_ADMIN_PKG.Debug('Validation. EPG configuration validated.', lv_sql);
-
-    --FAK DEFINITION validation
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
-            jlu_entity
-        FROM
-            slr_jrnl_lines_unposted where jlu_epg_id = ''' || p_epg_id || '''
-
-        MINUS
-
-        SELECT
-            FD_ENTITY
-        FROM
-            slr_fak_definitions where fd_entity IN (SELECT epg_entity from slr_entity_proc_group where EPG_ID =  ''' || p_epg_id || ''' )
-    ';
-
-    DECLARE
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            v_epg_validation := 1;
-            gv_msg := 'Missing entity definition in SLR_FAK_DEFINITIONS for epg_id [' || p_epg_id || '] and entity [' || v_jlu_entity || ']';
-            slr.PR_ERROR(1,gv_msg, 1,'pValidateJournals', 'SLR_FAK_DEFINITIONS', null, null,null,'PL/SQL', null, null, null, null, null,'', null);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    IF(v_epg_validation = 1) THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during SLR_FAK_DEFINITIONS validation');
-    END IF;
-
-    SLR_ADMIN_PKG.Debug('Validation.SLR_FAK_DEFINITIONS configuration validated.', lv_sql);
-
-
-
-    -- Validation in External types table
-    BEGIN
-     gv_msg := 'No data found in SLR_EXT_JRNL_TYPES';
-
-     SELECT max(ejt_type) INTO val
-    FROM
-        slr.SLR_EXT_JRNL_TYPES;
-
-     EXCEPTION
-        WHEN OTHERS THEN
-        slr.PR_ERROR(1,gv_msg, 1,'pValidateJournals', 'SLR_EXT_JRNL_TYPES', null, null,null,'PL/SQL', null, null, null, null, null,'', null);
-        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during SLR_EXT_JRNL_TYPES validation');
-     END;
-
-        SLR_ADMIN_PKG.Debug('Validation. Records in SLR_EXT_JRNL_TYPES exist.');
-
-  -- Move future records ( > Business date) to W partition
-
-        lv_sql:=
-        'MERGE
-            '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'MERGE_MV_FUT_UNPOST_REC') ||'
-        INTO SLR_JRNL_LINES_UNPOSTED JLU
-        USING
-            (
-            SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
-                SLR_JRNL_LINES_UNPOSTED.ROWID AS REC_ID
-                FROM
-                SLR_JRNL_LINES_UNPOSTED
-            WHERE
-                JLU_EPG_ID          = :p_epg_id AND
-                JLU_JRNL_STATUS     = ''U''  AND
-                JLU_EFFECTIVE_DATE > :p_business_date
-          ) JLU1
-          ON
-          (
-              JLU.ROWID = JLU1.REC_ID
+      lValidateSQL VARCHAR2(32767) DEFAULT q'[
+        with jrnl_lines as (
+          select ]'|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || q'[ distinct
+            jlu_effective_date,
+            jlu_entity,
+            jlu_jrnl_rev_date,
+            jlu_jrnl_type,
+            jlu_epg_id,
+            jlu_translation_date,
+            jlu_value_date,
+            jlu_jrnl_ref_id,
+            jlu_tran_ccy,
+            jlu_jrnl_ent_rate_set,
+            jlu_jrnl_process_id,
+            jlu_account
+          from slr_jrnl_lines_unposted
+          where jlu_epg_id = :pc_epg_id and jlu_jrnl_status = :pc_status
+        ), entities as (
+          select distinct jlu_epg_id, jlu_entity, jlu_jrnl_type, jlu_account
+          from jrnl_lines
+        ), dates as (
+          select distinct jlu_epg_id, jrnl_date_type, jrnl_date, jlu_entity, jlu_jrnl_type
+          from jrnl_lines
+          unpivot (jrnl_date for jrnl_date_type in (jlu_effective_date as 'jlu_effective_date', jlu_translation_date as 'jlu_translation_date', jlu_jrnl_rev_date as 'jlu_jrnl_rev_date', jlu_value_date as 'jlu_value_date')) 
+        ), epg_validate as (
+          select distinct jlu_epg_id, jlu_entity, 'EPG validation' as validation, cast(null as varchar2(200)) as value1, cast(null as varchar2(200)) as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from entities
+          where not exists (
+            select 1 from slr_entity_proc_group  where epg_entity = jlu_entity and epg_id = jlu_epg_id    
           )
-          WHEN MATCHED THEN UPDATE SET jlu.JLU_JRNL_STATUS = ''W''';
+        ), periods_validate as (
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Periods' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from dates 
+          where not exists ( 
+            select 1 
+            from slr_entity_periods
+            where ep_entity = jlu_entity and jrnl_date between ep_cal_period_start and ep_cal_period_end and ep_status = 'O'
+          ) and jrnl_date_type != 'jlu_value_date'
+        ), days_validate as (
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Dates' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from dates    
+          where not exists (
+            select 1 
+            from slr_entity_days
+            where ed_entity_set = (select ent_periods_and_days_set from slr_entities where ent_entity = jlu_entity)
+              and ed_date = jrnl_date
+              and ed_status = 'O'
+          ) and jrnl_date_type != 'jlu_value_date'  
+        ), value_date_period_validate as (
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Period containing Value Date' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from dates join slr_entities on ent_entity = jlu_entity
+          where not exists ( 
+            select 1 
+            from slr_entity_periods
+            where ep_entity = jlu_entity and jrnl_date between ep_cal_period_start and ep_cal_period_end and ep_status = 'O'
+          ) and jrnl_date_type = 'jlu_value_date'
+          and ent_post_val_date = 'Y'
+        ), value_date_day_validate as ( 
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Value date' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from dates join slr_entities on ent_entity = jlu_entity
+          where not exists ( 
+            select 1 
+            from slr_entity_days
+            where ed_entity_set = (select ent_periods_and_days_set from slr_entities where ent_entity = jlu_entity)
+              and ed_date = jrnl_date
+              and ed_status = 'O'
+          ) and jrnl_date_type = 'jlu_value_date'
+          and ent_post_val_date = 'Y'
+        ), ext_type_none_validate as (
+          select distinct jlu_epg_id, jlu_entity, 'External type: None' as validation, jlu_jrnl_type as value1, ext.ejt_rev_ejtr_code as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from jrnl_lines join slr_entities ent on ent.ent_entity = jlu_entity
+            join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
+            join slr_jrnl_types typ on ext.ejt_jt_type = typ.jt_type
+            join slr_ext_jrnl_type_rule rul on rul.ejtr_code = ext.ejt_rev_ejtr_code
+          where jlu_jrnl_rev_date is null
+		    and jlu_jrnl_ref_id is null
+            and typ.jt_reverse_flag = 'Y'
+            and ext.ejt_rev_ejtr_code = 'NONE'              		
+        ), ext_type_between_validate as (    
+          select distinct jlu_epg_id, jlu_entity, 'External type: BETWEEN' as validation, jlu_jrnl_type as value1, ejtr_code as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from jrnl_lines join slr_entities ent on ent.ent_entity = jlu_entity
+            join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
+            join slr_jrnl_types typ on ext.ejt_jt_type = typ.jt_type
+            join slr_ext_jrnl_type_rule rul on rul.ejtr_code = ext.ejt_rev_ejtr_code
+          where jlu_jrnl_rev_date is null
+            and jlu_jrnl_ref_id is null
+            and typ.jt_reverse_flag = 'Y'      
+            and (rul.ejtr_type = 'BETWEEN' or rul.ejtr_period_date = 'B' or  rul.ejtr_prior_next_current = 'B')
+        ), ext_type_validate as (    
+          select distinct jlu_entity, jlu_jrnl_type, 'Invalid Ext type' as validation, jlu_jrnl_type as value1, cast(null as varchar2(200)) as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from entities
+          where not exists (
+            select 1 
+            from slr_ext_jrnl_types ejt join slr_jrnl_types jt on ejt.ejt_jt_type = jt.jt_type
+            where ejt.ejt_type = jlu_jrnl_type 
+          )   
+        ), rev_date_validate as (
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type as value1, jrnl_date, 'Reversing Date' as validation, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from dates join slr_entities ent on ent.ent_entity = jlu_entity
+            join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
+            join slr_jrnl_types typ on ext.ejt_jt_type = typ.jt_type
+            join slr_ext_jrnl_type_rule rul on rul.ejtr_code = ext.ejt_rev_ejtr_code
+        where typ.jt_reverse_flag in ('Y','C')
+          and jrnl_date_type = 'jlu_jrnl_rev_date'   
+          and not exists (
+            select 1 
+            from slr_entity_days
+            where ed_entity_set = (select ent_periods_and_days_set from slr_entities where ent_entity = jlu_entity)
+              and ed_date = jrnl_date
+              and ed_status = 'O'
+           )
+        ), rev_date_rules_validate as (
+          select distinct jlu_epg_id, jlu_entity, msg.em_error_message, 'Reversing Date rules' as validation, jlu_jrnl_type as value1, ejtr_period_date as value2, 
+            to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value3, to_char(jlu_jrnl_rev_date, ']'||lDateFormat||q'[') as value4, em_error_message as value5, ejtr_prior_next_current as value6, 
+            ejtr_type as value7, to_char(ent_business_date, ']'||lDateFormat||q'[') as value8, 
+            ent_periods_and_days_set as value9
+          from jrnl_lines join slr_entities ent on ent.ent_entity = jlu_entity
+            join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
+            join slr_jrnl_types typ on ext.ejt_jt_type = typ.jt_type
+            join slr_ext_jrnl_type_rule rul on rul.ejtr_code = ext.ejt_rev_ejtr_code
+            join slr_error_message msg on msg.em_error_code = rul.ejtr_em_error_code
+          where jlu_jrnl_rev_date is not null
+            and typ.jt_reverse_flag = 'Y'
+            and ext.ejt_rev_validation_flag = 'Y'    
+        ), rev_date_less as (
+          select distinct jlu_epg_id, jlu_entity, jlu_jrnl_rev_date, jlu_effective_date, 'Reversing Date < Effective Date' as validation, to_char(jlu_jrnl_rev_date, ']'||lDateFormat||q'[') as value1, 
+            to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value2,  cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from jrnl_lines join slr_entities ent on ent.ent_entity = jlu_entity
+            join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
+            join slr_jrnl_types typ on ext.ejt_jt_type = typ.jt_type
+          where jt_reverse_flag = 'Y'
+            and jlu_jrnl_rev_date <= jlu_effective_date
+        ), cond_rev_date_less as (
+          select distinct jlu_epg_id, jlu_entity, jlu_jrnl_rev_date, jlu_effective_date, 'Reversing Date < Effective Date' as validation, to_char(jlu_jrnl_rev_date, ']'||lDateFormat||q'[') as value1,
+            to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value2,  cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from jrnl_lines join slr_entities ent on ent.ent_entity = jlu_entity
+            join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
+            join slr_jrnl_types typ on ext.ejt_jt_type = typ.jt_type
+          where jt_reverse_flag = 'C'
+            and jlu_jrnl_rev_date is not null
+            and jlu_jrnl_rev_date <= jlu_effective_date
+        ), accounts as (
+          select distinct jlu_epg_id, jlu_entity, jlu_account, 'Accounts' as validation, jlu_account as value1, cast(null as varchar2(200)) as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from entities where not exists (
+            select 1 from slr_entity_accounts
+            where ea_entity_set = (select ent_accounts_set from slr_entities where ent_entity = jlu_entity)
+            and ea_status = 'A'
+            and ea_account = jlu_account
+          ) 
+        ), adjustment_balance as (
+          select distinct jlu_epg_id, jlu_entity, jlu_jrnl_type  as value1, 'Adjustment Balances' as validation, cast(null as varchar2(200)) as value2, 
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from entities
+            join slr_entities ent on jlu_entity = ent.ent_entity
+          where exists (
+            select 1
+            from slr_ext_jrnl_types
+            where ejt_type = jlu_jrnl_type
+              and ((ejt_balance_type_1 = 20 and ejt_balance_type_2 is null) or (ejt_balance_type_2 = 20 and ejt_balance_type_1 is null)))
+            and ent.ent_adjustment_flag = 'N'  
+        ), currency as (
+          select distinct jlu_epg_id, jlu_entity, trim(jlu_tran_ccy) as value1, 'Currency' as validation, to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value2, 
+            to_char(jlu_translation_date, ']'||lDateFormat||q'[') as value3, jlu_jrnl_ent_rate_set as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from jrnl_lines
+        ), entities_list as (
+          select distinct jlu_epg_id, jlu_entity, jlu_tran_ccy as value1, 'Entities' as validation, cast(null as varchar2(200)) as value2, 
+          cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
+          from jrnl_lines
+        ) select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from epg_validate
+        union all 
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from periods_validate
+        union all 
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from days_validate
+        union all 
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from value_date_period_validate
+        union all 
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from value_date_day_validate
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from ext_type_none_validate
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from ext_type_between_validate
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from ext_type_validate
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from rev_date_validate
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from rev_date_rules_validate
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from rev_date_less
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from cond_rev_date_less
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from accounts
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from adjustment_balance
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from currency
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from entities_list]';
+
+      TYPE lValidateRc IS REF CURSOR;
+      lValidateCur lValidateRc;
+      lValidationTable ttValidationTable := ttValidationTable();
+
+      lEpgValidation SIMPLE_INTEGER DEFAULT 0;
+      lVal VARCHAR2(200);
+
+      TYPE cur_type IS REF CURSOR;
+      cValidateRows cur_type;
+      lv_sql VARCHAR2(32000);
+
+      PROCEDURE validateReversingDateRules (
+        pEntity IN slr_entities.ent_entity%TYPE,
+        pJrnlType IN slr_jrnl_lines_unposted.jlu_jrnl_type%TYPE,
+        pPeriodDate IN slr_ext_jrnl_type_rule.ejtr_period_date%TYPE,
+        pEffectiveDate IN slr_jrnl_lines_unposted.jlu_effective_date%TYPE,
+        pJrnlRevDate IN slr_jrnl_lines_unposted.jlu_jrnl_rev_date%TYPE,
+        pErrorMessage IN slr_error_message.em_error_message%TYPE,
+        pPriorNextCurrent IN slr_ext_jrnl_type_rule.ejtr_prior_next_current%TYPE,
+        pType IN slr_ext_jrnl_type_rule.ejtr_type%TYPE,
+        pBusinessDate IN slr_entities.ent_business_date%TYPE,
+        pPeriodsAndDaysSet IN slr_entities.ent_periods_and_days_set%TYPE
+      ) IS
+
+        lRevErrMsg VARCHAR2(1500);
+        lEntNextBusinessDate TIMESTAMP(6);
+        lRevCompareStartDate TIMESTAMP(6);
+        lRevCompareEndDate TIMESTAMP(6);
+        lPeriodStartDate TIMESTAMP(6);
+        lRevCompareDate TIMESTAMP(6);
+        lPeriodEndDate TIMESTAMP(6);
+        lPrevBusDate TIMESTAMP(6);
+        lNextBusDate TIMESTAMP(6);
+        lNextPeriodEndDate TIMESTAMP(6);
+        lNextPeriodStartDate TIMESTAMP(6);
+        lPrevPeriodEndDate TIMESTAMP(6);
+        lPrevPeriodStartDate TIMESTAMP(6);
+
+      BEGIN
+        GUI_MANUAL_JOURNAL.prui_get_calendar_details(
+          pEffectiveDate,
+          pPeriodsAndDaysSet,
+          pEntity,
+          lPrevPeriodStartDate,
+          lPrevPeriodEndDate,
+          lPeriodStartDate,
+          lPrevBusDate,
+          lNextBusDate,
+          lPeriodEndDate,
+          lNextPeriodEndDate,
+          lNextPeriodStartDate
+        );
+
+        lRevErrMsg := REPLACE(pErrorMessage, '%2', 'current business day');
+
+        IF (pPriorNextCurrent IS NOT NULL AND pPeriodDate IS NOT NULL) THEN
+
+          lRevErrMsg := REPLACE(pErrorMessage, '%1', 'Reversing date');
+
+          CASE pPriorNextCurrent
+            WHEN 'P' THEN
+              lRevCompareStartDate := lPrevPeriodStartDate;
+              lRevCompareEndDate := lPrevPeriodEndDate;
+            WHEN 'C' THEN
+              lRevCompareStartDate := lPeriodStartDate;
+              lRevCompareEndDate := lPeriodEndDate;
+            WHEN 'N' THEN
+              lRevCompareStartDate := lNextPeriodStartDate;
+              lRevCompareEndDate := lNextPeriodEndDate;
+            ELSE NULL;
+          END CASE;
+
+          CASE pPeriodDate
+            WHEN 'S' THEN
+              IF (pType = '=' AND pJrnlRevDate != lRevCompareStartDate) THEN lRevErrMsg := REPLACE(lRevErrMsg, '%1', 'Reversing date');
+                pWriteLineError(
+                  pEntity, p_process_id, 'Valid Rev Date', lRevErrMsg,
+                  ' AND JLU_JRNL_REV_DATE = DATE '''||TO_CHAR(pJrnlRevDate, 'yyyy-mm-dd')||''' AND JLU_EFFECTIVE_DATE = DATE '''||TO_CHAR(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_JRNL_TYPE = '''||pJrnlType||''' ',
+                    p_epg_id, p_status, NULL
+                );
+              ELSIF ((pType = '>' AND pJrnlRevDate <= lRevCompareStartDate) OR (pType = '<' AND pJrnlRevDate >= lRevCompareStartDate)) THEN
+                pWriteLineError(
+                  pEntity, p_process_id, 'Valid Rev Date', lRevErrMsg,
+                  ' AND JLU_JRNL_REV_DATE = DATE '''||TO_CHAR(pJrnlRevDate, 'yyyy-mm-dd')||''' AND JLU_EFFECTIVE_DATE = DATE '''||TO_CHAR(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_JRNL_TYPE = '''||pJrnlType||''' ',
+                  p_epg_id, p_status, NULL
+                );
+              END IF;
+            WHEN 'E' THEN
+              IF
+                (pType = '=' AND pJrnlRevDate <> lRevCompareEndDate) OR
+                (pType = '>' AND pJrnlRevDate <= lRevCompareEndDate) OR
+                (pType = '<' AND pJrnlRevDate >= lRevCompareEndDate)
+              THEN
+                pWriteLineError(
+                  pEntity, p_process_id, 'Valid Rev Date', lRevErrMsg,
+                  ' AND JLU_JRNL_REV_DATE = DATE '''||TO_CHAR(pJrnlRevDate, 'yyyy-mm-dd')||''' AND JLU_EFFECTIVE_DATE = DATE '''||TO_CHAR(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_JRNL_TYPE = '''||pJrnlType||''' ',
+                  p_epg_id, p_status, NULL
+                );
+              END IF;
+            WHEN 'B' THEN
+              IF (pType = 'BETWEEN' AND NOT pJrnlRevDate BETWEEN lRevCompareStartDate AND lRevCompareEndDate) THEN
+                pWriteLineError(
+                  pEntity, p_process_id, 'Valid Rev Date', lRevErrMsg,
+                  ' AND JLU_JRNL_REV_DATE = DATE '''||TO_CHAR(pJrnlRevDate, 'yyyy-mm-dd')||''' AND JLU_EFFECTIVE_DATE = DATE '''||TO_CHAR(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_JRNL_TYPE = '''||pJrnlType||''' ',
+                  p_epg_id, p_status, NULL
+                );
+              END IF;
+          END CASE;
+
+        ELSIF (pPriorNextCurrent IS NOT NULL AND pPeriodDate IS NULL) THEN
+
+          lRevErrMsg := REPLACE(pErrorMessage, '%1', 'Reversing date');
+
+          CASE pPriorNextCurrent
+            WHEN 'P' THEN
+              lRevCompareDate := lPrevBusDate;
+              IF
+                (pType = '=' AND pJrnlRevDate <> lRevCompareDate) OR
+                (pType = '>' AND pJrnlRevDate <= lRevCompareDate) OR
+                (pType = '<' AND pJrnlRevDate >= lRevCompareDate)
+              THEN
+                pWriteLineError(
+                  pEntity, p_process_id, 'Valid Rev Date', lRevErrMsg,
+                  ' AND JLU_JRNL_REV_DATE = DATE '''||TO_CHAR(pJrnlRevDate, 'yyyy-mm-dd')||''' AND JLU_EFFECTIVE_DATE = DATE '''||TO_CHAR(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_JRNL_TYPE = '''||pJrnlType||''' ',
+                  p_epg_id, p_status, NULL
+                );
+              END IF;
+            WHEN 'C' THEN
+              lRevCompareDate := pBusinessDate;
+              IF
+                (pType = '=' AND pJrnlRevDate <> lRevCompareDate) OR
+                (pType = '>' AND pJrnlRevDate <= lRevCompareDate) OR
+                (pType = '<' AND pJrnlRevDate >= lRevCompareDate)
+              THEN
+                pWriteLineError(
+                  pEntity, p_process_id, 'Valid Rev Date', lRevErrMsg,
+                  ' AND JLU_JRNL_REV_DATE = DATE '''||TO_CHAR(pJrnlRevDate, 'yyyy-mm-dd')||'''  AND JLU_EFFECTIVE_DATE = DATE '''||TO_CHAR(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_JRNL_TYPE = '''||pJrnlType||''' ',
+                  p_epg_id, p_status, NULL
+                );
+              END IF;
+            WHEN 'N' THEN
+              lRevCompareDate := lNextBusDate;
+              IF
+                (pType = '=' AND pJrnlRevDate <> lRevCompareDate) OR
+                (pType = '>' AND pJrnlRevDate <= lRevCompareDate) OR
+                (pType = '<' AND pJrnlRevDate >= lRevCompareDate)
+              THEN
+                pWriteLineError(
+                  pEntity, p_process_id, 'Valid Rev Date', lRevErrMsg,
+                  ' AND JLU_JRNL_REV_DATE = DATE '''||TO_CHAR(pJrnlRevDate, 'yyyy-mm-dd')||'''  AND JLU_EFFECTIVE_DATE = DATE '''||TO_CHAR(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_JRNL_TYPE = '''||pJrnlType||''' ',
+                  p_epg_id, p_status, NULL
+                );
+              END IF;
+            ELSE NULL;
+          END CASE;
+        ELSIF (pPriorNextCurrent IS NULL AND pPeriodDate IS NOT NULL) THEN
+
+          lRevErrMsg := REPLACE(pErrorMessage, '%1', 'Reversing date');
+
+        ELSE
+
+          lRevErrMsg := REPLACE(pErrorMessage, '%1', 'Reversing date');
+          lRevCompareDate := pBusinessDate;
+
+          IF
+            (pType = '=' AND pJrnlRevDate <> lRevCompareDate) OR
+            (pType = '>' AND pJrnlRevDate <= lRevCompareDate) OR
+            (pType = '<' AND pJrnlRevDate >= lRevCompareDate)
+          THEN
+            pWriteLineError(
+              pEntity, p_process_id, 'Valid Rev Date', lRevErrMsg,
+              ' AND JLU_JRNL_REV_DATE = DATE '''||TO_CHAR(pJrnlRevDate, 'yyyy-mm-dd')||'''  AND JLU_EFFECTIVE_DATE = DATE '''||TO_CHAR(pEffectiveDate, 'yyyy-mm-dd')||'''  and jlu_jrnl_type = '''||pJrnlType||''' ',
+              p_epg_id, p_status, NULL
+            );
+          END IF;
 
-    EXECUTE IMMEDIATE lv_sql USING p_epg_id,SLR_UTILITIES_PKG.fEntityGroupCurrBusDate(p_epg_id);
-    commit;
-    SLR_ADMIN_PKG.Debug('Validation. Future records moved.', lv_sql);
-
-  -- Periods
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
-        DISTINCT JLU_EFFECTIVE_DATE, JLU_ENTITY
-        FROM SLR_JRNL_LINES_UNPOSTED
-        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-            AND JLU_JRNL_STATUS = ''' || p_status || '''
-        AND NOT EXISTS
-        (
-            SELECT NULL FROM SLR_ENTITY_PERIODS
-            WHERE EP_ENTITY = JLU_ENTITY
-            AND JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
-            AND EP_STATUS = ''O''
-        )
-    ';
-    DECLARE
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-        v_jlu_effective_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_EFFECTIVE_DATE%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO  v_jlu_effective_date, v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id, 'Period',
-                'Invalid Period: [' || v_jlu_effective_date || '] not valid in Period table for Entity [' || v_jlu_entity || '] ',
-                ' AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''', p_epg_id, p_status, p_UseHeaders);
-
-        END LOOP;
-
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. Periods validated.', lv_sql);
-
-
-  -- Event Class Periods
-
-    lv_sql := '
-            SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
-        DISTINCT JLU_EFFECTIVE_DATE, fgl_hier.LK_LOOKUP_VALUE3
-        FROM SLR_JRNL_LINES_UNPOSTED
-        join fdr.fr_general_lookup fgl_hier on JLU_ATTRIBUTE_4 = fgl_hier.LK_MATCH_KEY1
-             and fgl_hier.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_HIERARCHY''
-        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-            AND JLU_JRNL_STATUS = ''' || p_status || '''
-        AND NOT EXISTS
-        (
-            SELECT NULL from fdr.fr_general_lookup fgl_period
-                                left join fdr.fr_general_lookup fgl_cls
-                                    ON fgl_cls.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_CLASS''
-                                    AND fgl_cls.LK_MATCH_KEY1 = fgl_period.LK_MATCH_KEY1
-                    where fgl_period.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_CLASS_PERIOD''
-                        AND FGL_HIER.LK_LOOKUP_VALUE3 = FGL_PERIOD.LK_MATCH_KEY1
-                        AND JLU_EFFECTIVE_DATE BETWEEN 
-                                (CASE WHEN FGL_CLS.LK_LOOKUP_VALUE2 = ''Q''
-                                      THEN ADD_MONTHS(TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE2,''DD-MON-YYYY''),-2)
-                                      ELSE TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE2,''DD-MON-YYYY'') 
-                                      END)
-                        AND TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE3,''DD-MON-YYYY'')
-                        --AND JLU_EFFECTIVE_DATE BETWEEN TO_DATE(''01-DEC-2017'',''DD-MON-YYYY'') and TO_DATE(''31-DEC-2017'',''DD-MON-YYYY'')
-                        AND FGL_PERIOD.LK_LOOKUP_VALUE1 = ''O''
-        )
-    ';
-       
-    DECLARE
-        v_fdr_event_class FDR.FR_GENERAL_LOOKUP.LK_LOOKUP_VALUE3%TYPE;
-        v_jlu_effective_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_EFFECTIVE_DATE%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO  v_jlu_effective_date, v_fdr_event_class;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineErrorEventClass(v_fdr_event_class, p_process_id, 'Period',
-                'Invalid Event Class Period: [' || v_jlu_effective_date || '] not valid in Period table for Event Class [' || v_fdr_event_class || '] ',
-                ' AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''', p_epg_id, p_status, p_UseHeaders);
-
-        END LOOP;
-
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. Event Class Periods validated.', lv_sql);
-
-
-    --REVERSING DATE
-    lv_sql := '
-    SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-    DISTINCT
-          jlu.JLU_EFFECTIVE_DATE
-        , jlu.JLU_JRNL_REV_DATE
-        , jlu.JLU_ENTITY
-        FROM  SLR_JRNL_LINES_UNPOSTED jlu
-            , SLR_ENTITIES ent
-            ,slr.SLR_EXT_JRNL_TYPES ext
-            ,slr.SLR_JRNL_TYPES typ
-        WHERE
-        jlu.JLU_EPG_ID = ''' || p_epg_id || '''
-        AND jlu.JLU_JRNL_STATUS = ''' || p_status || '''
-        AND jlu.jlu_jrnl_type = ext.ejt_type
-        AND ext.ejt_jt_type = typ.JT_TYPE
-        AND jlu.JLU_ENTITY = ent.ENT_ENTITY
-        AND typ.jt_reverse_flag = ''Y''
-        AND jlu.JLU_JRNL_REV_DATE IS NOT NULL
-        AND jlu.JLU_JRNL_REV_DATE <= jlu.JLU_EFFECTIVE_DATE' -- validate Reverse Date
-    ;
-    DECLARE
-        v_jlu_effective_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_EFFECTIVE_DATE%TYPE;
-        v_jlu_jrnl_rev_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_REV_DATE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_effective_date, v_jlu_jrnl_rev_date, v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id, 'Rev Date',
-                'The Reversing Date: [' || v_jlu_jrnl_rev_date || '] must be greater than the Effective Date: [' || v_jlu_effective_date || '] .',
-                ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''   AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || ''' ', p_epg_id, p_status, null);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. Reversing Date < Effective Date - validated.', lv_sql);
-
-
-
-
-  -- Dates
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
-        DISTINCT JLU_EFFECTIVE_DATE, JLU_ENTITY
-        FROM SLR_JRNL_LINES_UNPOSTED
-        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-        AND JLU_JRNL_STATUS = ''' || p_status || '''
-        AND NOT EXISTS
-        (
-            SELECT  NULL FROM SLR_ENTITY_DAYS
-            WHERE ED_ENTITY_SET = (SELECT ENT_PERIODS_AND_DAYS_SET FROM SLR_ENTITIES WHERE ENT_ENTITY = JLU_ENTITY)
-            AND ED_DATE = JLU_EFFECTIVE_DATE
-            AND ED_STATUS = ''O''
-        )
-    ';
-
-    DECLARE
-        v_jlu_effective_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_EFFECTIVE_DATE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_effective_date, v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id, 'Eff Date',
-                'Invalid Effective Date: [' || v_jlu_effective_date || '] not valid in entity days table',
-                ' AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''', p_epg_id, p_status, p_UseHeaders);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. Dates validated.', lv_sql);
-
-
---Translation date
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-        DISTINCT
-            jlu.JLU_TRANSLATION_DATE
-           ,jlu.JLU_ENTITY
-        FROM  SLR_JRNL_LINES_UNPOSTED jlu
-            , SLR_ENTITIES ent
-        WHERE
-            jlu.JLU_EPG_ID = ''' || p_epg_id || '''
-        AND jlu.JLU_JRNL_STATUS = ''' || p_status || '''
-        AND jlu.JLU_ENTITY = ent.ENT_ENTITY
-        AND jlu.JLU_TRANSLATION_DATE IS NOT NULL
-        AND NOT EXISTS
-        (
-            SELECT 1
-            FROM  SLR_ENTITY_DAYS ed
-            WHERE
-                ed.ED_ENTITY_SET    = ent.ENT_PERIODS_AND_DAYS_SET
-            AND ed.ED_DATE          = jlu.JLU_TRANSLATION_DATE
-            AND ed.ED_STATUS        = ''O''
-        )
-    ';
-
-    DECLARE
-        v_jlu_translation_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_TRANSLATION_DATE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_translation_date, v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id, 'Trans Date',
-                'Invalid Translation Date: [' || v_jlu_translation_date || '] not valid in entity days table',
-                ' AND JLU_TRANSLATION_DATE = ''' || v_jlu_translation_date || '''', p_epg_id, p_status, NULL);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. Translation Dates validated.', lv_sql);
-
---Value date
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-        DISTINCT
-            jlu.jlu_value_date
-           ,jlu.JLU_ENTITY
-        FROM  SLR_JRNL_LINES_UNPOSTED jlu
-            , SLR_ENTITIES ent
-        WHERE
-            jlu.JLU_EPG_ID = ''' || p_epg_id || '''
-        AND jlu.JLU_JRNL_STATUS = ''' || p_status || '''
-        AND jlu.JLU_ENTITY = ent.ENT_ENTITY
-        AND ent.ENT_POST_VAL_DATE=''Y''
-        AND NOT EXISTS
-        (SELECT 1
-            FROM    slr.slr_entity_days
-            WHERE
-                ed_entity_set  = ent.ent_periods_and_days_set
-            AND     ed_date        = jlu_value_date
-            AND     ed_status      = ''O'')
-    ';
-
-    DECLARE
-        v_jlu_value_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_VALUE_DATE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_value_date, v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id, 'Value Date',
-                'Value Date  [' || v_jlu_value_date || ']  is invalid or is not open.',
-                ' AND jlu_value_date = ''' || v_jlu_value_date || '''', p_epg_id, p_status, NULL);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-    SLR_ADMIN_PKG.Debug('Validation.Value Date validated.', lv_sql);
-
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-        DISTINCT
-            jlu.jlu_value_date
-           ,jlu.JLU_ENTITY
-        FROM SLR_JRNL_LINES_UNPOSTED jlu
-            ,SLR_ENTITIES ent
-        WHERE
-            jlu.JLU_EPG_ID = ''' || p_epg_id || '''
-            AND jlu.JLU_JRNL_STATUS = ''' || p_status || '''
-            AND jlu.JLU_ENTITY = ent.ENT_ENTITY
-            AND ent.ENT_POST_VAL_DATE=''Y''
-            AND NOT EXISTS (SELECT 1
-                            FROM   slr.slr_entity_periods
-                            WHERE
-                                jlu_value_date >= ep_bus_period_start '  --TO_DATE('01/'||ep_month||'/'||ep_year, 'DD/MM/YYYY')
-                            || 'AND    jlu_value_date <= ep_bus_period_end '  --ep_month_end
-                            || 'AND    ep_entity = ent.ent_entity '  -- gEntityConfiguration.ent_periods_and_days_set
-                            || 'AND    ep_status = ''O'')
-    ';
-
-    DECLARE
-        v_jlu_value_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_VALUE_DATE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_value_date, v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id, 'Value Date',
-                'Period containing Value Date  [' || v_jlu_value_date || ']  is invalid or is closed.',
-                ' AND jlu_value_date = ''' || v_jlu_value_date || '''', p_epg_id, p_status, NULL);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation.Period containing Value Date validated.', lv_sql);
-    -------------------------------------------
-
-    --External type
-
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-        DISTINCT
-            jlu.jlu_jrnl_type,
-            jlu.JLU_ENTITY,
-            ext.ejt_rev_ejtr_code
-        FROM SLR_JRNL_LINES_UNPOSTED jlu
-            ,SLR_ENTITIES ent
-            ,slr.SLR_EXT_JRNL_TYPES ext
-            ,slr.SLR_JRNL_TYPES typ
-        WHERE
-            jlu.JLU_EPG_ID = ''' || p_epg_id || '''
-            AND jlu.JLU_JRNL_STATUS = ''' || p_status || '''
-            AND jlu.JLU_ENTITY = ent.ENT_ENTITY
-            AND jlu.JLU_JRNL_REV_DATE is null
-            AND jlu.jlu_jrnl_type = ext.ejt_type
-            AND ext.ejt_jt_type = typ.JT_TYPE
-            AND jlu.JLU_JRNL_REF_ID is null
-            AND typ.jt_reverse_flag = ''Y''
-            AND ext.ejt_rev_ejtr_code = ''NONE''
-    ';
-
-    DECLARE
-        v_jlu_jrnl_type SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_TYPE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-        v_ext_ejt_rev_ejtr_code SLR.SLR_EXT_JRNL_TYPES.EJT_REV_EJTR_CODE%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_jrnl_type, v_jlu_entity, v_ext_ejt_rev_ejtr_code;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id, 'Ext type: NONE',
-                'Invalid type: '|| v_jlu_jrnl_type ||' and Rule: ' || v_ext_ejt_rev_ejtr_code || ' for Reversing Date calculation.',
-                ' AND jlu_jrnl_type = '''|| v_jlu_jrnl_type || ''' ', p_epg_id, p_status, NULL);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. External type: None - validated.', lv_sql);
-
-
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-        DISTINCT
-        jlu_jrnl_type,
-        JLU_ENTITY,
-        ext.ejt_rev_ejtr_code,
-        rul.ejtr_code
-    FROM SLR_JRNL_LINES_UNPOSTED jlu
-        ,SLR_ENTITIES ent
-        ,slr.SLR_EXT_JRNL_TYPES ext
-        ,slr.SLR_JRNL_TYPES typ
-        ,slr.SLR_EXT_JRNL_TYPE_RULE rul
-    WHERE
-        jlu.JLU_ENTITY = ent.ENT_ENTITY
-        AND jlu.JLU_EPG_ID = ''' || p_epg_id || '''
-        AND jlu.JLU_JRNL_STATUS = ''' || p_status || '''
-        AND rul.ejtr_code = ext.ejt_rev_ejtr_code
-        AND jlu.JLU_JRNL_REV_DATE is null
-        AND jlu.jlu_jrnl_type = ext.ejt_type
-        AND ext.ejt_jt_type = typ.JT_TYPE
-        AND jlu.JLU_JRNL_REF_ID is null
-        AND typ.jt_reverse_flag = ''Y''
-        AND (rul.ejtr_type = ''BETWEEN'' OR rul.ejtr_PERIOD_DATE = ''B'' OR  rul.ejtr_PRIOR_NEXT_CURRENT = ''B'')
-    ';
-
-    DECLARE
-        v_jlu_jrnl_type SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_TYPE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-        v_ext_ejt_rev_ejtr_code SLR.SLR_EXT_JRNL_TYPES.EJT_REV_EJTR_CODE%TYPE;
-        v_rul_ejtr_code SLR.SLR_EXT_JRNL_TYPE_RULE.EJTR_CODE%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_jrnl_type, v_jlu_entity, v_ext_ejt_rev_ejtr_code, v_rul_ejtr_code;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id,  'Ext type: BETWEEN',
-                'Invalid type: ' || v_jlu_jrnl_type || ' and Rule: ' || v_rul_ejtr_code || ' for Reversing Date calculation.',
-                ' AND jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ', p_epg_id, p_status, null);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. External type:BETWEEN - validated.', lv_sql);
-
-
-
-    lv_sql := '
-    SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-    DISTINCT
-        jlu.jlu_jrnl_type,
-        jlu.JLU_ENTITY
-    FROM SLR_JRNL_LINES_UNPOSTED jlu
-        ,SLR_ENTITIES ent
-    WHERE
-        jlu.JLU_ENTITY = ent.ENT_ENTITY
-        AND jlu.JLU_EPG_ID = ''' || p_epg_id || '''
-        AND jlu.JLU_JRNL_STATUS = ''' || p_status || '''
-        AND NOT EXISTS
-            (
-                SELECT 1 FROM
-                    SLR_EXT_JRNL_TYPES ejt,
-                    SLR_JRNL_TYPES jt
-                WHERE
-                    ejt.EJT_JT_TYPE = jt.JT_TYPE
-                    AND ejt.EJT_TYPE = jlu.JLU_JRNL_TYPE
-            )
-    ';
-
-    DECLARE
-        v_jlu_jrnl_type SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_TYPE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows for lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_jrnl_type, v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id,  'Invalid Ext type',
-                'No data found in SLR_EXT_JRNL_TYPES, SLR_JRNL_TYPES for Journal Type: ' || v_jlu_jrnl_type,
-                ' AND jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ', p_epg_id, p_status, null);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-
-    SLR_ADMIN_PKG.Debug('Validation. External type - validated.', lv_sql);
-
-
-    --
-    lv_sql := '
-    SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-    DISTINCT
-           jlu.JLU_EFFECTIVE_DATE,
-        jlu.JLU_JRNL_REV_DATE,
-        ent.ENT_BUSINESS_DATE,
-        jlu.JLU_ENTITY
-    FROM SLR_JRNL_LINES_UNPOSTED jlu
-        ,SLR_ENTITIES ent
-        ,slr.SLR_EXT_JRNL_TYPES ext
-        ,slr.SLR_JRNL_TYPES typ
-    WHERE
-        jlu.JLU_EPG_ID = ''' || p_epg_id || '''
-        AND jlu.JLU_JRNL_STATUS = ''' || p_status || '''
-        AND jlu.JLU_ENTITY = ent.ENT_ENTITY
-        AND jlu.jlu_jrnl_type = ext.ejt_type
-        AND ext.ejt_jt_type = typ.JT_TYPE
-        AND typ.jt_reverse_flag = ''Y''
-        AND jlu.JLU_JRNL_REV_DATE IS NOT NULL
-        AND NOT EXISTS
-        (
-            SELECT 1
-            FROM  SLR_ENTITY_DAYS ed
-            WHERE
-                ed.ED_ENTITY_SET    = ent.ENT_PERIODS_AND_DAYS_SET
-            AND ed.ED_DATE          = jlu.JLU_JRNL_REV_DATE
-            AND ed.ED_STATUS        = ''O''
-        )
-    ';
-
-    DECLARE
-        v_jlu_effective_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_EFFECTIVE_DATE%TYPE;
-        v_jlu_jrnl_rev_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_REV_DATE%TYPE;
-        v_ent_ent_business_date SLR.SLR_ENTITIES.ENT_BUSINESS_DATE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_effective_date, v_jlu_jrnl_rev_date, v_ent_ent_business_date, v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id, 'Rev Date',
-                    'Invalid Reversing Date: [' || v_jlu_jrnl_rev_date || '] not valid in entity days table',
-                    ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''  AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''  ',
-                    p_epg_id, p_status, Null);
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. Reversing Date - validated.', lv_sql);
-
-
-    --Validate Reverse date with ejt_rev_validation_flag = 'Y'
-    ------
-    lv_sql := '
-    SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-    DISTINCT
-        jlu.JLU_EFFECTIVE_DATE,
-        ent.ENT_PERIODS_AND_DAYS_SET
-        ,jlu.JLU_JRNL_REV_DATE
-        ,jlu.JLU_JRNL_TYPE
-        ,jlu.JLU_ENTITY
-        ,jlu.JLU_JRNL_STATUS
-        ,msg.EM_ERROR_MESSAGE
-        ,rul.ejtr_prior_next_current
-        ,rul.ejtr_period_date
-        ,rul.ejtr_type
-    FROM SLR_JRNL_LINES_UNPOSTED jlu
-        , SLR_ENTITIES ent
-        , slr.SLR_EXT_JRNL_TYPES ext
-        , slr.SLR_JRNL_TYPES typ
-        , slr.SLR_ERROR_MESSAGE msg
-        , slr.SLR_EXT_JRNL_TYPE_RULE rul
-    WHERE
-        jlu.JLU_EPG_ID = ''' || p_epg_id || '''
-        AND jlu.JLU_JRNL_STATUS = ''' || p_status || '''
-        AND rul.ejtr_code = ext.ejt_rev_ejtr_code
-    AND jlu.JLU_ENTITY = ent.ENT_ENTITY
-        AND msg.EM_ERROR_CODE = rul.ejtr_em_error_code
-        AND jlu.jlu_jrnl_type = ext.ejt_type
-        AND ext.ejt_jt_type = typ.JT_TYPE
-        AND typ.jt_reverse_flag = ''Y''
-        AND jlu.JLU_JRNL_REV_DATE IS NOT NULL
-    AND ext.ejt_rev_validation_flag = ''Y''
-    ';
-
-    DECLARE
-        v_jlu_effective_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_EFFECTIVE_DATE%TYPE;
-        v_ent_periods_and_days_set SLR_ENTITIES.ENT_PERIODS_AND_DAYS_SET%TYPE;
-        v_jlu_jrnl_rev_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_REV_DATE%TYPE;
-        v_jlu_jrnl_type SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_TYPE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-        v_jlu_status SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_STATUS%TYPE;
-        v_em_error_message SLR.SLR_ERROR_MESSAGE.EM_ERROR_MESSAGE%TYPE;
-        v_rev_prior_next_both SLR.SLR_EXT_JRNL_TYPE_RULE.EJTR_PRIOR_NEXT_CURRENT%TYPE;
-        v_rev_period_day SLR.SLR_EXT_JRNL_TYPE_RULE.EJTR_PERIOD_DATE%TYPE;
-        v_rev_rul_typ SLR.SLR_EXT_JRNL_TYPE_RULE.EJTR_TYPE%TYPE;
-
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows
-            INTO
-                v_jlu_effective_date,
-                v_ent_periods_and_days_set,
-                v_jlu_jrnl_rev_date,
-                v_jlu_jrnl_type,
-                v_jlu_entity,
-                v_jlu_status,
-                v_em_error_message,
-                v_rev_prior_next_both,
-                v_rev_period_day,
-                v_rev_rul_typ;
-            EXIT WHEN cValidateRows%NOTFOUND;
-
-            GUI_MANUAL_JOURNAL.prui_get_calendar_details(v_jlu_effective_date,
-                                      v_ent_periods_and_days_set,
-                                      v_jlu_entity,
-                                      lvPrevPeriodStartDate,
-                                      lvPrevPeriodEndDate,
-                                      lvPeriodStartDate,
-                                      lvPrevBusDate,
-                                      lvNextBusDate,
-                                      lvPeriodEndDate,
-                                      lvNextPeriodEndDate,
-                                      lvNextPeriodStartDate
-                                      );
-
-            v_rev_err_msg :=  REPLACE(v_em_error_message, '%2', 'current business day');
-
-            IF (v_rev_prior_next_both IS NOT NULL AND v_rev_period_day IS NOT NULL) THEN
-                v_rev_err_msg := REPLACE(v_em_error_message, '%1', 'Reversing date');
-
-                IF (v_rev_prior_next_both = 'P') THEN
-                    v_rev_compare_start_date := lvPrevPeriodStartDate;
-                    v_rev_compare_end_date := lvPrevPeriodEndDate;
-                ELSIF (v_rev_prior_next_both = 'C') THEN
-                    v_rev_compare_start_date := lvPeriodStartDate;
-                    v_rev_compare_end_date := lvPeriodEndDate;
-                ELSIF (v_rev_prior_next_both = 'N') THEN
-                    v_rev_compare_end_date := lvNextPeriodEndDate;
-                    v_rev_compare_start_date := lvNextPeriodStartDate;
-                END IF;
-
-                IF (v_rev_period_day = 'S') THEN
-
-                    IF (v_rev_rul_typ = '=' AND v_jlu_jrnl_rev_date <> v_rev_compare_start_date) THEN
-                        v_rev_err_msg := REPLACE(v_em_error_message, '%1', 'Reversing date');
-                        SLR_VALIDATE_JOURNALS_PKG.pWriteLineError(v_jlu_entity, p_process_id,
-                            'Valid Rev Date',
-                            v_rev_err_msg,
-                            ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''   AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''  and jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ',
-                            p_epg_id, p_status, null
-                            );
-                            --set o_lvSuccess = 0;
-                    ELSIF ((v_rev_rul_typ = '>' AND v_jlu_jrnl_rev_date <= v_rev_compare_start_date) OR
-                           (v_rev_rul_typ = '<' AND v_jlu_jrnl_rev_date >= v_rev_compare_start_date)) THEN
-                        SLR_VALIDATE_JOURNALS_PKG.pWriteLineError(v_jlu_entity, p_process_id,
-                            'Valid Rev Date',
-                            v_rev_err_msg,
-                            ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''   AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''  and jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ',
-                            p_epg_id, p_status, null
-                            );
-                    END IF;
-
-                ELSIF (v_rev_period_day = 'E') THEN
-
-                    IF ((v_rev_rul_typ = '=' AND v_jlu_jrnl_rev_date <> v_rev_compare_end_date) OR
-                        (v_rev_rul_typ = '>' AND v_jlu_jrnl_rev_date <= v_rev_compare_end_date) OR
-                        (v_rev_rul_typ = '<' AND v_jlu_jrnl_rev_date >= v_rev_compare_end_date)) THEN
-                        SLR_VALIDATE_JOURNALS_PKG.pWriteLineError(v_jlu_entity, p_process_id,
-                            'Valid Rev Date',
-                            v_rev_err_msg,
-                            ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''   AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''  and jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ',
-                            p_epg_id, p_status, null
-                            );
-                    END IF;
-
-                ELSIF (v_rev_period_day = 'B') THEN
-
-                    IF (v_rev_rul_typ = 'BETWEEN' AND NOT v_jlu_jrnl_rev_date BETWEEN v_rev_compare_start_date AND v_rev_compare_end_date) THEN
-                       SLR_VALIDATE_JOURNALS_PKG.pWriteLineError(v_jlu_entity, p_process_id,
-                            'Valid Rev Date',
-                            v_rev_err_msg,
-                            ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''   AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''  and jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ',
-                            p_epg_id, p_status, null
-                            );
-                    END IF;
-                END IF;
-
-            ELSIF (v_rev_prior_next_both IS NOT NULL AND v_rev_period_day IS NULL) THEN
-
-                v_rev_err_msg := REPLACE(v_em_error_message, '%1', 'Reversing date');
-                IF (v_rev_prior_next_both = 'P') THEN
-
-                    v_rev_compare_date := lvPrevBusDate;
-                    IF ((v_rev_rul_typ = '=' AND v_jlu_jrnl_rev_date <> v_rev_compare_date) OR
-                        (v_rev_rul_typ = '>' AND v_jlu_jrnl_rev_date <= v_rev_compare_date) OR
-                        (v_rev_rul_typ = '<' AND v_jlu_jrnl_rev_date >= v_rev_compare_date)) THEN
-                        SLR_VALIDATE_JOURNALS_PKG.pWriteLineError(v_jlu_entity, p_process_id,
-                            'Valid Rev Date',
-                            v_rev_err_msg,
-                            ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''   AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''  and jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ',
-                            p_epg_id, p_status, null
-                            );
-                    END IF;
-
-                ELSIF (v_rev_prior_next_both = 'C') THEN
-
-                    v_rev_compare_date := v_ent_business_date;
-                    IF ((v_rev_rul_typ = '=' AND v_jlu_jrnl_rev_date <> v_rev_compare_date) OR
-                        (v_rev_rul_typ = '>' AND v_jlu_jrnl_rev_date <= v_rev_compare_date) OR
-                        (v_rev_rul_typ = '<' AND v_jlu_jrnl_rev_date >= v_rev_compare_date)) THEN
-                        SLR_VALIDATE_JOURNALS_PKG.pWriteLineError(v_jlu_entity, p_process_id,
-                            'Valid Rev Date',
-                            v_rev_err_msg,
-                            ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''   AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''  and jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ',
-                            p_epg_id, p_status, null
-                            );
-                    END IF;
-
-                ELSIF (v_rev_prior_next_both = 'N') THEN
-
-                    v_rev_compare_date := lvNextBusDate;
-
-                    IF ((v_rev_rul_typ = '=' AND v_jlu_jrnl_rev_date <> v_rev_compare_date) OR
-                        (v_rev_rul_typ = '>' AND v_jlu_jrnl_rev_date <= v_rev_compare_date) OR
-                        (v_rev_rul_typ = '<' AND v_jlu_jrnl_rev_date >= v_rev_compare_date)) THEN
-                        SLR_VALIDATE_JOURNALS_PKG.pWriteLineError(v_jlu_entity, p_process_id,
-                            'Valid Rev Date',
-                            v_rev_err_msg,
-                            ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''  AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''  and jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ',
-                            p_epg_id, p_status, null
-                            );
-                    END IF;
-
-                END IF;
-
-            ELSIF (v_rev_prior_next_both IS NULL  AND v_rev_period_day IS NOT NULL) THEN
-
-                v_rev_err_msg := REPLACE(v_em_error_message, '%1', 'Reversing date');
-
-            ELSE
-                v_rev_err_msg := REPLACE(v_em_error_message, '%1', 'Reversing date');
-                v_rev_compare_date := v_ent_business_date;
-
-                IF ((v_rev_rul_typ = '=' AND v_jlu_jrnl_rev_date <> v_rev_compare_date) OR
-                    (v_rev_rul_typ = '>' AND v_jlu_jrnl_rev_date <= v_rev_compare_date) OR
-                    (v_rev_rul_typ = '<' AND v_jlu_jrnl_rev_date >= v_rev_compare_date)) THEN
-                     SLR_VALIDATE_JOURNALS_PKG.pWriteLineError(v_jlu_entity, p_process_id,
-                        'Valid Rev Date',
-                        v_rev_err_msg,
-                        ' AND JLU_JRNL_REV_DATE = ''' || v_jlu_jrnl_rev_date || '''  AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''  and jlu_jrnl_type = ''' || v_jlu_jrnl_type || ''' ',
-                        p_epg_id, p_status, null
-                        );
-                END IF;
-
-            END IF;
-
-            SLR_ADMIN_PKG.Debug('Validation. Reversing Date for type: [' || v_jlu_jrnl_type ||'] and date [' || v_jlu_effective_date || '] - validated.');
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. Reversing Date rules - validated.', lv_sql);
-
-    -- Currencies
-
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
-        DISTINCT
-            TRIM(JLU_TRAN_CCY) JLU_TRAN_CCY,
-            JLU_EFFECTIVE_DATE,
-            JLU_ENTITY,
-            JLU_JRNL_ENT_RATE_SET,
-            JLU_TRANSLATION_DATE
-        FROM SLR_JRNL_LINES_UNPOSTED
-        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-        AND JLU_JRNL_STATUS = ''' || p_status || '''
-    ';
-    DECLARE
-        v_jlu_tran_ccy SLR.SLR_JRNL_LINES_UNPOSTED.JLU_TRAN_CCY%TYPE;
-        v_jlu_effective_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_EFFECTIVE_DATE%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-        v_jlu_jrnl_ent_rate_set SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_ENT_RATE_SET%TYPE;
-        v_jlu_translation_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_TRANSLATION_DATE%TYPE;
-    BEGIN
-        OPEN cValidateRows for lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_tran_ccy, v_jlu_effective_date, v_jlu_entity, v_jlu_jrnl_ent_rate_set, v_jlu_translation_date;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            BEGIN
-                SELECT * INTO lv_entity_configuration FROM SLR_ENTITIES
-                WHERE ENT_ENTITY = v_jlu_entity;
-
-                -- when not valid exception NO_DATA_FOUND is raised
-                SELECT 1 INTO lv_found FROM SLR_ENTITY_CURRENCIES
-                WHERE EC_ENTITY_SET = lv_entity_configuration.ENT_CURRENCY_SET
-                AND TRIM(EC_CCY) = v_jlu_tran_ccy
-                AND EC_STATUS = 'A';
-
-                IF ( lv_entity_configuration.ENT_APPLY_FX_TRANSLATION = 'Y' AND
-                     v_jlu_effective_date <= lv_entity_configuration.ENT_BUSINESS_DATE ) THEN
-
-                    BEGIN
-                        SELECT 1 INTO lv_found FROM SLR_ENTITY_RATES, SLR_ENTITIES
-                        WHERE ER_ENTITY_SET = nvl(p_rate_set, nvl(v_jlu_jrnl_ent_rate_set, lv_entity_configuration.ENT_RATE_SET))
-                            AND ENT_ENTITY = v_jlu_entity
-                            AND TRIM(ER_CCY_FROM) = v_jlu_tran_ccy
-                            AND TRIM(ER_CCY_TO) = TRIM(ENT_LOCAL_CCY)
-                            AND ER_DATE = nvl(v_jlu_translation_date, v_jlu_effective_date)
-                            AND ER_RATE > 0;
-                    EXCEPTION
-                        WHEN NO_DATA_FOUND THEN
-                            pWriteLineError(v_jlu_entity, p_process_id, 'FX Rate',
-                                'No local FX Rate for source currency [' || v_jlu_tran_ccy || '] and entity [' || v_jlu_entity || '] and date [' || nvl(v_jlu_translation_date, v_jlu_effective_date) || ']',
-                                ' AND JLU_TRAN_CCY = ''' || v_jlu_tran_ccy || ''' AND JLU_ENTITY = ''' || v_jlu_entity || ''' AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || ''' and JLU_TRANSLATION_DATE ' || case when v_jlu_translation_date is null then ' is null ' else ' = ''' || v_jlu_translation_date || '''' end, p_epg_id, p_status, p_UseHeaders);
-                        WHEN OTHERS THEN
-                            pWriteLineError(v_jlu_entity, p_process_id, 'FX Rate',
-                                'FX local rate error for source currency [' || v_jlu_tran_ccy || '] and entity [' || v_jlu_entity || '] and date [' || nvl(v_jlu_translation_date, v_jlu_effective_date) || ']',
-                                ' AND JLU_TRAN_CCY = ''' || v_jlu_tran_ccy || ''' AND JLU_ENTITY = ''' || v_jlu_entity || ''' AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || ''' and JLU_TRANSLATION_DATE '|| case when v_jlu_translation_date is null then ' is null ' else ' = ''' || v_jlu_translation_date ||'''' end, p_epg_id, p_status, p_UseHeaders);
-                    END;
-
-                    BEGIN
-                        SELECT 1 INTO lv_found FROM SLR_ENTITY_RATES, SLR_ENTITIES
-                        WHERE ER_ENTITY_SET = nvl(p_rate_set, nvl(v_jlu_jrnl_ent_rate_set, lv_entity_configuration.ENT_RATE_SET))
-                            AND ENT_ENTITY = v_jlu_entity
-                            AND TRIM(ER_CCY_FROM) = v_jlu_tran_ccy
-                            AND TRIM(ER_CCY_TO) = TRIM(ENT_BASE_CCY)
-                            AND ER_DATE = nvl(v_jlu_translation_date, v_jlu_effective_date)
-                            AND ER_RATE > 0;
-                    EXCEPTION
-                        WHEN NO_DATA_FOUND THEN
-                            pWriteLineError(v_jlu_entity, p_process_id, 'FX Rate',
-                                'No base FX Rate for source currency [' || v_jlu_tran_ccy || '] and entity [' || v_jlu_entity || '] and date [' || nvl(v_jlu_translation_date, v_jlu_effective_date) || ']',
-                                ' AND JLU_TRAN_CCY = ''' || v_jlu_tran_ccy || ''' AND JLU_ENTITY = ''' || v_jlu_entity || ''' AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || ''' and JLU_TRANSLATION_DATE ' || case when v_jlu_translation_date is null then ' is null ' else ' = ''' || v_jlu_translation_date || '''' end, p_epg_id, p_status, p_UseHeaders);
-                        WHEN OTHERS THEN
-                            pWriteLineError(v_jlu_entity, p_process_id, 'FX Rate',
-                                'FX base rate error for source currency [' || v_jlu_tran_ccy || '] and entity [' || v_jlu_entity || '] and date [' || nvl(v_jlu_translation_date, v_jlu_effective_date) || ']',
-                                ' AND JLU_TRAN_CCY = ''' || v_jlu_tran_ccy || ''' AND JLU_ENTITY = ''' || v_jlu_entity || ''' AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || ''' and JLU_TRANSLATION_DATE ' || case when v_jlu_translation_date is null then ' is null ' else ' = ''' || v_jlu_translation_date || '''' end, p_epg_id, p_status, p_UseHeaders);
-                    END;
-
-                END IF;
-
-            EXCEPTION
-                WHEN NO_DATA_FOUND THEN
-                    pWriteLineError(v_jlu_entity, p_process_id, 'Currency',
-                        'Invalid transaction currency: ' || v_jlu_tran_ccy, ' AND JLU_TRAN_CCY = ''' || v_jlu_tran_ccy || '''', p_epg_id, p_status, p_UseHeaders);
-            END;
-                SLR_ADMIN_PKG.Debug('Validation. FX Rate for source currency: [' ||v_jlu_tran_ccy|| '] and entity [' || v_jlu_entity || '] and date [' || nvl(v_jlu_translation_date, v_jlu_effective_date) || '] validated.' );
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
-
-    SLR_ADMIN_PKG.Debug('Validation. Currency validated.', lv_sql);
-
-    -- Balances
-
-    BEGIN
-    v_def := TRUE;
-    FOR loop_counter IN 1..10
-    LOOP
-        lv_sql:= 'SELECT case when COUNT(DISTINCT FD_SEGMENT_'||loop_counter||'_BALANCE_CHECK) = 1 AND MAX(FD_SEGMENT_'||loop_counter||'_BALANCE_CHECK) = ''Y'' THEN '',JLU_SEGMENT_'||loop_counter||''' else '''' end, case when COUNT(DISTINCT FD_SEGMENT_'||loop_counter||'_BALANCE_CHECK) <> 1 THEN ''FALSE'' else '' '' END
-                    FROM SLR_FAK_DEFINITIONS
-                        INNER JOIN SLR_ENTITY_PROC_GROUP
-                        ON fd_entity = epg_entity
-                        WHERE epg_id = ''' || p_epg_id || ''' '
-                       ;
-
-        EXECUTE IMMEDIATE lv_sql INTO lv_segment, v_defin ;
-
-        lv_allSegments := lv_allSegments || lv_segment;
-
-        IF (v_defin = 'FALSE') THEN
-            v_def := FALSE;
         END IF;
-    END LOOP;
+      END validateReversingDateRules;
 
-    lv_allSegments := 'JLU_JRNL_HDR_ID, JLU_EFFECTIVE_DATE' || lv_allSegments || ', JLU_TRAN_CCY ';
+      PROCEDURE pValidateCurrency (
+        pEntity IN slr_entities.ent_entity%TYPE,
+        pEffectiveDate IN slr_jrnl_lines_unposted.jlu_effective_date%TYPE,
+        pTranslationDate IN slr_jrnl_lines_unposted.jlu_translation_date%TYPE,
+        pTranCcy IN slr_jrnl_lines_unposted.jlu_tran_ccy%TYPE,
+        pJrnlEntRateSet IN slr_jrnl_lines_unposted.jlu_jrnl_ent_rate_set%TYPE
+      ) IS
+        lEntityConfiguration slr_entities%ROWTYPE;
+        lIsFound SMALLINT;
+      BEGIN
+        SELECT * INTO lEntityConfiguration FROM slr_entities
+        WHERE ent_entity = pEntity;
 
+        -- when not valid exception NO_DATA_FOUND is raised
+        SELECT 1 INTO lIsFound FROM slr_entity_currencies
+        WHERE ec_entity_set = lEntityConfiguration.ent_currency_set
+          AND TRIM(ec_ccy) = pTranCcy
+          AND ec_status = 'A';
 
-    IF (v_def = FALSE) THEN
-    pValidateBalanceDiff(p_process_id, p_epg_id, p_status, p_UseHeaders);
-    ELSE
-    pValidateBalance(p_process_id, p_epg_id, p_status, p_UseHeaders, lv_allSegments);
-    END IF;
+        IF (lEntityConfiguration.ent_apply_fx_translation = 'Y' AND pEffectiveDate <= lEntityConfiguration.ent_business_date) THEN
 
-    END;
-    SLR_ADMIN_PKG.Debug('Validation. Balances validated.');
+          BEGIN
+            SELECT 1 INTO lIsFound FROM slr_entity_rates JOIN slr_entities ON TRIM(er_ccy_to) = TRIM(ent_local_ccy)
+            WHERE er_entity_set = NVL(p_rate_set, NVL(pJrnlEntRateSet, lEntityConfiguration.ent_rate_set))
+              AND ent_entity = pEntity
+                AND TRIM(er_ccy_from) = pTranCcy
+                AND er_date = NVL(pTranslationDate, pEffectiveDate)
+				AND er_rate_type = 'SPOT'
+                AND er_rate > 0;
+          EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+              pWriteLineError(
+                pEntity, p_process_id, 'FX Rate',
+                'No local FX Rate for source currency ['||pTranCcy||'] and entity ['||pEntity||'] and date ['||to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd')||']',
+                ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE '
+                ||CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
+                p_epg_id, p_status, p_useHeaders
+              );
+            WHEN OTHERS THEN
+              pWriteLineError(
+                pEntity, p_process_id, 'FX Rate',
+                'FX local rate error for source currency ['||pTranCcy||'] and entity ['||pEntity||'] and date ['|| to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd')||']',
+                ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE '
+                || CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
+                p_epg_id, p_status, p_useHeaders
+              );
+          END;
 
-    -- Adjustment Balances
+          BEGIN
+            SELECT 1 INTO lIsFound FROM slr_entity_rates JOIN slr_entities ON TRIM(er_ccy_to) = TRIM(ent_base_ccy)
+            WHERE er_entity_set = NVL(p_rate_set, NVL(pJrnlEntRateSet, lEntityConfiguration.ent_rate_set))
+              AND ent_entity = pEntity
+              AND TRIM(er_ccy_from) = pTranCcy
+              AND er_date = NVL(pTranslationDate, pEffectiveDate)
+			  AND er_rate_type = 'SPOT'
+              AND er_rate > 0;
+          EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+              pWriteLineError(
+                pEntity, p_process_id, 'FX Rate',
+                'No base FX Rate for source currency ['||pTranCcy||'] and entity ['||pEntity||'] and date [' || to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd') || ']',
+                ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE ' 
+                || CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
+                p_epg_id, p_status, p_useheaders
+              );
+            WHEN OTHERS THEN
+              pWriteLineError(
+                pEntity, p_process_id, 'FX Rate',
+                'FX base rate error for source currency ['||pTranCcy||'] and entity ['||pEntity||'] and date [' || to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd') || ']',
+                ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE ' 
+                || CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
+                p_epg_id, p_status, p_useheaders
+              );
+          END;
+        END IF;
 
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS_JLU') || '
-        DISTINCT
-            JLU.JLU_JRNL_TYPE,
-            ENT.ENT_ENTITY_SHORT_CODE,
-            ENT.ENT_ENTITY
-        FROM    SLR_JRNL_LINES_UNPOSTED JLU
-                , SLR_ENTITIES ENT
-        WHERE
-            JLU.JLU_JRNL_PROCESS_ID = ' || p_process_id || '
-            AND JLU.JLU_ENTITY = ENT.ENT_ENTITY
-            AND JLU.JLU_EPG_ID = ''' || p_epg_id || '''
-            AND JLU.JLU_JRNL_STATUS = ''' || p_status || '''
-            AND EXISTS (
-                SELECT
-                    1
-                FROM
-                    SLR.SLR_EXT_JRNL_TYPES
-                WHERE
-                    EJT_TYPE = JLU.JLU_JRNL_TYPE
-                    AND ((EJT_BALANCE_TYPE_1 = 20 AND EJT_BALANCE_TYPE_2 IS NULL)
-                        OR (EJT_BALANCE_TYPE_2 = 20 AND EJT_BALANCE_TYPE_1 IS NULL))
-            )
-            AND ENT.ENT_ADJUSTMENT_FLAG = ''N''
-    ';
+      EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+          pWriteLineError(pEntity, p_process_id, 'Currency', 'Invalid transaction currency: '||pTranCcy, ' AND JLU_TRAN_CCY = '''||pTranCcy||'''', p_epg_id, p_status, p_UseHeaders);
+      END pValidateCurrency;
 
-    DECLARE
-        v_jlu_jrnl_type SLR.SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_TYPE%TYPE;
-        v_ent_entity_short_code SLR.SLR_ENTITIES.ENT_ENTITY_SHORT_CODE%TYPE;
-        v_ent_entity SLR.SLR_ENTITIES.ENT_ENTITY%TYPE;
+      PROCEDURE pValidateSegments IS
+        lNumberOfSegemnts SIMPLE_INTEGER DEFAULT 10;
+        lSegmentSql VARCHAR2(32767) DEFAULT '
+          select count(distinct fd_segment_[:segment_no]_type), max(fd_segment_[:segment_no]_type)
+          from slr_fak_definitions
+            inner join slr_entity_proc_group on fd_entity = epg_entity
+            where epg_id = ''[:epg_id]''';
+
+        lResultCount NUMBER;
+        lDefinition VARCHAR2(1000);
+
+      BEGIN
+
+        FOR lSegmentNo IN 1..lNumberOfSegemnts LOOP
+
+          BEGIN
+            EXECUTE IMMEDIATE REPLACE(REPLACE(lSegmentSql, '[:segment_no]', TO_CHAR(lSegmentNo)), '[:epg_id]', p_epg_id)
+            INTO lResultCount, lDefinition;
+
+          EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+              lResultCount := 0;
+              lDefinition := 'I';
+          END;
+
+          IF lResultCount = 1 AND lDefinition IN ('M', 'C') THEN
+            pValidateSegment(p_process_id, lSegmentNo, lDefinition, p_epg_id, p_status, p_useHeaders);
+          ELSIF lResultCount > 1 THEN
+            pValidateSegmentDiff(p_process_id, lSegmentNo, p_epg_id, p_status, p_useHeaders);
+          END IF;
+        END LOOP;
+
+      END pValidateSegments;
+
+      PROCEDURE pValidateBalances IS
+        lNumberOfSegments SIMPLE_INTEGER DEFAULT 10;
+        lIsDefined BOOLEAN DEFAULT TRUE;
+        lSegment VARCHAR2(500);
+        lDefinition VARCHAR2(100);
+        lAllSegments VARCHAR2(2000);
+
+        lSegmentSql VARCHAR2(32767) DEFAULT '
+          select 
+            case when count(distinct fd_segment_[:segment_no]_balance_check) = 1 and max(fd_segment_[:segment_no]_balance_check) = ''Y'' then '',jlu_segment_[:segment_no]'' else '''' end, 
+            case when count(distinct fd_segment_[:segment_no]_balance_check) <> 1 then ''FALSE'' else '' '' end
+          from slr_fak_definitions inner join slr_entity_proc_group on fd_entity = epg_entity where epg_id = ''[:epg_id]''';
+      BEGIN
+
+        FOR lSegmentNo IN 1..lNumberOfSegments LOOP
+          EXECUTE IMMEDIATE REPLACE(REPLACE(lSegmentSql, '[:segment_no]', TO_CHAR(lSegmentNo)), '[:epg_id]', p_epg_id)
+          INTO lSegment, lDefinition;
+
+          lAllSegments := lAllSegments||lSegment;
+
+          IF (lDefinition = 'FALSE') THEN
+            lIsDefined := FALSE;
+          END IF;
+        END LOOP;
+
+        lAllSegments := 'JLU_JRNL_HDR_ID, JLU_EFFECTIVE_DATE'||lAllSegments||', JLU_TRAN_CCY ';
+
+        IF NOT lIsDefined THEN
+          pValidateBalanceDiff(p_process_id, p_epg_id, p_status, p_UseHeaders);
+        ELSE
+          pValidateBalance(p_process_id, p_epg_id, p_status, p_UseHeaders, lAllSegments);
+        END IF;
+
+      END pValidateBalances;
+
     BEGIN
+
+      SLR_ADMIN_PKG.InitLog(p_epg_id, p_process_id);
+      SLR_ADMIN_PKG.Info('Validation start');
+
+      EXECUTE IMMEDIATE 'ALTER SESSION ENABLE PARALLEL DML';
+
+      pInitializeProcedure(p_epg_id, p_process_id);
+      pDeleteLineErrors(p_epg_id, p_process_id, p_status);
+      
+      UPDATE slr_jrnl_lines_unposted SET jlu_jrnl_status = 'W'
+      WHERE jlu_epg_id = p_epg_id AND jlu_jrnl_status = p_status
+        AND jlu_effective_date > lCurrBusDate;
+
+      OPEN lValidateCur FOR lValidateSQL USING p_epg_id, p_status;
+      <<validate_loop>>
+      LOOP
+        FETCH lValidateCur BULK COLLECT INTO lValidationTable LIMIT cROWLIMIT;
+        EXIT WHEN lValidationTable.COUNT = 0;        
+
+        -- EPG validation
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'EPG validation'
+        ) LOOP
+          lEpgValidation := lEpgValidation + 1;
+          pr_error(1, 'Missing entity definition in SLR_ENTITY_PROC_GROUP for epg_id ['||p_epg_id||'] and entity ['||rec.jlu_entity||']', 1, 'pValidateJournals', 'SLR_ENTITY_PROC_GROUP', NULL, NULL, NULL,'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        END LOOP;
+
+        IF lEpgValidation > 0 AND lEpgValidation < cROWLIMIT THEN
+          raise_application_error(-20001, 'Fatal error during SLR_ENTITY_PROC_GROUP validation');
+        ELSIF lEpgValidation > 0 AND lEpgValidation = cROWLIMIT THEN
+          CONTINUE;
+        END IF;
+
+        SLR_ADMIN_PKG.Debug('Validation. EPG configuration validated.', lValidateSQL);
+
+        -- validation executed only once
+        IF lValidateCur%ROWCOUNT <= cROWLIMIT THEN
+
+          -- Validation in External types table
+          BEGIN
+            SELECT ejt_type INTO lVal FROM slr_ext_jrnl_types WHERE ROWNUM = 1;
+          EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+              pr_error(1, 'No data found in SLR_EXT_JRNL_TYPES', 1, 'pValidateJournals', 'SLR_EXT_JRNL_TYPES', NULL, NULL, NULL, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+              raise_application_error(-20001, 'Fatal error during SLR_EXT_JRNL_TYPES validation');
+          END;
+
+          SLR_ADMIN_PKG.Debug('Validation. Records in SLR_EXT_JRNL_TYPES exist.');   
+
+          COMMIT;
+          SLR_ADMIN_PKG.Debug('Validation. Future records moved.', NULL);
+        END IF;
+
+        -- Period validation
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'Periods' and value1 != 'jlu_translation_date'
+        ) LOOP
+          pWriteLineError(rec.jlu_entity, p_process_id, 'Period', 'Invalid Period: ['||rec.value2|| '] not valid in Period table for Entity ['||rec.jlu_entity||'] and column ['||rec.value1||']', ' AND '||rec.value1||' = DATE ''' || rec.value2|| '''', p_epg_id, p_status, p_UseHeaders);
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. Periods validated.', lValidateSQL);
+
+        -- Reversing Date < Effective Date
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'Reversing Date < Effective Date'
+        ) LOOP
+          pWriteLineError(
+            rec.jlu_entity, p_process_id, 'Rev Date', 'The Reversing Date: ['||rec.value1||'] must be greater than the Effective Date: ['||rec.value2||'] .',
+            ' AND JLU_JRNL_REV_DATE = DATE '''||rec.value1||''' AND JLU_EFFECTIVE_DATE = DATE '''||rec.value2||''' ', p_epg_id, p_status, p_UseHeaders
+          );
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. Reversing Date < Effective Date - validated.', lValidateSQL);
+
+        -- Dates
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2,
+            CASE value1
+              WHEN 'jlu_effective_date' THEN 'Eff Date'
+              WHEN 'jlu_translation_date' THEN 'Trans Date'
+              WHEN 'jlu_jrnl_rev_date' THEN 'Rev Date'
+              WHEN 'jlu_value_date' THEN 'Value Date'
+            END AS short_name,
+            CASE value1
+              WHEN 'jlu_effective_date' THEN 'Effective Date'
+              WHEN 'jlu_translation_date' THEN 'Translation Date'
+              WHEN 'jlu_jrnl_rev_date' THEN 'Reversing Date'
+              WHEN 'jlu_value_date' THEN 'Value Date'
+            END AS long_name
+            FROM TABLE(lValidationTable) WHERE validation = 'Dates' AND value1 != 'jlu_jrnl_rev_date'
+        ) LOOP
+          pWriteLineError(rec.jlu_entity, p_process_id, rec.short_name, 'Invalid '||rec.long_name||': ['||rec.value2|| '] not valid in entity days table for Entity ['||rec.jlu_entity||'] ',
+          ' AND '||rec.value1||' = ''' || rec.value2|| '''', p_epg_id, p_status, p_UseHeaders);
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. Dates validated.', lValidateSQL);
+
+        -- Period containing Value Date
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'Period containing Value Date'
+        ) LOOP
+          pWriteLineError(
+            rec.jlu_entity, p_process_id, 'Value Date', 'Period containing Value Date  ['||rec.value2||']  is invalid or is closed.', ' AND JLU_VALUE_DATE = DATE '''||rec.value2||'''', p_epg_id, p_status, NULL
+          );
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. Period containing Value Date validated.', lValidateSQL);
+
+        -- Value Date
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2,
+            CASE value1
+              WHEN 'jlu_effective_date' THEN 'Eff Date'
+              WHEN 'jlu_translation_date' THEN 'Trans Date'
+              WHEN 'jlu_jrnl_rev_date' THEN 'Rev Date'
+              WHEN 'jlu_value_date' THEN 'Value Date'
+            END AS short_name,
+            CASE value1
+              WHEN 'jlu_effective_date' THEN 'Effective Date'
+              WHEN 'jlu_translation_date' THEN 'Translation Date'
+              WHEN 'jlu_jrnl_rev_date' THEN 'Reversing Date'
+              WHEN 'jlu_value_date' THEN 'Value Date'
+            END AS long_name
+            FROM TABLE(lValidationTable) WHERE validation = 'Value date'
+        ) LOOP
+          pWriteLineError(rec.jlu_entity, p_process_id, rec.short_name, 'Invalid '||rec.long_name||': ['||rec.value2|| '] not valid in entity days table for Entity ['||rec.jlu_entity||'] ',
+          ' AND '||rec.value1||' = ''' || rec.value2|| '''', p_epg_id, p_status, p_UseHeaders);
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. Value Dates validated.', lValidateSQL);
+
+        -- External type
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'External type: None'
+        ) LOOP
+          pWriteLineError(
+            rec.jlu_entity, p_process_id, 'Ext type: NONE', 'Invalid type: '||rec.value1||' and Rule: ' ||rec.value2||' for Reversing Date calculation.', ' AND jlu_jrnl_type = '''||rec.value1||''' ', p_epg_id, p_status, NULL
+          );
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. External type: None - validated.', lValidateSQL);
+
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'External type: BETWEEN'
+        ) LOOP
+          pWriteLineError(
+            rec.jlu_entity, p_process_id, 'Ext type: BETWEEN',
+            'Invalid type: '||rec.value1||' and Rule: '||rec.value2||' for Reversing Date calculation.',
+            ' AND jlu_jrnl_type = '''||rec.value1||''' ', p_epg_id, p_status, NULL
+          );
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. External type: BETWEEN - validated.', lValidateSQL);
+
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'Invalid Ext type'
+        ) LOOP
+          pWriteLineError(
+            rec.jlu_entity, p_process_id, 'Invalid Ext type',
+            'No data found in SLR_EXT_JRNL_TYPES, SLR_JRNL_TYPES for Journal Type: '||rec.value1,
+            ' AND jlu_jrnl_type = '''||rec.value1||''' ', p_epg_id, p_status, NULL
+          );
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. Invalid External type.', lValidateSQL);
+
+        -- Reversing Date
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'Reversing Date'
+        ) LOOP
+          pWriteLineError(
+            rec.jlu_entity, p_process_id, 'Reversing Date', 'Invalid Reversing Date: ['||rec.value2||'] not valid in entity days table for Entity ['||rec.jlu_entity||'] ', ' AND JLU_JRNL_REV_DATE = DATE '''||rec.value2||'''', p_epg_id, p_status, NULL
+          );
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. Reversing Date - validated.', lValidateSQL);
+
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 FROM TABLE(lValidationTable) WHERE validation = 'Reversing Date rules'
+        ) LOOP
+
+          -- Validate Reverse date with ejt_rev_validation_flag = 'Y'
+          validateReversingDateRules (
+            pEntity => rec.jlu_entity,
+            pJrnlType => rec.value1,
+            pPeriodDate => rec.value2,
+            pEffectiveDate => TO_DATE(rec.value3, lDateFormat),
+            pJrnlRevDate => TO_DATE(rec.value4, lDateFormat),
+            pErrorMessage => rec.value5,
+            pPriorNextCurrent => rec.value6,
+            pType => rec.value7,
+            pBusinessDate => TO_DATE(rec.value8, lDateFormat),
+            pPeriodsAndDaysSet => rec.value9
+          );
+
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. Reversing Date rules - validated.', lValidateSQL);
+
+        -- Currencies
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2, value3, value4 FROM TABLE(lValidationTable) WHERE validation = 'Currency'
+        ) LOOP
+          pValidateCurrency (
+            pEntity => rec.jlu_entity,
+            pEffectiveDate => TO_DATE(rec.value2, lDateFormat),
+            pTranslationDate => TO_DATE(rec.value3, lDateFormat),
+            pTranCcy => rec.value1,
+            pJrnlEntRateSet => rec.value4
+          );
+        END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. Currency validated.', lValidateSQL);
+
+        -- Balances
+        -- Adjustment Balances
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'Adjustment Balances'
+        ) LOOP
+          pWriteLineError(
+            rec.jlu_entity, p_process_id, 'Adjustment Balances',
+            'The entity ['||rec.jlu_entity||'] does not allow adjustments to be processed.',
+            ' AND JLU_JRNL_TYPE = '''||rec.value1||''' AND JLU_ENTITY = '''||rec.jlu_entity||'''', p_epg_id, p_status, p_UseHeaders
+          );
+        END LOOP;
+
+        -- Accounts
+        FOR rec IN (
+          SELECT DISTINCT validation, jlu_entity, value1, value2 FROM TABLE(lValidationTable) WHERE validation = 'Accounts'
+        ) LOOP
+          pWriteLineError(
+            rec.jlu_entity, p_process_id, 'Account',
+            'Invalid Account: '||rec.value1, ' AND JLU_ACCOUNT = '''||rec.value1||'''', p_epg_id, p_status, p_UseHeaders
+          );
+        END LOOP;
+
+        EXIT WHEN lValidateCur%NOTFOUND;
+      END LOOP;
+      CLOSE lValidateCur;
+	  
+	  
+	  -- Custom AG validation...
+	  -- Event Class Periods
+
+      lv_sql := 'SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
+			DISTINCT JLU_EFFECTIVE_DATE, fgl_hier.LK_LOOKUP_VALUE3
+			FROM SLR_JRNL_LINES_UNPOSTED
+			join fdr.fr_general_lookup fgl_hier on JLU_ATTRIBUTE_4 = fgl_hier.LK_MATCH_KEY1
+				 and fgl_hier.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_HIERARCHY''
+			WHERE JLU_EPG_ID = ''' || p_epg_id || '''
+				AND JLU_JRNL_STATUS = ''' || p_status || '''
+			AND NOT EXISTS
+			(
+				SELECT NULL from fdr.fr_general_lookup fgl_period
+									left join fdr.fr_general_lookup fgl_cls
+										ON fgl_cls.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_CLASS''
+										AND fgl_cls.LK_MATCH_KEY1 = fgl_period.LK_MATCH_KEY1
+						where fgl_period.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_CLASS_PERIOD''
+							AND FGL_HIER.LK_LOOKUP_VALUE3 = FGL_PERIOD.LK_MATCH_KEY1
+							AND JLU_EFFECTIVE_DATE BETWEEN
+									(CASE WHEN FGL_CLS.LK_LOOKUP_VALUE2 = ''Q''
+										  THEN ADD_MONTHS(TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE2,''DD-MON-YYYY''),-2)
+										  ELSE TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE2,''DD-MON-YYYY'')
+										  END)
+							AND TO_DATE(FGL_PERIOD.LK_LOOKUP_VALUE3,''DD-MON-YYYY'')
+							--AND JLU_EFFECTIVE_DATE BETWEEN TO_DATE(''01-DEC-2017'',''DD-MON-YYYY'') and TO_DATE(''31-DEC-2017'',''DD-MON-YYYY'')
+							AND FGL_PERIOD.LK_LOOKUP_VALUE1 = ''O''
+			)
+		';
+
+      DECLARE
+        v_fdr_event_class FDR.FR_GENERAL_LOOKUP.LK_LOOKUP_VALUE3%TYPE;
+		v_jlu_effective_date SLR.SLR_JRNL_LINES_UNPOSTED.JLU_EFFECTIVE_DATE%TYPE;
+      BEGIN
         OPEN cValidateRows FOR lv_sql;
         LOOP
-            FETCH cValidateRows INTO v_jlu_jrnl_type, v_ent_entity_short_code, v_ent_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_ent_entity, p_process_id, 'Account',
-                'The entity [' || v_ent_entity_short_code || '] does not allow adjustments to be processed.' ,
-                'AND jlu_jrnl_type = ''' || v_jlu_jrnl_type|| ''' AND jlu_entity = ''' || v_ent_entity || '''', p_epg_id, p_status, p_UseHeaders);
+          FETCH cValidateRows INTO  v_jlu_effective_date, v_fdr_event_class;
+          EXIT WHEN cValidateRows%NOTFOUND;
+          pWriteLineErrorEventClass(v_fdr_event_class, p_process_id, 'Period',
+            'Invalid Event Class Period: [' || v_jlu_effective_date || '] not valid in Period table for Event Class [' || v_fdr_event_class || '] ',
+            ' AND JLU_EFFECTIVE_DATE = ''' || v_jlu_effective_date || '''', p_epg_id, p_status, p_UseHeaders);
 
-        SLR_ADMIN_PKG.Debug('Validation. Adjustment Balances for entity: ' ||v_ent_entity_short_code||' and jlu_jrnl_type: ' ||v_jlu_jrnl_type|| ' validated.');
         END LOOP;
+
         CLOSE cValidateRows;
-    END;
+      END;
 
-    SLR_ADMIN_PKG.Debug('Validation. Adjustment Balances validated.', lv_sql);
+      SLR_ADMIN_PKG.Debug('Validation. Event Class Periods validated.', lv_sql);
+	  --- End of AG custom validations
 
-    -- Accounts
-    lv_sql := '
-        SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || '
-        DISTINCT
-            JLU_ACCOUNT,
-            JLU_ENTITY
-        FROM SLR_JRNL_LINES_UNPOSTED
-        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-        AND  JLU_JRNL_STATUS = ''' || p_status || '''
-        AND NOT EXISTS
-        (
-            SELECT NULL FROM SLR_ENTITY_ACCOUNTS
-            WHERE EA_ENTITY_SET = (SELECT ENT_ACCOUNTS_SET FROM SLR_ENTITIES WHERE ENT_ENTITY = JLU_ENTITY)
-            AND EA_STATUS = ''A''
-            AND EA_ACCOUNT = JLU_ACCOUNT
-        )
-    ';
+      -- Segments
+      pValidateSegments();
+      SLR_ADMIN_PKG.Debug('Validation. Segments validated.');
 
-    DECLARE
-        v_jlu_account SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ACCOUNT%TYPE;
-        v_jlu_entity SLR.SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE;
-    BEGIN
-        OPEN cValidateRows FOR lv_sql;
-        LOOP
-            FETCH cValidateRows INTO v_jlu_account, v_jlu_entity;
-            EXIT WHEN cValidateRows%NOTFOUND;
-            pWriteLineError(v_jlu_entity, p_process_id, 'Account',
-                'Invalid Account: ' || v_jlu_account ,
-                ' AND JLU_ACCOUNT = ''' || v_jlu_account || '''', p_epg_id, p_status, p_UseHeaders);
-            SLR_ADMIN_PKG.Debug('Validation. Account for entity: ' ||v_jlu_entity||' validated.');
-        END LOOP;
-        CLOSE cValidateRows;
-    END;
+      -- Balances
+      pValidateBalances();
+      SLR_ADMIN_PKG.Debug('Validation. Balances validated.');
+      COMMIT;
+      
+      pValidateFuturePeriod(p_epg_id, p_process_id, p_status, p_UseHeaders);
+      SLR_ADMIN_PKG.Debug('Validation. Future period validated.');    
+      
+      pUpdateJLUPeriods(p_epg_id, p_process_id, p_status);
+      SLR_ADMIN_PKG.Debug('Validation. JLU periods updated.');
+      
+      pInsertFakEbaCombinations(p_epg_id, p_process_id, p_status);
 
-
-    SLR_ADMIN_PKG.Debug('Validation. Accounts validated.', lv_sql);
-
--- Segments
-
- FOR loop_counter IN 1..10
-  LOOP
-
-    BEGIN
-      lv_sql := 'SELECT COUNT(DISTINCT FD_SEGMENT_'||loop_counter||'_TYPE), MAX(FD_SEGMENT_'||loop_counter||'_TYPE)
-                    FROM SLR_FAK_DEFINITIONS
-                        INNER JOIN SLR_ENTITY_PROC_GROUP
-                        ON fd_entity = epg_entity
-                        WHERE epg_id = ''' || p_epg_id || ''' ';
-
-
-
-      EXECUTE IMMEDIATE lv_sql
-      INTO v_counter, v_definition ;
+      SLR_ADMIN_PKG.Info('Validation end');
+      pSetValidationStatistics(p_process_id);
+      COMMIT;
 
     EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-    v_counter := 0;
-    v_definition := 'I';
-    END;
-
-
-        IF v_counter = 1 and v_definition IN ('M', 'C') THEN
-            pValidateSegment(p_process_id, loop_counter, v_definition, p_epg_id, p_status, p_UseHeaders);
-        ELSIF v_counter > 1 THEN
-            pValidateSegmentDiff(p_process_id, loop_counter, p_epg_id, p_status, p_UseHeaders);
-        END IF;
-
-    SLR_ADMIN_PKG.Debug('Validation. Segment:'||loop_counter || ' validated.');
-   -- END;
-END LOOP;
-
-    SLR_ADMIN_PKG.Debug('Validation. Segments validated.', lv_sql);
-
-    pUpdateJLUPeriods(p_epg_id, p_process_id, p_status);
-    SLR_ADMIN_PKG.Debug('Validation. JLU periods updated.');
-
-    pSetValidationStatistics(p_process_id);
-    COMMIT;
-
-    --EXECUTE IMMEDIATE 'ALTER SESSION DISABLE PARALLEL DML';
-
-    SLR_ADMIN_PKG.Info('Validation end');
-
-EXCEPTION
-    WHEN e_internal_processing_error THEN
+      WHEN e_internal_processing_error THEN
         -- error was handled in procedure which raised it
         RETURN;
 
-    WHEN OTHERS THEN
+      WHEN OTHERS THEN
         ROLLBACK;
-        pWriteLogError(s_proc_name, 'SLR_JRNL_LINES_UNPOSTED',
-            'Error during journal lines validation', p_process_id,null,null);
+        pWriteLogError(cPROC_NAME, 'SLR_JRNL_LINES_UNPOSTED', 'Error during journal lines validation', p_process_id, null, null);
         SLR_ADMIN_PKG.Error('ERROR in procedure pValidateJournals');
-        RAISE_APPLICATION_ERROR(-20001, 'Fatal error during journal lines validation: ' || SQLERRM);
-
-END pValidateJournals;
+        raise_application_error(-20001, 'Fatal error during journal lines validation: ' || SQLERRM);
+    END pValidateJournals;
 
     -- ---------------------------------------------------------------------------
     -- Function to Set Validation Statistics
@@ -1355,12 +1135,12 @@ END pValidateJournals;
         s_proc_name CONSTANT VARCHAR2(80) := 'SLR_VALIDATE_JOURNALS_PKG.fSetValidationStatistics';
     BEGIN
 
-        -- Log the Number of Journals failing Validation to the error Handler
-        -- -------------------------------------------------------------------*
-        IF gErrorsNumber > 0 THEN
-            pWriteLogError(s_proc_name, 'SLR_JRNL_LINES_UNPOSTED', 'There are ' || gErrorsNumber || ' journal lines in error for Process Id [' || p_process_id || ']. More detailed description can be found in SLR_JRNL_LINE_ERRORS');
-            gErrorsNumber:=0;
-        END IF;
+		-- Log the Number of Journals failing Validation to the error Handler
+		-- -------------------------------------------------------------------*
+		IF gErrorsNumber > 0 THEN
+			pWriteLogError(s_proc_name, 'SLR_JRNL_LINES_UNPOSTED', 'There are ' || gErrorsNumber || ' journal lines in error for Process Id [' || p_process_id || ']. More detailed description can be found in SLR_JRNL_LINE_ERRORS');
+			gErrorsNumber:=0;
+		END IF;
 
         SELECT  i.BLOCK_GETS,CONSISTENT_GETS,PHYSICAL_READS,BLOCK_CHANGES,CONSISTENT_CHANGES
         INTO    gEND_BLOCK_GETS,gEND_CONSISTENT_GETS,gEND_PHYSICAL_READS,gEND_BLOCK_CHANGES,gEND_CONSISTENT_CHANGES
@@ -1497,26 +1277,26 @@ END pValidateJournals;
     )
     AS
         s_proc_name CONSTANT VARCHAR2(80):= 'SLR_VALIDATE_JOURNALS_PKG.fInitializeProcedure';
-        s_SID VARCHAR2(256);
-        s_business_date date;
+		s_SID VARCHAR2(256);
+		s_business_date date;
     BEGIN
 
 
-        select sys_context('userenv','SID') SID
-        into s_SID
-        from DUAL;
+		select sys_context('userenv','SID') SID
+		into s_SID
+		from DUAL;
 
 
-        SELECT ENT_BUSINESS_DATE
-            INTO s_business_date
-                FROM SLR_ENTITIES
-                WHERE ENT_ENTITY =
-                (
-                    SELECT EPG_ENTITY
-                    FROM SLR_ENTITY_PROC_GROUP
-                    WHERE EPG_ID =p_epg_id
-                        AND ROWNUM = 1
-                );
+		SELECT ENT_BUSINESS_DATE
+			INTO s_business_date
+				FROM SLR_ENTITIES
+				WHERE ENT_ENTITY =
+				(
+					SELECT EPG_ENTITY
+					FROM SLR_ENTITY_PROC_GROUP
+					WHERE EPG_ID =p_epg_id
+						AND ROWNUM = 1
+				);
 
 
         INSERT INTO SLR_JOB_STATISTICS
@@ -1525,8 +1305,8 @@ END pValidateJournals;
             JS_PROCESS_NAME,
             JS_START_TIME,
             JS_EPG_ID,
-            JS_SID,
-            JS_BUSINESS_DATE
+			JS_SID,
+			JS_BUSINESS_DATE
         )
         VALUES
         (
@@ -1534,8 +1314,8 @@ END pValidateJournals;
             gc_process_name,
             SYSDATE,
             p_epg_id,
-            s_SID,
-            s_business_date
+			s_SID,
+			s_business_date
         );
 
         COMMIT;
@@ -1603,9 +1383,10 @@ END pValidateJournals;
                 FROM SLR_JRNL_LINES_UNPOSTED
                 WHERE JLU_ENTITY = :p_entity
                 AND JLU_EPG_ID = :p_epg_id
-                AND JLU_JRNL_STATUS IN (:p_status,''E'') '
+				AND JLU_JRNL_STATUS IN (:p_status,''E'') '
                 || p_sql;
 
+        dbms_output.put_line(v_sql);
         EXECUTE IMMEDIATE v_sql USING p_process_id, p_entity, p_epg_id, p_status;
 
         IF p_UseHeaders THEN
@@ -1614,13 +1395,13 @@ END pValidateJournals;
                         ||' SET    JHU_JRNL_STATUS = ''E'','
                         ||'        JHU_AMENDED_BY = :id,'
                         ||'        JHU_AMENDED_ON = SYSDATE,'
-                        ||'        JHU_JRNL_PROCESS_ID = :process_id'
+						||'        JHU_JRNL_PROCESS_ID = :process_id'
                         ||' WHERE   (JHU_JRNL_ID) IN
                 (
                     SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
                     WHERE JLU_ENTITY = :p_entity
                     AND JLU_EPG_ID = :p_epg_id
-                    AND JLU_JRNL_STATUS = :p_status '
+					AND JLU_JRNL_STATUS = :p_status '
                         || p_sql || '
                 )';
 
@@ -1632,21 +1413,21 @@ END pValidateJournals;
             JLU_JRNL_STATUS_TEXT = :status_text,
             JLU_AMENDED_BY = :id,
             JLU_AMENDED_ON = SYSDATE,
-            JLU_JRNL_PROCESS_ID = :process_id
+			JLU_JRNL_PROCESS_ID = :process_id
             WHERE JLU_JRNL_HDR_ID IN
             (
                 SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
                 WHERE JLU_ENTITY = :p_entity
                 AND JLU_EPG_ID = :p_epg_id
-                AND JLU_JRNL_STATUS = :p_status '
+				AND JLU_JRNL_STATUS = :p_status '
                     || p_sql || '
             )
-         AND JLU_EPG_ID = :p_epg_id
-         AND JLU_JRNL_STATUS = :p_status';
+		 AND JLU_EPG_ID = :p_epg_id
+		 AND JLU_JRNL_STATUS = :p_status';
 
         EXECUTE IMMEDIATE v_sql USING p_status_text, USER,p_process_id, p_entity, p_epg_id, p_status, p_epg_id, p_status;
 
-        gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
+		gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
 
         COMMIT;
 
@@ -1657,15 +1438,16 @@ END pValidateJournals;
                 p_process_id,p_entity, p_epg_id,p_status);
             SLR_ADMIN_PKG.Error('Failure to write errors to log and unposted journals for process id ['||p_process_id||'] ');
             ROLLBACK;
-            RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pWriteLineError: ' || SQLERRM);
+            dbms_output.put_line(dbms_utility.format_error_backtrace);
+            RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pWriteLineError: ' || SQLERRM ||' line: '||substr(dbms_utility.format_error_backtrace, 1, instr(dbms_utility.format_error_backtrace, chr(10))));
 
     END pWriteLineError;
+	
 
-
-   -- ---------------------------------------------------------------------------
+    -- ---------------------------------------------------------------------------
     -- Procedure:    pWriteLineErrorEventClass
     -- Description:  Custom procedure to write journal errors based on Event Class.
-    -- Author:      Janet Hine
+    -- Author:       Janet Hine
     -- ---------------------------------------------------------------------------
     PROCEDURE pWriteLineErrorEventClass
     (
@@ -1676,7 +1458,7 @@ END pValidateJournals;
         p_sql in VARCHAR2,
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_status IN CHAR := 'U',
-        p_UseHeaders IN BOOLEAN := FALSE
+        p_UseHeaders IN BOOLEAN:= FALSE
 
     )
     IS
@@ -1724,7 +1506,7 @@ END pValidateJournals;
                         ||' WHERE   (JHU_JRNL_ID) IN
                 (
                     SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
-                    
+
                     join fdr.fr_general_lookup fgl_hier on JLU_ATTRIBUTE_4 = fgl_hier.LK_MATCH_KEY1
                     and fgl_hier.LK_LKT_LOOKUP_TYPE_CODE = ''EVENT_HIERARCHY''
                 WHERE fgl_hier.LK_LOOKUP_VALUE3 = :p_fdr_event_class
@@ -1771,7 +1553,7 @@ END pValidateJournals;
             RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pWriteLineError: ' || SQLERRM);
 
     END pWriteLineErrorEventClass;
-    
+
     --------------------------------------------------------------------------------
 
     -- ---------------------------------------------------------------------------
@@ -1805,7 +1587,7 @@ END pValidateJournals;
         p_table_name    in  VARCHAR2,
         p_msg           in  VARCHAR2,
         p_process_id    in  SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_PROCESS_ID%TYPE,
-        p_epg_id        IN  SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+		p_epg_id        IN  SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_status        IN  CHAR := 'U',
         p_entity        IN  slr_entities.ent_entity%TYPE:=NULL
     )
@@ -1833,7 +1615,7 @@ END pValidateJournals;
     (
         p_process_id   in SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_PROCESS_ID%TYPE,
         p_status_text  in SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_STATUS_TEXT%TYPE,
-        p_epg_id       IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+		p_epg_id       IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_entity       IN slr_entities.ent_entity%TYPE:=NULL,
         p_status       IN CHAR := 'U'
     )
@@ -1849,7 +1631,7 @@ END pValidateJournals;
 
     BEGIN
     --dbms_output.put_line('--> pSetJournalToError');
-        gv_table_name := 'SLR_JRNL_LINES_UNPOSTED';
+    	gv_table_name := 'SLR_JRNL_LINES_UNPOSTED';
 
       IF gUser IS NOT NULL THEN
           s_UpdatedBy := gUser;
@@ -1859,33 +1641,33 @@ END pValidateJournals;
       END IF;
 
      IF p_entity IS NULL THEN
-          ---quick fix for Issue #10954
+	      ---quick fix for Issue #10954
                 -- old logic for GUI screens compatibility
                 gv_table_name := 'SLR_JRNL_HEADERS_UNPOSTED';
 
-                UPDATE     SLR_JRNL_HEADERS_UNPOSTED
-                SET        JHU_JRNL_STATUS = 'E',
+                UPDATE 	SLR_JRNL_HEADERS_UNPOSTED
+                SET    	JHU_JRNL_STATUS = 'E',
                         JHU_AMENDED_BY = s_UpdatedBy,
                         JHU_AMENDED_ON = d_WhenUpdated
-                WHERE      (JHU_JRNL_ID) IN
+                WHERE  	(JHU_JRNL_ID) IN
                     (
                         SELECT JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
                         WHERE JLU_EPG_ID = p_epg_id
                         AND JLU_JRNL_STATUS = p_status );
 
-          UPDATE     SLR_JRNL_LINES_UNPOSTED
-            SET        JLU_JRNL_STATUS = 'E',
-                       JLU_JRNL_STATUS_TEXT = p_status_text,
-                       JLU_AMENDED_BY = s_UpdatedBy,
-                       JLU_AMENDED_ON = d_WhenUpdated
-              WHERE JLU_JRNL_HDR_ID IN
+		  UPDATE 	SLR_JRNL_LINES_UNPOSTED
+        	SET    	JLU_JRNL_STATUS = 'E',
+               		JLU_JRNL_STATUS_TEXT = p_status_text,
+               		JLU_AMENDED_BY = s_UpdatedBy,
+            	   	JLU_AMENDED_ON = d_WhenUpdated
+        	  WHERE JLU_JRNL_HDR_ID IN
             (
                 SELECT JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
                 WHERE JLU_EPG_ID = p_epg_id
-                AND JLU_JRNL_STATUS = p_status
+				AND JLU_JRNL_STATUS = p_status
             )
-         AND JLU_EPG_ID = p_epg_id
-         AND JLU_JRNL_STATUS = p_status;
+		 AND JLU_EPG_ID = p_epg_id
+		 AND JLU_JRNL_STATUS = p_status;
 
     end if;
     IF p_entity IS NOT NULL THEN
@@ -1893,31 +1675,31 @@ END pValidateJournals;
                     -- old logic for GUI screens compatibility
                     gv_table_name := 'SLR_JRNL_HEADERS_UNPOSTED';
 
-                    UPDATE     SLR_JRNL_HEADERS_UNPOSTED
-                    SET        JHU_JRNL_STATUS = 'E',
+                    UPDATE 	SLR_JRNL_HEADERS_UNPOSTED
+                    SET    	JHU_JRNL_STATUS = 'E',
                             JHU_AMENDED_BY = s_UpdatedBy,
                             JHU_AMENDED_ON = d_WhenUpdated
-                    WHERE      (JHU_JRNL_ID) IN
+                    WHERE  	(JHU_JRNL_ID) IN
                         (
                             SELECT JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
                             WHERE JLU_ENTITY = p_entity
                             AND JLU_EPG_ID = p_epg_id
                             AND JLU_JRNL_STATUS = p_status );
 
-     UPDATE     SLR_JRNL_LINES_UNPOSTED
-            SET        JLU_JRNL_STATUS = 'E',
-                       JLU_JRNL_STATUS_TEXT = p_status_text,
-                       JLU_AMENDED_BY = s_UpdatedBy,
-                       JLU_AMENDED_ON = d_WhenUpdated
-              WHERE JLU_JRNL_HDR_ID IN
+	 UPDATE 	SLR_JRNL_LINES_UNPOSTED
+        	SET    	JLU_JRNL_STATUS = 'E',
+               		JLU_JRNL_STATUS_TEXT = p_status_text,
+               		JLU_AMENDED_BY = s_UpdatedBy,
+            	   	JLU_AMENDED_ON = d_WhenUpdated
+        	  WHERE JLU_JRNL_HDR_ID IN
             (
                 SELECT JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
                 WHERE JLU_ENTITY = p_entity
                 AND JLU_EPG_ID = p_epg_id
-                AND JLU_JRNL_STATUS = p_status
+				AND JLU_JRNL_STATUS = p_status
             )
-         AND JLU_EPG_ID = p_epg_id
-         AND JLU_JRNL_STATUS = p_status;
+		 AND JLU_EPG_ID = p_epg_id
+		 AND JLU_JRNL_STATUS = p_status;
 
     END IF;
 
@@ -2032,7 +1814,7 @@ END pValidateJournals;
                                 ||' SET JHU_JRNL_STATUS  =   ''E'','
                                     ||' JHU_AMENDED_BY   =  USER,'
                                     ||' JHU_AMENDED_ON   =  SYSDATE,'
-                                    ||' JHU_JRNL_PROCESS_ID   =  :p_process_id'
+									||' JHU_JRNL_PROCESS_ID   =  :p_process_id'
                               ||' WHERE (JHU_JRNL_ID) IN
                               (
                                 SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
@@ -2089,7 +1871,7 @@ END pValidateJournals;
                   AND JLU_JRNL_STATUS = :p_status
                   AND JLU_EPG_ID = :p_epg_id )';
 
-            gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
+			gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
 
             EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id;
 
@@ -2111,113 +1893,112 @@ END pValidateJournals;
 
    PROCEDURE pValidateSegment
     (
-        p_process_id IN NUMBER,
-        p_seg_no IN NUMBER,
-        p_seg_type IN VARCHAR2,
-        p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
-        p_status IN CHAR := 'U',
-        p_UseHeaders IN BOOLEAN := FALSE
-    )
-    AS
-        s_proc_name CONSTANT VARCHAR2(65) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateSegment';
-        lv_sql VARCHAR2(32000);
+      p_process_id IN NUMBER,
+      p_seg_no IN NUMBER,
+      p_seg_type IN VARCHAR2,
+      p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+      p_status IN CHAR := 'U',
+      p_UseHeaders IN BOOLEAN := FALSE
+    ) IS
+      s_proc_name CONSTANT VARCHAR2(65) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateSegment';
+      lv_sql VARCHAR2(32000);
     BEGIN
-        lv_sql := 'INSERT INTO SLR_JRNL_LINE_ERRORS
-            (
-                JLE_JRNL_PROCESS_ID,
-                JLE_JRNL_HDR_ID,
-                JLE_JRNL_LINE_NUMBER,
-                JLE_ERROR_CODE,
-                JLE_ERROR_STRING
-            )
-            SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' :p_process_id,
-                JLU_JRNL_HDR_ID,
-                JLU_JRNL_LINE_NUMBER,
-                99999,
-                ''Invalid Segment:'||p_seg_no||'''' -- added for consistency, replaces ''||FD_SEGMENT_'||p_seg_no||'_NAME'
-            ||' FROM SLR_JRNL_LINES_UNPOSTED
-            INNER JOIN SLR_ENTITIES
-                ON JLU_ENTITY = ENT_ENTITY
-            LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
-                ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
-                AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
-                AND FS'||p_seg_no||'_STATUS = ''A''
-            WHERE
-               FS.ROWID IS NULL
-                AND JLU_JRNL_STATUS IN (:p_status,''E'')
-                AND JLU_EPG_ID = :p_epg_id ';
+      lv_sql := 'INSERT INTO SLR_JRNL_LINE_ERRORS
+        (
+          JLE_JRNL_PROCESS_ID,
+          JLE_JRNL_HDR_ID,
+          JLE_JRNL_LINE_NUMBER,
+          JLE_ERROR_CODE,
+          JLE_ERROR_STRING
+        )
+          SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' :p_process_id,
+          JLU_JRNL_HDR_ID,
+          JLU_JRNL_LINE_NUMBER,
+          99999,
+          ''Invalid Segment:'||p_seg_no||'''' -- added for consistency, replaces ''||FD_SEGMENT_'||p_seg_no||'_NAME'
+          ||' FROM SLR_JRNL_LINES_UNPOSTED
+          INNER JOIN SLR_ENTITIES 
+            ON JLU_ENTITY = ENT_ENTITY
+          LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
+            ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
+            AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
+            AND FS'||p_seg_no||'_STATUS = ''A''
+          WHERE 
+            FS.ROWID IS NULL
+            AND JLU_JRNL_STATUS IN (:p_status,''E'')
+            AND JLU_EPG_ID = :p_epg_id ';
 
-              IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
-                    lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS''';
-              END IF;
-
-
+      IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
+        lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS''';
+      END IF;
+         
+      SLR_ADMIN_PKG.Debug('Validation. Segment: '||p_seg_no || ' validated.', lv_sql);
         EXECUTE IMMEDIATE lv_sql USING p_process_id, p_status, p_epg_id;
-
+    
         IF SQL%ROWCOUNT > 0 THEN
 
-            IF p_UseHeaders THEN
-                lv_sql := ' UPDATE SLR_JRNL_HEADERS_UNPOSTED'
-                                ||' SET JHU_JRNL_STATUS  =   ''E'','
-                                    ||' JHU_AMENDED_BY   =  USER,'
-                                    ||' JHU_AMENDED_ON   =  SYSDATE,'
-                                    ||' JHU_JRNL_PROCESS_ID   =  :p_process_id'
-                              ||' WHERE (JHU_JRNL_ID) IN
-                              (
-                                SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
-                                FROM SLR_JRNL_LINES_UNPOSTED
-                              INNER JOIN SLR_ENTITIES
-                                ON JLU_ENTITY = ENT_ENTITY
-                              LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
-                                ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
-                              AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
-                              AND FS'||p_seg_no||'_STATUS = ''A''
-                              WHERE
-                              FS.ROWID IS NULL
-                            AND JLU_JRNL_STATUS  = :p_status
-                            AND JLU_EPG_ID = :p_epg_id ';
-
-                IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
-                    lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS'')';
-                ELSE
-                    lv_sql := lv_sql || ')';
-                END IF;
-
-                EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id;
-
-            END IF;
-
-            lv_sql := '
-                UPDATE SLR_JRNL_LINES_UNPOSTED
-                SET JLU_JRNL_STATUS = ''E'',
-                JLU_AMENDED_BY = USER,
-                JLU_AMENDED_ON = SYSDATE,
-                JLU_JRNL_PROCESS_ID = :p_process_id,
-                JLU_JRNL_STATUS_TEXT = ''Invalid Segment:'||p_seg_no||'''
-                WHERE JLU_JRNL_HDR_ID IN
-                (
-                    SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
-                    FROM SLR_JRNL_LINES_UNPOSTED
-                    INNER JOIN SLR_ENTITIES
-                      ON JLU_ENTITY = ENT_ENTITY
-                    LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
-                      ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
-                    AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
-                    AND FS'||p_seg_no||'_STATUS = ''A''
-                  WHERE
-                    FS.ROWID IS NULL
+          IF p_UseHeaders THEN
+            lv_sql := ' UPDATE SLR_JRNL_HEADERS_UNPOSTED
+              SET JHU_JRNL_STATUS  =   ''E'',
+                JHU_AMENDED_BY   =  USER,
+                JHU_AMENDED_ON   =  SYSDATE,
+                JHU_JRNL_PROCESS_ID   =  :p_process_id
+              WHERE (JHU_JRNL_ID) IN
+              (
+                SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
+                FROM SLR_JRNL_LINES_UNPOSTED
+                INNER JOIN SLR_ENTITIES
+                  ON JLU_ENTITY = ENT_ENTITY
+                LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
+                  ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
+                  AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
+                  AND FS'||p_seg_no||'_STATUS = ''A''
+                WHERE 
+                  FS.ROWID IS NULL
                   AND JLU_JRNL_STATUS  = :p_status
                   AND JLU_EPG_ID = :p_epg_id ';
 
-            gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
+          IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
+              lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS'')';
+          ELSE
+              lv_sql := lv_sql || ')';
+          END IF;
+          
+          EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id;
 
-              IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
-                lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS'')   AND JLU_EPG_ID = :p_epg_id AND JLU_JRNL_STATUS = :p_status ';
-            ELSE
-                lv_sql := lv_sql || ')  AND JLU_EPG_ID = :p_epg_id AND JLU_JRNL_STATUS = :p_status ';
-            END IF;
+        END IF;
 
-            EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id,  p_epg_id, p_status;
+          lv_sql := '
+            UPDATE SLR_JRNL_LINES_UNPOSTED
+              SET JLU_JRNL_STATUS = ''E'',
+              JLU_AMENDED_BY = USER,
+              JLU_AMENDED_ON = SYSDATE,
+              JLU_JRNL_PROCESS_ID = :p_process_id,
+              JLU_JRNL_STATUS_TEXT = ''Invalid Segment:'||p_seg_no||'''
+            WHERE JLU_JRNL_HDR_ID IN
+              (
+                SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
+                FROM SLR_JRNL_LINES_UNPOSTED
+                  INNER JOIN SLR_ENTITIES
+                    ON JLU_ENTITY = ENT_ENTITY
+                  LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
+                    ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
+                    AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
+                    AND FS'||p_seg_no||'_STATUS = ''A''
+                  WHERE 
+                    FS.ROWID IS NULL
+                    AND JLU_JRNL_STATUS  = :p_status
+                    AND JLU_EPG_ID = :p_epg_id ';
+
+          gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
+
+          IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
+            lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS'')   AND JLU_EPG_ID = :p_epg_id AND JLU_JRNL_STATUS = :p_status ';
+          ELSE
+            lv_sql := lv_sql || ')  AND JLU_EPG_ID = :p_epg_id AND JLU_JRNL_STATUS = :p_status ';
+          END IF;
+
+          EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id,  p_epg_id, p_status;
 
         END IF;
 
@@ -2226,15 +2007,14 @@ END pValidateJournals;
     EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
-            pWriteLogError(s_proc_name, 'SLR_FAK_SEGMENT_'||p_seg_no,
-                'Error during validating segment ' || p_seg_no || ': ' || SQLERRM, p_process_id,p_epg_id,p_status);
-            SLR_ADMIN_PKG.Error('Error during validating segment ' || p_seg_no || ': ' || SQLERRM);
+            pWriteLogError(s_proc_name, '', 'Error during validating segments ' || p_seg_no || ': ' || SQLERRM, p_process_id,p_epg_id,p_status);
+            SLR_ADMIN_PKG.Error('Error during validating segment ' || p_seg_no || ': ' || SQLERRM, dbms_utility.format_error_backtrace);
             RAISE e_internal_processing_error; -- raised to stop execution
 
     END pValidateSegment;
 
 
-    PROCEDURE pValidateBalanceDiff
+	PROCEDURE pValidateBalanceDiff
     (
         p_process_id IN NUMBER,
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
@@ -2245,25 +2025,25 @@ END pValidateJournals;
         s_proc_name CONSTANT VARCHAR2(65) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateBalanceDiff';
         lv_sql VARCHAR2(32000);
 
-        TYPE cur_type IS REF CURSOR;
-        cValidateRows cur_type;
-        v_jlu_entity SLR.SLR_FAK_DEFINITIONS.FD_ENTITY%TYPE;
-        v_SEGMENT_1_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_1_BALANCE_CHECK%TYPE;
-        v_SEGMENT_2_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_2_BALANCE_CHECK%TYPE;
-        v_SEGMENT_3_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_3_BALANCE_CHECK%TYPE;
-        v_SEGMENT_4_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_4_BALANCE_CHECK%TYPE;
-        v_SEGMENT_5_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_5_BALANCE_CHECK%TYPE;
-        v_SEGMENT_6_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_6_BALANCE_CHECK%TYPE;
-        v_SEGMENT_7_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_7_BALANCE_CHECK%TYPE;
-        v_SEGMENT_8_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_8_BALANCE_CHECK%TYPE;
-        v_SEGMENT_9_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_9_BALANCE_CHECK%TYPE;
-        v_SEGMENT_10_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_10_BALANCE_CHECK%TYPE;
-        v_Rank integer;
-        v_curr_rank integer := 1;
-        v_GROUP_ENTITY VARCHAR2(32000) := '';
-        v_GROUP_SEGMENT VARCHAR2(5000) := '';
-        v_GROUP_FLAG boolean := FALSE;
-        v_CURR  VARCHAR2(1) := 0;
+		TYPE cur_type IS REF CURSOR;
+		cValidateRows cur_type;
+		v_jlu_entity SLR.SLR_FAK_DEFINITIONS.FD_ENTITY%TYPE;
+		v_SEGMENT_1_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_1_BALANCE_CHECK%TYPE;
+		v_SEGMENT_2_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_2_BALANCE_CHECK%TYPE;
+		v_SEGMENT_3_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_3_BALANCE_CHECK%TYPE;
+		v_SEGMENT_4_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_4_BALANCE_CHECK%TYPE;
+		v_SEGMENT_5_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_5_BALANCE_CHECK%TYPE;
+		v_SEGMENT_6_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_6_BALANCE_CHECK%TYPE;
+		v_SEGMENT_7_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_7_BALANCE_CHECK%TYPE;
+		v_SEGMENT_8_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_8_BALANCE_CHECK%TYPE;
+		v_SEGMENT_9_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_9_BALANCE_CHECK%TYPE;
+		v_SEGMENT_10_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_10_BALANCE_CHECK%TYPE;
+		v_Rank integer;
+		v_curr_rank integer := 1;
+		v_GROUP_ENTITY VARCHAR2(32000) := '';
+		v_GROUP_SEGMENT VARCHAR2(5000) := '';
+		v_GROUP_FLAG boolean := FALSE;
+		v_CURR  VARCHAR2(1) := 0;
 
 BEGIN
 lv_sql := '
@@ -2272,10 +2052,10 @@ lv_sql := '
            FD_ENTITY, FD_SEGMENT_1_BALANCE_CHECK,FD_SEGMENT_2_BALANCE_CHECK, FD_SEGMENT_3_BALANCE_CHECK,FD_SEGMENT_4_BALANCE_CHECK,FD_SEGMENT_5_BALANCE_CHECK, FD_SEGMENT_6_BALANCE_CHECK,FD_SEGMENT_7_BALANCE_CHECK,FD_SEGMENT_8_BALANCE_CHECK,FD_SEGMENT_9_BALANCE_CHECK,FD_SEGMENT_10_BALANCE_CHECK,
            DENSE_RANK() OVER (order by FD_SEGMENT_1_BALANCE_CHECK,FD_SEGMENT_2_BALANCE_CHECK, FD_SEGMENT_3_BALANCE_CHECK,FD_SEGMENT_4_BALANCE_CHECK,FD_SEGMENT_5_BALANCE_CHECK, FD_SEGMENT_6_BALANCE_CHECK,FD_SEGMENT_7_BALANCE_CHECK,FD_SEGMENT_8_BALANCE_CHECK,FD_SEGMENT_9_BALANCE_CHECK,FD_SEGMENT_10_BALANCE_CHECK) AS RV_RANK
         FROM SLR_FAK_DEFINITIONS
-        INNER JOIN SLR_ENTITY_PROC_GROUP
-        ON EPG_ENTITY = FD_ENTITY
-        WHERE EPG_ID = ''' || p_epg_id || '''
-        ORDER BY RV_RANK
+		INNER JOIN SLR_ENTITY_PROC_GROUP
+		ON EPG_ENTITY = FD_ENTITY
+		WHERE EPG_ID = ''' || p_epg_id || '''
+		ORDER BY RV_RANK
     ';
 
         OPEN cValidateRows FOR lv_sql;
@@ -2309,7 +2089,7 @@ lv_sql := '
                 HAVING SUM(JLU_TRAN_AMOUNT) != 0';
 
 
-            EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id;
+			EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id;
               IF SQL%ROWCOUNT > 0 THEN
                 IF p_UseHeaders = TRUE THEN
                     -- old logic for GUI screens compatibility
@@ -2354,7 +2134,7 @@ lv_sql := '
                         AND JLU_JRNL_STATUS = :p_status ';
 
                EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id, p_status, p_epg_id, p_status;
-                gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
+				gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
                 COMMIT;
             END IF;
 
@@ -2437,7 +2217,7 @@ lv_sql := '
                 HAVING SUM(JLU_TRAN_AMOUNT) != 0';
             EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id;
 
-            IF SQL%ROWCOUNT > 0 THEN
+			IF SQL%ROWCOUNT > 0 THEN
                 IF p_UseHeaders = TRUE THEN
                     -- old logic for GUI screens compatibility
 
@@ -2485,7 +2265,7 @@ lv_sql := '
                 COMMIT;
           END IF;
     END IF;
-        SLR_ADMIN_PKG.Debug('Validation. Balances for different configuration - validated.');
+		SLR_ADMIN_PKG.Debug('Validation. Balances for different configuration - validated.');
 
     EXCEPTION
         WHEN OTHERS THEN
@@ -2503,7 +2283,7 @@ lv_sql := '
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_status IN CHAR := 'U',
         p_UseHeaders IN BOOLEAN := FALSE,
-        lv_sql_group_by IN VARCHAR2
+		lv_sql_group_by IN VARCHAR2
 
     )
     AS
@@ -2579,9 +2359,9 @@ lv_sql := '
                 gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
                 COMMIT;
             END IF;
-            SLR_ADMIN_PKG.Debug('Validation. Balances for the same configuration - validated.');
+			SLR_ADMIN_PKG.Debug('Validation. Balances for the same configuration - validated.');
 
-    EXCEPTION
+	EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
             pWriteLogError(s_proc_name, 'SLR_JRNL_LINES_UNPOSTED',
@@ -2589,6 +2369,45 @@ lv_sql := '
             SLR_ADMIN_PKG.Error('Error during validating balances: ' || SQLERRM);
             RAISE e_internal_processing_error; -- raised to stop execution
     END pValidateBalance;
+    
+--------------------------------------------------------------------------------
+
+    PROCEDURE pValidateFuturePeriod 
+    (
+        p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+        p_process_id IN NUMBER,
+        p_status IN CHAR:= 'U',
+        p_UseHeaders IN BOOLEAN := FALSE
+    ) IS
+      CURSOR cur_missing_future_period IS
+        SELECT ent.ent_entity
+        FROM slr_entities ent
+          JOIN slr_entity_proc_group epg ON ent.ent_entity = epg.epg_entity
+          LEFT JOIN slr_entity_periods ep ON ep.ep_entity = ent.ent_entity AND ent.ent_business_date BETWEEN ep.ep_bus_period_start AND ep.ep_bus_period_end AND ep.ep_status = 'O'
+          LEFT JOIN slr_entity_periods ep_next ON ep_next.ep_entity = ent.ent_entity and ep_next.ep_status = 'O'
+            AND ep_next.ep_bus_period = (
+              CASE
+                WHEN ep.ep_bus_period >= 12 THEN 1
+                ELSE ep.ep_bus_period + 1
+              END
+            ) AND ep_next.ep_bus_year = (
+              CASE
+                WHEN ep.ep_bus_period >= 12 THEN ep.ep_bus_year+1
+                ELSE ep.ep_bus_year
+              END
+            )
+        WHERE epg.epg_id=p_epg_id
+          AND ep_next.ep_bus_period_start IS NULL;
+
+    BEGIN
+      FOR rec_missing_future_period IN cur_missing_future_period LOOP
+        pWriteLineError(
+          rec_missing_future_period.ent_entity, p_process_id, 'Future Period', 'Missing future Period for Entity [' || rec_missing_future_period.ent_entity || '] ',
+          ' AND JLU_ENTITY = ''' || rec_missing_future_period.ent_entity || '''', p_epg_id, p_status, p_UseHeaders
+        );
+      END LOOP;
+    END pValidateFuturePeriod;  
+
 --------------------------------------------------------------------------------
 
     PROCEDURE pDeleteLineErrors
@@ -2629,30 +2448,30 @@ lv_sql := '
     s_proc_name CONSTANT VARCHAR2(65) := 'SLR_VALIDATE_JOURNALS_PKG.pUpdateJLUPeriods';
   begin
 
-    EXECUTE IMMEDIATE '
-    UPDATE '|| SLR_UTILITIES_PKG.fHint(pEpgId, 'UPDATE_JLU_PERIODS') || ' slr_jrnl_lines_unposted lu
-    SET (jlu_period_month,jlu_period_year,jlu_period_ltd) =
-        (SELECT EP_BUS_PERIOD,EP_BUS_YEAR,CASE WHEN EA_ACCOUNT_TYPE_FLAG = ''P'' THEN EP_BUS_YEAR ELSE 1 END
-              FROM slr_entities,SLR_ENTITY_PERIODS,slr_entity_accounts
-              WHERE
-                  ent_entity = lu.jlu_entity
-              AND lu.jlu_effective_date BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
-              AND EP_ENTITY = ent_entity
-              AND EP_PERIOD_TYPE <> 0
-              AND EA_ACCOUNT = lu.jlu_account
-              AND EA_ENTITY_SET = ENT_ACCOUNTS_SET)
-    WHERE lu.jlu_epg_id = ''' || pEpgId || '''
-    and  lu.JLU_JRNL_STATUS = ''' || p_status || '''
-    and exists (SELECT 1
-              FROM slr_entities,SLR_ENTITY_PERIODS,slr_entity_accounts
-              WHERE
-                  ent_entity = lu.jlu_entity
-              AND lu.jlu_effective_date BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
-              AND EP_ENTITY = ent_entity
-              AND EP_PERIOD_TYPE <> 0
-              AND EA_ACCOUNT = lu.jlu_account
-              AND EA_ENTITY_SET = ENT_ACCOUNTS_SET)
-    ';
+			EXECUTE IMMEDIATE  'UPDATE '|| SLR_UTILITIES_PKG.fHint(pEpgId, 'UPDATE_JLU_PERIODS') || '
+			(SELECT  JLU_PERIOD_MONTH,
+					JLU_PERIOD_YEAR,
+					JLU_PERIOD_LTD,
+					(select EP_BUS_PERIOD
+						from SLR_ENTITY_PERIODS
+						where JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
+						AND EP_ENTITY = JLU_ENTITY AND EP_PERIOD_TYPE <> 0
+					) EP_BUS_PERIOD,
+					 (select EP_BUS_YEAR
+						from SLR_ENTITY_PERIODS
+						where JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
+						AND EP_ENTITY = JLU_ENTITY AND EP_PERIOD_TYPE <> 0
+					) EP_BUS_YEAR,
+					(select CASE WHEN EA_ACCOUNT_TYPE_FLAG = ''P'' THEN EP_BUS_YEAR ELSE 1 END
+						from slr_entities,  slr_entity_accounts, SLR_ENTITY_PERIODS
+						where EA_ACCOUNT = JLU_ACCOUNT and  JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
+						AND EP_ENTITY = JLU_ENTITY AND EP_PERIOD_TYPE <> 0 AND EA_ENTITY_SET = ENT_ACCOUNTS_SET AND ENT_ENTITY = JLU_ENTITY
+					) EP_BUS_LTD
+			FROM slr_jrnl_lines_unposted
+			   WHERE JLU_EPG_ID = ''' || pEpgId || ''' AND JLU_JRNL_STATUS = ''' || p_status || ''' ) UNPOSTED
+			SET UNPOSTED.JLU_PERIOD_MONTH = UNPOSTED.EP_BUS_PERIOD, UNPOSTED.JLU_PERIOD_YEAR = UNPOSTED.EP_BUS_YEAR, UNPOSTED.JLU_PERIOD_LTD = EP_BUS_LTD
+			WHERE (JLU_PERIOD_YEAR IS NULL OR JLU_PERIOD_MONTH IS NULL OR JLU_PERIOD_LTD IS NULL)';
+
     exception
      WHEN OTHERS THEN
             pWriteLogError(s_proc_name, 'slr_jrnl_lines_unposted',
@@ -2662,9 +2481,151 @@ lv_sql := '
 
   END pUpdateJLUPeriods;
 
+--------------------------------------------------------------------------------
+  PROCEDURE pInsertFakEbaCombinations
+  (
+      p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+      p_process_id IN NUMBER,
+      p_status IN VARCHAR2
+  )
+  IS
+      s_proc_name VARCHAR2(80) := 'SLR_VALIDATE_JOURNLAS_PKG.pInsertFakEbaCombinations';
+      lv_START_TIME 	PLS_INTEGER := 0;
+      lv_sql VARCHAR2(32000);
+  BEGIN
 
+      lv_sql := '
+          INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'MERGE_FAK') || ' INTO SLR_FAK_COMBINATIONS PARTITION FOR ('''||p_epg_id||''')
+          (
+              FC_EPG_ID,
+              FC_ENTITY,
+              FC_ACCOUNT,
+              FC_CCY,
+              FC_SEGMENT_1,
+              FC_SEGMENT_2,
+              FC_SEGMENT_3,
+              FC_SEGMENT_4,
+              FC_SEGMENT_5,
+              FC_SEGMENT_6,
+              FC_SEGMENT_7,
+              FC_SEGMENT_8,
+              FC_SEGMENT_9,
+              FC_SEGMENT_10,
+              FC_FAK_ID
+          )
+          WITH ROWS_TO_INSERT AS
+          (
+              SELECT DISTINCT
+                  JLU_EPG_ID,
+                  JLU_ENTITY,
+                  JLU_ACCOUNT,
+                  JLU_TRAN_CCY,
+                  JLU_SEGMENT_1, 
+                  JLU_SEGMENT_2, 
+                  JLU_SEGMENT_3, 
+                  JLU_SEGMENT_4, 
+                  JLU_SEGMENT_5,
+                  JLU_SEGMENT_6,
+                  JLU_SEGMENT_7,
+                  JLU_SEGMENT_8,
+                  JLU_SEGMENT_9,
+                  JLU_SEGMENT_10,
+                  JLU_FAK_ID
+              FROM SLR_JRNL_LINES_UNPOSTED SUBPARTITION FOR ('''||p_epg_id||''', '''||p_status||''')
+              MINUS
+                  SELECT
+                      FC_EPG_ID, FC_ENTITY, FC_ACCOUNT, FC_CCY,
+                      FC_SEGMENT_1, FC_SEGMENT_2, FC_SEGMENT_3, FC_SEGMENT_4,
+                      FC_SEGMENT_5, FC_SEGMENT_6, FC_SEGMENT_7, FC_SEGMENT_8,
+                      FC_SEGMENT_9, FC_SEGMENT_10, FC_FAK_ID
+                  FROM SLR_FAK_COMBINATIONS
+                  WHERE FC_EPG_ID = ''' || p_epg_id || '''
+          )
+          SELECT
+              JLU_EPG_ID,
+              JLU_ENTITY,
+              JLU_ACCOUNT,
+              JLU_TRAN_CCY,
+              JLU_SEGMENT_1, 
+              JLU_SEGMENT_2, 
+              JLU_SEGMENT_3, 
+              JLU_SEGMENT_4, 
+              JLU_SEGMENT_5,
+              JLU_SEGMENT_6,
+              JLU_SEGMENT_7,
+              JLU_SEGMENT_8,
+              JLU_SEGMENT_9,
+              JLU_SEGMENT_10,
+              JLU_FAK_ID
+          FROM ROWS_TO_INSERT
+      ';
+      lv_START_TIME := DBMS_UTILITY.GET_TIME();
+      EXECUTE IMMEDIATE lv_sql;
+      COMMIT;
+      SLR_ADMIN_PKG.PerfInfo( 'FAKC. FAK combination query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+      SLR_ADMIN_PKG.Info('New FAK combinations inserted');
 
+      lv_sql := '
+          INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'MERGE_EBA') || ' INTO SLR_EBA_COMBINATIONS PARTITION FOR ('''||p_epg_id||''')
+          (
+              EC_EPG_ID,
+              EC_FAK_ID,
+              EC_EBA_ID,
+              EC_ATTRIBUTE_1,
+              EC_ATTRIBUTE_2,
+              EC_ATTRIBUTE_3,
+              EC_ATTRIBUTE_4,
+              EC_ATTRIBUTE_5
+          )
+          WITH ROWS_TO_INSERT AS
+          (
+              SELECT DISTINCT
+                  JLU_EPG_ID,
+                  JLU_ATTRIBUTE_1,
+                  JLU_ATTRIBUTE_2,
+                  JLU_ATTRIBUTE_3,
+                  JLU_ATTRIBUTE_4,
+                  JLU_ATTRIBUTE_5,
+                  JLU_FAK_ID,
+                  JLU_EBA_ID
+              FROM SLR_JRNL_LINES_UNPOSTED SUBPARTITION FOR (''' || p_epg_id || ''', '''||p_status||''')
+              WHERE NOT EXISTS (
+                SELECT 1 FROM SLR_EBA_COMBINATIONS PARTITION FOR (''' || p_epg_id || ''') 
+                WHERE JLU_EPG_ID = EC_EPG_ID
+                    AND JLU_ATTRIBUTE_1 = EC_ATTRIBUTE_1
+                    AND JLU_ATTRIBUTE_2 = EC_ATTRIBUTE_2
+                    AND JLU_ATTRIBUTE_3 = EC_ATTRIBUTE_3
+                    AND JLU_ATTRIBUTE_4 = EC_ATTRIBUTE_4
+                    AND JLU_ATTRIBUTE_5 = EC_ATTRIBUTE_5
+                    AND EC_FAK_ID = JLU_FAK_ID              
+              )     
+          )
+          SELECT
+            JLU_EPG_ID,
+            JLU_FAK_ID,
+            JLU_EBA_ID,
+            JLU_ATTRIBUTE_1, 
+            JLU_ATTRIBUTE_2, 
+            JLU_ATTRIBUTE_3, 
+            JLU_ATTRIBUTE_4,  
+            JLU_ATTRIBUTE_5
+          FROM ROWS_TO_INSERT
+      ';
 
+      lv_START_TIME := DBMS_UTILITY.GET_TIME();
+      EXECUTE IMMEDIATE lv_sql;
+      COMMIT;
+      SLR_ADMIN_PKG.PerfInfo( 'EBAC. EBA combination query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+      SLR_ADMIN_PKG.Info('New EBA combinations inserted');
+
+  EXCEPTION
+      WHEN OTHERS THEN
+          ROLLBACK;
+          pWriteLogError(s_proc_name, 'SLR_FAK/EBA_COMBINATIONS', 'Error during inserting new combinations to SLR_FAK/EBA_COMBINATIONS', p_process_id, p_epg_id);
+          SLR_ADMIN_PKG.Error('Error during inserting new combinations to SLR_FAK/EBA_COMBINATIONS', dbms_utility.format_error_backtrace);
+          RAISE e_internal_processing_error; -- raised to stop processing
+
+  END pInsertFakEbaCombinations;
 
 END SLR_VALIDATE_JOURNALS_PKG;
 /************************************ End of Package *******************************************/
