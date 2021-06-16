@@ -28,15 +28,15 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~slr_logon
-@@slr/add_bak_jrnl_line_mapping.sql
-
-conn ~stn_logon
 
 conn ~gui_logon
 
 conn ~rdr_logon
+@@rdr/Customisations_RDR.sql
 
 conn ~fdr_logon
+
+conn ~stn_logon
 
 conn ~sys_logon
 @@sys/add_back_security.sql;
