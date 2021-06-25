@@ -37,6 +37,7 @@ conn ~rdr_logon
 
 conn ~stn_logon
 @@stn/us53060_stn_views.sql
+@@stn/us53060_stn_tables.sql
 @@stn/us53060_packages.sql
 
 conn ~fdr_logon
