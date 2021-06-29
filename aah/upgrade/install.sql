@@ -47,7 +47,8 @@ conn ~fdr_logon
 @@fdr/hotfix_fr_general_lookup_cash_offset.sql
 
 conn ~stn_logon
-@@stn/rob2_bug55905_aah_posting_rules_data_loader.sql
+-- add new posting rules data loader below
+-- @@stn/rob2_bug55905_aah_posting_rules_data_loader.sql
 
 conn~gui_logon
 @@gui/us53060_gui_event_class.sql
