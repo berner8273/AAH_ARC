@@ -49,7 +49,7 @@ conn ~fdr_logon
 
 conn ~stn_logon
 -- add new posting rules data loader below
--- @@stn/rob2_bug55905_aah_posting_rules_data_loader.sql
+@@stn/us62156_posting_rules.sql
 
 conn~gui_logon
 @@gui/us53060_gui_event_class.sql
