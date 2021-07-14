@@ -40,7 +40,7 @@ conn ~stn_logon
 @@stn/us53060_packages.sql
 
 conn ~fdr_logon
-@@fdr/us58325_add_new_sub_accounts.sql
+@@fdr/us58325_new_sub_accounts.sql
 @@fdr/us53060_fr_account_lookup_param.sql
 @@fdr/us53060_fdr_cleardown.sql 
 
