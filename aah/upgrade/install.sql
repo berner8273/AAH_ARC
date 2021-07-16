@@ -27,13 +27,13 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~rdr_logon
--- @@rdr/us53060_rdr_views.sql
+@@rdr/us53060_rdr_views.sql
 
 conn ~stn_logon
 @@stn/us53060_stn_columns.sql
 
 conn ~rdr_logon
--- @@rdr/us53060_rdr_views2.sql
+@@rdr/us53060_rdr_views2.sql
 
 conn ~stn_logon
 @@stn/us53060_stn_views.sql
