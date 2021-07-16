@@ -27,20 +27,20 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~rdr_logon
-@@rdr/us53060_rdr_views.sql
+-- @@rdr/us53060_rdr_views.sql
 
 conn ~stn_logon
 @@stn/us53060_stn_columns.sql
 
 conn ~rdr_logon
-@@rdr/us53060_rdr_views2.sql
+-- @@rdr/us53060_rdr_views2.sql
 
 conn ~stn_logon
 @@stn/us53060_stn_views.sql
 @@stn/us53060_packages.sql
 
 conn ~fdr_logon
-@@fdr/us58325_new_sub_accounts.sql
+-- @@fdr/us58325_new_sub_accounts.sql
 @@fdr/us53060_fr_account_lookup_param.sql
 @@fdr/us53060_fdr_cleardown.sql 
 
@@ -52,7 +52,7 @@ conn ~stn_logon
 @@stn/us62156_posting_drivers.sql
 
 conn~gui_logon
-@@gui/us53060_gui_event_class.sql
+-- @@gui/us53060_gui_event_class.sql
 
 /* End AAH custom upgrades */
 
