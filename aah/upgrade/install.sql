@@ -45,7 +45,7 @@ conn ~fdr_logon
 @@fdr/us53060_fdr_cleardown.sql 
 
 -- this is still in prod - check with Marc if still needed
-@@fdr/hotfix_fr_general_lookup_cash_offset.sql
+-- @@fdr/hotfix_fr_general_lookup_cash_offset.sql
 
 conn ~stn_logon
 -- add new posting rules data loader below
