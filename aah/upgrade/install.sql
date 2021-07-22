@@ -32,7 +32,6 @@ conn ~slr_logon
 conn ~gui_logon
 
 conn ~rdr_logon
-@@rdr/Customisations_RDR.sql
 
 conn ~fdr_logon
 
