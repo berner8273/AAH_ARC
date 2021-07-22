@@ -30,6 +30,7 @@ conn ~sys_logon
 conn ~slr_logon
 
 conn ~gui_logon
+@@gui/us62806_gui_event_class.sql
 
 conn ~rdr_logon
 
