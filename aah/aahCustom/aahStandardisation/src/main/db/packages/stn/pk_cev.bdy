@@ -78,7 +78,7 @@ and not exists (
         v_no_cev_non_intercompany_data NUMBER(38, 9) DEFAULT 0;
         v_no_cev_intercompany_data NUMBER(38, 9) DEFAULT 0;
         v_no_cev_vie_data NUMBER(38, 9) DEFAULT 0;
-        lcOUT_OF_BALANCE_ACCT CONSTANT VARCHAR2(50) DEFAULT '18250255-01';
+        lcOUT_OF_BALANCE_ACCT CONSTANT VARCHAR2(50) DEFAULT '18250255';
     BEGIN
         execute immediate 'truncate table stn.cev_valid';
         insert /*+ APPEND */ into stn.cev_valid
