@@ -21,25 +21,14 @@ define unittest_login=~8
 
 
 /* Check AAH upgrade versions - do not remove */
-conn ~fdr_logon
 
 conn ~sys_logon
+@@sys/00001_check_upgrade_versions.sql
 
 /* Begin AAH custom upgrades */
 
-conn ~slr_logon
-
-conn ~gui_logon
-
-conn ~rdr_logon
-@@rdr/Customisations_RDR.sql
-
-conn ~fdr_logon
-
 conn ~stn_logon
-
-conn ~sys_logon
-@@sys/add_back_security.sql;
+@@stn/us59614_jl_validations.sql;
 
 /* End AAH custom upgrades */
 
