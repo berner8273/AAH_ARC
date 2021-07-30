@@ -27,18 +27,8 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~slr_logon
-
-conn ~gui_logon
-@@gui/us61261_gui_validations.sql
-
-conn ~rdr_logon
-
-conn ~fdr_logon
-
 conn ~stn_logon
-
-conn ~sys_logon
+@@stn/us59614_jl_validations.sql;
 
 /* End AAH custom upgrades */
 
