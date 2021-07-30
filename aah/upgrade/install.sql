@@ -27,20 +27,8 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~slr_logon
-
 conn ~stn_logon
-
-conn ~gui_logon
-
-conn ~rdr_logon
-
-conn ~fdr_logon
-@@fdr/us62160_idx_code_id_type.sql
-@@fdr/us62160_ld_stan_raw_general_codes.sql
-
-conn ~sys_logon
-
+@@stn/us59614_jl_validations.sql;
 
 /* End AAH custom upgrades */
 
