@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY     PK_CEV AS
+CREATE OR REPLACE PACKAGE BODY stn.PK_CEV AS
     PROCEDURE pr_cession_event_idf
         (
             p_lpg_id IN NUMBER,
@@ -211,47 +211,6 @@ and not exists (
              )
            , cev_ex_in
           as (
-                 select
-                        feed_uuid
-                      , correlation_uuid
-                      , event_id
-                      , row_sid
-                      , basis_cd
-                      , accounting_dt
-                      , event_typ
-                      , business_event_typ
-                      , policy_id
-                      , policy_abbr_nm
-                      , stream_id
-                      , parent_stream_id
-                      , vie_id
-                      , vie_cd
-                      , vie_status
-                      , vie_effective_dt
-                      , vie_acct_dt
-                      , is_mark_to_market
-                      , premium_typ
-                      , policy_premium_typ
-                      , policy_accident_yr
-                      , policy_underwriting_yr
-                      , ultimate_parent_stream_id
-                      , ultimate_parent_le_cd
-                      , execution_typ
-                      , policy_typ
-                      , business_typ
-                      , le_cd
-                      , parent_cession_le_cd
-                      , reclass_entity
-                      , owner_le_cd
-                      , counterparty_le_cd
-                      , transaction_amt
-                      , transaction_ccy
-                      , functional_amt
-                      , functional_ccy
-                      , reporting_amt
-                      , reporting_ccy
-                      , lpg_id
-                   from (
                             select
                                    cev.feed_uuid
                                  , cev.correlation_uuid
@@ -302,7 +261,7 @@ and not exists (
                                                 stn.cev_valid               cev
                                            join                             ce_data on cev.stream_id = ce_data.stream_id
                                            join stn.policy_premium_type     ppt     on ce_data.policy_premium_typ = ppt.premium_typ
-                                )
+                                
                           )
            , cev_sum
           as (
