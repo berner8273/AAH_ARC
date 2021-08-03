@@ -6,6 +6,7 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_CEV AS
             p_no_cev_identified_records OUT NUMBER
         )
     AS
+    
     BEGIN
         execute immediate 'truncate table STN.CEV_IDENTIFIED_RECORD';
         INSERT /*+ APPEND */ INTO CEV_IDENTIFIED_RECORD
