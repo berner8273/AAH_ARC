@@ -11,6 +11,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     FUNCTION fnui_validate_line_dates														    RETURN BOOLEAN;
     FUNCTION fnui_validate_balances															    RETURN BOOLEAN;
     FUNCTION fnui_validate_account															    RETURN BOOLEAN;
+    FUNCTION fnui_validate_chartfield1                                                          RETURN BOOLEAN;
     FUNCTION fnui_validate_periods													   		    RETURN BOOLEAN;
     FUNCTION fnui_check_currencies													   		    RETURN BOOLEAN;
     FUNCTION fnui_get_journal_type															    RETURN BOOLEAN;
@@ -126,8 +127,8 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                                   session_id          in VARCHAR2
                                  ) 	RETURN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
                                  FUNCTION fnui_validate_jrnl_type                                                  RETURN BOOLEAN;
-                                 
-    PROCEDURE prui_increment_journal_version(journal_id IN NUMBER, updated_by IN SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE	);                                 
+
+    PROCEDURE prui_increment_journal_version(journal_id IN NUMBER, updated_by IN SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE	);
     PROCEDURE prui_calculate_journal_rates(journal_id IN NUMBER);
     PROCEDURE prui_add_jrnl_to_posting_queue(journal_id IN NUMBER, epg_id IN VARCHAR2,jrnl_num_of_lines IN NUMBER);
     PROCEDURE prui_create_reversing_journal(epg_id IN VARCHAR2,journal_id_list IN VARCHAR2,process_id NUMBER, status in char);
@@ -138,7 +139,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     PROCEDURE prui_unlock_journal(journal_id IN NUMBER, locked_by in varchar2);
     PROCEDURE prui_check_journal_version(journal_id IN NUMBER, journal_version IN NUMBER);
     PROCEDURE prui_log_posting_error(epg_id IN VARCHAR2,journal_id_list IN VARCHAR2, error_message IN VARCHAR2);
-    
+
     PROCEDURE pCombinationCheck_GJLU (
       pinEPGID       IN slr.slr_entity_proc_group.epg_id%TYPE,
       pinProcessID   IN slr.slr_job_statistics.js_process_id%TYPE,
@@ -154,11 +155,11 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     /******************************************************************************************
     Declare private global variables
     ******************************************************************************************/
-    
+
     gJournalHeader 		SLR_JRNL_HEADERS_UNPOSTED%ROWTYPE;
     gSessionId	   		TEMP_GUI_JRNL_LINES_UNPOSTED.USER_SESSION_ID%TYPE := NULL;
     gJournalLineNumber	NUMBER(12) := -1;
-    
+
     gBulkSubmission boolean := false;
 
     gFAKDefinitions 				SLR_FAK_DEFINITIONS%ROWTYPE;
@@ -218,7 +219,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     journal_locked_exeption exception;
     stale_journal_exception exception;
 
-    
+
 
     /******************************************************************************************
     Processing
@@ -754,27 +755,27 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         success				OUT VARCHAR2)
     IS
        lvValidateState CHAR(1);
-	   
+
     BEGIN
 
          success := 'S';
          journal_id_out := journal_id;
-         
+
          IF session_id IS NULL THEN
             raise_application_error(-20101,'Missing session id.');
          end if;
-          
-         gSessionId := session_id; 
+
+         gSessionId := session_id;
          gJournalVersion := nvl(journal_version,0);
-         
+
          IF nvl(journal_id, '-1') > 0 THEN
             begin
                 /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
                 prui_lock_journal(journal_id,updated_by);
-                
+
                 /* check journal version in case there were any changes since journal was displayed on the screen. Signals stale_journal_exception if journal version is different*/
                 prui_check_journal_version(journal_id,gJournalVersion);
-            
+
             exception
               WHEN journal_locked_exeption THEN
                 prui_log_error(journal_id, 0, 6699,'Journal is already locked by another user. Cannot proceed.');
@@ -783,13 +784,13 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                 return;
               WHEN stale_journal_exception THEN
                 prui_log_error(journal_id, 0, 6698,'Journal does not exist or was modified by another user. Cannot proceed.');
-                
+
                 /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
                 prui_unlock_journal(journal_id,updated_by);
                 success := 'V';
                 journal_version_out := gJournalVersion;
                 RETURN;
-              WHEN others THEN 
+              WHEN others THEN
                 raise;
             end;
          END IF;
@@ -833,14 +834,14 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
              COMMIT;
 
          END IF;
-          
+
           journal_version_out := gJournalVersion;
          /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
          prui_unlock_journal(journal_id,updated_by);
     EXCEPTION
         WHEN OTHERS THEN
             pr_error(1, SQLERRM, 0, 'prui_upsert_header', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-            
+
             /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
             prui_unlock_journal(journal_id,updated_by);
             journal_version_out := gJournalVersion;
@@ -902,26 +903,26 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     BEGIN
 
          success := 'S';
-         
+
          IF session_id IS NULL THEN
             raise_application_error(-20101,'Missing session id.');
          end if;
-         
+
          IF journal_version IS NULL THEN
             raise_application_error(-20102,'Missing journal version.');
          end if;
-         
+
          gSessionId := session_id;
          gJournalVersion := journal_version;
-         
+
          IF nvl(journal_id, '-1') > 0 THEN
              begin
                     /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
                     prui_lock_journal(journal_id,updated_by);
-                    
+
                     /* check journal version in case there were any changes since journal was displayed on the screen. Signals stale_journal_exception if journal version is different*/
                     prui_check_journal_version(journal_id,gJournalVersion);
-                
+
                 exception
                   WHEN journal_locked_exeption THEN
                     prui_log_error(journal_id, 0, 6699,'Journal is already locked by another user. Cannot proceed.');
@@ -930,13 +931,13 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                     return;
                   WHEN stale_journal_exception THEN
                     prui_log_error(journal_id, 0, 6698,'Journal does not exist or was modified by another user. Cannot proceed.');
-                    
+
                     /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
                     prui_unlock_journal(journal_id,updated_by);
                     success := 'V';
                     journal_version_out := gJournalVersion;
                     RETURN;
-                  WHEN others THEN 
+                  WHEN others THEN
                     raise;
              end;
          end if;
@@ -989,17 +990,17 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
              COMMIT;
 
          END IF;
-        
+
         journal_version_out := gJournalVersion;
         /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
         prui_unlock_journal(journal_id,updated_by);
     EXCEPTION
         WHEN OTHERS THEN
             pr_error(1, SQLERRM, 0, 'prui_upsert_line', 'gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-            
+
             /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
             prui_unlock_journal(journal_id,updated_by);
-            
+
             journal_version_out := gJournalVersion;
             success := 'F';
     END prui_upsert_line;
@@ -1085,7 +1086,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
                      -- Do custom updates for lines
                     pgui_jrnl_custom.prui_upsert_lines(gJournalHeader.jhu_jrnl_id);
-                   
+
                  ELSE
 
                     -- failed to merge lines
@@ -1103,10 +1104,10 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
              prui_write_errors_to_database(gJournalHeader.jhu_jrnl_id);
 
          END IF;
-          
+
          -- Update Header Stats
          prui_update_header_stats(gJournalHeader.jhu_jrnl_id);
-          
+         PGUI_MANUAL_JOURNAL.pCombinationCheck_GJLU ('AG', SEQ_PROCESS_NUMBER.NEXTVAL, 'M');
          COMMIT;
 
     EXCEPTION
@@ -1124,28 +1125,28 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
         success				  OUT VARCHAR2)
     IS
-        
+
     BEGIN
 
          success := 'S';
          IF session_id IS NULL THEN
             raise_application_error(-20101,'Missing session id.');
          end if;
-         
+
          IF journal_version IS NULL THEN
             raise_application_error(-20102,'Missing journal version.');
          end if;
-         
+
          gSessionId := session_id;
          gJournalVersion := journal_version;
-         
+
          begin
             /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
             prui_lock_journal(journal_id,updated_by);
-            
+
             /* check journal version in case there were any changes since journal was displayed on the screen. Signals stale_journal_exception if journal version is different*/
             prui_check_journal_version(journal_id,gJournalVersion);
-            
+
         exception
           WHEN journal_locked_exeption THEN
             prui_log_error(journal_id, 0, 6699,'Journal is already locked by another user. Cannot proceed.');
@@ -1153,15 +1154,15 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
             return;
           WHEN stale_journal_exception THEN
             prui_log_error(journal_id, 0, 6698,'Journal does not exist or was modified by another user. Cannot proceed.');
-            
+
             /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
             prui_unlock_journal(journal_id,updated_by);
             success := 'V';
             RETURN;
-          WHEN others THEN 
+          WHEN others THEN
             raise;
          end;
-         
+
 
           -- Delete journal (if action valid)
          IF fnui_check_deletion(journal_id) THEN
@@ -1200,7 +1201,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
          -- Persist errors in database
          prui_write_errors_to_database(journal_id);
-         
+
          /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
          prui_unlock_journal(journal_id,updated_by);
 
@@ -1209,7 +1210,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     EXCEPTION
         WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_delete_journal', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-             
+
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
              prui_unlock_journal(journal_id,updated_by);
              success := 'F';
@@ -1228,7 +1229,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
        list_count 	 			NUMBER(12);
        loop_count 	 			NUMBER(12);
        journal_list_in_error    VARCHAR2(32700) := null;
-       lv_success CHAR(1);  
+       lv_success CHAR(1);
        lv_failed_count NUMBER(5) := 0;
        lv_journal_id NUMBER(12,0);
        lv_journal_version number(5,0);
@@ -1237,39 +1238,39 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
          success := 'S';
          gSessionId := session_id;
-         
+
          prui_process_param_list(journal_id_list, journal_list, list_count);
 
          FOR loop_count IN 1..list_count LOOP
           lv_journal_id := substr(journal_list(loop_count),0,instr(journal_list(loop_count),'~')-1);
           lv_journal_version := substr(journal_list(loop_count),instr(journal_list(loop_count),'~')+1);
-          
+
           prui_delete_journal(gSessionId,lv_journal_id,updated_by,lv_journal_version, lv_success);
-          
+
           IF lv_success <> 'S' THEN
               lv_failed_count := lv_failed_count+1;
-              
+
               if journal_list_in_error is not null then
                 journal_list_in_error := journal_list_in_error||','||to_char(lv_journal_id);
               ELSE
                 journal_list_in_error := to_char(lv_journal_id);
               END IF;
-              
+
           end if;
-          
+
         END loop;
-        
+
         IF lv_failed_count = 0 THEN
-          success := 'S';  
+          success := 'S';
         elsif lv_failed_count < list_count THEN
           success := 'P';
         ELSE
           success := 'F';
         end if;
-        
+
         failed_jrnl_list := journal_list_in_error;
-        
-        
+
+
     EXCEPTION
         WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_delete_journal', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -1295,25 +1296,25 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     BEGIN
 
          success := 'S';
-         
+
          IF session_id IS NULL THEN
             raise_application_error(-20101,'Missing session id.');
          end if;
-         
+
          IF journal_version IS NULL THEN
             raise_application_error(-20102,'Missing journal version.');
          end if;
-         
+
          gSessionId := session_id;
          gJournalVersion := journal_version;
-         
+
          begin
             /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
             prui_lock_journal(journal_id,updated_by);
-            
+
             /* check journal version in case there were any changes since journal was displayed on the screen. Signals stale_journal_exception if journal version is different*/
             prui_check_journal_version(journal_id,gJournalVersion);
-            
+
         exception
           WHEN journal_locked_exeption THEN
             prui_log_error(journal_id, 0, 6699,'Journal is already locked by another user. Cannot proceed.');
@@ -1321,12 +1322,12 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
             return;
           WHEN stale_journal_exception THEN
             prui_log_error(journal_id, 0, 6698,'Journal does not exist or was modified by another user. Cannot proceed.');
-            
+
             /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
             prui_unlock_journal(journal_id,updated_by);
             success := 'V';
             RETURN;
-          WHEN others THEN 
+          WHEN others THEN
             raise;
          end;
 
@@ -1370,7 +1371,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
              END IF;
 
          END LOOP;
-          
+
           prui_increment_journal_version(journal_id, updated_by);
          /**
           * Uncomment the prui_reorder_journal_lines statement
@@ -1406,7 +1407,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     EXCEPTION
         WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_delete_line', 'gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-             
+
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
              prui_unlock_journal(journal_id,updated_by);
              success := 'F';
@@ -1511,8 +1512,8 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
        list_count               NUMBER(12);
        loop_count               NUMBER(12);
        journal_list_in_error    VARCHAR2(32700) := '';
-       
-       lv_success CHAR(1);  
+
+       lv_success CHAR(1);
        lv_failed_count NUMBER(5) := 0;
        lv_journal_id NUMBER(12,0);
        lv_journal_version number(5,0);
@@ -1527,33 +1528,33 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         FOR loop_count IN 1..list_count LOOP
           lv_journal_id := substr(journal_list(loop_count),0,instr(journal_list(loop_count),'~')-1);
           lv_journal_version := substr(journal_list(loop_count),instr(journal_list(loop_count),'~')+1);
-          
+
           prui_post_journal(gSessionId,lv_journal_id,updated_by, lv_journal_version, lv_success);
-          
+
           IF lv_success <> 'S' THEN
               lv_failed_count := lv_failed_count+1;
-              
+
               IF journal_list_in_error IS NOT NULL THEN
                 journal_list_in_error := journal_list_in_error||','||to_char(lv_journal_id);
               ELSE
                 journal_list_in_error := to_char(lv_journal_id);
               END IF;
-              
+
           end if;
-          
+
         end loop;
-        
+
         IF lv_failed_count = 0 THEN
-          success := 'S';  
+          success := 'S';
         elsif lv_failed_count < list_count THEN
           success := 'P';
         ELSE
           success := 'F';
         end if;
-        
+
         failed_jrnl_list := journal_list_in_error;
 
-			
+
 
     EXCEPTION
       when others then
@@ -1578,28 +1579,28 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     BEGIN
 
        success := 'S';
-      
+
        IF session_id IS NULL THEN
           raise_application_error(-20101,'Missing session id.');
        end if;
-       
+
        IF journal_version IS NULL THEN
           raise_application_error(-20102,'Missing journal version.');
        end if;
-         
+
        gSessionId := session_id;
        gJournalVersion := journal_version;
-        
+
 		  begin
 		  -- Combo Edit Check
-          pCombinationCheck_GJLU ('AG', SEQ_PROCESS_NUMBER.NEXTVAL, 'M');
+          pCombinationCheck_GJLU ('AG', SEQ_PROCESS_NUMBER.CURRVAL, 'M');
 
           /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
           prui_lock_journal(journal_id,updated_by);
-          
+
           /* check journal version in case there were any changes since journal was displayed on the screen. Signals stale_journal_exception if journal version is different*/
           prui_check_journal_version(journal_id,gJournalVersion);
-      
+
       exception
         WHEN journal_locked_exeption THEN
           prui_log_error(journal_id, 0, 6699,'Journal is already locked by another user. Cannot proceed.');
@@ -1607,70 +1608,70 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
           return;
         WHEN stale_journal_exception THEN
           prui_log_error(journal_id, 0, 6698,'Journal does not exist or was modified by another user. Cannot proceed.');
-          
+
           /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
           prui_unlock_journal(journal_id,updated_by);
           success := 'V';
           RETURN;
-        WHEN others THEN 
+        WHEN others THEN
           raise;
       end;
-      
-      
-      
+
+
+
       SELECT JHU_EPG_ID, jhu_jrnl_total_lines
 	  INTO vEntityProcGroupName, v_jrnl_num_of_lines
 	  FROM gui_JRNL_HEADERS_UNPOSTED
 	  WHERE JHU_JRNL_ID = journal_id;
 
-		 
+
       prui_populate_header( session_id => session_id, journal_id => journal_id, overwrite_details => 'N' );
 
       --prui_clear_errors(journal_id);
-     
+
          -- Validate journal use gui core validation
       /* do not validate as it's redundant with upsert header
 	  BEGIN
-            
+
         lvValidateState := fnui_validate_journal_header;
         IF lvValidateState not IN (gSTATE_OK) THEN
             success := 'F';
         END IF;
-            
-     
+
+
        EXCEPTION
           WHEN OTHERS THEN
               pr_error(1, SQLERRM, 0, 'prui_post_journal', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
               success := 'F';
       END; */
-		
+
 		 if not fnui_get_journal_type then
 			success := 'F';
 		 end IF;
-		
+
 		 IF NOT fnui_get_entity	 THEN
 			success := 'F';
 		 END IF;
-		
+
           -- Exit if errors
          IF (success = 'F' or fnui_any_errors(journal_id )) THEN
             prui_log_error(journal_id, 0, 1031, 'Journal failed validation. Unable to post journal');
 
             -- Persist errors in database
             prui_write_errors_to_database(journal_id);
-            
+
             success := 'F';
-            
+
             /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
             prui_unlock_journal(journal_id,updated_by);
             commit;
             RETURN;
          END IF;
 
-         
+
          --update rates in lines, does not raise exceptions
          prui_calculate_journal_rates(journal_id);
-         
+
            -- Update audit section
 	         UPDATE gui_jrnl_headers_unposted
 	         SET	jhu_jrnl_validated_by = updated_by,
@@ -1680,8 +1681,8 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 	         WHERE	jhu_jrnl_id = journal_id;
 
 
-         
-         
+
+
          -- Check if authorisation is required on
          -- this journal type
          IF fnui_requires_authorisation THEN
@@ -1694,18 +1695,18 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
          ELSE
             -- reorder lines
             prui_reorder_journal_lines(journal_id);
-            
+
             -- Execute any custom processes
             pgui_jrnl_custom.prui_post_journal(journal_id);
-            
+
            begin
              SAVEPOINT add_jrnl_to_posting_queue;
-             
+
              UPDATE gui_jrnl_headers_unposted
              SET jhu_jrnl_authorised_by = updated_by,
                  jhu_jrnl_authorised_on = SYSDATE
              WHERE  jhu_jrnl_id = journal_id;
-                    
+
              --add journal to posting queue
              prui_add_jrnl_to_posting_queue(journal_id,vEntityProcGroupName,v_jrnl_num_of_lines);
            exception
@@ -1725,13 +1726,13 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
          /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
           prui_unlock_journal(journal_id,updated_by);
-          
+
          COMMIT;
 
     EXCEPTION
         WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_post_journal', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-             
+
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
              prui_unlock_journal(journal_id,updated_by);
              success := 'F';
@@ -1757,25 +1758,25 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     BEGIN
 
          success := 'S';
-         
+
          IF session_id IS NULL THEN
             raise_application_error(-20101,'Missing session id.');
          end if;
-         
+
          IF journal_version IS NULL THEN
             raise_application_error(-20102,'Missing journal version.');
          end if;
-         
+
          gSessionId := session_id;
          gJournalVersion := journal_version;
-         
+
           begin
                 /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
                 prui_lock_journal(journal_id,updated_by);
-                
+
                 /* check journal version in case there were any changes since journal was displayed on the screen. Signals stale_journal_exception if journal version is different*/
                 prui_check_journal_version(journal_id,gJournalVersion);
-            
+
           exception
             WHEN journal_locked_exeption THEN
               prui_log_error(journal_id, 0, 6699,'Journal is already locked by another user. Cannot proceed.');
@@ -1783,15 +1784,15 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
               return;
             WHEN stale_journal_exception THEN
               prui_log_error(journal_id, 0, 6698,'Journal does not exist or was modified by another user. Cannot proceed.');
-              
+
               /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
               prui_unlock_journal(journal_id,updated_by);
               success := 'V';
               RETURN;
-            WHEN others THEN 
+            WHEN others THEN
               raise;
          END;
-         
+
 
          -- retrieve the whole of the journal
          prui_populate_header( session_id => session_id, journal_id => journal_id, overwrite_details => 'N' );
@@ -1921,7 +1922,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
          -- Update Header Stats
          prui_update_header_stats(journal_id);
-         
+
          /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
           prui_unlock_journal(journal_id,updated_by);
 
@@ -1930,7 +1931,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     EXCEPTION
         WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_copy_lines', 'gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-             
+
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
              prui_unlock_journal(journal_id,updated_by);
              success := 'F';
@@ -1950,8 +1951,8 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
        journal_list         array_list := array_list();
        list_count		    NUMBER;
        journal_list_in_error    VARCHAR2(32700) := null;
-       
-       lv_success CHAR(1);  
+
+       lv_success CHAR(1);
        lv_failed_count NUMBER(5) := 0;
        lv_journal_id NUMBER(12,0);
        lv_journal_version number(5,0);
@@ -1963,41 +1964,41 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
          gBulkSubmission := true;
          prui_process_param_list(journal_id_list, journal_list, list_count);
 
-        
+
         FOR loop_count IN 1..list_count LOOP
           lv_journal_id := substr(journal_list(loop_count),0,instr(journal_list(loop_count),'~')-1);
           lv_journal_version := substr(journal_list(loop_count),instr(journal_list(loop_count),'~')+1);
-          
+
           prui_authorise_journal(gSessionId,lv_journal_id,updated_by,lv_journal_version, lv_success);
-          
+
           IF lv_success <> 'S' THEN
               lv_failed_count := lv_failed_count+1;
-              
+
               if journal_list_in_error is not null then
                 journal_list_in_error := journal_list_in_error||','||to_char(lv_journal_id);
               ELSE
                 journal_list_in_error := to_char(lv_journal_id);
               END IF;
-              
+
           end if;
-          
+
         end loop;
-        
+
         IF lv_failed_count = 0 THEN
-          success := 'S';  
+          success := 'S';
         elsif lv_failed_count < list_count THEN
           success := 'P';
         ELSE
           success := 'F';
         end if;
-        
+
         failed_jrnl_list := journal_list_in_error;
-      
+
     EXCEPTION
       WHEN OTHERS THEN
           pr_error(1, SQLERRM, 0, 'prui_authorise_journals', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
           success := 'F';
-             
+
     END prui_authorise_journals;
 
     --********************************************************************************
@@ -2108,7 +2109,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
             -- Set the flag used for Generating Last Balances for the current Bussiness date
             syn_ui_post_journals_pkg.pStatusGenLastBalForBD(gvSubLedgerGenLastBalForBD);
 
-            
+
 			syn_ui_post_journals_pkg.pPostJournals(ent_proc_group, pProcessId, status, TRUE);
          ELSE
 
@@ -2121,7 +2122,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
 	 --********************************************************************************
 
-    
+
 
     PROCEDURE prui_reject_journals(
         session_id			IN		VARCHAR2,
@@ -2135,7 +2136,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
        journal_list array_list := array_list();
        list_count	NUMBER;
        journal_list_in_error    VARCHAR2(32700) := null;
-       lv_success CHAR(1);  
+       lv_success CHAR(1);
        lv_failed_count NUMBER(5) := 0;
        lv_journal_id NUMBER(12,0);
        lv_journal_version number(5,0);
@@ -2149,31 +2150,31 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
          FOR loop_count IN 1..list_count LOOP
             lv_journal_id := substr(journal_list(loop_count),0,instr(journal_list(loop_count),'~')-1);
             lv_journal_version := substr(journal_list(loop_count),instr(journal_list(loop_count),'~')+1);
-            
+
             prui_reject_journal(gSessionId,lv_journal_id,reason_description,updated_by,lv_journal_version, lv_success);
-            
+
             IF lv_success <> 'S' THEN
                 lv_failed_count := lv_failed_count+1;
-                
+
                 if journal_list_in_error is not null then
                   journal_list_in_error := journal_list_in_error||','||to_char(lv_journal_id);
                 ELSE
                   journal_list_in_error := to_char(lv_journal_id);
                 END IF;
-                
+
             end if;
 
          END LOOP;
 
          IF lv_failed_count = 0 THEN
-            success := 'S';  
+            success := 'S';
          elsif lv_failed_count < list_count THEN
             success := 'P';
          ELSE
             success := 'F';
          end if;
-         
-         failed_jrnl_list := journal_list_in_error;       
+
+         failed_jrnl_list := journal_list_in_error;
 
 
     EXCEPTION
@@ -2181,7 +2182,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
              pr_error(1, SQLERRM, 0, 'prui_reject_journals', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
              success := 'F';
     END prui_reject_journals;
-    
+
     procedure prui_reject_journal(session_id			IN		VARCHAR2,
         journal_id		IN 		number,
         reason_description	IN		VARCHAR2,
@@ -2189,28 +2190,28 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
         success				OUT VARCHAR2)
     is
-    
+
     begin
        success := 'S';
-         
+
        IF session_id IS NULL THEN
           raise_application_error(-20101,'Missing session id.');
        end if;
-       
+
        IF journal_version IS NULL THEN
           raise_application_error(-20102,'Missing journal version.');
        end if;
-       
+
        gSessionId := session_id;
        gJournalVersion := journal_version;
-       
+
        begin
           /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
           prui_lock_journal(journal_id,updated_by);
-          
+
           /* check journal version in case there were any changes since journal was displayed on the screen. Signals stale_journal_exception if journal version is different*/
           prui_check_journal_version(journal_id,gJournalVersion);
-          
+
       exception
         WHEN journal_locked_exeption THEN
           prui_log_error(journal_id, 0, 6699,'Journal is already locked by another user. Cannot proceed.');
@@ -2218,15 +2219,15 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
           return;
         WHEN stale_journal_exception THEN
           prui_log_error(journal_id, 0, 6698,'Journal does not exist or was modified by another user. Cannot proceed.');
-          
+
           /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
           prui_unlock_journal(journal_id,updated_by);
           success := 'V';
           RETURN;
-        WHEN others THEN 
+        WHEN others THEN
           raise;
        end;
-       
+
        UPDATE gui_jrnl_headers_unposted
        SET	jhu_amended_by = updated_by,
               jhu_amended_on = SYSDATE
@@ -2238,18 +2239,18 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
        -- Persist errors in database
        prui_write_errors_to_database(journal_id);
-       
+
         -- Execute any custom processes
         pgui_jrnl_custom.prui_reject_journal(journal_id);
-       
+
         /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
         prui_unlock_journal(journal_id,updated_by);
-        
+
         commit;
     EXCEPTION
         WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_reject_journal', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-             
+
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
              prui_unlock_journal(journal_id,updated_by);
              success := 'F';
@@ -2346,7 +2347,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
         -- Remove previous errors from the error table
         prui_clear_errors(gJournalHeader.jhu_jrnl_id);
-		
+
 		IF NOT fnui_get_entity THEN
             lvSuccess := gSTATE_CRITICAL;
         END IF;
@@ -2373,13 +2374,13 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         -- Check valid madj source system -- Customised for AG
         IF NOT fnui_validate_madj_source
         THEN
-            lvSuccess := gSTATE_CRITICAL;         
+            lvSuccess := gSTATE_CRITICAL;
             prui_log_error (
                 gJournalHeader.jhu_jrnl_id,
                 0,
                 1001,
                 'Invalid MADJ Source System');
-                RETURN gSTATE_CRITICAL;               
+                RETURN gSTATE_CRITICAL;
         END IF;
 
         -- Exit if not successful at this point
@@ -2394,13 +2395,13 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 			 FROM   temp_gui_jrnl_lines_unposted
 			 WHERE	jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
 			 AND	user_session_id = gSessionId;
-		
+
 		exception
 			WHEN NO_DATA_FOUND THEN
 				null;
 		end;
-		
-		
+
+
 		IF NOT fnui_validate_header_dates THEN
             lvSuccess := gSTATE_ERRORED;
         END IF;
@@ -2440,7 +2441,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
              FROM   temp_gui_jrnl_lines_unposted
              WHERE	jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
              AND	user_session_id = gSessionId; */
-			 
+
 			 lvCount := gJournalHeader.jhu_jrnl_total_lines;
 
              IF lvCount > 0 THEN
@@ -2573,6 +2574,10 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
             lvSuccess := gSTATE_ERRORED;
         END IF;
 
+        IF NOT fnui_validate_chartfield1 THEN
+            lvSuccess := gSTATE_ERRORED;
+        END IF;
+
         IF NOT fnui_validate_acc_event_type THEN
             lvSuccess := gSTATE_ERRORED;
         END IF;
@@ -2695,11 +2700,11 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 	  IF status = gSTATUS_WAITING THEN
          STATUS_TEXT := 'Unposted';
       END IF;
-      
+
       IF status = gSTATUS_QUEUED_FOR_POSTING THEN
         STATUS_TEXT := 'Queued For Posting';
       end if;
-      
+
       IF status = 'E' THEN
          STATUS_TEXT := 'Error';
       END IF;
@@ -2719,14 +2724,14 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
 	 --********************************************************************************
 
-    
+
     FUNCTION fnui_any_errors(journal_id NUMBER) RETURN BOOLEAN
     IS
         lvFound NUMBER;
     BEGIN
 
         -- See if there are any errors
-        
+
         SELECT 	1
         INTO	lvFound
         FROM	gui_jrnl_line_errors a,
@@ -2734,7 +2739,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         WHERE	(a.jle_jrnl_hdr_id = journal_id
         OR		 (b.jle_jrnl_hdr_id = journal_id AND user_session_id = gSessionId))
         AND		rownum < 2;
-        
+
 
         /*SELECT 	1
         INTO	lvFound
@@ -2751,7 +2756,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
             RETURN FALSE;
     END fnui_any_errors;
 
-	 
+
 
     --********************************************************************************
 
@@ -2832,138 +2837,6 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
         AND   user_session_id = gSessionId
         AND	  jlu_entity IS NULL;
-
-        -- Check business event type
-        INSERT INTO temp_gui_jrnl_line_errors (
-                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-                jle_amended_by, jle_amended_on
-        )
-        SELECT /* jle_jrnl_process_id */         0,
-                  /* user_session_id */            gSessionId,
-                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
-                  /* jle_error_code */              'MADJ-1051',
-                  /* jle_error_string */        'Invalid Business Event Type - ||jlu_reference_5',
-                  /* jle_created_by */            'SYSTEM',
-                  /* jle_created_on */            SYSDATE,
-                  /* jle_amended_by */            'SYSTEM',
-                  /* jle_amended_on */             SYSDATE
-        FROM temp_gui_jrnl_lines_unposted
-        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-        AND   user_session_id = gSessionId
-        AND  NVL(jlu_reference_5,'NVS') <> 'NVS' 
-        AND  upper(jlu_reference_5) NOT IN (select business_event_cd from rdr.RRV_AG_BUSINESS_EVENT);
-           
-        -- Check underwriting year
-        INSERT INTO temp_gui_jrnl_line_errors (
-                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-                jle_amended_by, jle_amended_on
-        )
-        SELECT /* jle_jrnl_process_id */         0,
-                  /* user_session_id */            gSessionId,
-                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
-                  /* jle_error_code */              'MADJ-1051',
-                  /* jle_error_string */        'Invalid Underwriting Year - '||jlu_reference_3,
-                  /* jle_created_by */            'SYSTEM',
-                  /* jle_created_on */            SYSDATE,
-                  /* jle_amended_by */            'SYSTEM',
-                  /* jle_amended_on */             SYSDATE
-        FROM temp_gui_jrnl_lines_unposted
-        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-        AND   user_session_id = gSessionId
-        AND NVL(jlu_reference_3,'NVS') <> 'NVS'                                
-        AND TO_NUMBER(NVL2(LENGTH(TRIM(TRANSLATE (jlu_reference_3, '0123456789',' '))),0,jlu_reference_3))  NOT between 1980 AND 2100;
-
-        -- Check accident year
-        INSERT INTO temp_gui_jrnl_line_errors (
-                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-                jle_amended_by, jle_amended_on
-        )
-        SELECT /* jle_jrnl_process_id */         0,
-                  /* user_session_id */            gSessionId,
-                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
-                  /* jle_error_code */              'MADJ-1051',
-                  /* jle_error_string */        'Invalid Accident Year - '||jlu_reference_6,
-                  /* jle_created_by */            'SYSTEM',
-                  /* jle_created_on */            SYSDATE,
-                  /* jle_amended_by */            'SYSTEM',
-                  /* jle_amended_on */             SYSDATE
-        FROM temp_gui_jrnl_lines_unposted
-        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-        AND   user_session_id = gSessionId
-        AND NVL(jlu_reference_6,'NVS') <> 'NVS'                                
-        AND TO_NUMBER(NVL2(LENGTH(TRIM(TRANSLATE (jlu_reference_6, '0123456789',' '))),0,jlu_reference_6))  NOT between 1980 AND 2100;
-
-        -- Check gross stream owner
-        INSERT INTO temp_gui_jrnl_line_errors (
-                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-                jle_amended_by, jle_amended_on
-        )
-        SELECT /* jle_jrnl_process_id */         0,
-                  /* user_session_id */            gSessionId,
-                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
-                  /* jle_error_code */              'MADJ-1051',
-                  /* jle_error_string */        'Invalid Gross Stream Owner - '||jlu_reference_2,
-                  /* jle_created_by */            'SYSTEM',
-                  /* jle_created_on */            SYSDATE,
-                  /* jle_amended_by */            'SYSTEM',
-                  /* jle_amended_on */             SYSDATE
-        FROM temp_gui_jrnl_lines_unposted
-        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-        AND   user_session_id = gSessionId
-        AND  NVL(jlu_reference_2,'NVS') <> 'NVS'
-        AND upper(jlu_reference_2) NOT IN  (select pl_party_legal_id from fdr.fr_party_legal WHERE pl_pt_party_type_id in (10,11) and length(pl_party_legal_id) < 6); 
-
-        -- Check owner entity
-        INSERT INTO temp_gui_jrnl_line_errors (
-                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-                jle_amended_by, jle_amended_on
-        )
-        SELECT /* jle_jrnl_process_id */         0,
-                  /* user_session_id */            gSessionId,
-                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
-                  /* jle_error_code */              'MADJ-1051',
-                  /* jle_error_string */        'Invalid Owner Entity - '||jlu_reference_4,
-                  /* jle_created_by */            'SYSTEM',
-                  /* jle_created_on */            SYSDATE,
-                  /* jle_amended_by */            'SYSTEM',
-                  /* jle_amended_on */             SYSDATE
-        FROM temp_gui_jrnl_lines_unposted
-        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-        AND   user_session_id = gSessionId
-        AND  NVL(jlu_reference_4,'NVS') <> 'NVS'
-        AND upper(jlu_reference_4) NOT IN  (select pl_party_legal_id from fdr.fr_party_legal WHERE pl_pt_party_type_id in (10,11) and length(pl_party_legal_id) < 6);
-               
-        -- Check int/ext counterparty
-        INSERT INTO temp_gui_jrnl_line_errors (
-                jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-                jle_amended_by, jle_amended_on
-        )
-        SELECT /* jle_jrnl_process_id */         0,
-                  /* user_session_id */            gSessionId,
-                  /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */    jlu_jrnl_line_number,
-                  /* jle_error_code */              'MADJ-1051',
-                  /* jle_error_string */        'Invalid Int/Ext Counterparty - '||jlu_reference_7,
-                  /* jle_created_by */            'SYSTEM',
-                  /* jle_created_on */            SYSDATE,
-                  /* jle_amended_by */            'SYSTEM',
-                  /* jle_amended_on */             SYSDATE
-        FROM temp_gui_jrnl_lines_unposted
-        WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-        AND   user_session_id = gSessionId
-        AND  NVL(jlu_reference_7,'NVS') <> 'NVS' 
-        AND upper(jlu_reference_7) NOT IN  (select pl_party_legal_id from fdr.fr_party_legal WHERE pl_pt_party_type_id in (10,11) and length(pl_party_legal_id) < 6);
 
         -- Check Account
         INSERT INTO temp_gui_jrnl_line_errors (
@@ -3065,16 +2938,16 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                                             when 'UKGAAP_ADJ' THEN case jlu_local_ccy
                                                                    when 'GBP' THEN 'UKGAAP_ADJ must have zero base amount.'
                                                                               else 'UKGAAP_ADJ must use GBP local currency.'
-                                                                   end 
-                                            when 'EURGAAPADJ'  THEN case jlu_local_ccy 
+                                                                   end
+                                            when 'EURGAAPADJ'  THEN case jlu_local_ccy
                                                                     when 'EUR' THEN 'EURGAAPADJ must have zero base amount.'
                                                                                else 'EURGAAPADJ must use EUR local currency.'
-                                                                    end 
+                                                                    end
                                             else case jlu_base_ccy
                                                  when 'USD' THEN jlu_segment_1 || ' ' || 'must have zero local amount.'
                                                             else jlu_segment_1 || ' ' || 'must use USD base currency.'
                                                  end
-                                            end,      
+                                            end,
                /* jle_created_by */         'SYSTEM',
                /* jle_created_on */         SYSDATE,
                /* jle_amended_by */         'SYSTEM',
@@ -3084,7 +2957,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
           AND user_session_id = gSessionId
           AND (
                (jlu_segment_1 = 'UKGAAP_ADJ' AND ( jlu_local_ccy <> 'GBP' OR NVL(jlu_base_amount,0) <> 0) )
-           OR  (jlu_segment_1 = 'EURGAAPADJ' AND ( jlu_local_ccy <> 'EUR' OR NVL(jlu_base_amount,0) <> 0) )   
+           OR  (jlu_segment_1 = 'EURGAAPADJ' AND ( jlu_local_ccy <> 'EUR' OR NVL(jlu_base_amount,0) <> 0) )
            OR  ( (jlu_segment_1 <> 'UKGAAP_ADJ' AND jlu_segment_1 <> 'EURGAAPADJ')  AND (jlu_base_ccy <> 'USD' OR NVL(jlu_local_amount,0) <> 0) )
               );
 
@@ -3111,7 +2984,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         FROM temp_gui_jrnl_lines_unposted
         WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
           AND user_session_id = gSessionId
-          AND ( 
+          AND (
                (jlu_segment_1 = 'UKGAAP_ADJ' AND ( jlu_local_ccy = jlu_tran_ccy and nvl(jlu_tran_amount,0) <> nvl(jlu_local_amount,0)))
            OR  (jlu_segment_1 = 'EURGAAPADJ' AND ( jlu_local_ccy = jlu_tran_ccy and nvl(jlu_tran_amount,0) <> nvl(jlu_local_amount,0)))
            OR  ((jlu_segment_1 <> 'UKGAAP_ADJ' AND jlu_segment_1 <> 'EURGAAPADJ') AND (jlu_base_ccy = jlu_tran_ccy and nvl(jlu_tran_amount,0) <> nvl(jlu_base_amount,0)))
@@ -3472,7 +3345,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
        lvFound                          NUMBER;
        lvSuccess                        BOOLEAN;
        vCounter                         NUMBER;
-       
+
 	   lvPeriodStartDate                 DATE;
        lvPeriodEndDate                DATE;
        lvPrevBusDate                        DATE;
@@ -3552,7 +3425,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                  RETURN FALSE;
         END;
 
-        SELECT 
+        SELECT
                              coalesce(par.pl_party_legal_clicode,head.jhu_jrnl_entity),
                               rul.ejtr_type,
                               rul.ejtr_prior_next_current,
@@ -3564,7 +3437,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                               ext.ejt_rev_validation_flag,
                               rev_mes.EM_ERROR_MESSAGE,
                               ext.ejt_jt_type
-                        INTO  
+                        INTO
                               v_entity_code,
                               v_rul_typ,
                               v_prior_next_both,
@@ -3609,14 +3482,14 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
         END IF;
 
         -- Check rules for effective date and journal type
-    
+
 
        v_err_msg := REPLACE(v_err_msg, '%1', 'Effective date');
         v_err_msg :=  REPLACE(v_err_msg, '%2', 'current business day');
 
-    
+
       IF v_prior_next_both IS NOT NULL AND v_period_day IS NOT NULL THEN
-         
+
          IF v_prior_next_both = 'P' THEN
             v_compare_start_date := lvPrevPeriodStartDate;
              v_compare_end_date := lvPrevPeriodEndDate;
@@ -3626,7 +3499,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
          ELSIF v_prior_next_both = 'N' THEN
              v_compare_end_date := lvNextPeriodEndDate;
          END IF;
-         
+
          IF v_period_day = 'S' THEN
             IF v_rul_typ = '=' AND gJournalHeader.jhu_jrnl_date <> v_compare_start_date THEN
                 prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
@@ -3638,7 +3511,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                    prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
             END IF;
-            
+
          ELSIF v_period_day = 'E' THEN
             IF v_rul_typ = '=' AND gJournalHeader.jhu_jrnl_date <> v_compare_end_date THEN
                   prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
@@ -3656,12 +3529,12 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                 lvSuccess := FALSE;
             END IF;
          END IF;
-        
+
       ELSIF v_prior_next_both IS NOT NULL AND v_period_day IS NULL THEN
-    
+
          IF v_prior_next_both = 'P' THEN
                 v_compare_date := lvPrevBusDate;
-         
+
             IF v_rul_typ = '=' AND gJournalHeader.jhu_jrnl_date <> v_compare_date THEN
                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
@@ -3675,7 +3548,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
          ELSIF v_prior_next_both = 'C' THEN
              v_compare_date := gEntityConfiguration.ent_business_date;
-         
+
             IF v_rul_typ = '=' AND gJournalHeader.jhu_jrnl_date <> v_compare_date THEN
                      prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
@@ -3686,11 +3559,11 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                      prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
             END IF;
-   
+
          ELSIF v_prior_next_both = 'N' THEN
-         
+
                v_compare_date := lvNextBusDate;
-      
+
             IF v_rul_typ = '=' AND gJournalHeader.jhu_jrnl_date <> v_compare_date THEN
                    prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
@@ -3701,24 +3574,24 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
                   prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
             END IF;
-       end if;    
-            
+       end if;
+
      ELSE
 
                v_compare_date := gEntityConfiguration.ent_business_date;
-           
-            IF v_rul_typ = '=' AND gJournalHeader.jhu_jrnl_date <> v_compare_date THEN  
+
+            IF v_rul_typ = '=' AND gJournalHeader.jhu_jrnl_date <> v_compare_date THEN
               prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
                ELSIF v_rul_typ = '>' AND gJournalHeader.jhu_jrnl_date <= v_compare_date THEN
-           
+
                   prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
-             
+
                ELSIF v_rul_typ = '<' AND gJournalHeader.jhu_jrnl_date >= v_compare_date THEN
                   prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
-          
+
          END IF;
 
    END IF;
@@ -3734,7 +3607,7 @@ lvPeriodStartDate := NULL;
   lvNextPeriodStartDate := NULL;
 
    IF lvSuccess = TRUE THEN
-   
+
      prui_get_calendar_details(gJournalHeader.jhu_jrnl_date,
                                   gEntityConfiguration.ent_periods_and_days_set,
                                   gJournalHeader.jhu_jrnl_entity,
@@ -3746,15 +3619,15 @@ lvPeriodStartDate := NULL;
                                   lvPeriodEndDate,
                                   lvNextPeriodEndDate,
                                   lvNextPeriodStartDate);
-   
+
       v_rev_err_msg := REPLACE(v_rev_err_msg, '%1', 'Reversing date');
       v_rev_err_msg :=  REPLACE(v_rev_err_msg, '%2', 'current business day');
-         
+
       IF (v_ejt_jt_type = 'Reversing') OR (v_ejt_jt_type = 'Conditional' AND gJournalHeader.jhu_jrnl_rev_date IS NOT NULL) THEN
 
-      
+
           -- check Reversing Date is valid
-        
+
          BEGIN
 
              SELECT 1
@@ -3776,10 +3649,10 @@ lvPeriodStartDate := NULL;
 
           IF(v_rev_validation_flag = 'Y' AND gJournalHeader.jhu_jrnl_rev_date IS NOT NULL) THEN
 
-                
+
              IF v_rev_prior_next_both IS NOT NULL AND v_rev_period_day IS NOT NULL THEN
 
-                
+
                 IF v_rev_prior_next_both = 'P' THEN
 
                    v_rev_compare_start_date := lvPrevPeriodStartDate;
@@ -3793,7 +3666,7 @@ lvPeriodStartDate := NULL;
                    v_rev_compare_start_date := lvNextPeriodStartDate;
                    v_rev_compare_end_date := lvNextPeriodEndDate;
                 END IF;
-                
+
                 IF v_rev_period_day = 'S' THEN
 
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_start_date THEN
@@ -3809,7 +3682,7 @@ lvPeriodStartDate := NULL;
                      prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
                     lvSuccess := FALSE;
                    END IF;
-                   
+
                 ELSIF v_rev_period_day = 'E' THEN
 
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_end_date THEN
@@ -3833,13 +3706,13 @@ lvPeriodStartDate := NULL;
                     lvSuccess := FALSE;
                    END IF;
                 END IF;
-                
+
              ELSIF v_rev_prior_next_both IS NOT NULL AND v_rev_period_day IS NULL THEN
 
                 IF v_rev_prior_next_both = 'P' THEN
 
                      v_rev_compare_date := lvPrevBusDate;
-                
+
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_date THEN
 
                          prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
@@ -3857,7 +3730,7 @@ lvPeriodStartDate := NULL;
                 ELSIF v_rev_prior_next_both = 'C' THEN
 
                    v_rev_compare_date := gEntityConfiguration.ent_business_date;
-                
+
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_date THEN
 
                        prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
@@ -3871,12 +3744,12 @@ lvPeriodStartDate := NULL;
                        prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
                     lvSuccess := FALSE;
                    END IF;
-          
+
                 ELSIF v_rev_prior_next_both = 'N' THEN
 
-                
-                   v_rev_compare_date := lvNextBusDate;          
-                         
+
+                   v_rev_compare_date := lvNextBusDate;
+
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_date THEN
 
                      prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
@@ -3891,11 +3764,11 @@ lvPeriodStartDate := NULL;
                     lvSuccess := FALSE;
                    END IF;
                 END IF;
-                
+
                 ELSE
 
                     v_rev_compare_date := gEntityConfiguration.ent_business_date;
-                   IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_date THEN  
+                   IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_date THEN
 
                          prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
                     lvSuccess := FALSE;
@@ -3909,7 +3782,7 @@ lvPeriodStartDate := NULL;
                     lvSuccess := FALSE;
                    END IF;
 
-                
+
              END IF;
           END IF;
       END IF;
@@ -4094,10 +3967,10 @@ lvPeriodStartDate := NULL;
                      WHEN  'SEGMENT_3' THEN FD_SEGMENT_3_BALANCE_CHECK
                      WHEN  'SEGMENT_4' THEN FD_SEGMENT_4_BALANCE_CHECK
                      WHEN  'SEGMENT_5' THEN FD_SEGMENT_5_BALANCE_CHECK
-                     WHEN  'SEGMENT_6' THEN FD_SEGMENT_6_BALANCE_CHECK 
+                     WHEN  'SEGMENT_6' THEN FD_SEGMENT_6_BALANCE_CHECK
                      WHEN  'SEGMENT_7' THEN FD_SEGMENT_7_BALANCE_CHECK
-                     WHEN  'SEGMENT_8' THEN FD_SEGMENT_8_BALANCE_CHECK 
-                     WHEN  'SEGMENT_9' THEN FD_SEGMENT_9_BALANCE_CHECK 
+                     WHEN  'SEGMENT_8' THEN FD_SEGMENT_8_BALANCE_CHECK
+                     WHEN  'SEGMENT_9' THEN FD_SEGMENT_9_BALANCE_CHECK
                      WHEN  'SEGMENT_10' THEN FD_SEGMENT_10_BALANCE_CHECK
                      ELSE 'N'
                   END AS FD_BALANCE_CHECK
@@ -4126,6 +3999,12 @@ lvPeriodStartDate := NULL;
           lv_sql_template   VARCHAR2(32000);
           lv_sql_statement  VARCHAR2(32000);
 
+          lvD_sql_template   VARCHAR2(32000);
+          lv_orig_sql_template  VARCHAR2(32000);
+          lvD_sql_statement  VARCHAR2(32000);
+          lv_orig_TemplateMessage VARCHAR2(1000);
+          lvDTemplateMessage VARCHAR2(1000);
+
          BEGIN
 
             -- Assume journal balances
@@ -4143,14 +4022,19 @@ lvPeriodStartDate := NULL;
               lv_sql_template :=
            'SELECT COUNT(*) '
                ||' FROM (SELECT SUM(##NAME##) '
-               ||' 	    FROM temp_gui_jrnl_lines_unposted '
+               ||'         FROM temp_gui_jrnl_lines_unposted '
                ||'        WHERE jlu_jrnl_hdr_id = '||gJournalHeader.jhu_jrnl_id
                ||'          AND user_session_id = '''||gSessionId||''''
-               ||'		   GROUP BY jlu_jrnl_hdr_id, jlu_effective_date, '
-               ||'  	            jlu_value_date, jlu_tran_ccy ';
+               ||'           GROUP BY jlu_jrnl_hdr_id, jlu_effective_date, '
+               ||'                  jlu_value_date, jlu_tran_ccy ';
 
              lvTemplateMessage :=
-                    'The journal doesn''t balance by ##NAME##, ';
+                    'The journal doesn''t balance by ##NAME## ';
+
+            lvD_sql_template := lv_sql_template;
+            lv_orig_sql_template := lv_sql_template;
+            lv_orig_TemplateMessage := lvTemplateMessage;
+            lvDTemplateMessage := lvTemplateMessage;
 
          -- Append optional fields to group by clause
          -- (This will cause the field to become part of the balance check and message)
@@ -4164,7 +4048,11 @@ lvPeriodStartDate := NULL;
          END LOOP;
 
          lv_sql_template := lv_sql_template || ' HAVING SUM(##NAME##) != 0) ';
-             lvTemplateMessage := lvTemplateMessage||' ccy, effective and value dates';
+         lvTemplateMessage := lvTemplateMessage||' ccy, effective and value dates';
+
+
+         lvDTemplateMessage := lv_orig_TemplateMessage;
+
 
            EXCEPTION
          WHEN OTHERS THEN
@@ -4175,15 +4063,38 @@ lvPeriodStartDate := NULL;
            -- Simple balance check (transaction) only
            BEGIN
              lv_sql_statement := REPLACE(lv_sql_template,'##NAME##','jlu_tran_amount');
+             lvD_sql_template := REPLACE(lvD_sql_template,'##NAME##','jlu_tran_amount');
+             lvDTemplateMessage := REPLACE(lvDTemplateMessage,'##NAME##','jlu_tran_amount');
 
              -- Execute the statement and return the count into lvFound
              EXECUTE IMMEDIATE lv_sql_statement INTO lvCount;
 
              -- If it does not balance
              IF lvCount > 0 THEN
-                 lvMessage := REPLACE(lvTemplateMessage,'##NAME##','trans amt');
+
+                FOR rec IN cur_meta_data
+                    LOOP
+                    -- Only add the field if its COLUMN_USED_IN_BALANCE is set to Y
+                IF UPPER(rec.COLUMN_USED_IN_BALANCE) = 'Y' or nvl(upper(rec.FD_BALANCE_CHECK),'N') = 'Y' THEN
+
+                    lvD_sql_statement := lvD_sql_template||', jlu_'||LOWER(rec.COLUMN_NAME)||' HAVING SUM(jlu_tran_amount) != 0) ';
+
+                    EXECUTE IMMEDIATE lvD_sql_statement INTO lvCount;
+                    IF lvCount > 0 THEN
+                        lvDTemplateMessage:= lvDTemplateMessage||','||LOWER(rec.COLUMN_SCREEN_LABEL);
+                    END IF;
+
+                END IF;
+
+                END LOOP;
+
+
+
+                 -- lvMessage := REPLACE(lvTemplateMessage,'##NAME##','trans amt');
+                 lvMessage := lvDTemplateMessage;
                  prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1013, SUBSTR(lvMessage,1,1000));
                  lvSuccess := FALSE;
+
              END IF;
 
            EXCEPTION
@@ -4193,6 +4104,7 @@ lvPeriodStartDate := NULL;
                lvSuccess := FALSE;
            END;
 
+
            -- More complex balance check of local and base currencies
            OPEN cur_complex_balance_check;
            FETCH cur_complex_balance_check INTO lvComplexCheck;
@@ -4201,14 +4113,34 @@ lvPeriodStartDate := NULL;
            IF NVL(lvComplexCheck,'N') = 'Y' THEN
 
              BEGIN
-               lv_sql_statement := REPLACE(lv_sql_template,'##NAME##','jlu_base_amount');
+             lv_sql_statement := REPLACE(lv_sql_template,'##NAME##','jlu_base_amount');
+             lvD_sql_template := REPLACE(lvD_sql_template,'##NAME##','jlu_base_amount');
+             lvDTemplateMessage := REPLACE(lv_orig_TemplateMessage,'##NAME##','jlu_base_amount');
 
                -- Execute the statement and return the count into lvFound
                EXECUTE IMMEDIATE lv_sql_statement INTO lvCount;
 
                -- If it does not balance
                IF lvCount > 0 THEN
-                   lvMessage := REPLACE(lvTemplateMessage,'##NAME##','base amt');
+
+
+                FOR rec IN cur_meta_data
+                    LOOP
+                    -- Only add the field if its COLUMN_USED_IN_BALANCE is set to Y
+                IF UPPER(rec.COLUMN_USED_IN_BALANCE) = 'Y' or nvl(upper(rec.FD_BALANCE_CHECK),'N') = 'Y' THEN
+
+                    lvD_sql_statement := lvD_sql_template||', jlu_'||LOWER(rec.COLUMN_NAME)||' HAVING SUM(jlu_base_amount) != 0) ';
+
+                    EXECUTE IMMEDIATE lvD_sql_statement INTO lvCount;
+                    IF lvCount > 0 THEN
+                        lvDTemplateMessage:= lvDTemplateMessage||','||LOWER(rec.COLUMN_SCREEN_LABEL);
+                    END IF;
+
+                END IF;
+
+                END LOOP;
+
+                   lvMessage := lvDTemplateMessage;
                    prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1013, SUBSTR(lvMessage,1,1000));
                    lvSuccess := FALSE;
                END IF;
@@ -4219,18 +4151,45 @@ lvPeriodStartDate := NULL;
                  prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'Failed journal balance check');
                  lvSuccess := FALSE;
              END;
+        END IF;
+
+
 
              BEGIN
                lv_sql_statement := REPLACE(lv_sql_template,'##NAME##','jlu_local_amount');
+
+               lvD_sql_template := REPLACE(lvD_sql_template,'##NAME##','jlu_local_amount');
+               lvDTemplateMessage := REPLACE(lvDTemplateMessage,'##NAME##','jlu_local_amount');
+
 
                -- Execute the statement and return the count into lvFound
                EXECUTE IMMEDIATE lv_sql_statement INTO lvCount;
 
                -- If it does not balance
                IF lvCount > 0 THEN
-                   lvMessage := REPLACE(lvTemplateMessage,'##NAME##','local amt');
+
+
+                FOR rec IN cur_meta_data
+                    LOOP
+                    -- Only add the field if its COLUMN_USED_IN_BALANCE is set to Y
+                IF UPPER(rec.COLUMN_USED_IN_BALANCE) = 'Y' or nvl(upper(rec.FD_BALANCE_CHECK),'N') = 'Y' THEN
+
+                    lvD_sql_statement := lvD_sql_template||', jlu_'||LOWER(rec.COLUMN_NAME)||' HAVING SUM(jlu_local_amount) != 0) ';
+
+                    EXECUTE IMMEDIATE lvD_sql_statement INTO lvCount;
+                    IF lvCount > 0 THEN
+                        lvDTemplateMessage:= lvDTemplateMessage||LOWER(rec.COLUMN_SCREEN_LABEL);
+                    END IF;
+
+                END IF;
+
+                END LOOP;
+
+
+                   lvMessage := lvDTemplateMessage;
                    prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1013, SUBSTR(lvMessage,1,1000));
                    lvSuccess := FALSE;
+
                END IF;
 
              EXCEPTION
@@ -4240,7 +4199,7 @@ lvPeriodStartDate := NULL;
                  lvSuccess := FALSE;
              END;
 
-           END IF;
+
 
            RETURN lvSuccess;
 
@@ -4307,28 +4266,28 @@ lvPeriodStartDate := NULL;
 			INTO v_entity_proc_group
             USING vJrnlHdrId, gSessionId;
 
-			
+
 			-- check if configuration exists for all
 			-- lines with group configuration and without in one header
 			lvSqltext :=
 			  ' SELECT  COUNT(*)
 				FROM    TEMP_GUI_JRNL_LINES_UNPOSTED LEFT JOIN SLR_ENTITY_PROC_GROUP
 						ON JLU_ENTITY = EPG_ENTITY ';
-				
+
 			if vEPG_DIMENSION_column_name is not null then
 				lvSqltext := lvSqltext || ' AND (EPG_DIMENSION IS NULL OR EPG_DIMENSION = '||vEPG_DIMENSION_column_name||')';
 			end if;
-					
+
 			lvSqltext := lvSqltext || ' WHERE
 					JLU_JRNL_HDR_ID = :vJrnlHdrId
 			     AND USER_SESSION_ID = :gSessionId
 				 AND EPG_ID IS NULL';
-			
+
 
 			EXECUTE IMMEDIATE lvSqltext
 			INTO v_not_configured_entity
             USING vJrnlHdrId, gSessionId;
-			
+
 			if(v_not_configured_entity>0)then
 				raise NoEntGroupFound;
 			end if;
@@ -4439,6 +4398,78 @@ lvPeriodStartDate := NULL;
     END fnui_validate_account;
 
     --********************************************************************************
+    FUNCTION fnui_validate_chartfield1 RETURN BOOLEAN
+    IS
+
+       lvFound              NUMBER := NULL;
+       lvSuccess         BOOLEAN;
+
+    BEGIN
+
+         lvSuccess := TRUE;
+
+         BEGIN
+
+              --Look for errors in account code
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1010',
+                     /* jle_error_string */            'Chartfield1 is invalid',
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND   user_session_id = gSessionId
+              AND jlu_segment_5 NOT IN ('NVS','DNP')
+              AND    jlu_segment_5 NOT IN (SELECT gc_client_code
+                                             FROM   FDR.FR_GENERAL_CODES
+                                             WHERE  GC_GCT_CODE_TYPE_ID = 'GL_CHARTFIELD'
+                                                AND GC_CLIENT_TEXT1 = 'CHARTFIELD_1' AND GC_ACTIVE = 'A');
+
+         EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_chartfield1', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 lvSuccess := FALSE;
+         END;
+
+         --How many errors were found
+         BEGIN
+              SELECT COUNT(*)
+              INTO     lvFound
+              FROM     temp_gui_jrnl_line_errors
+              WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND    user_session_id = gSessionId
+              AND     jle_error_code = 'MADJ-1010';
+         EXCEPTION
+              WHEN NO_DATA_FOUND THEN
+                   NULL; -- do nothing
+              WHEN OTHERS THEN
+                   pr_error(1, SQLERRM, 0, 'fnui_validate_chartfield1', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+         END;
+
+         IF lvFound > 0 THEN
+           lvSuccess := FALSE;
+         END IF;
+
+         RETURN lvSuccess;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            pr_error(1, SQLERRM, 0, 'fnui_validate_chartfield1', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            RETURN FALSE;
+    END fnui_validate_chartfield1;
+
+    --********************************************************************************
+
 
     FUNCTION fnui_validate_periods RETURN BOOLEAN
     IS
@@ -4780,12 +4811,12 @@ lvPeriodStartDate := NULL;
                  pr_error(1, SQLERRM, 0, 'fnui_check_currencies.6', 'slr_entity_currencies', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                  lvSuccess := FALSE;
          END;
-      
-         
+
+
         --check fx rates for local and base ccy only if apply fx translation flag equals 'Y' and journal date is <= entity business date
         if  (gEntityConfiguration.ENT_APPLY_FX_TRANSLATION = 'Y' and gJournalHeader.jhu_jrnl_date <= gEntityConfiguration.ENT_BUSINESS_DATE) then
           begin
-            
+
             --local ccy
             INSERT INTO temp_gui_jrnl_line_errors (
                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
@@ -4807,21 +4838,21 @@ lvPeriodStartDate := NULL;
             AND   user_session_id = gSessionId
             AND NOT EXISTS (SELECT 1 FROM SLR_ENTITY_RATES
                     WHERE ER_ENTITY_SET = gEntityConfiguration.ENT_RATE_SET
-                    AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY 
-                    AND ER_CCY_TO = gEntityConfiguration.ENT_LOCAL_CCY 
+                    AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY
+                    AND ER_CCY_TO = gEntityConfiguration.ENT_LOCAL_CCY
                     AND ER_DATE = gJournalHeader.jhu_jrnl_date
 					AND ER_RATE_TYPE = 'SPOT'
                     AND ER_RATE > 0);
-            
-            
+
+
             EXCEPTION
               WHEN OTHERS THEN
                    pr_error(1, SQLERRM, 0, 'fnui_check_currencies.7', 'slr_entity_rates', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                    lvSuccess := FALSE;
           END;
-          
+
           begin
-            
+
             --base ccy
             INSERT INTO temp_gui_jrnl_line_errors (
                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
@@ -4843,20 +4874,20 @@ lvPeriodStartDate := NULL;
             AND   user_session_id = gSessionId
             AND NOT EXISTS (SELECT 1 FROM SLR_ENTITY_RATES
                     WHERE ER_ENTITY_SET = gEntityConfiguration.ENT_RATE_SET
-                    AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY 
-                    AND ER_CCY_TO = gEntityConfiguration.ENT_BASE_CCY 
+                    AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY
+                    AND ER_CCY_TO = gEntityConfiguration.ENT_BASE_CCY
                     AND ER_DATE = gJournalHeader.jhu_jrnl_date
 					AND ER_RATE_TYPE = 'SPOT'
                     AND ER_RATE > 0);
-            
-            
+
+
             EXCEPTION
               WHEN OTHERS THEN
                    pr_error(1, SQLERRM, 0, 'fnui_check_currencies.8', 'slr_entity_rates', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                    lvSuccess := FALSE;
           END;
-        
-        end if;      
+
+        end if;
          --How many errors were found
          BEGIN
               SELECT COUNT(*)
@@ -5083,7 +5114,7 @@ lvPeriodStartDate := NULL;
 
     --********************************************************************************
 
-	
+
 
     FUNCTION fnui_validate_segment_n( segment_no IN NUMBER ) RETURN BOOLEAN
     IS
@@ -5116,7 +5147,7 @@ lvPeriodStartDate := NULL;
 		where column_name = v_screen_segment_name
 		and column_type = 'L';
 
-            EXCEPTION 
+            EXCEPTION
                 WHEN NO_DATA_FOUND THEN
                     v_column_screen_label := NULL;
 
@@ -5560,7 +5591,7 @@ lvPeriodStartDate := NULL;
 
          END IF;
     exception
-      WHEN others THEN 
+      WHEN others THEN
           pr_error(1, SQLERRM, 0, 'prui_write_errors_to_database', NULL, NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
           raise;
     END prui_write_errors_to_database;
@@ -6029,7 +6060,7 @@ lvPeriodStartDate := NULL;
           --bulk submitted, clear only data concerning this journal
           prui_cleardown_session_data(session_id,journal_id);
         end if;
-        
+
         -- Fetch details (with changes applied)
         BEGIN
              INSERT INTO temp_gui_jrnl_headers_unposted (
@@ -6874,13 +6905,13 @@ lvPeriodStartDate := NULL;
     IS
     BEGIN
         -- Update lines with changes to effective date, entity, etc
-        
+
         gJournalHeader.jhu_epg_id := fGetEntityProcGroup(gJournalHeader.jhu_jrnl_id,gSessionId);
-		
+
 		if gJournalHeader.jhu_jrnl_id <> -1 then
           BEGIN
               savepoint resync_journal_lines;
-              
+
               UPDATE gui_jrnl_lines_unposted
               SET jlu_effective_date 	 = gJournalHeader.jhu_jrnl_date,
                   jlu_entity		   	 = gJournalHeader.jhu_jrnl_entity,
@@ -6890,12 +6921,12 @@ lvPeriodStartDate := NULL;
                   jlu_jrnl_status_text = 'MANUAL',
                   JLU_EPG_ID = gJournalHeader.jhu_epg_id
               WHERE jlu_jrnl_hdr_id  = gJournalHeader.jhu_jrnl_id;
-              
+
               if sql%rowcount > 0 then
-              
+
                 /* increment journal version since change on core table has been made */
                 prui_increment_journal_version(gJournalHeader.jhu_jrnl_id,gJournalHeader.jhu_amended_by);
-              
+
               end if;
           EXCEPTION
               WHEN OTHERS THEN
@@ -6904,7 +6935,7 @@ lvPeriodStartDate := NULL;
                   RETURN FALSE;
           END;
         end if;
-        
+
         BEGIN
             UPDATE temp_gui_jrnl_lines_unposted
             SET jlu_effective_date 	 = gJournalHeader.jhu_jrnl_date,
@@ -7034,7 +7065,7 @@ lvPeriodStartDate := NULL;
                 SET    jle_jrnl_hdr_id = lvId
                 WHERE  jle_jrnl_hdr_id = -1
                 AND	   user_session_id = gSessionId;
-                
+
                 gJournalVersion := 1;
 
             ELSE
@@ -7062,7 +7093,7 @@ lvPeriodStartDate := NULL;
                         WHERE tsjhu.jhu_jrnl_id = sjhu.jhu_jrnl_id
                         AND tsjhu.user_session_id = gSessionId)
                 WHERE sjhu.jhu_jrnl_id = gJournalHeader.jhu_jrnl_id;
-                
+
                 gJournalVersion := gJournalVersion+1;
 
             END IF;
@@ -7248,10 +7279,10 @@ lvPeriodStartDate := NULL;
                  pr_error(1, SQLERRM, 0, 'fnui_merge_lines.2', 'gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                  RETURN FALSE;
         END;
-        
+
          /* increment journal version since change on core table has been made */
         prui_increment_journal_version(gJournalHeader.jhu_jrnl_id,gJournalHeader.jhu_amended_by);
-        
+
         RETURN TRUE;
 
     EXCEPTION
@@ -7570,7 +7601,7 @@ lvPeriodStartDate := NULL;
             jhu_epg_id					  = lvEntityProcGroup,
             jhu_version = gJournalVersion +1
         WHERE jhu_jrnl_id = journal_id;
-        
+
         gJournalVersion := gJournalVersion +1;
 
     EXCEPTION
@@ -7596,7 +7627,7 @@ lvPeriodStartDate := NULL;
 
         SAVEPOINT prui_reorder_journal_lines;
 
-        
+
         FOR rec IN cur_journal_lines(journal_id)
         LOOP
 			UPDATE gui_jrnl_lines_unposted
@@ -7626,28 +7657,28 @@ lvPeriodStartDate := NULL;
          IF journal_id IS NULL THEN
            DELETE FROM temp_gui_jrnl_line_errors
            WHERE user_session_id = session_id;
-  
+
            DELETE FROM temp_gui_jrnl_lines_unposted
            WHERE user_session_id = session_id;
-  
+
            DELETE FROM temp_gui_jrnl_headers_unposted
            WHERE user_session_id = session_id;
         ELSE
            DELETE FROM temp_gui_jrnl_line_errors
            WHERE user_session_id = session_id
            AND jle_jrnl_hdr_id = journal_id;
-        
+
            DELETE FROM temp_gui_jrnl_lines_unposted
            WHERE user_session_id = session_id
            AND jlu_jrnl_hdr_id = journal_id;
-        
+
            DELETE FROM temp_gui_jrnl_headers_unposted
            WHERE user_session_id = session_id
            AND jhu_jrnl_id = journal_id;
         END IF;
-        
+
         COMMIT;
-          
+
     EXCEPTION
         WHEN OTHERS THEN
             pr_error(1, SQLERRM, 0, 'prui_cleardown_session_data', NULL, NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -7745,7 +7776,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
 	--********************************************************************************
 
-	
+
    PROCEDURE prui_update_unprocessed_jrnls(	status_from                     IN CHAR,
 											status_to                     	IN CHAR,
 											list_string                   	IN VARCHAR2,
@@ -7796,9 +7827,9 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
    END prui_removed_failed_jrnls;
 
     --********************************************************************************
-   
-   
-   
+
+
+
 	-- ---------------------------------------------------------------------------
 	-- Function to retrieve Entity Processing Group for given pJrnlHdrID
 	-- Notes:
@@ -7876,7 +7907,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
 	END fGetEntityProcGroup;
 
-    
+
 
     PROCEDURE prui_setSubLgrGenLastBalForBD(p_generate IN CHAR DEFAULT 'N')
     AS
@@ -7887,7 +7918,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         END IF;
         gvSubLedgerGenLastBalForBD := v_generate;
     END prui_setSubLgrGenLastBalForBD;
-	
+
 	FUNCTION fnui_validate_jrnl_type RETURN BOOLEAN
     IS
 
@@ -7903,24 +7934,24 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
 			/* validate journal type against entity configuration */
 		  if gEntityConfiguration.ent_adjustment_flag = 'N' then
-			
-				 select 1 into lvFound from 
+
+				 select 1 into lvFound from
 				 slr.slr_ext_jrnl_types
 				 where ejt_type = gJournalHeader.jhu_jrnl_type
 				 and (
 						(ejt_balance_type_1 = 20 and ejt_balance_type_2 is null)
-						or 
+						or
 						(ejt_balance_type_2 = 20 and ejt_balance_type_1 is null)
 					  );
-				
+
 				IF lvFound > 0 THEN
 					prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1023, 'The entity [' || gJournalHeader.jhu_jrnl_entity || '] does not allow adjustments to be processed.');
 					lvSuccess := FALSE;
 				END IF;
-			
+
 		  end if;
-		
-		
+
+
       EXCEPTION
           WHEN NO_DATA_FOUND THEN
             null;
@@ -7939,20 +7970,20 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
           RETURN FALSE;
 
     END fnui_validate_jrnl_type;
-	
-    
+
+
     PROCEDURE prui_increment_journal_version(journal_id IN NUMBER, updated_by IN SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE	)
     IS
-      
+
     begin
-        
+
         UPDATE gui_jrnl_headers_unposted
         SET JHU_VERSION = gJournalVersion+1,
             jhu_amended_on = sysdate,
             jhu_amended_by = updated_by
             --,JHU_LAST_SESSION_ID = session_id
         WHERE jhu_jrnl_id = journal_id AND JHU_VERSION = gJournalVersion;
-       
+
        IF SQL%ROWCOUNT > 0 THEN
           gJournalVersion :=  gJournalVersion +1;
        ELSE
@@ -7962,13 +7993,13 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       WHEN others THEN
         pr_error(1, SQLERRM, 0, 'prui_increment_journal_version', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
         raise;
-    
+
     end prui_increment_journal_version;
-    
+
     PROCEDURE prui_calculate_journal_rates(journal_id in NUMBER)
     IS
     begin
-      
+
       UPDATE gui_jrnl_lines_unposted
 			SET	 jlu_base_rate =
 				CASE
@@ -7987,33 +8018,33 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 					ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
 					END
 			WHERE jlu_jrnl_hdr_id = journal_id;
-			
+
 		-- Execute any custom processes
         pgui_jrnl_custom.prui_update_rates(journal_id);
-      
+
        EXCEPTION
            WHEN OTHERS THEN
              --prui_log_error(journal_id, 0, 9999, 'Failed to update base and local rates for journal '||TO_CHAR(journal_id));
              null;
-      
+
     end prui_calculate_journal_rates;
-    
+
     PROCEDURE prui_add_jrnl_to_posting_queue(journal_id IN NUMBER, epg_id in varchar2,jrnl_num_of_lines in number)
     IS
     BEGIN
-      
+
         INSERT INTO T_UI_MADJ_POSTING_QUEUE(pq_jrnl_id, pq_epg_id, pq_input_time, pq_jrnl_num_of_lines, pq_status)
         VALUES(journal_id, epg_id, SYSDATE, jrnl_num_of_lines,'U');
-        
+
         prui_set_status(journal_id, gSTATUS_QUEUED_FOR_POSTING);
-        
+
     exception
         WHEN OTHERS THEN
-          
-          raise;    
-      
+
+          raise;
+
     end prui_add_jrnl_to_posting_queue;
-    
+
     PROCEDURE prui_authorise_journal(
         session_id			IN		VARCHAR2,
         journal_id			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
@@ -8025,29 +8056,29 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         lvValidateState CHAR(1);
         lvReversingDate DATE;
         v_jrnl_num_of_lines NUMBER(10,0);
-        
+
     BEGIN
 
       success := 'S';
-      
+
       IF session_id IS NULL THEN
           raise_application_error(-20101,'Missing session id.');
        end if;
-       
+
        IF journal_version IS NULL THEN
           raise_application_error(-20102,'Missing journal version.');
        end if;
-         
+
        gSessionId := session_id;
        gJournalVersion := journal_version;
-        
+
 		  begin
           /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
           prui_lock_journal(journal_id,updated_by);
-          
+
           /* check journal version in case there were any changes since journal was displayed on the screen. Signals stale_journal_exception if journal version is different*/
           prui_check_journal_version(journal_id,gJournalVersion);
-      
+
       exception
         WHEN journal_locked_exeption THEN
           prui_log_error(journal_id, 0, 6699,'Journal is already locked by another user. Cannot proceed.');
@@ -8055,36 +8086,36 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
           return;
         WHEN stale_journal_exception THEN
           prui_log_error(journal_id, 0, 6698,'Journal does not exist or was modified by another user. Cannot proceed.');
-          
+
           /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
           prui_unlock_journal(journal_id,updated_by);
           success := 'V';
           RETURN;
-        WHEN others THEN 
+        WHEN others THEN
           raise;
       end;
-      
+
       prui_populate_header( session_id => session_id, journal_id => journal_id, overwrite_details => 'N' );
 
       --prui_clear_errors(journal_id);
-       
+
       --validate journal--
      /*  do not validate as it should be ok by now
 	 BEGIN
         IF fnui_validate_journal_header <> gSTATE_OK THEN
             success := 'F';
         END IF;
-        
+
       EXCEPTION
           WHEN OTHERS THEN
               pr_error(1, SQLERRM, 0, 'prui_authorise_journal', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
               success := 'F';
       END; */
-	  
+
 	  if not fnui_get_journal_type then
 		success := 'F';
 	  end IF;
-	
+
 	  IF NOT fnui_get_entity	 THEN
 		success := 'F';
 	  END IF;
@@ -8092,43 +8123,43 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       -- Exit if errors
       IF (success = 'F' or fnui_any_errors(journal_id )) THEN
         prui_log_error(journal_id, 0, 1031, 'Journal failed validation. Unable to authorise journal');
-      
+
         -- Persist errors in database
         prui_write_errors_to_database(journal_id);
-        
+
         --set status to error
         prui_set_status(journal_id,'E');
-        
+
         success := 'F';
-        
+
         /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
         prui_unlock_journal(journal_id,updated_by);
-        
-        
+
+
         commit;
         RETURN;
       END IF;
 
       -- reorder lines
       prui_reorder_journal_lines(journal_id);
-      
+
       -- Execute any custom processes
       pgui_jrnl_custom.prui_authorise_journal(journal_id);
-            
+
       SELECT JHU_EPG_ID, jhu_jrnl_total_lines
       INTO vEntityProcGroupName, v_jrnl_num_of_lines
 	  FROM GUI_JRNL_HEADERS_UNPOSTED
 	  WHERE JHU_JRNL_ID = journal_id;
 
-     
+
      begin
        SAVEPOINT add_jrnl_to_posting_queue;
-       
+
        UPDATE gui_jrnl_headers_unposted
        SET jhu_jrnl_authorised_by = updated_by,
            jhu_jrnl_authorised_on = SYSDATE
        WHERE  jhu_jrnl_id = journal_id;
-              
+
        --add journal to posting queue
        prui_add_jrnl_to_posting_queue(journal_id,vEntityProcGroupName,v_jrnl_num_of_lines);
      exception
@@ -8139,11 +8170,11 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         --commit;
         raise;
      end;
-            
+
       -- Persist errors in database
       prui_write_errors_to_database(journal_id);
 
- 
+
     /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
      prui_unlock_journal(journal_id,updated_by);
      COMMIT;
@@ -8151,13 +8182,13 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
     EXCEPTION
 		    WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_authorise_journal', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-             
+
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
              prui_unlock_journal(journal_id,updated_by);
              success := 'F';
-		
+
     END prui_authorise_journal;
-	
+
 	PROCEDURE prui_upsert_attachment(
         session_id			IN VARCHAR2,
         journal_id			IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
@@ -8169,9 +8200,9 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         updated_by			IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
         success				  OUT VARCHAR2
-    ) 
+    )
     IS
-    
+
       v_file_no number(10);
     begin
       success := 'S';
@@ -8209,15 +8240,15 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         WHEN others THEN
           raise;
       end;
-      
-      
+
+
       IF nvl(file_no, 0) = 0 THEN
-	
-        SELECT nvl(MAX(JF_FILE_NO),0)+1 
+
+        SELECT nvl(MAX(JF_FILE_NO),0)+1
         INTO v_file_no
-        FROM GUI_JRNL_FILE 
+        FROM GUI_JRNL_FILE
         WHERE JF_JRNL_HDR_ID = journal_id;
-        
+
         INSERT INTO GUI_JRNL_FILE (JF_JRNL_HDR_ID,
                       JF_FILE_NO,
                       JF_FILE_NAME,
@@ -8229,14 +8260,14 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
                       JF_AMENDED_BY,
                       JF_AMENDED_ON)
         VALUES (journal_id, v_file_no, file_name,attachment,file_comment,mime_type,updated_by, sysdate, updated_by, sysdate);
-      ELSE 	
+      ELSE
         if attachment is null then
           UPDATE GUI_JRNL_FILE
-          SET            
+          SET
             JF_COMMENT = file_comment,
             JF_AMENDED_BY = updated_by,
             JF_AMENDED_ON = sysdate
-          WHERE JF_JRNL_HDR_ID = journal_id AND JF_FILE_NO = file_no;	
+          WHERE JF_JRNL_HDR_ID = journal_id AND JF_FILE_NO = file_no;
         else
           delete from GUI_JRNL_FILE where JF_JRNL_HDR_ID = journal_id AND JF_FILE_NO = file_no;
           INSERT INTO GUI_JRNL_FILE (JF_JRNL_HDR_ID,
@@ -8252,13 +8283,13 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
           VALUES (journal_id, file_no, file_name,attachment,file_comment,mime_type,updated_by, sysdate, updated_by, sysdate);
         END IF;
       END IF;
-    
+
     IF SQL%ROWCOUNT < 1 THEN
       raise_application_error(-20103,'Failed to upsert attachment.');
     end if;
-    
+
       prui_increment_journal_version(journal_id, updated_by);
-      
+
       /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
        prui_unlock_journal(journal_id,updated_by);
        COMMIT;
@@ -8270,9 +8301,9 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
              prui_unlock_journal(journal_id,updated_by);
              success := 'F';
-    
+
     end prui_upsert_attachment;
-	
+
     PROCEDURE prui_delete_attachments(
         session_id			IN VARCHAR2,
         journal_id			IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
@@ -8280,7 +8311,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         updated_by			IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
         success				  OUT VARCHAR2
-    ) 
+    )
     IS
       attachment_list  			array_list := array_list();
       list_count 	 			NUMBER(12);
@@ -8298,7 +8329,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
        IF journal_version IS NULL THEN
           raise_application_error(-20102,'Missing journal version.');
        end if;
-      
+
        gSessionId := session_id;
        gJournalVersion := journal_version;
 
@@ -8324,33 +8355,33 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         WHEN others THEN
           raise;
       end;
-      
-      
+
+
         prui_process_param_list(file_no_list, attachment_list, list_count);
 
         FOR loop_count IN 1..list_count LOOP
             begin
               v_file_no := attachment_list(loop_count);
-              
+
               DELETE FROM GUI_JRNL_FILE
               WHERE JF_JRNL_HDR_ID = journal_id AND JF_FILE_NO = v_file_no;
-              
+
               IF SQL%ROWCOUNT > 0 THEN
-                v_success_count := v_success_count+1;  
+                v_success_count := v_success_count+1;
               ELSE
                 prui_log_error(journal_id, 0, 1071, 'Journal Attachment '||v_file_no||' does not exist');
                 v_failure_count := v_failure_count +1;
               END IF;
-              
-              
+
+
             exception
               WHEN others THEN
                   v_failure_count := v_failure_count +1;
                   pr_error(1, SQLERRM, 0, 'prui_delete_attachments', 'gui_jrnl_file', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-                  prui_log_error(journal_id, 0, 1070, 'Unable to delete Journal Attachment '||v_file_no);          
+                  prui_log_error(journal_id, 0, 1070, 'Unable to delete Journal Attachment '||v_file_no);
             end;
         END loop;
-      
+
       /* reorder file numbers */
       FOR jrnl_file_cursor IN (
          SELECT
@@ -8367,7 +8398,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
            WHERE jf_jrnl_hdr_id = jrnl_file_cursor.jf_jrnl_hdr_id
            AND 	jf_file_no = jrnl_file_cursor.old_no;
       END loop;
-      
+
       IF (v_success_count > 0 AND v_failure_count > 0) THEN
         success := 'P';
         /* increment journal version since change on core table has been made */
@@ -8379,9 +8410,9 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         /* increment journal version since change on core table has been made */
         prui_increment_journal_version(journal_id, updated_by);
       END IF;
-    
-       
-      
+
+
+
       /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
        prui_unlock_journal(journal_id,updated_by);
        COMMIT;
@@ -8393,12 +8424,12 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
              prui_unlock_journal(journal_id,updated_by);
              success := 'F';
-    
+
     end prui_delete_attachments;
-	
+
     PROCEDURE prui_lock_journal(journal_id IN NUMBER,locked_by IN VARCHAR2)
     is
-      
+
     BEGIN
       INSERT INTO GUI_JRNL_EDIT_LOCK (JEL_JRNL_HDR_ID,JEL_LOCKED_BY) VALUES (journal_id,locked_by);
       COMMIT;
@@ -8406,9 +8437,9 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
     exception
       WHEN DUP_VAL_ON_INDEX THEN
         raise journal_locked_exeption;
-      
+
       WHEN others THEN
-        pr_error(1, SQLERRM, 0, 'prui_lock_journal', 'gui_jrnl_edit_lock', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);  
+        pr_error(1, SQLERRM, 0, 'prui_lock_journal', 'gui_jrnl_edit_lock', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
         raise;
     end prui_lock_journal;
 
@@ -8422,27 +8453,27 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       WHEN others THEN
         pr_error(1, SQLERRM, 0, 'prui_unlock_journal', 'gui_jrnl_edit_lock', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     end prui_unlock_journal;
-    
+
     PROCEDURE prui_check_journal_version(journal_id IN NUMBER, journal_version IN NUMBER)
     IS
       v_found integer;
     BEGIN
-    
+
       select 1 into v_found from gui_jrnl_headers_unposted
     	WHERE jhu_jrnl_id = journal_id AND JHU_VERSION = journal_version;
 
-    
+
     exception
       WHEN NO_DATA_FOUND THEN
         raise stale_journal_exception;
-      
+
       WHEN others THEN
-        pr_error(1, SQLERRM, 0, 'prui_check_journal_version', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);  
+        pr_error(1, SQLERRM, 0, 'prui_check_journal_version', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
         raise;
-    
+
     end prui_check_journal_version;
 
-    
+
     PROCEDURE prui_copy_journals_to_slr(epg_id IN VARCHAR2, journal_id_list IN VARCHAR2, process_id OUT NUMBER)
     IS
       TYPE jrnl_files_type IS REF CURSOR;
@@ -8494,7 +8525,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
           gjhu.jhu_amended_on,
           gjhu.jhu_jrnl_pref_static_src,
           ''Y'',
-          gjhu.jhu_epg_id,          
+          gjhu.jhu_epg_id,
           gjhu.jhu_jrnl_rev_date
         FROM gui_jrnl_headers_unposted gjhu
         WHERE gjhu.jhu_jrnl_id IN ('||journal_id_list||')
@@ -8576,7 +8607,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
             gjlu.jlu_epg_id,
             gjlu.jlu_period_month,
             gjlu.jlu_period_year,
-            gjlu.jlu_period_ltd          
+            gjlu.jlu_period_ltd
           FROM gui_jrnl_lines_unposted gjlu
             JOIN gui_jrnl_headers_unposted gjhu ON gjlu.jlu_jrnl_hdr_id = gjhu.jhu_jrnl_id
 			LEFT JOIN slr_entities on ent_entity = gjlu.jlu_entity
@@ -8595,7 +8626,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
      loop
         fetch jrnl_file_cursor INTO jrnl_file_rec;
         EXIT WHEN jrnl_file_cursor%NOTFOUND;
-        
+
         INSERT INTO slr.slr_jrnl_file
          (JF_FILE_NO,
           JF_FILE_NAME,
@@ -8700,7 +8731,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         --update journal lines with proper group, period details and other from header
         SLR_UTILITIES_PKG.pUpdateJrnlLinesUnposted(epg_id, lv_process_id, gSTATUS_VALIDATED);
         COMMIT;
-        
+
         -- Call the procedure in the subledger that validates the journal (status gets updated to 'E' if validation fails)
         slr_validate_journals_pkg.pValidateJournals(epg_id, lv_process_id, gSTATUS_VALIDATED, TRUE, null);
 
@@ -8726,7 +8757,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
             -- Set the flag used for Generating Last Balances for the current Bussiness date
             syn_ui_post_journals_pkg.pStatusGenLastBalForBD(gvSubLedgerGenLastBalForBD);
-            
+
             -- call the procedure in the subledger that posts the journal
             syn_ui_post_journals_pkg.pPostJournals(epg_id, lv_process_id, gSTATUS_VALIDATED, TRUE, null);
 
@@ -8737,28 +8768,28 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         end;
       END IF;
 
-     
+
         --delete journals that failed posting from slr unposted tables, update journal status and copy errors to gui.--
         prui_rollback_err_slr_journals(epg_id => epg_id,journal_id_list => lv_journal_id_list, rollback_all => FALSE);
       COMMIT;
-      
+
         --delete successfuly posted or future dated (awaiting posting 'W') journals from gui tables--
         prui_delete_gui_journals(lv_journal_id_list);
-        
+
       COMMIT;
-      
+
       BEGIN
           --execute custom procedure after posting--
           PGUI_JRNL_CUSTOM.prui_post_queued_journals(epg_id,lv_journal_id_list);
-          
+
       EXCEPTION
         WHEN OTHERS THEN
           pr_error(1, SQLERRM, 0, 'prui_post_queued_journals', NULL, NULL, NULL, 'PGUI_JRNL_CUSTOM', 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
           --do not raise exception here--
       END;
-      
-      COMMIT;  
-      
+
+      COMMIT;
+
       lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
 
     EXCEPTION
@@ -8781,7 +8812,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         status := 'E';
 
   end prui_post_queued_journals;
-  
+
   PROCEDURE prui_create_reversing_journal(epg_id in varchar2, journal_id_list in varchar2, process_id NUMBER, status in char)
    IS
       vSql VARCHAR2(32000);
@@ -8810,7 +8841,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
 		  --delegate creation of reversing journals to slr_post_journals_pkg
 		  syn_ui_post_journals_pkg.pCreate_reversing_journal(journal_id_list, epg_id, status, process_id);
-      
+
       --execute custom logic
 	    pgui_jrnl_custom.prui_create_reversing_journal(epg_id,journal_id_list);
 
@@ -8837,7 +8868,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 		   AND jt.jt_type = ejt.ejt_jt_type
 		   AND jt.jt_reverse_flag = ''Y'''
 		  USING process_id, process_id, status;
-      
+
 		  EXECUTE IMMEDIATE
 		  'UPDATE slr_jrnl_lines_unposted sjlu
 		   SET sjlu.jlu_jrnl_status = ''E''
@@ -8886,12 +8917,12 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
    IS
      vSql VARCHAR2(32000);
      vErrStatusText VARCHAR2(20) := 'Error';
-     vErrStatus char(1) := 'E';    
+     vErrStatus char(1) := 'E';
 
      TYPE file_attachment IS REF CURSOR;
      file_attachment_cursor file_attachment;
      v_file_id slr.slr_jrnl_file_attachment.JFA_JF_FILE_ID%type;
-     v_file_id_list varchar2(30000) := null;     
+     v_file_id_list varchar2(30000) := null;
 
    BEGIN
      vSql :=
@@ -8907,7 +8938,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
      END IF;
 
      EXECUTE IMMEDIATE vSql USING vErrStatus, vErrStatusText;
-     
+
      vSql :=
      'update gui_jrnl_lines_unposted gjlu
       set gjlu.jlu_jrnl_status = :errStatus
@@ -8939,11 +8970,11 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         vSql := vSql||' and jhu.jhu_jrnl_status in (''E'',''V'')';
      END IF;
 
-     EXECUTE IMMEDIATE vSql USING process_id;     
+     EXECUTE IMMEDIATE vSql USING process_id;
 
      vSql :=
      'delete from slr_jrnl_lines_unposted
-     where jlu_jrnl_hdr_id in '||fnui_get_standard_hash_sql (journal_id_list)||'     
+     where jlu_jrnl_hdr_id in '||fnui_get_standard_hash_sql (journal_id_list)||'
      and jlu_jrnl_process_id = coalesce(:process_id, jlu_jrnl_process_id)
      and jlu_epg_id = '''||epg_id||'''';
      IF not rollback_all THEN
@@ -8995,7 +9026,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         vSql := vSql||' and jhu_jrnl_status in (''E'',''V'')';
      END IF;
      vSql := vSql||')';
-      
+
 	 /* build attachment file id list */
       OPEN file_attachment_cursor FOR vSql;
       loop
@@ -9035,12 +9066,12 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
      --commit;
   exception
     WHEN others THEN
-      pr_error(1, SQLERRM, 0, 'prui_rollback_err_slr_journal', 'slr_jrnl_headers_unposted/slr_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);      
+      pr_error(1, SQLERRM, 0, 'prui_rollback_err_slr_journal', 'slr_jrnl_headers_unposted/slr_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
       IF file_attachment_cursor%isopen THEN
         close file_attachment_cursor;
       END IF;
-      
+
       raise;
 
   end prui_rollback_err_slr_journals;
@@ -9071,7 +9102,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       and gjlu.jlu_jrnl_status = ''Q''
       and not exists (select 1 from gui_jrnl_headers_unposted gjhu
             where gjhu.jhu_jrnl_id = gjlu.jlu_jrnl_hdr_id)';
-    
+
     EXECUTE IMMEDIATE
       'delete from gui_jrnl_file gjf
       where gjf.jf_jrnl_hdr_id in ('||journal_id_list||')
@@ -9083,7 +9114,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
        where gjle.jle_jrnl_hdr_id in ('||journal_id_list||')
        and not exists (select 1 from gui_jrnl_headers_unposted gjhu where gjhu.jhu_jrnl_id in ('||journal_id_list||') and gjhu.jhu_jrnl_id = gjle.jle_jrnl_hdr_id )';
 
-     
+
   exception
     WHEN others THEN
       pr_error(1, SQLERRM, 0, 'prui_delete_gui_journals', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -9129,18 +9160,18 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
    vSql :=
     'update gui_jrnl_headers_unposted gjhu
       set gjhu.jhu_jrnl_status = :status
-         ,gjhu.jhu_jrnl_status_text = :status_text 
+         ,gjhu.jhu_jrnl_status_text = :status_text
      where gjhu.jhu_jrnl_id in ('||journal_id_list||')';
 
     EXECUTE IMMEDIATE vSql USING status, vStatusText;
-    
+
     execute immediate
       'update gui_jrnl_lines_unposted gjlu
       set gjlu.jlu_jrnl_status = :status
           ,gjlu.jlu_jrnl_status_text = :status_text
       where gjlu.jlu_jrnl_hdr_id in ('||journal_id_list||')'
     using status, vStatusText;
-    
+
 
   EXCEPTION
         WHEN OTHERS THEN
@@ -9163,7 +9194,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
        IF lvFound > 0 THEN
           RETURN TRUE;
-       END IF;        
+       END IF;
 
        RETURN FALSE;
   exception
@@ -9213,12 +9244,12 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
      FROM 	gui_jrnl_headers_unposted
      WHERE	jhu_jrnl_id in ('||journal_id_list||')'
      USING error_message;
-     
+
   exception
       WHEN others THEN
       pr_error(1, SQLERRM, 0, 'prui_log_posting_error', 'gui_jrnl_line_errors', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
   end prui_log_posting_error;
-  
+
   FUNCTION fnui_get_standard_hash_sql (journal_id_list in VARCHAR2) RETURN VARCHAR2 IS
   BEGIN
       RETURN '(
@@ -9323,7 +9354,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
                       NULL,
                       NULL);
       END;
-    
+
       IF lvFound > 0
       THEN
          lvSuccess := FALSE;
@@ -9829,7 +9860,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       cursor v_cur is
         select regexp_substr(journal_id_list,'[^,]+', 1, level) As str from dual
         connect by regexp_substr(journal_id_list, '[^,]+', 1, level) is not null;
-        
+
 
    BEGIN
       success := 'S';
@@ -9839,7 +9870,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
     end loop;
 
   -- Call proc here for last part (or in case of single element)
-       
+
 return;
 
    EXCEPTION
@@ -9876,7 +9907,7 @@ return;
       nCount    NUMBER;
       nrcount   NUMBER;
       vHeaderId VARCHAR2(20);
-        
+
       cursor c_elim (v_key varchar2) is
          SELECT distinct   COALESCE (PSMRE.REINS_LE_CD, ELE.ELIMINATION_LE_CD) ELIM_ENTITY
            FROM gui.gui_jrnl_lines_unposted jlu
@@ -9896,10 +9927,10 @@ return;
                     pl2.ledger_id = pmd.OUTPUT_LEDGER_ID )
           WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
                 AND jlu.JLU_JRNL_HDR_ID = v_key;
-        
+
     r_elim c_elim%rowtype;
-      
-      
+
+
    BEGIN
       success := 'S';
 
@@ -9909,8 +9940,8 @@ return;
         IF r_elim.elim_entity IS NULL THEN
             EXIT;
         END IF;
-        
-            
+
+
         vHeaderId := TO_CHAR (fnui_get_next_journal_id);
 
         IF LENGTH(lv_header_id_list) > 1 THEN
@@ -10179,6 +10210,6 @@ return;
 
          RAISE;
    END pCreateEliminations;
-  
+
 END pgui_manual_journal;
 /
