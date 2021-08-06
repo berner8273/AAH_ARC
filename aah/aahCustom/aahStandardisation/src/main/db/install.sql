@@ -121,6 +121,7 @@ conn ~fdr_logon
 @@indices/fdr/fr_stan_raw_party_legal.sql
 @@indices/fdr/fr_stan_raw_adjustment.sql
 @@indices/fdr/fr_party_legal.sql
+@@indices/fdr/fr_general_codes_aud.sql
 
 conn ~stn_logon
 
