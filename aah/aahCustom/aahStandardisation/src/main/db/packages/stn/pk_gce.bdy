@@ -540,8 +540,7 @@ and not exists (
             select null from stn.HOPPER_GL_COMBO_EDIT_GL hgl
                 where hgl.combo_rule_or_set = gcea.LEDGER_CD || '_' || gcea.LE_CD and
                      hgl.combo_rule_typ = GCE_DEFAULT.LKT_CODE1 and
-                     hgl.combo_attr_or_rule = gcep.PRC_CD and
-                     hgl.effective_from = GCE_DEFAULT.EFFECTIVE_FROM
+                     hgl.combo_attr_or_rule = gcep.PRC_CD 
                      )
 ;
         p_no_fsrgc_le_pub := SQL%ROWCOUNT;
