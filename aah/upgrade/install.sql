@@ -28,7 +28,10 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~stn_logon
-@@stn/us59614_jl_validations.sql;
+@@stn/us50990_combo_rules_fix.sql;
+
+conn ~fdr_login
+@@fdr/purge_dup_combo_rules.sql;
 
 /* End AAH custom upgrades */
 
