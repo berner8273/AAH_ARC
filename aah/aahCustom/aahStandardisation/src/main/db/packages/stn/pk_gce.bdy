@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_GCE AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_GCE AS
     PROCEDURE pr_gl_combo_edit_rval
     AS
     BEGIN
@@ -129,7 +129,7 @@ and not exists (
                           fga.ga_client_text4 = gcer.acct_cd
                )) SubQuery;
     END;
-    
+
     PROCEDURE pr_gl_combo_edit_sps
         (
             p_step_run_sid IN NUMBER,
@@ -176,8 +176,8 @@ and not exists (
                  (select distinct gcep.PRC_CD,gcep.FEED_UUID from stn.gl_combo_edit_assignment) da
                  on da.prc_cd = gcep.PRC_CD and gcep.FEED_UUID = da.feed_uuid
              join
-                 stn.identified_record          idr   on gcep.ROW_SID = idr.row_sid                                                    
-              where gcep.EVENT_STATUS='V'                                 
+                 stn.identified_record          idr   on gcep.ROW_SID = idr.row_sid
+              where gcep.EVENT_STATUS='V'
         )
 and gcep.EVENT_STATUS='V';
         p_no_gcep_processed_records := SQL%ROWCOUNT;
@@ -198,7 +198,7 @@ and gcep.EVENT_STATUS='V';
         p_no_gcer_processed_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gcer', 'p_no_gcer_processed_records', NULL, p_no_gcer_processed_records, NULL);
     END;
-    
+
     PROCEDURE pr_gl_combo_edit_svs
         (
             p_step_run_sid IN NUMBER,
@@ -326,7 +326,7 @@ and     exists (
         p_no_gcer_validated_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting valid status for gcer', 'p_no_gcer_validated_records', NULL, p_no_gcer_validated_records, NULL);
     END;
-    
+
     PROCEDURE pr_gl_combo_edit_chr
         (
             p_step_run_sid IN NUMBER,
@@ -351,7 +351,7 @@ and     exists (
                 hgcegl.EVENT_STATUS <> 'P' AND hgcegl.LPG_ID = p_lpg_id;
         p_total_no_fsrgl_updated := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_gl_combo_edit_idf
         (
             p_step_run_sid IN NUMBER,
@@ -435,7 +435,7 @@ and not exists (
         p_no_gcer_identified_recs := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated GL combo edit.step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_gl_combo_edit_pub
         (
             p_step_run_sid IN NUMBER,
@@ -563,7 +563,7 @@ and not exists (
                 WHERE
                     fsrgc.SRGC_GCT_CODE_TYPE_ID LIKE 'COMBO%') fsrgc
             WHERE
-                not exists  
+                not exists
        (SELECT
             null
         FROM
@@ -571,9 +571,10 @@ and not exists (
             fdr.FR_STAN_RAW_GENERAL_CODES fsrgc2
         WHERE
             fgct.GCT_CODE_TYPE_ID = fsrgc2.SRGC_GCT_CODE_TYPE_ID
+        and fsrgc2.SRGC_GCT_CODE_TYPE_ID = fsrgc.SRGC_GCT_CODE_TYPE_ID
         and fsrgc2.SRGC_GCT_CODE_TYPE_ID like 'COMBO%');
     END;
-    
+
     PROCEDURE pr_gl_combo_edit_prc
         (
             p_step_run_sid IN NUMBER,
