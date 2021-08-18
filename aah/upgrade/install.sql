@@ -30,7 +30,7 @@ conn ~sys_logon
 conn ~stn_logon
 @@stn/us50990_combo_rules_fix.sql;
 
-conn ~fdr_login
+conn ~fdr_logon
 @@fdr/purge_dup_combo_rules.sql;
 
 /* End AAH custom upgrades */
