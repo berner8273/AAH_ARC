@@ -12,6 +12,14 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
     FUNCTION fnui_validate_balances															    RETURN BOOLEAN;
     FUNCTION fnui_validate_account															    RETURN BOOLEAN;
     FUNCTION fnui_validate_chartfield1                                                          RETURN BOOLEAN;
+    FUNCTION fnui_validate_accounting_basis                                                     RETURN BOOLEAN;
+    FUNCTION fnui_validate_affiliate                                                            RETURN BOOLEAN;    
+    FUNCTION fnui_validate_execution_type                                                       RETURN BOOLEAN;    
+    FUNCTION fnui_validate_business_type                                                        RETURN BOOLEAN;
+    FUNCTION fnui_validate_policy_id                                                            RETURN BOOLEAN;
+    FUNCTION fnui_validate_stream_id                                                            RETURN BOOLEAN;
+    FUNCTION fnui_validate_tax_jurisdiction                                                     RETURN BOOLEAN;
+    FUNCTION fnui_validate_premium_type                                                         RETURN BOOLEAN;
     FUNCTION fnui_validate_periods													   		    RETURN BOOLEAN;
     FUNCTION fnui_check_currencies													   		    RETURN BOOLEAN;
     FUNCTION fnui_get_journal_type															    RETURN BOOLEAN;
@@ -2578,6 +2586,38 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
             lvSuccess := gSTATE_ERRORED;
         END IF;
 
+        IF NOT fnui_validate_accounting_basis THEN
+            lvSuccess := gSTATE_ERRORED;
+        END IF;
+
+        IF NOT fnui_validate_affiliate THEN
+            lvSuccess := gSTATE_ERRORED;
+        END IF;
+
+        IF NOT fnui_validate_execution_type THEN
+            lvSuccess := gSTATE_ERRORED;
+        END IF;
+
+        IF NOT fnui_validate_business_type THEN
+            lvSuccess := gSTATE_ERRORED;
+        END IF;
+
+        IF NOT fnui_validate_policy_id THEN
+            lvSuccess := gSTATE_ERRORED;
+        END IF;
+
+        IF NOT fnui_validate_stream_id THEN
+            lvSuccess := gSTATE_ERRORED;
+        END IF;
+
+        IF NOT fnui_validate_tax_jurisdiction THEN
+            lvSuccess := gSTATE_ERRORED;
+        END IF;
+
+        IF NOT fnui_validate_premium_type THEN
+            lvSuccess := gSTATE_ERRORED;
+        END IF;
+
         IF NOT fnui_validate_acc_event_type THEN
             lvSuccess := gSTATE_ERRORED;
         END IF;
@@ -4470,6 +4510,583 @@ lvPeriodStartDate := NULL;
 
     --********************************************************************************
 
+    FUNCTION fnui_validate_accounting_basis RETURN BOOLEAN
+    IS
+
+       lvFound              NUMBER := NULL;
+       lvSuccess         BOOLEAN;
+
+    BEGIN
+
+         lvSuccess := TRUE;
+
+         BEGIN
+
+              --Look for errors in account code
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1010',
+                     /* jle_error_string */            'Accounting Basis '||jlu_segment_2||' is invalid',
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND   user_session_id = gSessionId
+              AND jlu_segment_2 <> 'NVS'
+              AND    jlu_segment_2 NOT IN (SELECT basis_cd
+                                             FROM   STN.POSTING_ACCOUNTING_BASIS);
+
+         EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_accounting_basis', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 lvSuccess := FALSE;
+         END;
+
+         --How many errors were found
+         BEGIN
+              SELECT COUNT(*)
+              INTO     lvFound
+              FROM     temp_gui_jrnl_line_errors
+              WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND    user_session_id = gSessionId
+              AND     jle_error_code = 'MADJ-1010';
+         EXCEPTION
+              WHEN NO_DATA_FOUND THEN
+                   NULL; -- do nothing
+              WHEN OTHERS THEN
+                   pr_error(1, SQLERRM, 0, 'fnui_validate_accounting_basis', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+         END;
+
+         IF lvFound > 0 THEN
+           lvSuccess := FALSE;
+         END IF;
+
+         RETURN lvSuccess;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            pr_error(1, SQLERRM, 0, 'fnui_validate_accounting_basis', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            RETURN FALSE;
+    END fnui_validate_accounting_basis;
+
+    --********************************************************************************
+        FUNCTION fnui_validate_affiliate RETURN BOOLEAN
+    IS
+
+       lvFound              NUMBER := NULL;
+       lvSuccess         BOOLEAN;
+
+    BEGIN
+
+         lvSuccess := TRUE;
+
+         BEGIN
+
+              --Look for errors in account code
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1010',
+                     /* jle_error_string */            'Affiliate '||jlu_segment_4||' is invalid',
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND   user_session_id = gSessionId
+              AND jlu_segment_4 <> 'NVS'
+              AND jlu_segment_7 in ('AA','CA')
+                and not exists (
+                   select
+                          null
+                     from fdr.fr_party_legal
+                     where pl_active = 'A' and pl_pt_party_type_id = 9
+                     and pl_party_legal_id = jlu_segment_4
+               );
+
+         EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_affiliate', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 lvSuccess := FALSE;
+         END;
+
+         --How many errors were found
+         BEGIN
+              SELECT COUNT(*)
+              INTO     lvFound
+              FROM     temp_gui_jrnl_line_errors
+              WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND    user_session_id = gSessionId
+              AND     jle_error_code = 'MADJ-1010';
+         EXCEPTION
+              WHEN NO_DATA_FOUND THEN
+                   NULL; -- do nothing
+              WHEN OTHERS THEN
+                   pr_error(1, SQLERRM, 0, 'fnui_validate_affiliate', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+         END;
+
+         IF lvFound > 0 THEN
+           lvSuccess := FALSE;
+         END IF;
+
+         RETURN lvSuccess;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            pr_error(1, SQLERRM, 0, 'fnui_validate_affiliate', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            RETURN FALSE;
+    END fnui_validate_affiliate;
+
+    --********************************************************************************
+    FUNCTION fnui_validate_execution_type RETURN BOOLEAN
+    IS
+
+       lvFound              NUMBER := NULL;
+       lvSuccess         BOOLEAN;
+
+    BEGIN
+
+         lvSuccess := TRUE;
+
+         BEGIN
+
+              --Look for errors in account code
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1010',
+                     /* jle_error_string */            'Execution type '||jlu_segment_6||' is invalid',
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND   user_session_id = gSessionId
+              AND jlu_segment_6 <> 'NVS'
+              AND    jlu_segment_6 NOT IN (SELECT execution_typ
+                                             FROM   STN.EXECUTION_TYPE );
+
+         EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_execution_type', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 lvSuccess := FALSE;
+         END;
+
+         --How many errors were found
+         BEGIN
+              SELECT COUNT(*)
+              INTO     lvFound
+              FROM     temp_gui_jrnl_line_errors
+              WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND    user_session_id = gSessionId
+              AND     jle_error_code = 'MADJ-1010';
+         EXCEPTION
+              WHEN NO_DATA_FOUND THEN
+                   NULL; -- do nothing
+              WHEN OTHERS THEN
+                   pr_error(1, SQLERRM, 0, 'fnui_validate_execution_type', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+         END;
+
+         IF lvFound > 0 THEN
+           lvSuccess := FALSE;
+         END IF;
+
+         RETURN lvSuccess;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            pr_error(1, SQLERRM, 0, 'fnui_validate_execution_type', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            RETURN FALSE;
+    END fnui_validate_execution_type;
+
+    --********************************************************************************
+    FUNCTION fnui_validate_business_type RETURN BOOLEAN
+    IS
+
+       lvFound              NUMBER := NULL;
+       lvSuccess         BOOLEAN;
+
+    BEGIN
+
+         lvSuccess := TRUE;
+
+         BEGIN
+
+              --Look for errors in account code
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1010',
+                     /* jle_error_string */            'Business type '||jlu_segment_7||' is invalid',
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND   user_session_id = gSessionId
+              AND jlu_segment_7 <> 'NVS'
+              AND    jlu_segment_7 NOT IN (SELECT business_typ
+                                             FROM   STN.BUSINESS_TYPE);
+
+         EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_business_type', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 lvSuccess := FALSE;
+         END;
+
+         --How many errors were found
+         BEGIN
+              SELECT COUNT(*)
+              INTO     lvFound
+              FROM     temp_gui_jrnl_line_errors
+              WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND    user_session_id = gSessionId
+              AND     jle_error_code = 'MADJ-1010';
+         EXCEPTION
+              WHEN NO_DATA_FOUND THEN
+                   NULL; -- do nothing
+              WHEN OTHERS THEN
+                   pr_error(1, SQLERRM, 0, 'fnui_validate_business_type', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+         END;
+
+         IF lvFound > 0 THEN
+           lvSuccess := FALSE;
+         END IF;
+
+         RETURN lvSuccess;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            pr_error(1, SQLERRM, 0, 'fnui_validate_business_type', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            RETURN FALSE;
+    END fnui_validate_business_type;
+
+    --********************************************************************************
+
+    FUNCTION fnui_validate_policy_id RETURN BOOLEAN
+    IS
+
+       lvFound              NUMBER := NULL;
+       lvSuccess         BOOLEAN;
+
+    BEGIN
+
+         lvSuccess := TRUE;
+
+         BEGIN
+
+              --Look for errors in account code
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1010',
+                     /* jle_error_string */            'Policy ID '||jlu_segment_8||' is invalid',
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND   user_session_id = gSessionId
+              AND jlu_segment_8 <> 'NVS'
+                and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_instr_insure_extend fie
+                    where
+                         fie.iie_cover_signing_party = jlu_segment_8
+               );
+         EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_policy_id', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 lvSuccess := FALSE;
+         END;
+
+         --How many errors were found
+         BEGIN
+              SELECT COUNT(*)
+              INTO     lvFound
+              FROM     temp_gui_jrnl_line_errors
+              WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND    user_session_id = gSessionId
+              AND     jle_error_code = 'MADJ-1010';
+         EXCEPTION
+              WHEN NO_DATA_FOUND THEN
+                   NULL; -- do nothing
+              WHEN OTHERS THEN
+                   pr_error(1, SQLERRM, 0, 'fnui_validate_policy_id', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+         END;
+
+         IF lvFound > 0 THEN
+           lvSuccess := FALSE;
+         END IF;
+
+         RETURN lvSuccess;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            pr_error(1, SQLERRM, 0, 'fnui_validate_policy_id', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            RETURN FALSE;
+    END fnui_validate_policy_id;
+
+    --********************************************************************************
+    FUNCTION fnui_validate_stream_id RETURN BOOLEAN
+    IS
+
+       lvFound              NUMBER := NULL;
+       lvSuccess         BOOLEAN;
+
+    BEGIN
+
+         lvSuccess := TRUE;
+
+         BEGIN
+
+              --Look for errors in account code
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1010',
+                     /* jle_error_string */            'Stream ID '||jlu_attribute_1||' is invalid',
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND   user_session_id = gSessionId
+              AND jlu_attribute_1 <> 'NVS'
+                and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_trade ft
+                    where
+                          ft.t_source_tran_no = jlu_attribute_1
+               );
+
+         EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_stream_id', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 lvSuccess := FALSE;
+         END;
+
+         --How many errors were found
+         BEGIN
+              SELECT COUNT(*)
+              INTO     lvFound
+              FROM     temp_gui_jrnl_line_errors
+              WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND    user_session_id = gSessionId
+              AND     jle_error_code = 'MADJ-1010';
+         EXCEPTION
+              WHEN NO_DATA_FOUND THEN
+                   NULL; -- do nothing
+              WHEN OTHERS THEN
+                   pr_error(1, SQLERRM, 0, 'fnui_validate_stream_id', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+         END;
+
+         IF lvFound > 0 THEN
+           lvSuccess := FALSE;
+         END IF;
+
+         RETURN lvSuccess;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            pr_error(1, SQLERRM, 0, 'fnui_validate_stream_id', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            RETURN FALSE;
+    END fnui_validate_stream_id;
+
+    --********************************************************************************
+    FUNCTION fnui_validate_tax_jurisdiction RETURN BOOLEAN
+    IS
+
+       lvFound              NUMBER := NULL;
+       lvSuccess         BOOLEAN;
+
+    BEGIN
+
+         lvSuccess := TRUE;
+
+         BEGIN
+
+              --Look for errors in account code
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1010',
+                     /* jle_error_string */            'Tax jurisdiction '||jlu_attribute_2||' is invalid',
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND   user_session_id = gSessionId
+              AND jlu_attribute_2 <> 'NVS'
+                and not exists (
+                   select
+                          null
+                     from
+                          fdr.fr_general_codes frgc
+                    where
+                          frgc.gc_client_code      = jlu_attribute_2
+                      and frgc.gc_gct_code_type_id = 'TAX_JURISDICTION'
+               );
+
+         EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_tax_jurisdiction', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 lvSuccess := FALSE;
+         END;
+
+         --How many errors were found
+         BEGIN
+              SELECT COUNT(*)
+              INTO     lvFound
+              FROM     temp_gui_jrnl_line_errors
+              WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND    user_session_id = gSessionId
+              AND     jle_error_code = 'MADJ-1010';
+         EXCEPTION
+              WHEN NO_DATA_FOUND THEN
+                   NULL; -- do nothing
+              WHEN OTHERS THEN
+                   pr_error(1, SQLERRM, 0, 'fnui_validate_tax_jurisdiction', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+         END;
+
+         IF lvFound > 0 THEN
+           lvSuccess := FALSE;
+         END IF;
+
+         RETURN lvSuccess;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            pr_error(1, SQLERRM, 0, 'fnui_validate_tax_jurisdiction', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            RETURN FALSE;
+    END fnui_validate_tax_jurisdiction;
+
+    --********************************************************************************
+
+    FUNCTION fnui_validate_premium_type RETURN BOOLEAN
+    IS
+
+       lvFound              NUMBER := NULL;
+       lvSuccess         BOOLEAN;
+
+    BEGIN
+
+         lvSuccess := TRUE;
+
+         BEGIN
+
+              --Look for errors in account code
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1010',
+                     /* jle_error_string */            'Premium type '||jlu_attribute_3||' is invalid',
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND   user_session_id = gSessionId
+              AND jlu_attribute_3 <> 'NVS'
+              AND    jlu_attribute_3 NOT IN ('U','I','M');
+
+         EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_premium_type', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 lvSuccess := FALSE;
+         END;
+
+         --How many errors were found
+         BEGIN
+              SELECT COUNT(*)
+              INTO     lvFound
+              FROM     temp_gui_jrnl_line_errors
+              WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              AND    user_session_id = gSessionId
+              AND     jle_error_code = 'MADJ-1010';
+         EXCEPTION
+              WHEN NO_DATA_FOUND THEN
+                   NULL; -- do nothing
+              WHEN OTHERS THEN
+                   pr_error(1, SQLERRM, 0, 'fnui_validate_premium_type', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+         END;
+
+         IF lvFound > 0 THEN
+           lvSuccess := FALSE;
+         END IF;
+
+         RETURN lvSuccess;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            pr_error(1, SQLERRM, 0, 'fnui_validate_premium_type', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            RETURN FALSE;
+    END fnui_validate_premium_type;
+
+    --********************************************************************************
 
     FUNCTION fnui_validate_periods RETURN BOOLEAN
     IS
