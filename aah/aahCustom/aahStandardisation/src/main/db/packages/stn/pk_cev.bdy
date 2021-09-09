@@ -182,6 +182,7 @@ and not exists (
           ce_data
           as (
           select
+                    /*+ MATERIALIZE*/
                            ipr.policy_id
                          , ipr.policy_abbr_nm
                          , ipr.stream_id
