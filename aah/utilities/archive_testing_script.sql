@@ -30,8 +30,9 @@ BEGIN
 dbms_output.put_line(q'['A','B','C','D','E','F']');
 dbms_output.put_line(q'['Table','Schema','Rows Need Archive','Total Rows','Archived','Archive Log']');
 
-  select to_char(gp_todays_bus_date,'mm/dd/yyyy') into bus_date from fdr.fr_global_parameter where lpg_id=1;
-  
+  -- select to_char(gp_todays_bus_date,'mm/dd/yyyy') into bus_date from fdr.fr_global_parameter where lpg_id=1;
+  select to_char(sysdate,'mm/dd/yyyy') into bus_date from dual;
+
   FOR r_fdr IN c_fdr
   LOOP    
 
@@ -41,7 +42,7 @@ dbms_output.put_line(q'['Table','Schema','Rows Need Archive','Total Rows','Archi
     v_sql := 'select count(*) INTO :v_count2 from fdr.'||r_fdr.t_name;
     EXECUTE IMMEDIATE v_sql INTO v_count2;
     
-    v_sql:= 'select count(*) into :v_count_arc from dba_tables where owner = ''ARC'' and table_name = '||''''||r_fdr.t_name||'''';
+    v_sql:= 'select count(*) into :v_count_arc from all_tables where owner = ''ARC'' and table_name = '||''''||r_fdr.t_name||'''';
     EXECUTE IMMEDIATE v_sql INTO v_count_arc;                
     
    IF v_count_arc > 0 THEN
