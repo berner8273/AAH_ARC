@@ -5,7 +5,8 @@ DECLARE
   v_count2 integer :=0;
   v_count3 number :=0;
   v_count4 number :=0;
-  bus_date varchar2(10);
+  bus_date  varchar2(10);
+  bus_dateS varchar2(10);
   
   CURSOR c_fdr
   IS
@@ -30,8 +31,8 @@ BEGIN
 dbms_output.put_line(q'['A','B','C','D','E','F']');
 dbms_output.put_line(q'['Table','Schema','Rows Need Archive','Total Rows','Archived','Archive Log']');
 
-  -- select to_char(gp_todays_bus_date,'mm/dd/yyyy') into bus_date from fdr.fr_global_parameter where lpg_id=1;
-  select to_char(sysdate,'mm/dd/yyyy') into bus_date from dual;
+  select to_char(gp_todays_bus_date,'mm/dd/yyyy') into bus_date from fdr.fr_global_parameter where lpg_id=1;
+  select to_char(sysdate,'mm/dd/yyyy') into bus_dateS from dual;
 
   FOR r_fdr IN c_fdr
   LOOP    
@@ -67,7 +68,7 @@ dbms_output.put_line(q'['Table','Schema','Rows Need Archive','Total Rows','Archi
   FOR r_stn IN c_stn
   LOOP    
    
-   v_sql:= 'SELECT count(*) FROM STN.'||r_stn.t_name||q'[ t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X') and f.loaded_ts <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_stn.a_days;  
+   v_sql:= 'SELECT count(*) FROM STN.'||r_stn.t_name||q'[ t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X') and f.loaded_ts <= to_date(']'||bus_dateS||q'[','mm/dd/yyyy')]'||'  - '||r_stn.a_days;  
    EXECUTE IMMEDIATE v_sql INTO v_count1;
 
    v_sql := 'select count(*) from stn.'||r_stn.t_name;
