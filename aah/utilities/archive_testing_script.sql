@@ -1,3 +1,6 @@
+-- before running archive scripts make sure this is run as aptitude user:
+-- grant alter any table to fdr
+
 DECLARE
   v_sql varchar2(1256);
   v_count_arc integer :=0;
