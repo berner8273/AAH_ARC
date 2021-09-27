@@ -12,7 +12,7 @@ DECLARE
   CURSOR c_fdr
   IS
     SELECT 
-        arct_id,arct_table_name t_name,arct_arc_table_name a_name,arct_archive_days a_days,arct_archive_date_column a_date,arct_schema_name schema
+        arct_id,arct_table_name t_name,arct_arc_table_name a_name,arct_archive_days a_days,arct_archive_date_column a_date,arct_schema_name schema,arct_archive_where_clause,arct_arc_schema_name 
     FROM 
         fdr.fr_archive_ctl 
     WHERE
@@ -38,7 +38,11 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
   FOR r_fdr IN c_fdr
   LOOP    
 
-    v_sql := 'select count(*) into :v_count1 from fdr.'||r_fdr.t_name||q'[ where event_status in ('P','E') and ]'||r_fdr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_fdr.a_days;       
+    IF r_fdr.arct_arc_schema_name <> 'FDR' THEN
+        v_sql := 'select count(*) into :v_count1 from fdr.'||r_fdr.t_name||q'[ where event_status in ('P','E') and ]'||r_fdr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_fdr.a_days;
+    ELSE
+        v_sql :=  'select count(*) into :v_count1 from fdr.'||r_fdr.t_name||' where '||r_fdr.arct_archive_where_clause;
+    END IF;               
     EXECUTE IMMEDIATE v_sql INTO v_count1;
         
     v_sql := 'select count(*) INTO :v_count2 from fdr.'||r_fdr.t_name;
@@ -47,9 +51,12 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
     v_sql:= 'select count(*) into :v_count_arc from all_tables where owner = ''ARC'' and table_name = '||''''||r_fdr.t_name||'''';
     EXECUTE IMMEDIATE v_sql INTO v_count_arc;                
   
+  IF r_fdr.arct_arc_schema_name = 'FDR' THEN
+    v_lpg_id := 1;
+  ELSE      
     v_sql:= 'select lpg_id into :v_lpg_id from fdr.'||r_fdr.t_name||' where ROWNUM = 1';
     EXECUTE IMMEDIATE v_sql INTO v_lpg_id;                
-  
+  END IF;
     
    IF v_count_arc > 0 THEN
         v_sql := 'select count(*) INTO :v_count3 from ARC.'||r_fdr.a_name||q'[ where event_status in ('P','E') and ]'||r_fdr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_fdr.a_days;   
@@ -79,7 +86,6 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
    v_sql := 'select count(*) from stn.'||r_stn.t_name;
    EXECUTE IMMEDIATE v_sql INTO v_count2; 
 
-
    v_sql:= 'select count(*) into :v_lpg_id from stn.'||r_stn.t_name||' where ROWNUM = 1';
    EXECUTE IMMEDIATE v_sql INTO v_lpg_id;
    
@@ -87,7 +93,7 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
     v_sql:= 'select lpg_id into :v_lpg_id from stn.'||r_stn.t_name||' where ROWNUM = 1';
     EXECUTE IMMEDIATE v_sql INTO v_lpg_id;                
    END IF;
-    
+       
     BEGIN 
         v_sql := 'select FL.ARL_RECORDS_ARCHIVED INTO :v_count4 from fdr.fr_archive_ctl fc, fdr.fr_archive_log fl where FC.ARCT_ID = fl.arl_arct_id  and fc.arct_table_name = '||''''||r_stn.t_name||''''||' and fl.arl_arlh_id = (select max(arl_arlh_id) from fdr.fr_archive_log)';
         EXECUTE IMMEDIATE v_sql INTO v_count4;
