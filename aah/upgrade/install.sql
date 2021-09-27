@@ -30,8 +30,6 @@ conn ~sys_logon
 
 conn ~stn_logon
 @@stn/archive_stn_insert.sql
-@@stn/archive_stn_pre.sql
-
 
 conn ~gui_logon
 
