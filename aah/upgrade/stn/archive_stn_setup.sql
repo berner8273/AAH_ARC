@@ -12,6 +12,7 @@ ELSE
 END IF;
 
 END;
+/
 
 declare
 nCount  NUMBER;
@@ -31,6 +32,7 @@ IF nCount = nSavedCount THEN
 END IF;  
 
 end;
+/
 
 declare
 nCount1  NUMBER;
@@ -49,6 +51,7 @@ ELSE
 END IF;
 
 END;
+/
 
 declare
 nCount  NUMBER;
