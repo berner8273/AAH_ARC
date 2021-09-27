@@ -59,7 +59,7 @@ begin
 select count(*) into nSavedCount from (
 select t.* FROM STN.cession t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X') and f.loaded_ts > SYSDATE  - 182);
 
-execute immediate 'insert into cession_bak '||q'[(SELECT t.* FROM STN.cession t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X') and f.loaded_ts > SYSDATE  - 182)]';          
+execute immediate 'insert into cession_BAK '||q'[(SELECT t.* FROM STN.cession t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X') and f.loaded_ts > SYSDATE  - 182)]';          
 
 select count(*) into nCount from cession_bak;
 IF nCount = nSavedCount THEN
@@ -76,3 +76,5 @@ execute immediate 'drop table cession_event_bak';
 
 end;
 /
+
+
