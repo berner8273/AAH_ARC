@@ -1915,7 +1915,7 @@ VALUES (
     NULL,
     'N',
     'DML',
-    'LPG_ID',
+    NULL,
     NULL)  ;
 
           
@@ -1959,7 +1959,7 @@ VALUES (
     NULL,
     'N',
     'DML',
-    'LPG_ID',
+    NULL,
     NULL);  
 
 
@@ -2005,6 +2005,6 @@ VALUES (
     NULL,
     'N',
     'DML',
-    'LPG_ID',
+    NULL,
     NULL);
 commit;
