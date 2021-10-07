@@ -31,6 +31,8 @@ conn ~sys_logon
 conn ~stn_logon
 @@stn/archive_stn_setup.sql
 
+conn ~fdrn_logon
+@@fdr/archive_fdr_setup.sql
 
 /********************************* End AAH custom upgrades ********************************************************/
 
