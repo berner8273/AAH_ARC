@@ -23,9 +23,9 @@ nDays NUMBER;
 begin
 
 select count(*) into nSavedCount from (
-select t.* FROM STN.CESSION_EVENT t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X') and f.loaded_ts > SYSDATE  - (select arct_archive_days from fdr.fr_archive_ctl where arct_table_name = 'CESSION_EVENT'));
+select t.* FROM STN.CESSION_EVENT t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X','U') and f.loaded_ts > SYSDATE  - (select arct_archive_days from fdr.fr_archive_ctl where arct_table_name = 'CESSION_EVENT'));
 
-execute immediate 'insert into CESSION_EVENT_BAK '||q'[(SELECT t.* FROM STN.CESSION_EVENT t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X') and f.loaded_ts > SYSDATE  - (select arct_archive_days from fdr.fr_archive_ctl where arct_table_name = 'CESSION_EVENT'))]';
+execute immediate 'insert into CESSION_EVENT_BAK '||q'[(SELECT t.* FROM STN.CESSION_EVENT t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X','U') and f.loaded_ts > SYSDATE  - (select arct_archive_days from fdr.fr_archive_ctl where arct_table_name = 'CESSION_EVENT'))]';
 
 select count(*) into nCount from cession_event_bak;
 IF nCount = nSavedCount THEN
@@ -64,9 +64,9 @@ nSavedCount NUMBER;
 begin
 
 select count(*) into nSavedCount from (
-select t.* FROM STN.cession t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X') and f.loaded_ts > SYSDATE  - (select arct_archive_days from fdr.fr_archive_ctl where arct_table_name = 'CESSION'));
+select t.* FROM STN.cession t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X','U') and f.loaded_ts > SYSDATE  - (select arct_archive_days from fdr.fr_archive_ctl where arct_table_name = 'CESSION'));
 
-execute immediate 'insert into cession_BAK '||q'[(SELECT t.* FROM STN.cession t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X') and f.loaded_ts > SYSDATE  - (select arct_archive_days from fdr.fr_archive_ctl where arct_table_name = 'CESSION'))]';          
+execute immediate 'insert into cession_BAK '||q'[(SELECT t.* FROM STN.cession t JOIN STN.FEED f ON t.feed_uuid = f.feed_uuid WHERE t.event_status in ('P','E','X','U') and f.loaded_ts > SYSDATE  - (select arct_archive_days from fdr.fr_archive_ctl where arct_table_name = 'CESSION'))]';          
 
 select count(*) into nCount from cession_bak;
 IF nCount = nSavedCount THEN
