@@ -27,8 +27,8 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
-@@stn/us59614_jl_validations.sql;
+conn ~fdr_logon
+@@stn/us64680_rebuild_seq.sql;
 
 /* End AAH custom upgrades */
 
