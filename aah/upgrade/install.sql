@@ -39,8 +39,6 @@ conn ~stn_logon
 @@stn/us53060_stn_views.sql
 @@stn/us53060_packages.sql
 @@stn/bug64238_stn_views.sql
-@@stn/bug64238_stn_packages.sql
-
 
 conn ~fdr_logon
 @@fdr/us58325_new_sub_accounts.sql
