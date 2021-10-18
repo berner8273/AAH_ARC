@@ -52,7 +52,7 @@ conn ~fdr_logon
 
 conn ~stn_logon
 -- add new posting rules data loader below
-@@stn/us62156_posting_drivers.sql
+@@stn/ROB204_posting_drivers.sql
 
 conn~gui_logon
 -- @@gui/us53060_gui_event_class.sql
