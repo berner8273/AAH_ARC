@@ -1907,8 +1907,8 @@ VALUES (
     'Y',
     NULL,
     390,
-    ' i_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',
-    501,
+		' i_instrument_id NOT in ('1','INSURANCE_POLICY') and i_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where  t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',
+    502,
     NULL,
     NULL,
     1,
@@ -1916,9 +1916,7 @@ VALUES (
     'N',
     'DML',
     NULL,
-    NULL)  ;
-
-          
+    NULL)  ;        
 
 -- INSTRUMENT EXTEND   
 insert into fdr.fr_archive_ctl(
@@ -1951,8 +1949,8 @@ VALUES (
     'Y',
     NULL,
     390,
-    ' iie_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',
-    502,
+		' iie_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))', 
+    501,
     NULL,
     NULL,
     1,
@@ -1961,12 +1959,6 @@ VALUES (
     'DML',
     NULL,
     NULL);  
-
-
-
-
--- TRADE
-
 insert into fdr.fr_archive_ctl(
     arct_id,
     arct_schema_name,
@@ -1997,7 +1989,7 @@ VALUES (
     'Y',
     NULL,
     390,
-    ' t_i_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',
+		' t_trade_id in (select t1.t_trade_id from fdr.fr_trade t1 where t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',    
     503,
     NULL,
     NULL,
