@@ -1,2 +1,5 @@
 create user aah_read identified by ~1;
 grant aah_read_only to aah_read;
+GRANT "CONNECT" TO AAH_READ;
+GRANT SELECT_CATALOG_ROLE TO AAH_READ;
+ALTER USER AAH_READ DEFAULT ROLE AAH_READ_ONLY,"CONNECT",SELECT_CATALOG_ROLE;
