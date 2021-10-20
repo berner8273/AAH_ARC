@@ -27,8 +27,10 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
-@@stn/us59614_jl_validations.sql;
+conn ~sys_logon as sysdba
+GRANT "CONNECT" TO AAH_READ;
+GRANT SELECT_CATALOG_ROLE TO AAH_READ;
+ALTER USER AAH_READ DEFAULT ROLE AAH_READ_ONLY,"CONNECT",SELECT_CATALOG_ROLE;
 
 /* End AAH custom upgrades */
 
