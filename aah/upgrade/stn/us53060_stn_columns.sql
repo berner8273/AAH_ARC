@@ -13,6 +13,17 @@ BEGIN
       commit;
   end if;
 
+  Select count(*) into v_column_exists
+    from ALL_TAB_COLUMNS
+    where upper(column_name) = 'CHARTFIELD_1'
+      and upper(table_name) = 'CESSION_EVENT'
+      and owner = 'STN' ;
+
+  if (v_column_exists = 0) then
+      execute immediate 'alter table stn.cession_event add (CHARTFIELD_1 VARCHAR2(50))';
+      commit;
+  end if;
+
   -- add column to posting_account_derivation
   Select count(*) into v_column_exists
     from ALL_TAB_COLUMNS
@@ -133,6 +144,20 @@ BEGIN
       commit;
   end if;        
 
+-- add column to cev_valid
+  Select count(*) into v_column_exists
+    from ALL_TAB_COLUMNS
+    where upper(column_name) = 'CHARTFIELD_1'
+      and upper(table_name) = 'CEV_VALID'
+      and owner = 'STN' ;
+
+  if (v_column_exists = 0) then
+      execute immediate 'alter table stn.cev_valid add (CHARTFIELD_1 VARCHAR2(50))';
+      commit;
+  end if;        
+
+
+
 -- add column to cev_mtm_data
   Select count(*) into v_column_exists
     from ALL_TAB_COLUMNS
@@ -142,6 +167,18 @@ BEGIN
 
   if (v_column_exists = 0) then
       execute immediate 'alter table stn.cev_mtm_data add (ACCOUNT_CD VARCHAR2(20))';
+      commit;
+  end if;        
+
+-- add column to cev_mtm_data
+  Select count(*) into v_column_exists
+    from ALL_TAB_COLUMNS
+    where upper(column_name) = 'CHARTFIELD_1'
+      and upper(table_name) = 'CEV_MTM_DATA'
+      and owner = 'STN' ;
+
+  if (v_column_exists = 0) then
+      execute immediate 'alter table stn.cev_mtm_data add (CHARTFIELD_1 VARCHAR2(50))';
       commit;
   end if;        
 
@@ -157,6 +194,18 @@ BEGIN
       commit;
   end if;        
 
+-- add column to cev_gaap_fut_accts_data
+  Select count(*) into v_column_exists
+    from ALL_TAB_COLUMNS
+    where upper(column_name) = 'CHARTFIELD_1'
+      and upper(table_name) = 'CEV_GAAP_FUT_ACCTS_DATA'
+      and owner = 'STN' ;
+
+  if (v_column_exists = 0) then
+      execute immediate 'alter table stn.cev_gaap_fut_accts_data add (CHARTFIELD_1 VARCHAR2(20))';
+      commit;
+  end if;        
+
 -- add column to cev_data
   Select count(*) into v_column_exists
     from ALL_TAB_COLUMNS
@@ -168,6 +217,18 @@ BEGIN
       execute immediate 'alter table stn.cev_data add (ACCOUNT_CD VARCHAR2(20))';
       commit;
   end if;        
-   
+
+-- add column to cev_data
+  Select count(*) into v_column_exists
+    from ALL_TAB_COLUMNS
+    where upper(column_name) = 'CHARTFIELD_1'
+      and upper(table_name) = 'CEV_DATA'
+      and owner = 'STN' ;
+
+  if (v_column_exists = 0) then
+      execute immediate 'alter table stn.cev_data add (CHARTFIELD_1 VARCHAR2(20))';
+      commit;
+  end if;        
+
 END;
 /
