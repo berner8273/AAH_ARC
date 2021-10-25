@@ -28,7 +28,6 @@ create table stn.cev_non_intercompany_data
 ,  event_typ                      varchar2 ( 30 char )
 ,  business_event_typ             varchar2 ( 50 char )
 ,  business_unit                  varchar2 ( 20 char )
-,  account_cd					            varchar2 ( 50 char )
 ,  bu_lookup                      varchar2 ( 20 char )
 ,  affiliate                      varchar2 ( 20 char )
 ,  owner_le_cd                    varchar2 ( 20 char )
