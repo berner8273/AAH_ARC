@@ -48,6 +48,7 @@ create table stn.cev_gaap_fut_accts_data
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  input_reporting_amt            number
 ,  partner_reporting_amt          number
+,  chartfield_1                   varchar2 ( 50 char)
 ,  lpg_id                         number ( 38 )
 )
 ;
