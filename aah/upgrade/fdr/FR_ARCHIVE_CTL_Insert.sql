@@ -1907,7 +1907,7 @@ VALUES (
     'Y',
     NULL,
     390,
-		' i_instrument_id NOT in ('1','INSURANCE_POLICY') and i_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where  t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',
+		' i_instrument_id NOT in (''1'',''INSURANCE_POLICY'') and i_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where  t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',
     502,
     NULL,
     NULL,
