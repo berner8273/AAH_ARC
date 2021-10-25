@@ -51,6 +51,7 @@ create table stn.cev_data
 ,  input_reporting_amt            number ( 38 , 9 )
 ,  partner_reporting_amt          number
 ,  reporting_ccy                  varchar2 ( 3 char )
+,  chartfield_1                   varchar( 50 char )
 ,  lpg_id                         number ( 38 )
 )
 ;
