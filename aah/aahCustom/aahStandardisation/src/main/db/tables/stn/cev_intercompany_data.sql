@@ -47,6 +47,7 @@ create table stn.cev_intercompany_data
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  reporting_amt                  number
 ,  lpg_id                         number ( 38 )
+,  chartfield_1                   varchar2 ( 50 char)
 );
 
 GRANT SELECT ON "STN"."CEV_INTERCOMPANY_DATA" TO "AAH_READ_ONLY";
