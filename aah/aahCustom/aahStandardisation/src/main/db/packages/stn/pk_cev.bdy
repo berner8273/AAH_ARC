@@ -1763,6 +1763,7 @@ and not exists (
                      , vie_acct_dt
                      , is_mark_to_market
                      , tax_jurisdiction_cd
+                     , chartfield_cd
                      , transaction_ccy
                      , transaction_amt
                      , functional_ccy
@@ -1771,7 +1772,6 @@ and not exists (
                      , reporting_amt
                      , lpg_id
                      , account_cd                     
-                     , chartfield_cd
                   from
                        vie_data
                 union all
@@ -1814,6 +1814,7 @@ and not exists (
                      , vie_acct_dt
                      , is_mark_to_market
                      , tax_jurisdiction_cd
+                     , chartfield_1
                      , transaction_ccy
                      , transaction_amt
                      , functional_ccy
@@ -1822,7 +1823,6 @@ and not exists (
                      , reporting_amt
                      , lpg_id
                      , account_cd                     
-                     , chartfield_1
                   from
                        vie_hist
                 ;
