@@ -72,6 +72,18 @@ BEGIN
       commit;
   end if;
 
+Select count(*) into v_column_exists
+    from ALL_TAB_COLUMNS
+    where upper(column_name) = 'CHARTFIELD_1'
+      and upper(table_name) = 'CEV_VIE_DATA'
+      and owner = 'STN' ;
+
+  if (v_column_exists = 0) then
+      execute immediate 'alter table stn.cev_vie_data add (CHARTFIELD_1 VARCHAR2(50))';
+      commit;
+  end if;
+
+
   -- add column to cev_intercompany_data
   Select count(*) into v_column_exists
     from ALL_TAB_COLUMNS
