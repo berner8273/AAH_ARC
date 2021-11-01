@@ -79,5 +79,5 @@ select distinct
                           max_event
                  )
    and cevval.event_status = 'V'
-   and cep.event_type not in (select event_typ from stn.event_hierarchy_reference where event_class = 'CASH_TXN')
+   and cep.event_typ not in (select event_typ from stn.event_hierarchy_reference where event_class = 'CASH_TXN')
 ;
