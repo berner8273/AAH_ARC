@@ -108,7 +108,7 @@ AS
                  TRUNC (cep.accounting_dt, 'MONTH')
           AND fsrae.srae_client_spare_id16 <> 'VIE_HISTORICAL'
           AND fsrae.event_status = 'P'
-          AND fsrae.srae_acc_event_type not in (select event_typ from stn.event_hierarchy_reference where event_class = 'CASH_TXN')
+          AND fsrae.srae_acc_event_typ not in (select event_typ from stn.event_hierarchy_reference where event_class = 'CASH_TXN')
           AND fsrae.srae_client_spare_id14 NOT IN ( SELECT DISTINCT faei2.srae_client_spare_id14
                                                      FROM fdr.fr_stan_raw_acc_event faei2                                                         
                                                     WHERE faei2.srae_client_spare_id16 =
