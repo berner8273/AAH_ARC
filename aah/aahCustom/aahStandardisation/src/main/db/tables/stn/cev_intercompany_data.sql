@@ -46,6 +46,7 @@ create table stn.cev_intercompany_data
 ,  functional_amt                 number
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  reporting_amt                  number
+,  jl_description                 varchar2 ( 40 char)
 ,  lpg_id                         number ( 38 )
 );
 
