@@ -39,13 +39,14 @@ create table stn.cev_vie_data
 ,  vie_acct_dt                    date
 ,  is_mark_to_market              varchar2 ( 20 char )
 ,  tax_jurisdiction_cd            varchar2 ( 80 char )
-,  chartfield_cd                  varchar2 ( 20 char )
+,  chartfield_cd                  varchar2 ( 50 char )
 ,  transaction_ccy                varchar2 ( 3 char )
 ,  transaction_amt                number
 ,  functional_ccy                 varchar2 ( 3 char )
 ,  functional_amt                 number
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  reporting_amt                  number
+,  jl_description                 varchar2 ( 40 char )
 ,  lpg_id                         number ( 38 )
 );
 
