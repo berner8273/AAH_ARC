@@ -19,7 +19,7 @@ create table stn.cev_valid
 ,   reporting_ccy       varchar2 ( 3 char )
 ,   reporting_amt       number ( 38 , 9 )
 ,   chartfield_1        varchar2 (50 char)
-,   jl_description      varchar2 (40 char)
+,   jl_description      varchar2 (100 byte)
 ,   lpg_id              number   ( 38 , 0 )
 ,   event_status        varchar2 ( 1 char )
 ,   feed_uuid           raw ( 16 )
