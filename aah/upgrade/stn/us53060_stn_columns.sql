@@ -31,7 +31,7 @@ BEGIN
       and owner = 'STN' ;
 
   if (v_column_exists = 0) then
-      execute immediate 'alter table stn.cession_event add (JL_DESCRIPTION VARCHAR2(80))';
+      execute immediate 'alter table stn.cession_event add (JL_DESCRIPTION VARCHAR2(100 byte))';
       commit;
   end if;
 
@@ -91,7 +91,7 @@ BEGIN
       and owner = 'STN' ;
 
   if (v_column_exists = 0) then
-      execute immediate 'alter table stn.cev_vie_data add (JL_DESCRIPTION VARCHAR2(80))';
+      execute immediate 'alter table stn.cev_vie_data add (JL_DESCRIPTION VARCHAR2(100 byte))';
       commit;
   end if;
 
@@ -116,7 +116,7 @@ BEGIN
       and owner = 'STN' ;
 
   if (v_column_exists = 0) then
-      execute immediate 'alter table stn.cev_intercompany_data add (JL_DESCRIPTION VARCHAR2(80))';
+      execute immediate 'alter table stn.cev_intercompany_data add (JL_DESCRIPTION VARCHAR2(100 byte))';
       commit;
   end if;
 
@@ -140,7 +140,7 @@ BEGIN
       and owner = 'STN' ;
 
   if (v_column_exists = 0) then
-      execute immediate 'alter table stn.cev_non_intercompany_data add (JL_DESCRIPTION VARCHAR2(80))';
+      execute immediate 'alter table stn.cev_non_intercompany_data add (JL_DESCRIPTION VARCHAR2(100 byte))';
       commit;
   end if;
 
@@ -213,7 +213,7 @@ BEGIN
       and owner = 'STN' ;
 
   if (v_column_exists = 0) then
-      execute immediate 'alter table stn.cev_valid add (JL_DESCRIPTION VARCHAR2(80))';
+      execute immediate 'alter table stn.cev_valid add (JL_DESCRIPTION VARCHAR2(100 byte))';
       commit;
   end if;
 
@@ -249,7 +249,7 @@ BEGIN
       and owner = 'STN' ;
 
   if (v_column_exists = 0) then
-      execute immediate 'alter table stn.cev_mtm_data add (JL_DESCRIPTION VARCHAR2(80))';
+      execute immediate 'alter table stn.cev_mtm_data add (JL_DESCRIPTION VARCHAR2(100 byte))';
       commit;
   end if;        
 
@@ -285,7 +285,7 @@ BEGIN
       and owner = 'STN' ;
 
   if (v_column_exists = 0) then
-      execute immediate 'alter table stn.cev_gaap_fut_accts_data add (JL_DESCRIPTION VARCHAR2(80))';
+      execute immediate 'alter table stn.cev_gaap_fut_accts_data add (JL_DESCRIPTION VARCHAR2(100 byte))';
       commit;
   end if;        
 
@@ -309,7 +309,7 @@ BEGIN
       and owner = 'STN' ;
 
   if (v_column_exists = 0) then
-      execute immediate 'alter table stn.cev_data add (CHARTFIELD_1 VARCHAR2(20))';
+      execute immediate 'alter table stn.cev_data add (CHARTFIELD_1 VARCHAR2(100 byte))';
       commit;
   end if;        
 
@@ -321,7 +321,7 @@ BEGIN
       and owner = 'STN' ;
 
   if (v_column_exists = 0) then
-      execute immediate 'alter table stn.cev_data add (JL_DESCRIPTION VARCHAR2(80))';
+      execute immediate 'alter table stn.cev_data add (JL_DESCRIPTION VARCHAR2(100 byte))';
       commit;
   end if;        
 
