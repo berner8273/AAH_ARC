@@ -46,7 +46,7 @@ create table stn.cev_vie_data
 ,  functional_amt                 number
 ,  reporting_ccy                  varchar2 ( 3 char )
 ,  reporting_amt                  number
-,  jl_description                 varchar2 ( 40 char )
+,  jl_description                 varchar2 ( 100 byte )
 ,  lpg_id                         number ( 38 )
 );
 
