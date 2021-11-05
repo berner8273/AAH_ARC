@@ -44,6 +44,7 @@ conn ~fdr_logon
 @@fdr/us58325_new_sub_accounts.sql
 @@fdr/us53060_fr_account_lookup_param.sql
 @@fdr/us53060_fdr_cleardown.sql 
+alter table fr_stan_raw_acc_event modify SRAE_CLIENT_SPARE_ID19 varchar2( 100 byte);
 
 -- this is still in prod - check with Marc if still needed
 @@fdr/hotfix_fr_general_lookup_cash_offset.sql
