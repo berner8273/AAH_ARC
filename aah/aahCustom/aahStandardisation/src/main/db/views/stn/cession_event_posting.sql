@@ -33,6 +33,7 @@ select
   , is_mark_to_market
   , tax_jurisdiction_cd
   , chartfield_cd
+  , jl_description
   , transaction_ccy
   , transaction_amt
   , functional_ccy
@@ -76,6 +77,7 @@ select
   , is_mark_to_market
   , tax_jurisdiction_cd
   , chartfield_cd
+  , jl_description  
   , transaction_ccy
   , transaction_amt
   , functional_ccy
@@ -119,6 +121,7 @@ select
   , is_mark_to_market
   , tax_jurisdiction_cd
   , chartfield_cd
+  , jl_description  
   , transaction_ccy
   , transaction_amt
   , functional_ccy
