@@ -53,8 +53,8 @@ conn ~stn_logon
 -- add new posting rules data loader below
 @@stn/ROB204_posting_drivers.sql
 
-conn~gui_logon
--- @@gui/us53060_gui_event_class.sql
+conn ~slr_logon
+@@slr/offset_desc_slr_pkg.sql
 
 /* End AAH custom upgrades */
 
