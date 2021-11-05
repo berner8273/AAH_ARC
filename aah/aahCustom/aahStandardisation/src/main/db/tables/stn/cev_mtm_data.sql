@@ -49,7 +49,7 @@ create table stn.cev_mtm_data
 ,  input_reporting_amt            number ( 38,9 )
 ,  partner_reporting_amt          number
 ,  chartfield_1                   varchar2 ( 50 char)
-,  jl_description                 varchar2 ( 40 char)
+,  jl_description                 varchar2 ( 100 byte)
 ,  lpg_id                         number ( 38 )
 )
 ;
