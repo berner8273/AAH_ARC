@@ -22,6 +22,7 @@ create table stn.cession_event
 , 	reclass_entity   	  varchar2 ( 20 char )                               
 , 	account_cd         	varchar2 ( 20 char )            
 ,   chartfield_1        varchar2 ( 50 char)                   
+,   jl_description      varchar2 ( 100 BYTE)
 ,   feed_uuid           raw ( 16 )                                         not null
 ,   no_retries          number ( 38 , 0 )   default 0                      not null
 ,   step_run_sid        number ( 38 , 0 )   default 0                      not null
