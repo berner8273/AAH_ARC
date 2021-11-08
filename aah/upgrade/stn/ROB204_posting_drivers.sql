@@ -2751,9 +2751,13 @@ INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET",
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('FEE_CASH_OFFSET','N','NVS','US_STAT','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('FEE_CASH_OFFSET','N','NVS','US_GAAP','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('FEE_CASH_OFFSET','N','NVS','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('FEE_CASH_OFFSET','Y','NVS','US_STAT','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('FEE_CASH_OFFSET','Y','NVS','US_GAAP','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('FEE_CASH_OFFSET','Y','NVS','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
@@ -2763,9 +2767,13 @@ INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET",
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','N','NVS','US_STAT','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('CASH_SUSPENSE','N','NVS','US_GAAP','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','N','NVS','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','Y','NVS','US_STAT','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('CASH_SUSPENSE','Y','NVS','US_GAAP','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','Y','NVS','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
@@ -2775,9 +2783,13 @@ INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET",
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','N','I','US_STAT','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('CASH_SUSPENSE','N','I','US_GAAP','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','N','I','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','Y','I','US_STAT','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('CASH_SUSPENSE','Y','I','US_GAAP','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','Y','I','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
@@ -2787,9 +2799,13 @@ INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET",
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','N','U','US_STAT','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('CASH_SUSPENSE','N','U','US_GAAP','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','N','U','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','Y','U','US_STAT','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('CASH_SUSPENSE','Y','U','US_GAAP','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','Y','U','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
@@ -2799,9 +2815,13 @@ INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET",
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','N','M','US_STAT','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('CASH_SUSPENSE','N','M','US_GAAP','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','N','M','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','Y','M','US_STAT','NON_MTM');
+INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
+  VALUES ('CASH_SUSPENSE','Y','M','US_GAAP','NON_MTM');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
   VALUES ('CASH_SUSPENSE','Y','M','UK_GAAP','UKGAAP_ADJ');
 INSERT INTO stn.load_posting_method_derivation ("EVENT_TYP","IS_MARK_TO_MARKET","PREMIUM_TYP","BASIS_CD","PSM_CD")
