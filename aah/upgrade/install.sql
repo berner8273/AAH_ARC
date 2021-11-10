@@ -26,14 +26,8 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~rdr_logon
-@@rdr/us53060_rdr_views.sql
-
 conn ~stn_logon
 @@stn/us53060_stn_columns.sql
-
-conn ~rdr_logon
-@@rdr/us53060_rdr_views2.sql
 
 conn ~stn_logon
 @@stn/us53060_stn_views.sql
@@ -41,17 +35,7 @@ conn ~stn_logon
 @@stn/us53060_packages.sql
 
 conn ~fdr_logon
-@@fdr/us58325_new_sub_accounts.sql
-@@fdr/us53060_fr_account_lookup_param.sql
-@@fdr/us53060_fdr_cleardown.sql 
 alter table fr_stan_raw_acc_event modify SRAE_CLIENT_SPARE_ID19 varchar2( 100 byte);
-
--- this is still in prod - check with Marc if still needed
-@@fdr/hotfix_fr_general_lookup_cash_offset.sql
-
-conn ~stn_logon
--- add new posting rules data loader below
-@@stn/ROB204_posting_drivers.sql
 
 conn ~slr_logon
 @@slr/offset_desc_slr_pkg.sql
