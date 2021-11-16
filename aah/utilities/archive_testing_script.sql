@@ -48,7 +48,7 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
     v_sql := 'select count(*) INTO :v_count2 from fdr.'||r_fdr.t_name;
     EXECUTE IMMEDIATE v_sql INTO v_count2;
     
-    v_sql:= 'select count(*) into :v_count_arc from all_tables where owner = ''ARC'' and table_name = '||''''||r_fdr.t_name||'''';
+    v_sql:= 'select count(*) into :v_count_arc from all_tables where owner = ''ARC'' and table_name = '||''''||r_fdr.a_name||'''';
     EXECUTE IMMEDIATE v_sql INTO v_count_arc;                
   
   IF r_fdr.arct_arc_schema_name = 'FDR' THEN
@@ -66,7 +66,8 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
     END IF;                
         
     BEGIN 
-    v_sql := 'select nvl(FL.ARL_RECORDS_ARCHIVED,0) INTO :v_count4 from fdr.fr_archive_ctl fc, fdr.fr_archive_log fl where FC.ARCT_ID = fl.arl_arct_id and fc.arct_table_name = '||''''||r_fdr.t_name||''''||' and fl.arl_arlh_id = (select max(arl_arlh_id) from fdr.fr_archive_log)';
+        v_sql := 'select nvl(FL.ARL_RECORDS_ARCHIVED,0) INTO :v_count4 from fdr.fr_archive_ctl fc, fdr.fr_archive_log fl, fdr.fr_archive_log_header fh where FC.ARCT_ID = fl.arl_arct_id and fc.arct_table_name = '||''''||r_fdr.t_name||''''||' and fl.arl_arlh_id = FH.ARLH_ID'
+            ||' and fl.arl_arlh_id = FH.ARLH_ID and fl.arl_arlh_id in (select max(arlh_id) from fdr.fr_archive_log_header flh where flh.arlh_lpg_id in (select lpg_id from fdr.'||r_fdr.t_name||' where rownum = 1))';
     EXECUTE IMMEDIATE v_sql INTO v_count4;
 
     EXCEPTION WHEN NO_DATA_FOUND THEN
