@@ -12,7 +12,7 @@ DECLARE
   CURSOR c_fdr
   IS
     SELECT 
-        arct_id,arct_table_name t_name,arct_arc_table_name a_name,arct_archive_days a_days,arct_archive_date_column a_date,arct_schema_name schema,arct_archive_where_clause,arct_arc_schema_name 
+        arct_id,arct_table_name t_name,arct_arc_table_name a_name,arct_archive_days a_days,arct_archive_date_column a_date,arct_schema_name schema,arct_archive_where_clause,arct_arc_schema_name,arct_lpg_column_name lpg_col 
     FROM 
         fdr.fr_archive_ctl 
     WHERE
@@ -51,23 +51,21 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
     v_sql:= 'select count(*) into :v_count_arc from all_tables where owner = ''ARC'' and table_name = '||''''||r_fdr.a_name||'''';
     EXECUTE IMMEDIATE v_sql INTO v_count_arc;                
   
-  IF r_fdr.arct_arc_schema_name = 'FDR' THEN
-    v_lpg_id := 1;
-  ELSE      
-    v_sql:= 'select lpg_id into :v_lpg_id from fdr.'||r_fdr.t_name||' where ROWNUM = 1';
+    v_sql:= 'select '||r_fdr.lpg_col||' into :v_lpg_id from fdr.'||r_fdr.t_name||' where ROWNUM = 1';
     EXECUTE IMMEDIATE v_sql INTO v_lpg_id;                
-  END IF;
+
     
    IF v_count_arc > 0 THEN
-        v_sql := 'select count(*) INTO :v_count3 from ARC.'||r_fdr.a_name||q'[ where event_status in ('P','E') and ]'||r_fdr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_fdr.a_days;   
+        v_sql := 'select count(*) INTO :v_count3 from ARC.'||r_fdr.a_name||q'[ where event_status in ('P','E') and ]'||r_fdr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_fdr.a_days;
         EXECUTE IMMEDIATE v_sql INTO v_count3;
     ELSE
         v_count3 :=0;
     END IF;                
         
     BEGIN 
-        v_sql := 'select nvl(FL.ARL_RECORDS_ARCHIVED,0) INTO :v_count4 from fdr.fr_archive_ctl fc, fdr.fr_archive_log fl, fdr.fr_archive_log_header fh where FC.ARCT_ID = fl.arl_arct_id and fc.arct_table_name = '||''''||r_fdr.t_name||''''||' and fl.arl_arlh_id = FH.ARLH_ID'
-            ||' and fl.arl_arlh_id = FH.ARLH_ID and fl.arl_arlh_id in (select max(arlh_id) from fdr.fr_archive_log_header flh where flh.arlh_lpg_id in (select lpg_id from fdr.'||r_fdr.t_name||' where rownum = 1))';
+    v_sql := 'select nvl(FL.ARL_RECORDS_ARCHIVED,0) INTO :v_count4 from fdr.fr_archive_ctl fc, fdr.fr_archive_log fl, fdr.fr_archive_log_header fh where FC.ARCT_ID = fl.arl_arct_id and fc.arct_table_name = '||''''||r_fdr.t_name||''''||' and fl.arl_arlh_id = FH.ARLH_ID'
+            ||' and fl.arl_arlh_id = FH.ARLH_ID and fl.arl_arlh_id in (select max(arlh_id) from fdr.fr_archive_log_header flh where flh.arlh_lpg_id in (select '||r_fdr.lpg_col||' from fdr.'||r_fdr.t_name||' where rownum = 1))';
+    
     EXECUTE IMMEDIATE v_sql INTO v_count4;
 
     EXCEPTION WHEN NO_DATA_FOUND THEN
