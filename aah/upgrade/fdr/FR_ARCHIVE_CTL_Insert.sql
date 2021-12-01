@@ -1915,7 +1915,7 @@ VALUES (
     NULL,
     'N',
     'DML',
-    NULL,
+    'TO_NUMBER(I_PL_ISSUER_ID)',
     NULL)  ;        
 
 -- INSTRUMENT EXTEND   
@@ -1957,7 +1957,7 @@ VALUES (
     NULL,
     'N',
     'DML',
-    NULL,
+    'to_number(IIE_PBU_PARTY2)',
     NULL);  
 insert into fdr.fr_archive_ctl(
     arct_id,
@@ -1997,6 +1997,6 @@ VALUES (
     NULL,
     'N',
     'DML',
-    NULL,
+    'TO_NUMBER(T_FDR_VER_NO)',
     NULL);
 commit;
