@@ -17,6 +17,7 @@ DECLARE
         fdr.fr_archive_ctl 
     WHERE
         arct_archive = 'Y' and arct_schema_name = 'FDR'; 
+--   and arct_id not in (401,402,403); -- ADD FOR MONTH OVER MONTH TEST 
         
   CURSOR c_stn
   IS
@@ -25,7 +26,8 @@ DECLARE
     FROM 
         fdr.fr_archive_ctl 
     WHERE
-        arct_archive = 'Y' and arct_schema_name = 'STN';                        
+        arct_archive = 'Y' and arct_schema_name = 'STN' ;          
+--   and arct_id not in (310,302); -- ADD FOR MONTH OVER MONTH TEST                      
        
 BEGIN
 
