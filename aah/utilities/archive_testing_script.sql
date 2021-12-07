@@ -41,7 +41,7 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
   FOR r_fdr IN c_fdr
   LOOP    
 
-    IF r_fdr.arct_arc_schema_name <> 'FDR' THEN
+    IF r_fdr.arct_id not in (401,402,403)  THEN
         v_sql := 'select count(*) into :v_count1 from fdr.'||r_fdr.t_name||q'[ where event_status in ('P','E') and ]'||r_fdr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_fdr.a_days;
         s_lpg := R_FDR.lpg_col;
     ELSE
