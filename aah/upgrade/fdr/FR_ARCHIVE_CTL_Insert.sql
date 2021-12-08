@@ -37,27 +37,27 @@ Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_AR
 select a.feed_uuid 
 from stn.feed a 
 join STN.LEGAL_ENTITY_LINK b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''LEGAL_ENTITY_LINK''))',1,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''LEGAL_ENTITY_LINK'')) and event_status in (''P'',''E'',''X'')',1,null,null,2,null,'N','DML','LPG_ID',null) ;
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (301,'STN','LEGAL_ENTITY','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.LEGAL_ENTITY b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''LEGAL_ENTITY''))',2,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''LEGAL_ENTITY'')) and event_status in (''P'',''E'',''X'')',2,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (302,'STN','CESSION','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.CESSION b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''CESSION''))',11,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''CESSION'')) and event_status in (''P'',''E'',''X'')',11,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (303,'STN','LEDGER','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.LEDGER b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''LEDGER''))',19,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''LEDGER'')) and event_status in (''P'',''E'',''X'')',19,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (304,'STN','GL_COMBO_EDIT_PROCESS','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.GL_COMBO_EDIT_PROCESS b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_COMBO_EDIT_PROCESS''))',18,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_COMBO_EDIT_PROCESS'')) and event_status in (''P'',''E'',''X'')',18,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (305,'STN','TAX_JURISDICTION','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
@@ -67,72 +67,72 @@ Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_AR
 select a.feed_uuid 
 from stn.feed a 
 join STN.INSURANCE_POLICY_TAX_JURISD b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''INSURANCE_POLICY_TAX_JURISD''))',7,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''INSURANCE_POLICY_TAX_JURISD'')) and event_status in (''P'',''E'',''X'')',7,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (307,'STN','JOURNAL_LINE','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.JOURNAL_LINE b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''JOURNAL_LINE''))',8,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''JOURNAL_LINE'')) and event_status in (''P'',''E'',''X'')',8,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (308,'STN','INSURANCE_POLICY_FX_RATE','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.INSURANCE_POLICY_FX_RATE b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''INSURANCE_POLICY_FX_RATE''))',9,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''INSURANCE_POLICY_FX_RATE'')) and event_status in (''P'',''E'',''X'')',9,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (309,'STN','GL_COMBO_EDIT_ASSIGNMENT','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.GL_COMBO_EDIT_ASSIGNMENT b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_COMBO_EDIT_ASSIGNMENT''))',4,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_COMBO_EDIT_ASSIGNMENT'')) event_status in (''P'',''E'',''X'')',4,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (310,'STN','CESSION_EVENT','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.CESSION_EVENT b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''CESSION_EVENT''))',17,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''CESSION_EVENT'')) and event_status in (''P'',''E'',''X'')',17,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (311,'STN','GL_COMBO_EDIT_RULE','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.GL_COMBO_EDIT_RULE b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_COMBO_EDIT_RULE''))',16,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_COMBO_EDIT_RULE'')) and event_status in (''P'',''E'',''X'')',16,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (312,'STN','FX_RATE','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.FX_RATE b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''FX_RATE''))',15,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''FX_RATE'')) and event_status in (''P'',''E'',''X'')',15,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (313,'STN','DEPARTMENT','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.DEPARTMENT b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''DEPARTMENT''))',14,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''DEPARTMENT'')) and event_status in (''P'',''E'',''X'')',14,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (314,'STN','GL_CHARTFIELD','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.GL_CHARTFIELD b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_CHARTFIELD''))',13,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_CHARTFIELD'')) and event_status in (''P'',''E'',''X'')',13,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (315,'STN','GL_ACCOUNT','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.GL_ACCOUNT b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_ACCOUNT''))',12,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''GL_ACCOUNT'')) and event_status in (''P'',''E'',''X'')',12,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (316,'STN','ACCOUNTING_BASIS_LEDGER','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.ACCOUNTING_BASIS_LEDGER b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''ACCOUNTING_BASIS_LEDGER''))',5,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''ACCOUNTING_BASIS_LEDGER'')) and event_status in (''P'',''E'',''X'')',5,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (317,'STN','INSURANCE_POLICY','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.INSURANCE_POLICY b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''INSURANCE_POLICY''))',20,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''INSURANCE_POLICY'')) and event_status in (''P'',''E'',''X'')',20,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (318,'STN','LEGAL_ENTITY_LEDGER','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.LEGAL_ENTITY_LEDGER b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''LEGAL_ENTITY_LEDGER''))',3,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''LEGAL_ENTITY_LEDGER'')) and event_status in (''P'',''E'',''X'')',3,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL (ARCT_ID,ARCT_SCHEMA_NAME,ARCT_TABLE_NAME,ARCT_ARC_SCHEMA_NAME,ARCT_ARC_TABLE_NAME,ARCT_ARC_TABLESPACE_NAME,ARCT_ARCHIVE,ARCT_ARCHIVE_DATE_COLUMN,ARCT_ARCHIVE_DAYS,ARCT_ARCHIVE_WHERE_CLAUSE,ARCT_ARCHIVE_ORDER,ARCT_BEFORE_PROCESS_PROC,ARCT_AFTER_PROCESS_PROC,ARCT_ARCHIVE_GROUP,ARCT_TARGET_TABLE_DB_LINK,ARCT_GENERATE_SCRIPT_ONLY,ARCT_DATA_TRANSFER_METHOD,ARCT_LPG_COLUMN_NAME,ARCT_ENTITY_COLUMN_NAME) values (319,'STN','CESSION_LINK','PURGE','PURGE',null,'Y',null,182,'feed_uuid in  (
 select a.feed_uuid 
 from stn.feed a 
 join STN.CESSION_LINK b on a.feed_uuid=b.feed_uuid 
-where b.event_status in (''P'',''E'',''X'') and a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''CESSION_LINK''))',10,null,null,2,null,'N','DML','LPG_ID',null);
+where a.LOADED_TS <= sysdate - (select ARCT_ARCHIVE_DAYS from FDR.FR_ARCHIVE_CTL where ARCT_TABLE_NAME =''CESSION_LINK'')) and event_status in (''P'',''E'',''X'')',10,null,null,2,null,'N','DML','LPG_ID',null);
 Insert into FDR.FR_ARCHIVE_CTL
    (ARCT_ID, ARCT_SCHEMA_NAME, ARCT_TABLE_NAME, ARCT_ARC_SCHEMA_NAME, ARCT_ARC_TABLE_NAME, 
     ARCT_ARCHIVE, ARCT_ARCHIVE_WHERE_CLAUSE, ARCT_ARCHIVE_ORDER, ARCT_ARCHIVE_GROUP, ARCT_GENERATE_SCRIPT_ONLY, 
@@ -1907,7 +1907,7 @@ VALUES (
     'Y',
     NULL,
     390,
-		' i_instrument_id NOT in (''1'',''INSURANCE_POLICY'') and i_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where  t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',
+        ' i_instrument_id NOT in (''1'',''INSURANCE_POLICY'') and i_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where  t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',
     502,
     NULL,
     NULL,
@@ -1949,7 +1949,7 @@ VALUES (
     'Y',
     NULL,
     390,
-		' iie_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))', 
+        ' iie_instrument_id in (select t1.t_i_instrument_id from fdr.fr_trade t1 where t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))', 
     501,
     NULL,
     NULL,
@@ -1989,7 +1989,7 @@ VALUES (
     'Y',
     NULL,
     390,
-		' t_trade_id in (select t1.t_trade_id from fdr.fr_trade t1 where t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',    
+        ' t_trade_id in (select t1.t_trade_id from fdr.fr_trade t1 where t1.t_source_tran_no <> 1 and t1.t_fdr_ver_no <> (select max(t2.t_fdr_ver_no) from fdr.fr_trade t2 where t1.t_source_tran_no = t2.t_source_tran_no))',    
     503,
     NULL,
     NULL,
