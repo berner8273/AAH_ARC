@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_JL AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_JL AS
     PROCEDURE pr_journal_line_idf
         (
             p_step_run_sid IN NUMBER,
@@ -82,7 +82,7 @@ and not exists (
               );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated event_status to X on discarded journal_line records', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_journal_line_sval
         (
             p_step_run_sid IN NUMBER
@@ -219,7 +219,7 @@ and not exists (
                 vdl.VALIDATION_CD = 'jl-transaction_sum';
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-transaction-sum', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_journal_line_rval
         (
             p_step_run_sid IN NUMBER
@@ -465,6 +465,7 @@ and not exists (
             WHERE
                     vdl.VALIDATION_CD = 'jl-chartfield_1'
 and jl.CHARTFIELD_1 is not null
+and jl.CHARTFIELD_1 <> 'DNP'
 and not exists (
                    select
                           null
@@ -810,14 +811,14 @@ and ( (jl.LE_ID = jl.AFFILIATE_LE_ID) OR (jl.LE_ID = jl.COUNTERPARTY_LE_ID) OR (
                 INNER JOIN event_hierarchy_reference er ON er.event_typ = jl.EVENT_TYP
             WHERE
                     vdl.VALIDATION_CD = 'jl-accounting_dt'
-and    (not exists 
-                    ( select null 
+and    (not exists
+                    ( select null
                             from stn.event_hierarchy_reference ehr, stn.period_status ps
                                 where  ehr.event_class = ps.event_class
                                     and to_char(jl.ACCOUNTING_DT,'YYYYMM') = ps.period
-                                    and ps.status = 'O' and 
-                                    (jl.EVENT_TYP = ehr.event_typ ) )                                    
-                      and jl.source_typ_cd <> 'HL' and er.period_close_freq <> 'N'                           
+                                    and ps.status = 'O' and
+                                    (jl.EVENT_TYP = ehr.event_typ ) )
+                      and jl.source_typ_cd <> 'HL' and er.period_close_freq <> 'N'
             )
 ;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-accounting_dt', 'sql%rowcount', NULL, sql%rowcount, NULL);
@@ -968,7 +969,7 @@ and not exists (
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    vdl.VALIDATION_CD = 'jl-policy-stream' 
+                    vdl.VALIDATION_CD = 'jl-policy-stream'
 and not exists (
                    select
                           null
@@ -986,9 +987,69 @@ and not exists (
                          fie.iie_cover_signing_party = jl.POLICY_ID
                )
 and jl.STREAM_ID is not null and jl.POLICY_ID is not null;
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-policy-stream', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-policy-stream', 'sql%rowcount', NULL, sql%rowcount, NULL);              
+
+
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : journal-line-validate-usd-trans-vs-reportingt-amt', NULL, NULL, NULL, NULL);
+        INSERT INTO STANDARDISATION_LOG
+            (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
+            SELECT
+                vdl.TABLE_NM AS TABLE_IN_ERROR_NAME,
+                jl.ROW_SID AS ROW_IN_ERROR_KEY_ID,
+                to_char(JL.TRANSACTION_AMT)||' vs '||to_char(jl.REPORTING_AMT) AS ERROR_VALUE,
+                jl.LPG_ID AS LPG_ID,
+                vdl.COLUMN_NM AS FIELD_IN_ERROR_NAME,
+                rveld.EVENT_TYPE AS EVENT_TYPE,
+                rveld.ERROR_STATUS AS ERROR_STATUS,
+                rveld.CATEGORY_ID AS CATEGORY_ID,
+                rveld.ERROR_TECHNOLOGY_RESUBMIT AS ERROR_TECHNOLOGY,
+                rveld.PROCESSING_STAGE AS PROCESSING_STAGE,
+                vdl.VALIDATION_CD AS RULE_IDENTITY,
+                vdl.CODE_MODULE_NM AS CODE_MODULE_NM,
+                jl.STEP_RUN_SID AS STEP_RUN_SID,
+                vdl.VALIDATION_TYP_ERR_MSG AS EVENT_TEXT,
+                fd.FEED_SID AS FEED_SID
+            FROM
+                journal_line jl
+                INNER JOIN IDENTIFIED_RECORD idr ON jl.ROW_SID = idr.ROW_SID
+                INNER JOIN FEED fd ON jl.FEED_UUID = fd.FEED_UUID
+                INNER JOIN fdr.FR_GLOBAL_PARAMETER fgp ON jl.LPG_ID = fgp.LPG_ID
+                INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
+                INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
+            WHERE
+                    ( vdl.VALIDATION_CD = 'jl-trans_vs_reporting_amt' AND NVL(jl.chartfield_1,' ') <> 'DNP') 
+            AND (
+                    JL.LEDGER_CD in ('EURGAAPADJ','UKGAAP_ADJ') 
+                    AND (
+                     (JL.TRANSACTION_CCY = JL.FUNCTIONAL_CCY AND JL.TRANSACTION_AMT <> JL.FUNCTIONAL_AMT)
+                        OR              
+                        ( JL.REPORTING_AMT <> 0 OR JL.FUNCTIONAL_CCY <> CASE JL.LEDGER_CD
+                                WHEN 'EURGAAPADJ'
+                                    THEN 'EUR'
+                                    ELSE 'GBP'
+                                END
+                            )
+                            )
+                )                            
+
+            OR (                       
+            ( vdl.VALIDATION_CD = 'jl-trans_vs_reporting_amt' AND NVL(jl.chartfield_1,' ') <> 'DNP') AND
+            JL.LEDGER_CD not in ('EURGAAPADJ','UKGAAP_ADJ')                       
+                AND (
+                        ( 
+                            JL.REPORTING_AMT <> 0 and JL.TRANSACTION_AMT <> 0
+                            AND JL.TRANSACTION_CCY = JL.REPORTING_CCY
+                            AND JL.REPORTING_CCY = 'USD'
+                            AND (JL.REPORTING_AMT <> JL.TRANSACTION_AMT) 
+                        )           
+                        OR (JL.FUNCTIONAL_AMT <> 0 OR REPORTING_CCY <> 'USD')
+                    )
+);            
+
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-usd-trans-vs-reportingt-amt', 'sql%rowcount', NULL, sql%rowcount, NULL);
+
     END;
-    
+
     PROCEDURE pr_journal_line_bval
         (
             p_step_run_sid IN NUMBER
@@ -1362,7 +1423,7 @@ and not exists (
                );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-rval-balanced-headers-transaction-sum', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_journal_line_svs
         (
             p_no_validated_records OUT NUMBER
@@ -1403,7 +1464,7 @@ and     exists (
                );
         p_no_validated_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_journal_line_pub
         (
             p_total_no_published OUT NUMBER
@@ -1493,7 +1554,7 @@ and     exists (
                 jl.EVENT_STATUS = 'V';
         p_total_no_published := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_journal_line_sps
         (
             p_no_processed_records OUT NUMBER
@@ -1515,7 +1576,7 @@ and     exists (
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_journal_line_pce
         (
             p_step_run_sid IN NUMBER
@@ -1530,7 +1591,7 @@ and     exists (
             module_name => lcUnitName,
             action_name => 'Start');
           fdr.PG_COMMON.pLogDebug(pinMessage => 'Start Combo Check - GUI Unposted Journal Lines');
-        
+
           /* Configure the optimizer hints for Combination Checking. */
           -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboInput := '';
           -- fdr.PG_COMBINATION_CHECK.gSQLHint_DeleteComboError := '';
@@ -1538,14 +1599,14 @@ and     exists (
           -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectInput      := '/*+ parallel */';
           -- fdr.PG_COMBINATION_CHECK.gSQLHint_InsertComboError := '/*+ no_parallel */';
           -- fdr.PG_COMBINATION_CHECK.gSQLHint_SelectComboError := '/*+ parallel */';
-        
+
           /* Call the Combination Check for those journals that are not in error yet - use the [sub-]partitioning key. */
           fdr.PG_COMBINATION_CHECK.pCombinationCheck(
             pinObjectName   =>  'stn.scv_combination_check_jlh',
             pinFilter       =>  NULL,
             pinBusinessDate =>  NULL,
             poutErrorCount  =>  v_combo_check_errors);
-        
+
         IF v_combo_check_errors > 0 THEN
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Combo Check Validations : journal-line Combo failure begin logging', 'sql%rowcount', NULL, sql%rowcount, NULL);
             INSERT INTO STANDARDISATION_LOG
@@ -1650,7 +1711,7 @@ and     exists (
                             jl.LE_ID) j ON jl.CORRELATION_ID = j.jl_CORRELATION_ID_1 AND jl.ACCOUNTING_DT = j.jl_ACCOUNTING_DT_1 AND jl.LE_ID = j.jl_LE_ID_1
                         INNER JOIN fdr.fr_combination_check_error jle ON to_number(jle.ce_input_id)=jl.ROW_SID
                     WHERE
-                        EXISTS 
+                        EXISTS
 (SELECT jle.ce_input_id FROM fdr.fr_combination_check_error je WHERE je.ce_input_id = jl.ROW_SID)) SubQuery ON jl2.CORRELATION_ID = SubQuery.CORRELATION_ID AND jl2.ACCOUNTING_DT = SubQuery.ACCOUNTING_DT AND jl2.LE_ID = SubQuery.LE_ID
                 WHERE
                     vdl.VALIDATION_CD = 'jl-prc_cd'
@@ -1660,7 +1721,7 @@ AND NOT EXISTS (SELECT cce.ce_input_id FROM fdr.fr_combination_check_error je2 W
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed Combo Edit Checks: No Failures', 'sql%rowcount', NULL, sql%rowcount, NULL);
         END IF;
     END;
-    
+
     PROCEDURE pr_journal_line_prc
         (
             p_step_run_sid IN NUMBER,
@@ -1699,7 +1760,7 @@ AND NOT EXISTS (SELECT cce.ce_input_id FROM fdr.fr_combination_check_error je2 W
             pr_journal_line_pub(v_total_no_published);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing journal line hopper records', 'v_total_no_published', NULL, v_total_no_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish journal line log records' );
-            pr_publish_log('STANDARDISATION_LOG');
+            pr_publish_log;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set journal line status = "P"' );
             pr_journal_line_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);

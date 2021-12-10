@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>AahSubledger</id>
+    <version>0.0.0</version>
+    <title>Aah Subledger</title>
+    <authors>Ryan Quigley</authors>
+    <owners>Ryan Quigley</owners>
+    <description>Deploy the Subledger project.</description>
+    <tags>AAH server</tags>
+  </metadata>
+  <files>  
+    <file src="aahCustom\aahSubledger\src\main\aptitude\custom\Subledger.brd"/>
+    <file src="aahCustom\aahSubledger\src\main\aptitude\custom\Subledger.brd.config"/>
+	  <file src="Deploy_aahCustomProjects.sh"/>
+  </files>  
+</package>

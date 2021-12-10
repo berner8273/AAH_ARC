@@ -1,1 +1,0 @@
-@@../aahCustom/aahETL/src/main/db/grants/tables/fdr/fr_party_legal.sql

@@ -1,1 +1,0 @@
-@@../aahCustom/aahStandardisation/src/main/db/procedures/stn/pr_publish_log.sql

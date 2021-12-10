@@ -1,11 +1,10 @@
 create global temporary table slr.slr_eba_bop_amounts_tmp2
 (
-  edb_fak_id        number(12)                  not null,
-  edb_eba_id        number(12)                  not null,
-  edb_balance_date  date                        not null,
-  edb_balance_type  number(2)                   not null,
-  edb_entity        varchar2(20 byte)           not null,
-  edb_epg_id        varchar2(18 byte)           not null,
-  edb_id            varchar2(100 byte)          not null
-)
+EDB_FAK_ID VARCHAR2(32) NOT NULL ENABLE,
+	EDB_EBA_ID VARCHAR2(32) NOT NULL ENABLE,
+	EDB_BALANCE_DATE DATE NOT NULL ENABLE,
+	EDB_BALANCE_TYPE NUMBER(2,0) NOT NULL ENABLE,
+	EDB_ENTITY VARCHAR2(20 BYTE) NOT NULL ENABLE,
+	EDB_EPG_ID VARCHAR2(18 BYTE) NOT NULL ENABLE,
+	EDB_ID VARCHAR2(110 BYTE) NOT NULL ENABLE)
 on commit preserve rows;
