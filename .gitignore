@@ -1,7 +1,7 @@
 .gradle
 build/
 bin/
-
+.sqlite
 # Ignore Gradle GUI config
 gradle-app.setting
 
