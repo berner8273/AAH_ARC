@@ -9,7 +9,7 @@ function parchiveSTN1()
 
 
 ERR_EXIT () {
-	printf "Error: ********************************************\n$@\n"
+	printf "Error: *******************************************\n$@\n"
 	exit 1
 }
 
