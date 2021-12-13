@@ -79,6 +79,7 @@ and not exists (
         v_no_cev_non_intercompany_data NUMBER(38, 9) DEFAULT 0;
         v_no_cev_intercompany_data NUMBER(38, 9) DEFAULT 0;
         v_no_cev_vie_data NUMBER(38, 9) DEFAULT 0;
+        lcOUT_OF_BALANCE_ACCT CONSTANT VARCHAR2(50) DEFAULT '18250255';
     BEGIN
         --delete /*+ parallel*/ from stn.cev_valid;
         execute immediate 'truncate table stn.cev_valid';
@@ -178,7 +179,8 @@ and not exists (
         with
           ce_data
           as (
-         select /*+ MATERIALIZE*/
+          select
+                    /*+ MATERIALIZE*/
                            ipr.policy_id
                          , ipr.policy_abbr_nm
                          , ipr.stream_id
@@ -207,47 +209,6 @@ and not exists (
              )
            , cev_ex_in
           as (
-                 select
-                        feed_uuid
-                      , correlation_uuid
-                      , event_id
-                      , row_sid
-                      , basis_cd
-                      , accounting_dt
-                      , event_typ
-                      , business_event_typ
-                      , policy_id
-                      , policy_abbr_nm
-                      , stream_id
-                      , parent_stream_id
-                      , vie_id
-                      , vie_cd
-                      , vie_status
-                      , vie_effective_dt
-                      , vie_acct_dt
-                      , is_mark_to_market
-                      , premium_typ
-                      , policy_premium_typ
-                      , policy_accident_yr
-                      , policy_underwriting_yr
-                      , ultimate_parent_stream_id
-                      , ultimate_parent_le_cd
-                      , execution_typ
-                      , policy_typ
-                      , business_typ
-                      , le_cd
-                      , parent_cession_le_cd
-                      , reclass_entity
-                      , owner_le_cd
-                      , counterparty_le_cd
-                      , transaction_amt
-                      , transaction_ccy
-                      , functional_amt
-                      , functional_ccy
-                      , reporting_amt
-                      , reporting_ccy
-                      , lpg_id
-                   from (
                             select
                                    cev.feed_uuid
                                  , cev.correlation_uuid
@@ -298,31 +259,6 @@ and not exists (
                                            join                             ce_data on cev.stream_id = ce_data.stream_id
                                            join stn.policy_premium_type     ppt     on ce_data.policy_premium_typ = ppt.premium_typ
                                 )
-                          )
-           , cev_sum
-          as (
-          select
-                    sum (cev_ex_in.transaction_amt) transaction_amt
-                  , sum (cev_ex_in.functional_amt)  functional_amt
-                  , sum (cev_ex_in.reporting_amt)   reporting_amt
-                  , cev_ex_in.feed_uuid
-                  , cev_ex_in.correlation_uuid
-                  , cev_ex_in.accounting_dt
-                  , cev_ex_in.stream_id
-                  , cev_ex_in.event_typ
-                  , cev_ex_in.business_typ
-                  , cev_ex_in.basis_cd
-            from
-                    cev_ex_in
-            group by
-                    cev_ex_in.feed_uuid
-                  , cev_ex_in.correlation_uuid
-                  , cev_ex_in.accounting_dt
-                  , cev_ex_in.stream_id
-                  , cev_ex_in.event_typ
-                  , cev_ex_in.business_typ
-                  , cev_ex_in.basis_cd
-             )
                  select
                         gaap_fut_accts_flag
                       , le_flag
@@ -493,13 +429,13 @@ and not exists (
                                        else null
                                    end                                                      counterparty_le_cd
                                  , cev.transaction_amt                                      transaction_amt
-                                 , cev_sum.transaction_amt                                  basis_transaction_amt
+                                 , sum (cev.transaction_amt) over ( partition by cev.feed_uuid, cev.correlation_uuid, cev.accounting_dt, cev.stream_id, cev.event_typ, cev.business_typ, cev.basis_cd) as basis_transaction_amt
                                  , cev.transaction_ccy
                                  , cev.functional_amt                                       functional_amt
-                                 , cev_sum.functional_amt                                   basis_functional_amt
+                                 , sum (cev.functional_amt) over ( partition by cev.feed_uuid, cev.correlation_uuid, cev.accounting_dt, cev.stream_id, cev.event_typ, cev.business_typ, cev.basis_cd) as basis_functional_amt
                                  , cev.functional_ccy
                                  , cev.reporting_amt                                        reporting_amt
-                                 , cev_sum.reporting_amt                                    basis_reporting_amt
+                                 , sum (cev.reporting_amt) over ( partition by cev.feed_uuid, cev.correlation_uuid, cev.accounting_dt, cev.stream_id, cev.event_typ, cev.business_typ, cev.basis_cd) as basis_reporting_amt
                                  , cev.reporting_ccy
                                  , cev.lpg_id
                               from
@@ -508,16 +444,6 @@ and not exists (
                               left join stn.event_hierarchy_reference    ehr     on cev.event_typ              = ehr.event_typ
                                    join stn.posting_accounting_basis     abasis  on cev.basis_cd               = abasis.basis_cd
                                    join stn.business_type                bt      on cev.business_typ           = bt.business_typ
-                                   join cev_sum                                  on (
-                                                                                    cev.feed_uuid        = cev_sum.feed_uuid
-                                                                                and cev.correlation_uuid = cev_sum.correlation_uuid
-                                                                                and cev.accounting_dt    = cev_sum.accounting_dt
-                                                                                and cev.stream_id        = cev_sum.stream_id
-                                                                                and cev.event_typ        = cev_sum.event_typ
-                                                                                and cev.business_typ     = cev_sum.business_typ
-                                                                                and cev.basis_cd         = cev_sum.basis_cd
-                                                                                    )
-
                             left join stn.posting_method_derivation_gfa  gfa    on et.event_typ_id      = gfa.event_typ_in and cev.basis_cd = 'US_STAT'
                                                                                and exists (
                                                                                             select null
@@ -1279,6 +1205,7 @@ and not exists (
                               , cevnid.reporting_ccy
                               , cevnid.reporting_amt * pdmic.negate_flag                               reporting_amt
                               , cevnid.lpg_id
+                              , NVL2( cevnid.account_cd, null, lcOUT_OF_BALANCE_ACCT) account_cd
                            from
                                      stn.cev_non_intercompany_data    cevnid
                                 join stn.posting_ledger               pldgrin  on cevnid.ledger_cd       = pldgrin.ledger_cd
