@@ -18,23 +18,30 @@ define slr_logon=~5
 define stn_logon=~6
 define sys_logon=~7
 define unittest_login=~8
-
+define arc_logon=~9
+define oraServiceName=~10
+define arcPwd=~11
 
 /* Check AAH upgrade versions - do not remove */
-
 conn ~sys_logon
 @@sys/00001_check_upgrade_versions.sql
 
-/* Begin AAH custom upgrades */
+/************************************** Begin AAH custom upgrades *****************************************************/
 
 conn ~stn_logon
 @@stn/BUG66070_jl_datafix.sql
 
-/* End AAH custom upgrades */
+/********************************* End AAH custom upgrades ********************************************************/
+
+/* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
+conn ~sys_logon as sysdba
+@@sys/99999_refresh_aah_roles.sql
+
+/* recompile any packages or procedures that are not compiled */
+@@sys/recompile_objects.sql
 
 /* Register upgrade - do not remove */
 conn ~fdr_logon
 @@fdr/99999_register_upgrade.sql
-
 
 exit
