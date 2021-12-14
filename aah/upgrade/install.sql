@@ -28,20 +28,20 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~stn_logon
-@@stn/BUG66070_jl_datafix.sql;
+@@stn/BUG66070_jl_datafix.sql
 
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
-conn ~sys_logon
-@@sys/99999_refresh_aah_roles.sql;
+conn ~sys_logon as sysdba
+@@sys/99999_refresh_aah_roles.sql
 
 /* recompile any packages or procedures that are not compiled */
 @@sys/recompile_objects.sql
 
 /* Register upgrade - do not remove */
 conn ~fdr_logon
-@@fdr/99999_register_upgrade.sql;
+@@fdr/99999_register_upgrade.sql
 
 
 exit
