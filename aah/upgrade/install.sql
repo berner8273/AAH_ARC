@@ -28,12 +28,12 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~stn_logon
-@@stn/us59614_jl_validations.sql;
+@@stn/BUG66070_jl_datafix.sql;
 
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
-conn ~sys_logon as sysdba
+conn ~sys_logon
 @@sys/99999_refresh_aah_roles.sql;
 
 /* recompile any packages or procedures that are not compiled */
