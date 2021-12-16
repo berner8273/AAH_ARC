@@ -27,11 +27,12 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
-@@stn/us50990_combo_rules_fix.sql;
-
 conn ~fdr_logon
-@@fdr/purge_dup_combo_rules.sql;
+@@fdr/fdr_cleardown.sql;
+
+conn ~stn_logon
+@@stn/rob205_posting_rules.sql;
+
 
 /* End AAH custom upgrades */
 
