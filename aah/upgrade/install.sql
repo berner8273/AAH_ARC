@@ -28,17 +28,18 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~fdr_logon
-@@fdr/fdr_cleardown.sql;
+@@fdr/fdr_cleardown.sql
 
 conn ~stn_logon
-@@stn/rob205_posting_rules.sql;
+@@stn/grant_aah_rdr_roles.sql
+@@stn/rob205_posting_rules.sql
 
 
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
 conn ~sys_logon as sysdba
-@@sys/99999_refresh_aah_roles.sql;
+@@sys/99999_refresh_aah_roles.sql
 
 /* recompile any packages or procedures that are not compiled */
 @@sys/recompile_objects.sql
