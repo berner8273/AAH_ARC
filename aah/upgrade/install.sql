@@ -46,7 +46,7 @@ conn ~sys_logon as sysdba
 
 /* Register upgrade - do not remove */
 conn ~fdr_logon
-@@fdr/99999_register_upgrade.sql;
+@@fdr/99999_register_upgrade.sql
 
 
 exit
