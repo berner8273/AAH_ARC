@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE slr.slr_post_journals_pkg AS
+CREATE OR REPLACE PACKAGE "SLR"."SLR_POST_JOURNALS_PKG" AS
 -- -------------------------------------------------------------------------------
 -- 124
 -- Id:          $Id: slr_post_journals_pkg.sql,v 1.10 2005/05/31 07:48:14 pfrench Exp $
@@ -66,28 +66,34 @@ CREATE OR REPLACE PACKAGE slr.slr_post_journals_pkg AS
     PROCEDURE pStatusGenLastBalForBD(p_generate BOOLEAN);
 
     -- creates table with all EBA daily balances using SLR_JRNL_LINES
-    PROCEDURE pCreateEbaBalancesFromLines
+	-- !!!DEPRECATED until next roadmap build. Logic nieed to take INTERNAL_PERIOD_FLAG into account!!!
+  /*  PROCEDURE pCreateEbaBalancesFromLines
     (
         p_table_name IN VARCHAR2 -- name of balances table, which will be created
     );
+*/
     -- do the same but using different algorithm (MODEL clause)
-    PROCEDURE pCreateEbaBalancesFromLines2
+	-- !!!DEPRECATED until next roadmap build. Logic nieed to take INTERNAL_PERIOD_FLAG into account!!!
+  /*  PROCEDURE pCreateEbaBalancesFromLines2
     (
         p_table_name IN VARCHAR2 -- name of balances table, which will be created
     );
-
+*/
 
     -- creates table with all FAK daily balances using SLR_JRNL_LINES
-    PROCEDURE pCreateFakBalancesFromLines
+	-- !!!DEPRECATED until next roadmap build. Logic nieed to take INTERNAL_PERIOD_FLAG into account!!!
+  /*    PROCEDURE pCreateFakBalancesFromLines
     (
         p_table_name IN VARCHAR2 -- name of balances table, which will be created
-    );
+    ); 
+*/
     -- do the same but using different algorithm (MODEL clause)
-    PROCEDURE pCreateFakBalancesFromLines2
+	-- !!!DEPRECATED until next roadmap build. Logic nieed to take INTERNAL_PERIOD_FLAG into account!!!
+   /*   PROCEDURE pCreateFakBalancesFromLines2
     (
         p_table_name IN VARCHAR2 -- name of balances table, which will be created
     );
-
+*/
     PROCEDURE pGenerateLastBalances
     (
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
@@ -97,10 +103,10 @@ CREATE OR REPLACE PACKAGE slr.slr_post_journals_pkg AS
 
 	   PROCEDURE pCreate_reversing_journal
     (jrnl_id_list varchar2, entity_proc_group VARCHAR2, status CHAR, process_id number);
-
+	
 	PROCEDURE pCreate_rev_journal_batch
-    (orignal_jrnl_id NUMBER, entity_proc_group VARCHAR2, status CHAR, process_id number);
-
+    (orignal_jrnl_id VARCHAR2, entity_proc_group VARCHAR2, status CHAR, process_id number);
+	
 	PROCEDURE pCreate_reversing_journal_madj
     (jrnl_id_list varchar2, entity_proc_group VARCHAR2, status CHAR, process_id number);
 
@@ -110,7 +116,6 @@ CREATE OR REPLACE PACKAGE slr.slr_post_journals_pkg AS
         p_process_id IN NUMBER,
         p_day DATE -- last balances will be generated for this day
     );
-
+	
 END SLR_POST_JOURNALS_PKG;
-
 /

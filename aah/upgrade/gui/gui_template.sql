@@ -1,1 +1,0 @@
-@@../aahCore/src/main/resources/gui/UploadTemplate.csv

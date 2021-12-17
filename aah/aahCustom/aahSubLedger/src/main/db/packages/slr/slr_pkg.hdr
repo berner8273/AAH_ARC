@@ -1,13 +1,44 @@
-CREATE OR REPLACE package slr.slr_pkg as
-
+--------------------------------------------------------
+--  DDL for Package SLR_CLIENT_PROCEDURES_PKG
+--------------------------------------------------------
+CREATE OR REPLACE PACKAGE  "SLR"."SLR_PKG" AS
+---------------------------------------------------------------------------------
+-- Id:          $Id: SLR_CLIENT_PROCEDURES_PKG.sql,v 1 2007/08/22 11:17:51 jporter Exp $
+--
+-- Description: Client specific custom procedures - created from
+--              SLR_CLIENT_PROCEDURES_PKG template package
+--
+-- Note:        THIS PACKAGE IS NOT CORE SLR
+--              THIS PROCEDURE IS NOT SUPPORTED BY CORE MAINTENANCE.
+--
+---------------------------------------------------------------------------------
+-- History:
+-- BJP 22-08-2007 Initial Creation
+---------------------------------------------------------------------------------
+-- Control/Batch Schedule Wrapper Processes
+---------------------------------------------------------------------------------
 PROCEDURE pPROCESS_SLR;
+PROCEDURE pPROCESS_SLR
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
+	p_rate_set IN slr_entities.ent_rate_set%TYPE
+);
 
 PROCEDURE pCHECK_JRNL_ERRORS(p_entity in VARCHAR2);
+PROCEDURE pUpdateJLU;
 
 ---------------------------------------------------------------------------------
 -- Entity or entity set specifc date routines. See SLR_UTILITIES_PKG for others.
 ---------------------------------------------------------------------------------
 PROCEDURE pROLL_ENTITY_DATE(p_entity IN VARCHAR2, p_business_date in DATE DEFAULT NULL, p_update_end_date in CHAR DEFAULT 'Y');
+PROCEDURE pINSERT_SLR_ENTITY_DAYS (p_start_date  in date,
+                                   p_end_date    in date,
+                                   p_entity_set  in VARCHAR2);
+
+PROCEDURE pINSERT_SLR_ENTITY_PERIODS (p_start_bus_year_month in NUMBER,
+                                      p_start_date           in date,
+                                      p_end_date             in date,
+                                      p_entity               in VARCHAR2);
 PROCEDURE pUPDATE_NON_WORKING_DAYS(p_entity in VARCHAR2);
 
 ---------------------------------------------------------------------------------
@@ -23,36 +54,24 @@ PROCEDURE pIMPORT_SLR_JRNLS
     p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
     p_process_id IN NUMBER
 );
-PROCEDURE pInsertFakEbaCombinations
-(
-    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
-    p_process_id IN NUMBER,
-    p_business_date SLR_ENTITIES.ENT_BUSINESS_DATE%TYPE -- IF NULL then AE is not filtered using date
-);
-
-PROCEDURE pUpdateJLU;
-
-PROCEDURE pSLR_ENTITY_DAYS      (p_entity_set  in SLR_ENTITY_DAYS.ED_ENTITY_SET%TYPE,
-                                            p_start_date  in date,
-                                            p_end_date    in date,
-                                            p_status      in SLR_ENTITY_DAYS.ED_STATUS%TYPE,
-                                            p_calendar_name in FR_HOLIDAY_DATE.HD_CA_CALENDAR_NAME%TYPE := 'DEFAULT');
-
-PROCEDURE pSLR_ENTITY_PERIODS;
 
 ---------------------------------------------------------------------------------
 -- Static Data Loads
 ---------------------------------------------------------------------------------
+
 PROCEDURE PR_ACCOUNT(p_lpg_id IN NUMBER,p_no_processed_records OUT NUMBER,p_no_failed_records OUT NUMBER);
-PROCEDURE pUPDATE_SLR_CURRENCIES(pLPG_ID IN NUMBER, o_records_processed OUT NUMBER, o_records_failed OUT NUMBER);
 PROCEDURE PR_FX_RATE(p_lpg_id IN NUMBER, p_no_processed_records OUT NUMBER,p_no_failed_records OUT NUMBER);
+
+PROCEDURE pUPDATE_SLR_ACCOUNTS(p_entity in VARCHAR2);
+PROCEDURE pUPDATE_SLR_CURRENCIES(pLPG_ID IN NUMBER, o_records_processed OUT NUMBER, o_records_failed OUT NUMBER);
+PROCEDURE pUPDATE_SLR_ENTITY_RATES(p_entity in VARCHAR2,
+                                   p_business_date in DATE DEFAULT NULL);
 PROCEDURE pUPDATE_SLR_SEGMENT_3(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
 PROCEDURE pUPDATE_SLR_SEGMENT_4(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
 PROCEDURE pUPDATE_SLR_SEGMENT_5(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
 PROCEDURE pUPDATE_SLR_SEGMENT_6(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
 PROCEDURE pUPDATE_SLR_SEGMENT_7(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
 PROCEDURE pUPDATE_SLR_SEGMENT_8(pLPG_ID IN NUMBER, p_no_processed_records OUT NUMBER, p_no_failed_records OUT NUMBER);
-
 
 ---------------------------------------------------------------------------------
 -- Reconciliations

@@ -1,0 +1,10 @@
+*		text eol=lf
+*.class		binary
+*.jar		binary
+*.jpg		binary
+*.war		binary
+*.xlsx		binary
+*.zip		binary
+*	-crlf
+
+aah/upgrade/install.sql merge=ours

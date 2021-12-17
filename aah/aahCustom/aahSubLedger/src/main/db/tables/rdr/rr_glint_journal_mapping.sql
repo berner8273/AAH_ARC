@@ -1,12 +1,12 @@
 CREATE TABLE rdr.rr_glint_journal_mapping
 (
-	rgjm_rgbc_id         NUMBER(18) NOT NULL ,
-	rgjm_input_jrnl_id   NUMBER(18) NOT NULL ,
-	rgjm_rgj_id          VARCHAR2(30) NULL ,
-	input_time           DATE DEFAULT  sysdate  NOT NULL ,
-	input_user           VARCHAR2(30) DEFAULT  user  NOT NULL ,
-	modified_time        DATE DEFAULT  sysdate  NOT NULL ,
-	modified_user        VARCHAR2(30) DEFAULT  user  NOT NULL ,
+  RGJM_RGBC_ID        NUMBER(18)                NOT NULL,
+  RGJM_INPUT_JRNL_ID  CHAR(32 BYTE)             NOT NULL,
+  RGJM_RGJ_ID         VARCHAR2(30 BYTE),
+  INPUT_TIME          DATE                      DEFAULT SYSDATE               NOT NULL,
+  INPUT_USER          VARCHAR2(30 BYTE)         DEFAULT USER                  NOT NULL,
+  MODIFIED_TIME       DATE                      DEFAULT SYSDATE               NOT NULL,
+  MODIFIED_USER       VARCHAR2(30 BYTE)         DEFAULT USER                  NOT NULL,
 CONSTRAINT  XPK_GLINT_JOURNAL_MAPPING PRIMARY KEY (rgjm_rgbc_id,rgjm_input_jrnl_id),
 CONSTRAINT GLINT_BC_JM FOREIGN KEY (rgjm_rgbc_id) REFERENCES RDR.RR_GLINT_BATCH_CONTROL (rgbc_id),
 CONSTRAINT GLINT_JM_J FOREIGN KEY (rgjm_rgbc_id, rgjm_rgj_id) REFERENCES RDR.RR_GLINT_JOURNAL (rgj_rgbc_id, rgj_id)

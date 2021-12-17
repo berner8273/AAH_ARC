@@ -525,7 +525,7 @@ BEGIN
         ''U'' as jlu_jrnl_status,
         null as jlu_jrnl_status_text,
         :process_id___1 as jlu_jrnl_process_id,
-        nvl(AE_GL_NARRATIVE,AE_CLIENT_SPARE_ID19) AS JLU_DESCRIPTION,
+        AE_GL_NARRATIVE AS JLU_DESCRIPTION,
         ae_acc_event_id as jlu_source_jrnl_id,
         COALESCE(AE_CLIENT_DATE1, AE_VALUE_DATE, AE_POSTING_DATE) AS JLU_EFFECTIVE_DATE,  /*Updated per user story 25193*/
         nvl(ae_value_date, ae_posting_date) as jlu_value_date,

@@ -1,0 +1,88 @@
+CREATE OR REPLACE PACKAGE  SLR.SLR_CLIENT_PROCEDURES_PKG AS
+---------------------------------------------------------------------------------
+-- Id:          $Id: SLR_CLIENT_PROCEDURES_PKG.sql,v 1 2007/08/22 11:17:51 jporter Exp $
+--
+-- Description: Client specific custom procedures - created from
+--              SLR_CLIENT_PROCEDURES_PKG template package
+--
+-- Note:        THIS PACKAGE IS NOT CORE SLR
+--              THIS PROCEDURE IS NOT SUPPORTED BY CORE MAINTENANCE.
+--
+---------------------------------------------------------------------------------
+-- History:
+-- BJP 22-08-2007 Initial Creation
+---------------------------------------------------------------------------------
+-- Control/Batch Schedule Wrapper Processes
+---------------------------------------------------------------------------------
+PROCEDURE pPROCESS_SLR
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
+	p_rate_set IN slr_entities.ent_rate_set%TYPE
+);
+
+PROCEDURE pCHECK_JRNL_ERRORS(p_entity in VARCHAR2);
+
+---------------------------------------------------------------------------------
+-- Entity or entity set specifc date routines. See SLR_UTILITIES_PKG for others.
+---------------------------------------------------------------------------------
+PROCEDURE pROLL_ENTITY_DATE(p_entity IN VARCHAR2, p_business_date in DATE DEFAULT NULL, p_update_end_date in CHAR DEFAULT 'Y');
+PROCEDURE pINSERT_SLR_ENTITY_DAYS (p_start_date  in date,
+                                   p_end_date    in date,
+                                   p_entity_set  in VARCHAR2);
+
+PROCEDURE pINSERT_SLR_ENTITY_PERIODS (p_start_bus_year_month in NUMBER,
+                                      p_start_date           in date,
+                                      p_end_date             in date,
+                                      p_entity               in VARCHAR2);
+PROCEDURE pUPDATE_NON_WORKING_DAYS(p_entity in VARCHAR2);
+
+---------------------------------------------------------------------------------
+-- Import Procedures
+---------------------------------------------------------------------------------
+PROCEDURE pIMPORT_SLR_ALL_JRNLS
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
+    p_process_id IN NUMBER
+);
+PROCEDURE pIMPORT_SLR_JRNLS
+(
+    p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
+    p_process_id IN NUMBER
+);
+
+---------------------------------------------------------------------------------
+-- Static Data Loads
+---------------------------------------------------------------------------------
+PROCEDURE pUPDATE_SLR_ACCOUNTS(p_entity in VARCHAR2);
+PROCEDURE pUPDATE_SLR_CURRENCIES(p_entity in VARCHAR2);
+PROCEDURE pUPDATE_SLR_ENTITY_RATES(p_entity in VARCHAR2,
+                                   p_business_date in DATE DEFAULT NULL);
+PROCEDURE pUPDATE_SLR_SEGMENT_3(p_entity in VARCHAR2);
+PROCEDURE pUPDATE_SLR_SEGMENT_4(p_entity in VARCHAR2);
+PROCEDURE pUPDATE_SLR_SEGMENT_5(p_entity in VARCHAR2);
+PROCEDURE pUPDATE_SLR_SEGMENT_6(p_entity in VARCHAR2);
+
+
+---------------------------------------------------------------------------------
+-- Reconciliations
+---------------------------------------------------------------------------------
+PROCEDURE pREC_AET_JRNLS (p_epg_id IN VARCHAR2,
+                            p_entity IN VARCHAR2 DEFAULT NULL,
+                            p_date_from IN DATE DEFAULT NULL,
+                            p_date_to IN DATE DEFAULT NULL);
+
+PROCEDURE pSLR_INTERNAL_REC (p_epg_id IN VARCHAR2,
+                            p_entity IN VARCHAR2 DEFAULT NULL,
+                            p_date_from IN DATE DEFAULT NULL,
+                            p_date_to IN DATE DEFAULT NULL);
+
+procedure pCustRunBalanceMovementProcess( pProcess     IN slr_process.p_process%TYPE
+                                         ,pEntProcSet  IN slr_bm_entity_processing_set.bmeps_set_id%TYPE
+                                         ,pConfig      IN slr_process_config.pc_config%TYPE
+                                         ,pSource      IN slr_process_source.sps_source_name%TYPE
+                                         ,pBalanceDate IN DATE
+                                         ,pRateSet     IN slr_entity_rates.er_entity_set%TYPE
+                                        );
+
+END SLR_CLIENT_PROCEDURES_PKG;
+/

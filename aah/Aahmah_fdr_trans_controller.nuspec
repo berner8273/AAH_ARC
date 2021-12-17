@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Aahmah_fdr_trans_controller</id>
+    <version>0.0.0</version>
+    <title>Aah mah_fdr_trans_controller</title>
+    <authors>Ryan Quigley</authors>
+    <owners>Ryan Quigley</owners>
+    <description>Deploy the mah_fdr_trans_controller project.</description>
+    <tags>AAH server</tags>
+  </metadata>
+  <files>  
+    <file src="aahCustom\aahStandardisation\src\main\aptitude\core\mah_fdr_trans_controller.brd"/>
+    <file src="aahCustom\aahStandardisation\src\main\aptitude\core\mah_fdr_trans_controller.brd.config"/>
+	  <file src="Deploy_aahCustomProjects.sh"/>
+  </files>  
+</package>
