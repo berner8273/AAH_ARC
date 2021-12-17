@@ -27,11 +27,8 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
-@@stn/us50990_combo_rules_fix.sql;
-
 conn ~fdr_logon
-@@fdr/purge_dup_combo_rules.sql;
+@@fdr/us65835_losses_update.sql;
 
 /* End AAH custom upgrades */
 
