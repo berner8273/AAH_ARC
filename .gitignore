@@ -1,7 +1,7 @@
 .gradle
 build/
 bin/
-
+.sqlite
 # Ignore Gradle GUI config
 gradle-app.setting
 
@@ -14,3 +14,4 @@ gradle-app.setting
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
 /.vscode/vscjava.vscode-java-pack-0.10.0.vsix
+.vs/slnx.sqlite

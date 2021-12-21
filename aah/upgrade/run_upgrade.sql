@@ -8,13 +8,13 @@ set echo on
     --define b_num = &user_bubble_number
 	
 --Define all other Connections
-	define 1 = 'FDR/idiRGdUKmYYbq7WS@Oraaptdev:1521:aptdev'
-	define 2 = 'GUI/e25XZu2QDkibRkxG@Oraaptdev:1521:aptdev'
-	define 3 = 'RDR/UNbGN24jc33WizYp@Oraaptdev:1521:aptdev'
+	define 1 = 'FDR/bJGeTSP2PbMikw4d@Oraaptci-bubble3:1521:aptci'
+	define 2 = 'GUI/KWDfdtQqoa3A2nE5@Oraaptci-bubble3:1521:aptci'
+	define 3 = 'RDR/HuJJnYnTr8LRwJqL@Oraaptci-bubble3:1521:aptci'
 	define 4 = ''
-	define 5 = 'SLR/QzFpQ6vDSsngzPRL@Oraaptdev:1521:aptdev'
-	define 6 = 'STN/guYA6b54tQYL5Jco@Oraaptdev:1521:aptdev'
-	define 7 = 'aptitude/srz4i2GvnLCzREvV@Oraaptdev:1521:aptdev'
+	define 5 = 'SLR/xJ4V8iyBJ7UuVSx6@Oraaptci-bubble3:1521:aptci'
+	define 6 = 'STN/NZ784FBLUJesbJvA@Oraaptci-bubble3:1521:aptci'
+	define 7 = 'aptitude/iK3BQ8QvbuhSvaAU@Oraaptci-bubble3:1521:aptci'
 	define 8 = ''
 
 

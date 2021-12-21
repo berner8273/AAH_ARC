@@ -1,11 +1,11 @@
-CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
+CREATE OR REPLACE PACKAGE GUI.PGUI_MANUAL_JOURNAL AS
 
     TYPE global_ref_cursor IS REF CURSOR;
    --- TYPE array_list IS TABLE OF VARCHAR2(50);
 
     -- For use with R2 code base
     PROCEDURE prui_search_headers(
-        journal_id			IN		SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id			IN		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         journal_type		IN		SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE,
         entity				IN		SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE,
         source_system		IN		SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE,
@@ -26,18 +26,18 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
 
     -- For use with R2 code base
     PROCEDURE prui_get_header(
-        journal_id 			IN OUT 	SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id 			IN OUT 	SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         resultset			OUT 	global_ref_cursor );
 
     -- For use with R2 code base
     PROCEDURE prui_get_lines(
-        journal_id 			IN OUT 	SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id 			IN OUT 	SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         coding_convention	IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
         resultset			OUT 	global_ref_cursor );
 
     -- For use with R2 code base
     PROCEDURE prui_get_line(
-        journal_id			IN OUT 	SLR_JRNL_LINES.JL_JRNL_HDR_ID%TYPE,
+        journal_id			IN OUT 	SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
         line_no				IN OUT 	SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
         coding_convention	IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
         resultset			OUT 	global_ref_cursor );
@@ -46,12 +46,12 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
         session_id			IN VARCHAR2,
         journal_id  	 	IN NUMBER,
         user_id 		 	IN VARCHAR2,
-        success 		 	OUT CHAR);
+        success 		 	OUT VARCHAR2);
         --errorList		 	  OUT gJournalLineErrors );
 
     PROCEDURE prui_upsert_header(
         session_id			IN		VARCHAR2,
-        journal_id 			IN 		SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id 			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         journal_type		IN 		SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE,
         entity				IN 		SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE,
         source_system		IN 		SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE,
@@ -63,13 +63,13 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
         no_validate			IN		CHAR DEFAULT 'N',
         status              IN      CHAR DEFAULT NULL,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        journal_id_out		OUT		SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id_out		OUT		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         journal_version_out out gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT		CHAR);
+        success				OUT VARCHAR2);
 
     PROCEDURE prui_upsert_line(
         session_id			IN		VARCHAR2,
-        journal_id			IN 		SLR_JRNL_LINES.JL_JRNL_HDR_ID%TYPE,
+        journal_id			IN 		SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
         line_number			IN 		SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
         description			IN 		VARCHAR2,
         account				IN 		SLR_JRNL_LINES.JL_ACCOUNT%TYPE,
@@ -114,82 +114,82 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
         journal_line_out	OUT		NUMBER,
         journal_version_out out gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT		CHAR );
+        success				OUT VARCHAR2 );
 
     PROCEDURE prui_bulk_submission(
         session_id			IN		VARCHAR2,
-        journal_id			IN		SLR_JRNL_LINES.JL_JRNL_HDR_ID%TYPE,
+        journal_id			IN		SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
         updated_by			IN		SLR_JRNL_LINES.JL_AMENDED_BY%TYPE,
         journal_id_out		OUT		NUMBER,
-        success				OUT		CHAR );
+        success				OUT VARCHAR2 );
 
     PROCEDURE prui_delete_journals(
         session_id			IN		VARCHAR2,
         journal_id_list		IN 		VARCHAR2,
         updated_by 			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
-        success				OUT		CHAR,
+        success				OUT VARCHAR2,
         failed_jrnl_list    OUT     VARCHAR2 );
 
     PROCEDURE prui_post_journals(
         session_id			IN		VARCHAR2,
         journal_id_list		IN 		VARCHAR2,
         updated_by 			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
-        success				OUT		CHAR,
+        success				OUT VARCHAR2,
         failed_jrnl_list    OUT     VARCHAR2);
 
     PROCEDURE prui_delete_journal(
         session_id			IN		VARCHAR2,
-        journal_id			IN 		SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         updated_by 			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT		CHAR);
+        success				OUT VARCHAR2);
 
     PROCEDURE prui_copy_lines(
         session_id			IN		VARCHAR2,
-        journal_id			IN		SLR_JRNL_LINES.JL_JRNL_HDR_ID%TYPE,
+        journal_id			IN		SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
         line_number_list	IN		VARCHAR2,
-        updated_by			IN		SLR_JRNL_LINES.JL_CREATED_BY%TYPE,
+        updated_by			IN		SLR_JRNL_LINES_UNPOSTED.JLU_CREATED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT		CHAR );
+        success				OUT VARCHAR2 );
 
     PROCEDURE prui_delete_lines(
         session_id			IN		VARCHAR2,
-        journal_id 			IN		SLR_JRNL_LINES.JL_JRNL_HDR_ID%TYPE,
+        journal_id 			IN		SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
         line_number_list 	IN 		VARCHAR2,
         updated_by			IN 		SLR_JRNL_LINES.JL_CREATED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT		CHAR );
+        success				OUT VARCHAR2 );
 
     PROCEDURE prui_reverse_journal(
         session_id			IN		VARCHAR2,
-        journal_id 			IN 		SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id 			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         reversing_date		IN 		VARCHAR2,
         updated_by			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
-        new_jrnl_id			OUT 	SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
-        success				OUT		CHAR );
+        new_jrnl_id			OUT 	SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        success				OUT VARCHAR2 );
 
     -- For use with R2 code base
     PROCEDURE prui_copy_journal(
         session_id          IN      VARCHAR2,
-        journal_id          IN      SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id          IN      SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         effective_date      IN      SLR_JRNL_HEADERS.JH_JRNL_DATE%TYPE,
         reversing_date      IN      SLR_JRNL_HEADERS.JH_JRNL_REV_DATE%TYPE,
         updated_by          IN      SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
-        new_jrnl_id         OUT     SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
-        success             OUT     CHAR );
+        new_jrnl_id         OUT     SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        success             OUT VARCHAR2 );
 
     PROCEDURE prui_post_journal(
         session_id			IN		VARCHAR2,
-        journal_id			IN 		SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT		CHAR);
+        success				OUT VARCHAR2);
 
     PROCEDURE prui_authorise_journals(
         session_id			IN		VARCHAR2,
         journal_id_list		IN 		VARCHAR2,
         updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
-        success				OUT		CHAR,
+        success				OUT VARCHAR2,
         failed_jrnl_list    OUT     VARCHAR2);
 
     PROCEDURE prui_reject_journals(
@@ -197,18 +197,18 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
         journal_id_list		IN 		VARCHAR2,
         reason_description	IN		VARCHAR2,
         updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
-        success				OUT		CHAR ,
+        success				OUT VARCHAR2 ,
         failed_jrnl_list    OUT     VARCHAR2);
 
     -- For use with R2 code base
     PROCEDURE prui_get_journal_errors(
         session_id			IN		VARCHAR2,
-        journal_id			IN		SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id			IN		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         line_number			IN		SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
         errorList			OUT		global_ref_cursor );
 
     -- Logging
-    PROCEDURE prui_log_error( journal_id 	IN SLR_JRNL_LINES.JL_JRNL_HDR_ID%TYPE,
+    PROCEDURE prui_log_error( journal_id 	IN SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
                               line_no		IN SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
                               error_no		IN NUMBER,
                               message 		IN VARCHAR2);
@@ -238,28 +238,28 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
     PROCEDURE prui_update_unprocessed_jrnls(status_from                 IN CHAR,
                                             status_to                   IN CHAR,
                                             list_string                 IN VARCHAR2,
-                                            success                     OUT CHAR);
+                                            success                     OUT VARCHAR2);
 
     PROCEDURE prui_removed_failed_jrnls(status                     IN CHAR,
                                         journal_id                 IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE );
 
     PROCEDURE prui_setSubLgrGenLastBalForBD(p_generate IN CHAR DEFAULT 'N');
-
+    
     PROCEDURE prui_authorise_journal(
         session_id			IN		VARCHAR2,
-        journal_id			IN 		SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT		CHAR);
-
+        success				OUT VARCHAR2);
+        
     PROCEDURE prui_post_queued_journals(
      epg_id IN VARCHAR2,
      journal_id_list IN VARCHAR2,
-     status out CHAR);
-
+     status OUT VARCHAR2);
+	 
 	PROCEDURE prui_upsert_attachment(
         session_id			IN VARCHAR2,
-        journal_id			IN SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id			IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         file_no         IN gui_jrnl_file.JF_FILE_NO%TYPE ,
         file_name       IN gui_jrnl_file.JF_FILE_NAME%TYPE,
         file_comment    IN gui_jrnl_file.JF_COMMENT%TYPE,
@@ -267,43 +267,28 @@ CREATE OR REPLACE PACKAGE GUI."PGUI_MANUAL_JOURNAL" AS
         attachment      IN gui_jrnl_file.JF_FILE%TYPE,
         updated_by			IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
-        success				  OUT		CHAR
+        success				  OUT VARCHAR2
     );
 
 	PROCEDURE prui_delete_attachments(
         session_id			IN VARCHAR2,
-        journal_id			IN SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
+        journal_id			IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         file_no_list    IN varchar2,
         updated_by			IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
-        success				  OUT		CHAR
+        success				  OUT VARCHAR2
     );
-
+	
 	procedure prui_reject_journal(session_id			IN		VARCHAR2,
         journal_id		IN 		number,
         reason_description	IN		VARCHAR2,
         updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
-        success				OUT		CHAR);
+        success				OUT VARCHAR2);
+		
+	PROCEDURE prui_rollback_err_slr_journals(epg_id IN VARCHAR2,journal_id_list IN VARCHAR2, rollback_all IN boolean :=FALSE, process_id IN NUMBER DEFAULT NULL);
+    PROCEDURE prui_delete_gui_journals(journal_id_list IN VARCHAR2);	
 
-	PROCEDURE prui_rollback_err_slr_journals(epg_id IN VARCHAR2,journal_id_list IN VARCHAR2, rollback_all IN boolean :=FALSE);
-    PROCEDURE prui_delete_gui_journals(journal_id_list IN VARCHAR2);
-
-   PROCEDURE pCombinationCheck_GJLU (
-        pinEPGID     in slr.slr_entity_proc_group.epg_id%TYPE,
-        pinProcessID in slr.slr_job_statistics.js_process_id%TYPE,
-        pinStatus    in CHAR
-    );
-    
-   PROCEDURE pProcessEliminations (
-      journal_id_list    IN     VARCHAR2,
-      success               OUT CHAR,
-      lv_header_id_list IN OUT varchar2);
-
-   PROCEDURE pCreateEliminations (journal_id IN  SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
-       success              OUT CHAR,lv_header_id_list IN OUT VARCHAR2 );
-
-         
     /******************************************************************************************
     Declare private global variables
     ******************************************************************************************/

@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY SLR.slr_balance_movement_pkg as
+create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
   PROCEDURE pBMTraceJob(pDescription IN VARCHAR2, pSQL IN VARCHAR2) AS
     PRAGMA AUTONOMOUS_TRANSACTION;
@@ -299,17 +299,6 @@ CREATE OR REPLACE PACKAGE BODY SLR.slr_balance_movement_pkg as
       ELSE
       RAISE_APPLICATION_ERROR(-20001,'Unsupported process: ' || gProcess);
     end if;
-
-
-    --for each entity processing group
-    FOR cEntityProcGroup IN cEntityProcGroups
-      LOOP
-        --set lju periods (jlu_period_month,jlu_period_year,jlu_period_ltd) in created journal lines
-       -- pBMUpdateJLUPeriods(cEntityProcGroup.JLU_EPG_ID);
-
-        --set fak eba id in created journal lines
-        pBMUpdateJLUFakEbaId(cEntityProcGroup.JLU_EPG_ID);
-      END LOOP;
 
     begin
       SELECT MIN(jlu_jrnl_hdr_id), MAX(jlu_jrnl_hdr_id) into v_min_id, v_max_id
@@ -1034,132 +1023,149 @@ CREATE OR REPLACE PACKAGE BODY SLR.slr_balance_movement_pkg as
 
   PROCEDURE pBMCreateUnpostedJournals(lines_created out integer) AS
     fakBalKey gtFAKBalanceKey;
-    v_stmt varchar2(10000);
-    v_group_by_clause VARCHAR2(300);
-    v_sel_cur_sql VARCHAR2(6000);
-    v_insert_sql VARCHAR2(1000);
+    v_stmt varchar2(32000);
+    v_group_by_clause VARCHAR2(10000);
+    v_sel_cur_sql VARCHAR2(10000);
+    v_insert_sql VARCHAR2(10000);
   BEGIN
     --get fak balance key--
     fakBalKey := fBMGetFakBalanceKey;
 
     --get group by from fak definitions to  group temp lines into journals--
-    v_group_by_clause := ' jl_entity,jl_tran_ccy';
+    v_group_by_clause := ' jl_entity||jl_tran_ccy';
 
     IF(fakBalKey.s1_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_1';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_1';
     END IF;
     IF(fakBalKey.s2_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_2';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_2';
     END IF;
     IF(fakBalKey.s3_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_3';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_3';
     END IF;
     IF(fakBalKey.s4_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_4';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_4';
     END IF;
     IF(fakBalKey.s5_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_5';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_5';
     END IF;
     IF(fakBalKey.s6_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_6';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_6';
     END IF;
     IF(fakBalKey.s7_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_7';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_7';
     END IF;
     IF(fakBalKey.s8_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_8';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_8';
     END IF;
     IF(fakBalKey.s9_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_9';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_9';
     END IF;
     IF(fakBalKey.s10_bc = 'Y') THEN
-      v_group_by_clause := v_group_by_clause||',jl_segment_10';
+      v_group_by_clause := v_group_by_clause||'||jl_segment_10';
     END IF;
 
-    v_insert_sql := 'INSERT INTO slr_jrnl_lines_unposted '
-         ||'(jlu_jrnl_hdr_id,jlu_jrnl_line_number,jlu_epg_id,jlu_fak_id,jlu_eba_id,'
-         ||'jlu_jrnl_status,jlu_jrnl_status_text,jlu_jrnl_process_id,jlu_description,'
-         ||'jlu_source_jrnl_id,jlu_effective_date,jlu_value_date,jlu_entity,jlu_account,'
-         ||' jlu_segment_1,jlu_segment_2,jlu_segment_3,jlu_segment_4,jlu_segment_5,jlu_segment_6,'
-         ||' jlu_segment_7,jlu_segment_8,jlu_segment_9,jlu_segment_10,jlu_attribute_1,jlu_attribute_2,'
-         ||' jlu_attribute_3,jlu_attribute_4,jlu_attribute_5,jlu_tran_ccy,jlu_tran_amount,jlu_base_ccy,'
-         ||' jlu_base_amount,jlu_base_rate,jlu_local_ccy,jlu_local_amount,jlu_local_rate,jlu_created_by,'
-         ||' jlu_created_on,jlu_amended_by,jlu_amended_on,jlu_jrnl_type,jlu_jrnl_date,jlu_jrnl_description,'
-         ||' jlu_jrnl_authorised_by,jlu_jrnl_authorised_on,jlu_jrnl_source,jlu_jrnl_source_jrnl_id,'
-         ||' jlu_jrnl_total_hash_debit,jlu_jrnl_total_hash_credit,jlu_jrnl_internal_period_flag,jlu_jrnl_ent_rate_set,jlu_type'
-         ||')';
+    v_insert_sql := 'INSERT INTO slr_jrnl_lines_unposted 
+         (jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id, jlu_fak_id, jlu_eba_id,
+          jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description,
+          jlu_source_jrnl_id, jlu_effective_date, jlu_value_date, jlu_entity, jlu_account,
+          jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6,
+          jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10, jlu_attribute_1, jlu_attribute_2,
+          jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_tran_ccy, jlu_tran_amount, jlu_base_ccy,
+          jlu_base_amount, jlu_base_rate, jlu_local_ccy, jlu_local_amount, jlu_local_rate, jlu_created_by,
+          jlu_created_on, jlu_amended_by, jlu_amended_on, jlu_jrnl_type, jlu_jrnl_date, jlu_jrnl_description,
+          jlu_jrnl_authorised_by, jlu_jrnl_authorised_on, jlu_jrnl_source, jlu_jrnl_source_jrnl_id,
+          jlu_jrnl_total_hash_debit, jlu_jrnl_total_hash_credit, jlu_jrnl_internal_period_flag, jlu_jrnl_ent_rate_set, jlu_type,
+          jlu_period_month, jlu_period_year, jlu_period_ltd
+         )';
 
-    v_sel_cur_sql := ' SELECT '
-         ||'MAX(v_header_id) OVER (PARTITION BY c.rnk)'
-         ||',rowNo'
-         ||',epg_id'
-         ||',0,0,''U'',''Unposted'',:pProcessId'
-         ||',jl_description'
-         ||',0'
-         ||',jl_effective_date,jl_value_date,jl_entity,jl_account'
-         ||',coalesce(jl_segment_1,''NVS''),coalesce(jl_segment_2,''NVS''),coalesce(jl_segment_3,''NVS''),coalesce(jl_segment_4,''NVS''),coalesce(jl_segment_5,''NVS''),coalesce(jl_segment_6,''NVS'')'
-         ||',coalesce(jl_segment_7,''NVS''),coalesce(jl_segment_8,''NVS''),coalesce(jl_segment_9,''NVS''),coalesce(jl_segment_10,''NVS''),coalesce(jl_attribute_1,''NVS''),coalesce(jl_attribute_2,''NVS'')'
-         ||',coalesce(jl_attribute_3,''NVS''),coalesce(jl_attribute_4,''NVS''),coalesce(jl_attribute_5,''NVS''),jl_tran_ccy,jl_tran_amount,jl_base_ccy'
-         ||',jl_base_amount,jl_base_rate,jl_local_ccy,jl_local_amount,jl_local_rate'
-         ||',''SLR'',sysdate,''SLR'',sysdate,jl_jrnl_type,jl_effective_date,:pProcess'
-         ||',''SLR'',SYSDATE,:pConfig'
-         ||',0'
-         ||',totalHashDebit'
-         ||',totalHashCredit'
-         ||',jl_jrnl_internal_period_flag,jl_jrnl_ent_rate_set,jl_type '
-         ||' from '
-         ||'(SELECT '
-         ||'case when lag(b.rnk,1,0) over(order by b.rnk) <> b.rnk then fnslr_getheaderid else 0 end as v_header_id'
-         ||',b.*'
-         ||' from '
-         ||'(SELECT '
-         ||'rank() OVER (ORDER BY '||v_group_by_clause||') AS rnk'
-         ||',ROW_NUMBER() OVER (PARTITION BY '||v_group_by_clause||' ORDER BY jl_type) AS rowNo'
-         ||',(select SLR_BALANCE_MOVEMENT_PKG.fBMGetEPGId(jl_entity, jl_segment_1, jl_segment_2, jl_segment_3, jl_segment_4, jl_segment_5, jl_segment_6, jl_segment_7, jl_segment_8, jl_segment_9, jl_segment_10) from dual) as epg_id'
-         ||',SUM (CASE    WHEN a.jl_tran_amount > 0 THEN a.jl_tran_amount ELSE 0 END) OVER(PARTITION BY '||v_group_by_clause||') AS totalHashDebit'
-         ||',SUM (CASE    WHEN a.jl_tran_amount < 0 THEN a.jl_tran_amount ELSE 0 END) OVER(PARTITION BY '||v_group_by_clause||') as totalHashCredit'
-         ||',a.*'
-         ||' FROM '
-         ||'(SELECT '
-         ||'MAX(jl_description) AS jl_description,'
-         ||'MAX(jl_effective_date) AS jl_effective_date,'
-         ||'MAX(jl_value_date) AS jl_value_date,'
-         ||'jl_entity,'
-         ||'jl_account,'
-         ||'nvl(jl_segment_1,''NVS'') as jl_segment_1,'
-         ||'nvl(jl_segment_2,''NVS'') as jl_segment_2,'
-         ||'nvl(jl_segment_3,''NVS'') as jl_segment_3,'
-         ||'nvl(jl_segment_4,''NVS'') as jl_segment_4,'
-         ||'nvl(jl_segment_5,''NVS'') as jl_segment_5,'
-         ||'nvl(jl_segment_6,''NVS'') as jl_segment_6,'
-         ||'nvl(jl_segment_7,''NVS'') as jl_segment_7,'
-         ||'nvl(jl_segment_8,''NVS'') as jl_segment_8,'
-         ||'nvl(jl_segment_9,''NVS'') as jl_segment_9,'
-         ||'nvl(jl_segment_10,''NVS'') as jl_segment_10,'
-         ||'nvl(jl_attribute_1,''NVS'') as jl_attribute_1,'
-         ||'nvl(jl_attribute_2,''NVS'') as jl_attribute_2,'
-         ||'nvl(jl_attribute_3,''NVS'') as jl_attribute_3,'
-         ||'nvl(jl_attribute_4,''NVS'') as jl_attribute_4,'
-         ||'nvl(jl_attribute_5,''NVS'') as jl_attribute_5,'
-         ||'jl_tran_ccy,'
-         ||'SUM(jl_tran_amount) AS jl_tran_amount,'
-         ||'MAX(jl_base_ccy) AS jl_base_ccy,'
-         ||'SUM(jl_base_amount) AS jl_base_amount,'
-         ||'MAX(jl_base_rate) AS jl_base_rate,'
-         ||'MAX(jl_local_ccy) AS jl_local_ccy,'
-         ||'SUM(jl_local_amount) AS jl_local_amount,'
-         ||'MAX(jl_local_rate) AS jl_local_rate,'
-         ||'MAX(jl_jrnl_type) AS jl_jrnl_type,'
-         ||'jl_type,'
-         ||'MAX(jl_jrnl_internal_period_flag) AS jl_jrnl_internal_period_flag,'
-         ||'MAX(jl_jrnl_ent_rate_set) AS jl_jrnl_ent_rate_set '
-         ||'FROM SLR_JRNL_LINES_TEMP '
-         ||'GROUP BY jl_entity,jl_account,jl_tran_ccy,jl_segment_1,jl_segment_2,jl_segment_3,jl_segment_4,jl_segment_5,'
-         ||'jl_segment_6,jl_segment_7,jl_segment_8,jl_segment_9,jl_segment_10,jl_attribute_1,jl_attribute_2,'
-         ||'jl_attribute_3,jl_attribute_4,jl_attribute_5,jl_type '
-         ||'HAVING SUM(jl_tran_amount) <> 0 OR SUM(jl_base_amount) <> 0 OR SUM(jl_local_amount) <> 0'
-         ||') a) b ) c';
-
+    v_sel_cur_sql := '
+      SELECT
+        standard_hash(c.rnk||''-'||to_char(gProcessId)||''', ''MD5'') AS jl_jrnl_hdr_id, 
+        rowNo,
+        epg_id,
+        standard_hash(jl_entity||epg_id||jl_account||jl_segment_1||jl_segment_2||jl_segment_3||jl_segment_4||jl_segment_5||jl_segment_6||jl_segment_7||jl_segment_8||jl_segment_9||jl_segment_10||jl_tran_ccy, ''MD5''),
+        standard_hash(
+            jl_entity||epg_id||jl_account||jl_segment_1||jl_segment_2||jl_segment_3||jl_segment_4||jl_segment_5||jl_segment_6||jl_segment_7||jl_segment_8||jl_segment_9||jl_segment_10||jl_tran_ccy||
+            jl_attribute_1||jl_attribute_2||jl_attribute_3||jl_attribute_4||jl_attribute_5, ''MD5''),
+            ''U'',''Unposted'',:pProcessId,
+            jl_description,
+            0,
+            jl_effective_date, jl_value_date, jl_entity, jl_account,
+            coalesce(jl_segment_1,''NVS''),coalesce(jl_segment_2,''NVS''),coalesce(jl_segment_3,''NVS''),coalesce(jl_segment_4,''NVS''),coalesce(jl_segment_5,''NVS''),coalesce(jl_segment_6,''NVS''),
+            coalesce(jl_segment_7,''NVS''),coalesce(jl_segment_8,''NVS''),coalesce(jl_segment_9,''NVS''),coalesce(jl_segment_10,''NVS''),coalesce(jl_attribute_1,''NVS''),coalesce(jl_attribute_2,''NVS''),
+            coalesce(jl_attribute_3,''NVS''), coalesce(jl_attribute_4,''NVS''), coalesce(jl_attribute_5,''NVS''), jl_tran_ccy, jl_tran_amount, jl_base_ccy,
+            CASE
+              WHEN ent_apply_fx_translation = ''Y'' OR jl_base_amount IS NOT NULL THEN
+                  jl_base_amount
+              ELSE 0
+            END AS jl_base_amount, 
+            jl_base_rate, jl_local_ccy, 
+            CASE
+              WHEN ent_apply_fx_translation = ''Y'' OR jl_local_amount IS NOT NULL THEN
+                  jl_local_amount
+              ELSE 0
+            END AS jl_local_amount, 
+            jl_local_rate,
+            ''SLR'', sysdate, ''SLR'', sysdate, jl_jrnl_type, jl_effective_date, :pProcess,
+            ''SLR'', sysdate, :pConfig,
+            0,
+            totalHashDebit,
+            totalHashCredit,
+            jl_jrnl_internal_period_flag, jl_jrnl_ent_rate_set, jl_type, ep_bus_period AS jlu_period_month, ep_bus_year AS jlu_period_year, 
+            CASE WHEN ea_account_type_flag = ''P'' THEN ep_bus_year else 1 END AS jl_period_ltd
+        FROM (
+          SELECT b.*
+          FROM
+            (select
+              rank() over (order by '||v_group_by_clause||') AS rnk,
+              row_number() over (order by null) AS rowNo,
+              (select SLR_BALANCE_MOVEMENT_PKG.fBMGetEPGId(jl_entity, jl_segment_1, jl_segment_2, jl_segment_3, jl_segment_4, jl_segment_5, jl_segment_6, jl_segment_7, jl_segment_8, jl_segment_9, jl_segment_10) from dual) AS epg_id,
+              0 AS totalHashDebit,
+              0 AS totalHashCredit,
+              a.* FROM (
+                SELECT
+                  max(jl_description) AS jl_description,
+                  max(jl_effective_date) AS jl_effective_date,
+                  max(jl_value_date) AS jl_value_date,
+                  jl_entity,
+                  jl_account,
+                  nvl(jl_segment_1,''NVS'') AS jl_segment_1,
+                  nvl(jl_segment_2,''NVS'') AS jl_segment_2,
+                  nvl(jl_segment_3,''NVS'') AS jl_segment_3,
+                  nvl(jl_segment_4,''NVS'') AS jl_segment_4,
+                  nvl(jl_segment_5,''NVS'') AS jl_segment_5,
+                  nvl(jl_segment_6,''NVS'') AS jl_segment_6,
+                  nvl(jl_segment_7,''NVS'') AS jl_segment_7,
+                  nvl(jl_segment_8,''NVS'') AS jl_segment_8,
+                  nvl(jl_segment_9,''NVS'') AS jl_segment_9,
+                  nvl(jl_segment_10,''NVS'') AS jl_segment_10,
+                  nvl(jl_attribute_1,''NVS'') AS jl_attribute_1,
+                  nvl(jl_attribute_2,''NVS'') AS jl_attribute_2,
+                  nvl(jl_attribute_3,''NVS'') AS jl_attribute_3,
+                  nvl(jl_attribute_4,''NVS'') AS jl_attribute_4,
+                  nvl(jl_attribute_5,''NVS'') AS jl_attribute_5,
+                  jl_tran_ccy,
+                  sum(jl_tran_amount) AS jl_tran_amount,
+                  max(jl_base_ccy) AS jl_base_ccy,
+                  sum(jl_base_amount) AS jl_base_amount,
+                  max(jl_base_rate) AS jl_base_rate,
+                  max(jl_local_ccy) AS jl_local_ccy,
+                  sum(jl_local_amount) AS jl_local_amount,
+                  max(jl_local_rate) AS jl_local_rate,
+                  max(jl_jrnl_type) AS jl_jrnl_type,
+                  jl_type,
+                  max(jl_jrnl_internal_period_flag) AS jl_jrnl_internal_period_flag,
+                  max(jl_jrnl_ent_rate_set) AS jl_jrnl_ent_rate_set
+                FROM slr_jrnl_lines_temp
+                GROUP by jl_entity, jl_account, jl_tran_ccy, jl_segment_1, jl_segment_2, jl_segment_3, jl_segment_4, jl_segment_5,
+                  jl_segment_6, jl_segment_7, jl_segment_8, jl_segment_9, jl_segment_10, jl_attribute_1, jl_attribute_2,
+                  jl_attribute_3, jl_attribute_4, jl_attribute_5, jl_type
+                HAVING sum(jl_tran_amount) <> 0 or sum(jl_base_amount) <> 0 or sum(jl_local_amount) <> 0
+        ) a) b) c 
+          LEFT JOIN slr_entity_periods ON jl_effective_date between ep_cal_period_start AND ep_cal_period_end AND ep_entity = jl_entity AND ep_period_type != 0 
+          LEFT JOIN slr_entities ON ent_entity = jl_entity
+          LEFT JOIN slr_entity_accounts ON ea_account = jl_account AND ea_entity_set = ent_accounts_set';
     v_stmt := v_insert_sql||v_sel_cur_sql;
 
     pBMTraceJob('pBMCreateUnpostedJournals',v_stmt||';bindings ['||gProcessId||','|| gProcess||','||gConfig||']');
@@ -2375,7 +2381,7 @@ PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
     pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gJournalType||','||gEntProcSet||','||gBalanceDate||','
                                                   ||processConfig.pcd_description||','||gJournalType||','||gConfig||','||gEntProcSet||','||gBalanceDate||','||gJournalType||']');
 
-/*T.Nulty added pConfig variable*/      
+/*T.Nulty added pConfig variable*/
     EXECUTE IMMEDIATE v_stmt
       USING processConfig.pcd_description,gJournalType,gEntProcSet,gBalanceDate
             ,processConfig.pcd_description,gJournalType,gConfig,gEntProcSet,gBalanceDate,gJournalType;

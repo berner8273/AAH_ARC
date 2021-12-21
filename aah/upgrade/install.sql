@@ -21,16 +21,14 @@ define unittest_login=~8
 
 
 /* Check AAH upgrade versions - do not remove */
+
 conn ~sys_logon
 @@sys/00001_check_upgrade_versions.sql
 
 /* Begin AAH custom upgrades */
 
-conn ~rdr_logon
-@@rdr/us53060_rdr_views.sql
-
 conn ~stn_logon
-@@stn/us53060_stn_columns.sql
+@@stn/us50990_combo_rules_fix.sql;
 
 conn ~rdr_logon
 @@rdr/us53060_rdr_views2.sql
@@ -41,10 +39,9 @@ conn ~stn_logon
 @@stn/us53060_packages.sql
 
 conn ~fdr_logon
-@@fdr/us58325_new_sub_accounts.sql
-@@fdr/us53060_fr_account_lookup_param.sql
-@@fdr/us53060_fdr_cleardown.sql 
+@@fdr/purge_dup_combo_rules.sql;
 
+<<<<<<< .mine
 -- this is still in prod - check with Marc if still needed
 @@fdr/hotfix_fr_general_lookup_cash_offset.sql
 
@@ -55,18 +52,30 @@ conn ~stn_logon
 conn~gui_logon
 -- @@gui/us53060_gui_event_class.sql
 
+=======
+
+
+
+
+
+
+
+
+
+
+>>>>>>> .theirs
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
 conn ~sys_logon as sysdba
-@@sys/99999_refresh_aah_roles.sql
+@@sys/99999_refresh_aah_roles.sql;
 
 /* recompile any packages or procedures that are not compiled */
 @@sys/recompile_objects.sql
 
 /* Register upgrade - do not remove */
 conn ~fdr_logon
-@@fdr/99999_register_upgrade.sql
+@@fdr/99999_register_upgrade.sql;
 
 
 exit

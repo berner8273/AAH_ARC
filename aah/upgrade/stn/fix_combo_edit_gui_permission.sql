@@ -1,1 +1,0 @@
-@@../aahCustom/aahStandardisation/src/main/db/grants/tables/stn/GL_COMBO_EDIT_PROCESS.sql

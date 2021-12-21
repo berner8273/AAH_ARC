@@ -1,9 +1,6 @@
 # Introduction 
 This repository contains java test code that is intended to be 
 
-# Getting Started
-
-## Setup Java
 * Unzip Java to c:\Java
     * Current version of java is java-11-openjdk-11.0.8.10-2
     * Add JAVA_HOME environment variable and point to C:\java\java-11-openjdk-11.0.8.10-2.windows.redhat.x86_64

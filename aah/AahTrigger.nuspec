@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>AahTrigger</id>
+    <version>0.0.0</version>
+    <title>Aah Trigger</title>
+    <authors>Ryan Quigley</authors>
+    <owners>Ryan Quigley</owners>
+    <description>Deploy the Step Trigger project.</description>
+    <tags>AAH server</tags>
+  </metadata>
+  <files>  
+    <file src="aahCustom\aahStepTrigger\src\main\aptitude\trigger\Trigger.brd"/>
+    <file src="aahCustom\aahStepTrigger\src\main\aptitude\trigger\Trigger.brd.config"/>
+	  <file src="Deploy_aahCustomProjects.sh"/>
+  </files>  
+</package>
