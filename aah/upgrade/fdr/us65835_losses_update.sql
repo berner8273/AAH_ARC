@@ -24,3 +24,4 @@ SELECT  to_char(TO_DATE (fgl.lk_lookup_value3, 'DD-MON-YYYY'),'mm-yyyy')
                        open_period.min_period
                 AND fgl.lk_match_key1 = open_period.event_class
     WHERE fgl.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD' and fgl.lk_match_key1 = 'LOSSES');
+    COMMIT;
