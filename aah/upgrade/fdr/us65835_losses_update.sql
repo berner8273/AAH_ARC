@@ -7,7 +7,8 @@ WHERE fsrae.srae_dimension_12 in ('A','D')
                                 'LAE_PAID',
                                 'LAE_RECOVERIES',
                                 'LM_PAID',
-                                'LM_RECOVERED')
+                                'LM_RECOVERED',
+                                'TSC_PAID')
      and fsrae.srae_client_spare_id2 is null
      and to_char(fsrae.srae_accevent_date,'mm-yyyy') IN (
 SELECT  to_char(TO_DATE (fgl.lk_lookup_value3, 'DD-MON-YYYY'),'mm-yyyy') 
