@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY     STN.PK_CEV AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_CEV AS
     PROCEDURE pr_cession_event_idf
         (
             p_lpg_id IN NUMBER,
@@ -96,6 +96,7 @@ and not exists (
         ,   business_event_typ
         ,   source_event_ts
         ,   reclass_entity
+        ,   chartfield_1
         ,   transaction_ccy
         ,   transaction_amt
         ,   functional_ccy
@@ -120,6 +121,7 @@ and not exists (
         ,   cev.business_event_typ
         ,   cev.source_event_ts
         ,   cev.reclass_entity
+        ,   cev.chartfield_1
         ,   cev.transaction_ccy
         ,   cev.transaction_amt
         ,   cev.functional_ccy
@@ -245,6 +247,8 @@ and not exists (
                                   ,ce_data.le_cd
                                   ,ce_data.parent_cession_le_cd
                                   ,cev.reclass_entity
+                                  ,cev.account_cd
+                                  ,cev.chartfield_1
                                   ,ce_data.owner_le_cd
                                   ,ce_data.counterparty_le_cd
                                   ,cev.transaction_amt
@@ -325,6 +329,7 @@ and not exists (
                             )                partner_reporting_amt
                       , reporting_ccy
                       , lpg_id
+                      , chartfield_1
                    from (
                             select
                                    nvl( gfa.gaap_fut_accts_flag , 'N' )                                    gaap_fut_accts_flag
@@ -438,6 +443,7 @@ and not exists (
                                  , sum (cev.reporting_amt) over ( partition by cev.feed_uuid, cev.correlation_uuid, cev.accounting_dt, cev.stream_id, cev.event_typ, cev.business_typ, cev.basis_cd) as basis_reporting_amt
                                  , cev.reporting_ccy
                                  , cev.lpg_id
+                                 , cev.chartfield_1
                               from
                                         cev_ex_in                        cev
                                    join stn.event_type                   et      on cev.event_typ              = et.event_typ
@@ -552,6 +558,7 @@ and not exists (
                       , cev_data.input_reporting_amt
                       , cev_data.partner_reporting_amt
                       , cev_data.lpg_id
+                      , cev_data.chartfield_1
                    from
                              stn.cev_data                       cev_data
                    left join stn.cev_premium_typ_override       cevpto   on cev_data.correlation_uuid  = cevpto.correlation_uuid
@@ -663,6 +670,7 @@ and not exists (
                               , cev_data.input_reporting_amt
                               , 0 partner_reporting_amt
                               , cev_data.lpg_id
+                              , cev_data.chartfield_1
                               from
                                         stn.cev_data                      cev_data
                                    join stn.posting_method                psm      on (psm.psm_cd = 'GAAP_FUT_ACCTS'
@@ -730,6 +738,7 @@ and not exists (
                     , sum (input_reporting_amt)   input_reporting_amt
                     , partner_reporting_amt
                     , lpg_id
+                    , chartfield_1
                  from
                       gfa_1
              group by
@@ -778,6 +787,7 @@ and not exists (
                     , reporting_ccy
                     , partner_reporting_amt
                     , lpg_id
+                    , chartfield_1
         ;
 
         v_no_cev_gaap_fut_accts_data := sql%rowcount;
@@ -873,6 +883,7 @@ and not exists (
                                 end                                                         reporting_amt
                               , input_reporting_amt
                               , lpg_id
+                              , chartfield_1
                            from (
                                        select
                                               psm_cd
@@ -923,6 +934,7 @@ and not exists (
                                             , input_reporting_amt
                                             , partner_reporting_amt
                                             , lpg_id
+                                            , chartfield_1
                                          from
                                               stn.cev_mtm_data
                                     union all
@@ -975,6 +987,7 @@ and not exists (
                                             , input_reporting_amt
                                             , partner_reporting_amt
                                             , lpg_id
+                                            , chartfield_1
                                          from
                                               stn.cev_gaap_fut_accts_data
                                 )
@@ -1030,6 +1043,7 @@ and not exists (
                               , reporting_amt
                               , input_reporting_amt
                               , lpg_id
+                              , chartfield_1
                            from (
                                        select
                                               ad.posting_type
@@ -1085,6 +1099,7 @@ and not exists (
                                             , ( ( ad.reporting_amt * nvl(pt.tax_jurisdiction_pct,100) ) / 100 )                             reporting_amt
                                             , ( ( ad.input_reporting_amt * nvl(pt.tax_jurisdiction_pct,100) ) / 100 )                       input_reporting_amt
                                             , ad.lpg_id
+                                            , ad.chartfield_1
                                          from
                                               amount_derivation                  ad
                                          join stn.event_type                     et     on ad.event_typ         = et.event_typ
@@ -1131,7 +1146,7 @@ and not exists (
                                   , vie_acct_dt
                                   , is_mark_to_market
                                   , tax_jurisdiction_cd
-                                  , null                 chartfield_cd
+                                  , chartfield_1
                                   , transaction_ccy
                                   , transaction_amt
                                   , input_transaction_amt
@@ -1146,7 +1161,7 @@ and not exists (
                                     non_intercompany_data
                 ;
                 v_no_cev_non_intercompany_data := sql%rowcount;
-
+        
                 dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_NON_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_non_intercompany_data', 'v_no_cev_non_intercompany_data', NULL, v_no_cev_non_intercompany_data, NULL);
         execute immediate 'truncate table STN.cev_intercompany_data';
@@ -1206,6 +1221,7 @@ and not exists (
                               , cevnid.reporting_amt * pdmic.negate_flag                               reporting_amt
                               , cevnid.lpg_id
                               , NVL2( cevnid.account_cd, null, lcOUT_OF_BALANCE_ACCT) account_cd
+                              , cevnid.chartfield_cd chartfield_1
                            from
                                      stn.cev_non_intercompany_data    cevnid
                                 join stn.posting_ledger               pldgrin  on cevnid.ledger_cd       = pldgrin.ledger_cd
@@ -1288,7 +1304,7 @@ and not exists (
                                   , vie_acct_dt
                                   , is_mark_to_market
                                   , tax_jurisdiction_cd
-                                  , chartfield_cd
+                                  , chartfield_cd chartfield_1
                                   , transaction_ccy
                                   , transaction_amt
                                   , functional_ccy
@@ -1299,7 +1315,7 @@ and not exists (
                                from
                                     intercompany_data;
                 v_no_cev_intercompany_data := sql%rowcount;
-
+        
                 dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CEV_INTERCOMPANY_DATA' , estimate_percent => 30 , cascade => true );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_intercompany_data', 'v_no_cev_intercompany_data', NULL, v_no_cev_intercompany_data, NULL);
         execute immediate 'truncate table STN.cev_vie_data';
@@ -1386,6 +1402,7 @@ and not exists (
                               , etv.event_typ
                               , cev_nid.business_event_typ
                               , vle.vie_le_cd                                   business_unit
+                              , cev_nid.chartfield_cd 
                               , cev_nid.bu_lookup                               bu_lookup
                               , null                                            affiliate
                               , cev_nid.owner_le_cd
@@ -1535,12 +1552,12 @@ and not exists (
                               , hce.event_typ
                               , hce.business_event_typ
                               , hce.business_unit
+                              , hce.chartfield_1
                               , hce.affiliate_le_cd
                               , hce.owner_le_cd
                               , hce.counterparty_le_cd
                               , hce.is_mark_to_market
                               , hce.tax_jurisdiction_cd
-                              , hce.chartfield_1
                               , hce.transaction_ccy
                               , sum( ( case when hce.sub_event = 'REVERSE' then -1 else 1 end ) * hce.transaction_amt )  transaction_amt
                               , hce.functional_ccy
@@ -1728,7 +1745,7 @@ and not exists (
                      , vie_acct_dt
                      , is_mark_to_market
                      , tax_jurisdiction_cd
-                     , null chartfield_cd
+                     , chartfield_cd
                      , transaction_ccy
                      , transaction_amt
                      , functional_ccy
@@ -1778,7 +1795,7 @@ and not exists (
                      , vie_acct_dt
                      , is_mark_to_market
                      , tax_jurisdiction_cd
-                     , null chartfield_cd
+                     , chartfield_1
                      , transaction_ccy
                      , transaction_amt
                      , functional_ccy
@@ -1906,7 +1923,7 @@ end AS VIE_BU_ACCOUNT_LOOKUP
 
 
         INSERT /*+ APPEND */ INTO HOPPER_CESSION_EVENT
-            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP, ORIGINAL_POSTING_DT)
+            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP, ORIGINAL_POSTING_DT,ACCOUNT_CD)
             SELECT
                 cerhist.BUSINESS_UNIT AS BUSINESS_UNIT,
                 case
@@ -1982,7 +1999,8 @@ end AS DEPT_CD,
                 trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cerhist.ACCOUNTING_DT )) AS EFFECTIVE_DT,
                 cerhist.BU_LOOKUP AS BU_ACCOUNT_LOOKUP,
                 cerhist.VIE_BU_LOOKUP AS VIE_BU_ACCOUNT_LOOKUP,
-                cerhist.ORIGINAL_POSTING_DT AS ORIGINAL_POSTING_DT
+                cerhist.ORIGINAL_POSTING_DT AS ORIGINAL_POSTING_DT,
+                cerhist.account_cd
             FROM
                 CESSION_EVENT_REVERSAL_HIST cerhist
                 INNER JOIN CE_DEFAULT ON 1 = 1

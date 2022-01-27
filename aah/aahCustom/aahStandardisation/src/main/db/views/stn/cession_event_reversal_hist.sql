@@ -40,7 +40,8 @@ CREATE OR REPLACE FORCE VIEW STN.CESSION_EVENT_REVERSAL_HIST
    REVERSAL_INDICATOR,
    ORIGINAL_POSTING_DT,
    BU_LOOKUP,
-   VIE_BU_LOOKUP
+   VIE_BU_LOOKUP,
+   ACCOUNT_CD
 )
    BEQUEATH DEFINER
 AS
@@ -83,7 +84,8 @@ AS
                    fsrae.srae_client_spare_id16 reversal_indicator,
                    fsrae.srae_posting_date original_posting_dt,
                    fsrae.srae_client_spare_id17 bu_lookup,
-                   fsrae.srae_client_spare_id18 vie_bu_lookup
+                   fsrae.srae_client_spare_id18 vie_bu_lookup,
+                   fsrae.srae_client_spare_id2 account_cd
      FROM fdr.fr_stan_raw_acc_event fsrae
           INNER JOIN slr.slr_jrnl_lines sjl
              ON fsrae.srae_acc_event_id = sjl.jl_source_jrnl_id
@@ -106,6 +108,7 @@ AS
                  TRUNC (cep.accounting_dt, 'MONTH')
           AND fsrae.srae_client_spare_id16 <> 'VIE_HISTORICAL'
           AND fsrae.event_status = 'P'
+          AND fsrae.srae_acc_event_type not in (select event_typ from stn.event_hierarchy_reference where event_class = 'CASH_TXN')
           AND fsrae.srae_client_spare_id14 NOT IN ( SELECT DISTINCT faei2.srae_client_spare_id14
                                                      FROM fdr.fr_stan_raw_acc_event faei2                                                         
                                                     WHERE faei2.srae_client_spare_id16 =

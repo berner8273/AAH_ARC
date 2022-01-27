@@ -63,6 +63,7 @@ select distinct
      , cep.reporting_amt * -1         reporting_amt
      , cep.lpg_id
      , null                           reversal_indicator
+     , cep.account_cd                 account_cd
   from
        stn.cession_event_posting     cep
   join stn.cev_valid                 cevval    on cep.event_seq_id     = cevval.event_id
@@ -78,4 +79,5 @@ select distinct
                           max_event
                  )
    and cevval.event_status = 'V'
+   and cep.event_typ not in (select event_typ from stn.event_hierarchy_reference where event_class = 'CASH_TXN')
 ;
