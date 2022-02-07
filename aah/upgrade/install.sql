@@ -27,12 +27,13 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~stn_logon
-@@stn/us53060_stn_columns.sql
+-- @@stn/us53060_stn_columns.sql
 
 conn ~stn_logon
-@@stn/us53060_stn_views.sql
-@@stn/bug64238_stn_views.sql
-@@stn/us53060_packages.sql
+-- @@stn/us53060_stn_views.sql
+-- @@stn/bug64238_stn_views.sql
+-- @@stn/us53060_packages.sql
+@@stn/pk_cev.sql
 
 conn ~fdr_logon
 alter table fr_stan_raw_acc_event modify SRAE_CLIENT_SPARE_ID19 varchar2( 100 byte);
