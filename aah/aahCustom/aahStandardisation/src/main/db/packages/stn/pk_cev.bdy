@@ -2275,7 +2275,7 @@ and
 not exists (
                    select null 
                    from
-                          fdr.fr_fr_account_lookup fgal
+                          fdr.fr_account_lookup fgal
                     where
                           fgal.al_lookup_5        = ce.ACCOUNT_CD
                                      )
