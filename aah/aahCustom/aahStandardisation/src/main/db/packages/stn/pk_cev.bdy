@@ -2275,9 +2275,9 @@ and
 not exists (
                    select null 
                    from
-                          fdr.fr_gl_account_lookup fgal
+                          fdr.fr_fr_account_lookup fgal
                     where
-                          substr(fgal.gal_ga_lookup_key,1,8)        = ce.ACCOUNT_CD
+                          fgal.al_lookup_5        = ce.ACCOUNT_CD
                                      )
                                      );
 commit;
