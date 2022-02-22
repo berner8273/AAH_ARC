@@ -1247,7 +1247,7 @@ and not exists (
                               , cevnid.reporting_ccy
                               , cevnid.reporting_amt * pdmic.negate_flag                               reporting_amt
                               , cevnid.lpg_id
-                              , NVL2( cevnid.account_cd, null, lcOUT_OF_BALANCE_ACCT) account_cd
+                              , NVL2( cevnid.account_cd, lcOUT_OF_BALANCE_ACCT, null ) account_cd
                               , cevnid.chartfield_cd chartfield_1
                               , cevnid.jl_description
                            from
