@@ -1538,6 +1538,8 @@ and not exists (
                                                                                     or pacd.business_typ           = 'ND~' )
                                                                                  and ( cev_nid.is_mark_to_market   = pacd.is_mark_to_market
                                                                                     or pacd.is_mark_to_market      = 'ND~' )
+                                                                                 and ( cev_nid.account_cd        = pacd.account_cd
+                                                                                    or pacd.account_cd           = 'ND~' )
                                                                                  and ( decode ( cev_nid.business_unit
                                                                                               , 'AGFPI' , 'AGFPI'
                                                                                               , 'NULL' )           = pacd.business_unit
