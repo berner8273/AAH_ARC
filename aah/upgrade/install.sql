@@ -33,7 +33,7 @@ conn ~fdr_logon
 
 conn ~stn_logon
 -- add new posting rules data loader below
-@@stn/ROB206_posting_drivers.sql
+@@stn/rob206_posting_drivers.sql
 
 /* End AAH custom upgrades */
 
