@@ -27,9 +27,11 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
+conn ~stn_logon
+@@stn/pk_cev_oob.sql
 
 conn ~fdr_logon
-@@fdr/fdr_cleardown.sql;
+@@fdr/fdr_cleardown.sql
 
 conn ~stn_logon
 -- add new posting rules data loader below
