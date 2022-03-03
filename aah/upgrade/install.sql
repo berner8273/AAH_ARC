@@ -29,7 +29,7 @@ conn ~sys_logon
 conn ~stn_logon
 @@stn/jl_desc_stn_columns.sql
 @@stn/jl_desc_stn_tables.sql
--- @@stn/us53060_stn_views.sql
+@@stn/jl_desc_stn_views.sql
 -- @@stn/bug64238_stn_views.sql
 -- @@stn/us53060_packages.sql
 @@stn/pk_cev.sql
