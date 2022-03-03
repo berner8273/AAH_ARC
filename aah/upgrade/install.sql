@@ -30,7 +30,6 @@ conn ~stn_logon
 @@stn/jl_desc_stn_columns.sql
 @@stn/jl_desc_stn_tables.sql
 @@stn/jl_desc_stn_views.sql
--- @@stn/bug64238_stn_views.sql
 -- @@stn/us53060_packages.sql
 @@stn/pk_cev.sql
 
