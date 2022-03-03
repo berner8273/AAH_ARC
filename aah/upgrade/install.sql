@@ -27,9 +27,8 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~stn_logon
--- @@stn/us53060_stn_columns.sql
-
-conn ~stn_logon
+@@stn/jl_desc_stn_columns.sql
+@@stn/jl_desc_stn_tables.sql
 -- @@stn/us53060_stn_views.sql
 -- @@stn/bug64238_stn_views.sql
 -- @@stn/us53060_packages.sql
