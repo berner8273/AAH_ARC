@@ -28,7 +28,6 @@ conn ~sys_logon
 
 conn ~stn_logon
 @@stn/jl_desc_stn_columns.sql
-@@stn/jl_desc_stn_tables.sql
 @@stn/jl_desc_stn_views.sql
 @@stn/pk_cev.sql
 
