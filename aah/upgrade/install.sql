@@ -29,6 +29,7 @@ conn ~sys_logon
 conn ~stn_logon
 @@stn/jl_desc_stn_columns.sql
 @@stn/jl_desc_stn_views.sql
+@@stb/bug68620_reversal_hist.sql
 @@stn/pk_cev.sql
 
 conn ~fdr_logon
