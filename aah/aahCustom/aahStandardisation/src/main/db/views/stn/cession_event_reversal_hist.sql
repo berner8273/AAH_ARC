@@ -50,7 +50,7 @@ AS
                    fsrae.srae_client_spare_id12 event_seq_id,
                    fsrae.srae_acc_event_id || '.01' row_sid,
                    fsrae.srae_sub_event_id sub_event,
-                   MAX (cep.accounting_dt) OVER () AS accounting_dt,
+                   MAX (cep.accounting_dt) OVER (PARTITION by ehr.event_class ) AS accounting_dt,
                    fsrae.srae_dimension_7 policy_id,
                    fsrae.srae_dimension_15 journal_descr,
                    fsrae.srae_dimension_8 stream_id,
@@ -87,6 +87,8 @@ AS
                    fsrae.srae_client_spare_id18 vie_bu_lookup,
                    fsrae.srae_client_spare_id2 account_cd
      FROM fdr.fr_stan_raw_acc_event fsrae
+          INNER JOIN stn.event_hierarchy_reference ehr
+             ON fsrae.srae_acc_event_type = ehr.event_typ
           INNER JOIN slr.slr_jrnl_lines sjl
              ON fsrae.srae_acc_event_id = sjl.jl_source_jrnl_id
           INNER JOIN stn.cession_event_posting cep
