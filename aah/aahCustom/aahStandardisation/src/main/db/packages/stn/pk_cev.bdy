@@ -141,8 +141,9 @@ and not exists (
          where
                cev.event_status = 'V'
         ;
-        commit;
         v_no_cev_valid := sql%rowcount;
+        commit;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_valid', 'v_no_cev_valid', NULL, v_no_cev_valid, NULL);
         execute immediate 'truncate table STN.posting_account_derivation';
         insert into stn.posting_account_derivation
@@ -478,8 +479,9 @@ and not exists (
                                                                                     end  ) = pmdl.le_cd
                         )
               ;
-        commit;
         v_no_cev_data := sql%rowcount;
+        commit;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cev_data', 'v_no_cev_data', NULL, v_no_cev_data, NULL);
         execute immediate 'truncate table STN.cev_premium_typ_override';
         insert into stn.cev_premium_typ_override
@@ -1962,7 +1964,6 @@ end AS VIE_BU_ACCOUNT_LOOKUP,
             WHERE
                 (ROUND(cep.TRANSACTION_AMT, 2) <> 0 OR ROUND(cep.FUNCTIONAL_AMT, 2) <> 0 OR ROUND(cep.REPORTING_AMT, 2) <> 0);
                                
-commit;
         p_no_published_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting cession events into hopper', 'p_no_published_records', NULL, p_no_published_records, NULL);
         INSERT /*+ APPEND */ INTO HOPPER_CESSION_EVENT
@@ -2050,7 +2051,6 @@ end AS DEPT_CD,
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cerhist.LPG_ID = gp.LPG_ID
             WHERE
                 (ROUND(cerhist.TRANSACTION_AMT, 2) <> 0 OR ROUND(cerhist.FUNCTIONAL_AMT, 2) <> 0 OR ROUND(cerhist.REPORTING_AMT, 2) <> 0);
-commit;
         p_no_pub_rev_hist_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting historical reversal records into hopper', 'p_no_pub_rev_hist_records', NULL, p_no_pub_rev_hist_records, NULL);
         INSERT /*+ parallel(8) */ INTO HOPPER_CESSION_EVENT
@@ -2161,6 +2161,7 @@ cercurr.account_cd AS ACCOUNT_CD
                 (ROUND(cercurr.TRANSACTION_AMT, 2) <> 0 OR ROUND(cercurr.FUNCTIONAL_AMT, 2) <> 0 OR ROUND(cercurr.REPORTING_AMT, 2) <> 0);
         p_no_pub_rev_curr_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting current reversal records into hopper', 'p_no_pub_rev_curr_records', NULL, p_no_pub_rev_curr_records, NULL);
+   commit;        
     END;
 
     PROCEDURE pr_cession_event_rval

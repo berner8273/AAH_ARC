@@ -50,7 +50,7 @@ AS
                    fsrae.srae_client_spare_id12 event_seq_id,
                    fsrae.srae_acc_event_id || '.01' row_sid,
                    fsrae.srae_sub_event_id sub_event,
-                   MAX (cep.accounting_dt) OVER () AS accounting_dt,
+                   cep.accounting_dt AS accounting_dt,
                    fsrae.srae_dimension_7 policy_id,
                    fsrae.srae_dimension_15 journal_descr,
                    fsrae.srae_dimension_8 stream_id,
