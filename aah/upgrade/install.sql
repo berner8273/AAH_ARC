@@ -33,6 +33,9 @@ conn ~slr_logon
 conn~gui_logon
 @@gui/upgrade_gui_packages.sql
 
+conn ~fdr_logon
+@@fdr/upgrade_trigger_fix.sql
+
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
