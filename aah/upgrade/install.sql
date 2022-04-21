@@ -27,43 +27,12 @@ conn ~sys_logon
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
-@@stn/us50990_combo_rules_fix.sql;
-
-conn ~rdr_logon
-@@rdr/us53060_rdr_views2.sql
-
-conn ~stn_logon
-@@stn/us53060_stn_views.sql
-@@stn/bug64238_stn_views.sql
-@@stn/us53060_packages.sql
-
-conn ~fdr_logon
-@@fdr/purge_dup_combo_rules.sql;
-
-<<<<<<< .mine
--- this is still in prod - check with Marc if still needed
-@@fdr/hotfix_fr_general_lookup_cash_offset.sql
-
-conn ~stn_logon
--- add new posting rules data loader below
-@@stn/ROB204_posting_drivers.sql
+conn ~slr_logon
+@@stn/upgrade_slr_packages.sql
 
 conn~gui_logon
--- @@gui/us53060_gui_event_class.sql
+@@gui/upgrade_gui_packages.sql
 
-=======
-
-
-
-
-
-
-
-
-
-
->>>>>>> .theirs
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
