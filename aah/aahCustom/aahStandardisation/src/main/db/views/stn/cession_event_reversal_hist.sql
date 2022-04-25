@@ -41,6 +41,7 @@ CREATE OR REPLACE FORCE VIEW STN.CESSION_EVENT_REVERSAL_HIST
    ORIGINAL_POSTING_DT,
    BU_LOOKUP,
    VIE_BU_LOOKUP,
+   JL_DESCRIPTION,
    ACCOUNT_CD
 )
    BEQUEATH DEFINER
@@ -85,6 +86,7 @@ AS
                    fsrae.srae_posting_date original_posting_dt,
                    fsrae.srae_client_spare_id17 bu_lookup,
                    fsrae.srae_client_spare_id18 vie_bu_lookup,
+                   fsrae.srae_client_spare_id19 jl_description,
                    fsrae.srae_client_spare_id2 account_cd
      FROM fdr.fr_stan_raw_acc_event fsrae
           INNER JOIN slr.slr_jrnl_lines sjl
