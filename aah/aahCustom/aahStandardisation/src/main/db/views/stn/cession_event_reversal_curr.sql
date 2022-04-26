@@ -63,6 +63,7 @@ select distinct
      , cep.reporting_amt * -1         reporting_amt
      , cep.lpg_id
      , null                           reversal_indicator
+     , cep.jl_description
      , cep.account_cd                 account_cd
   from
        stn.cession_event_posting     cep

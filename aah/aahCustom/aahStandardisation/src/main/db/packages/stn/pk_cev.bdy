@@ -1963,11 +1963,11 @@ end AS VIE_BU_ACCOUNT_LOOKUP,
                 INNER JOIN fdr.FR_GLOBAL_PARAMETER gp ON cep.LPG_ID = gp.LPG_ID
             WHERE
                 (ROUND(cep.TRANSACTION_AMT, 2) <> 0 OR ROUND(cep.FUNCTIONAL_AMT, 2) <> 0 OR ROUND(cep.REPORTING_AMT, 2) <> 0);
-                               
         p_no_published_records := SQL%ROWCOUNT;
+	commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting cession events into hopper', 'p_no_published_records', NULL, p_no_published_records, NULL);
         INSERT /*+ APPEND */ INTO HOPPER_CESSION_EVENT
-            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP, ORIGINAL_POSTING_DT,ACCOUNT_CD)
+            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, JL_DESCRIPTION, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP, ORIGINAL_POSTING_DT,ACCOUNT_CD)
             SELECT
                 cerhist.BUSINESS_UNIT AS BUSINESS_UNIT,
                 case
@@ -2041,6 +2041,7 @@ end AS DEPT_CD,
                 cerhist.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cerhist.ACCOUNTING_DT )) AS EFFECTIVE_DT,
+		        cerhist.JL_DESCRIPTION,
                 cerhist.BU_LOOKUP AS BU_ACCOUNT_LOOKUP,
                 cerhist.VIE_BU_LOOKUP AS VIE_BU_ACCOUNT_LOOKUP,
                 cerhist.ORIGINAL_POSTING_DT AS ORIGINAL_POSTING_DT,
@@ -2052,9 +2053,10 @@ end AS DEPT_CD,
             WHERE
                 (ROUND(cerhist.TRANSACTION_AMT, 2) <> 0 OR ROUND(cerhist.FUNCTIONAL_AMT, 2) <> 0 OR ROUND(cerhist.REPORTING_AMT, 2) <> 0);
         p_no_pub_rev_hist_records := SQL%ROWCOUNT;
+	commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting historical reversal records into hopper', 'p_no_pub_rev_hist_records', NULL, p_no_pub_rev_hist_records, NULL);
         INSERT /*+ parallel(8) */ INTO HOPPER_CESSION_EVENT
-            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP, ACCOUNT_CD)
+            (BUSINESS_UNIT, AFFILIATE_LE_CD, ACCOUNTING_DT, ACCIDENT_YR, UNDERWRITING_YR, POLICY_ID, ULTIMATE_PARENT_LE_CD, TAX_JURISDICTION_CD, EVENT_TYP, TRANSACTION_CCY, TRANSACTION_AMT, BUSINESS_TYP, POLICY_TYP, PREMIUM_TYP, SUB_EVENT, IS_MARK_TO_MARKET, VIE_CD, LPG_ID, PARTY_BUSINESS_LE_CD, PARTY_BUSINESS_SYSTEM_CD, AAH_EVENT_TYP, SRAE_STATIC_SYS_INST_CODE, SRAE_INSTR_SYS_INST_CODE, TRANSACTION_POS_NEG, SRAE_GL_PERSON_CODE, DEPT_CD, SRAE_SOURCE_SYSTEM, SRAE_INSTR_SUPER_CLASS, SRAE_INSTRUMENT_CODE, LEDGER_CD, STREAM_ID, POSTING_DT, BOOK_CD, CORRELATION_UUID, CHARTFIELD_1, COUNTERPARTY_LE_CD, EXECUTION_TYP, OWNER_LE_CD, JOURNAL_DESCR, FUNCTIONAL_CCY, FUNCTIONAL_AMT, REPORTING_CCY, REPORTING_AMT, BUSINESS_EVENT_TYP, EVENT_SEQ_ID, BASIS_CD, POSTING_INDICATOR, MESSAGE_ID, PROCESS_ID, EFFECTIVE_DT, JL_DESCRIPTION, BU_ACCOUNT_LOOKUP, VIE_BU_ACCOUNT_LOOKUP, ACCOUNT_CD)
             SELECT
                 cercurr.BUSINESS_UNIT AS BUSINESS_UNIT,
                 case
@@ -2128,6 +2130,7 @@ end AS DEPT_CD,
                 cercurr.ROW_SID AS MESSAGE_ID,
                 TO_CHAR(p_step_run_sid) AS PROCESS_ID,
                 trunc(LEAST( gp.GP_TODAYS_BUS_DATE , cercurr.ACCOUNTING_DT )) AS EFFECTIVE_DT,
+		cercurr.JL_DESCRIPTION,
                 case
 when exists ( select
                      null
@@ -2161,7 +2164,7 @@ cercurr.account_cd AS ACCOUNT_CD
                 (ROUND(cercurr.TRANSACTION_AMT, 2) <> 0 OR ROUND(cercurr.FUNCTIONAL_AMT, 2) <> 0 OR ROUND(cercurr.REPORTING_AMT, 2) <> 0);
         p_no_pub_rev_curr_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed inserting current reversal records into hopper', 'p_no_pub_rev_curr_records', NULL, p_no_pub_rev_curr_records, NULL);
-   commit;        
+   commit;
     END;
 
     PROCEDURE pr_cession_event_rval
@@ -2202,8 +2205,9 @@ cercurr.account_cd AS ACCOUNT_CD
                   ce.EVENT_STATUS='U' and
                ipr.t_source_tran_no is null
                     and vdl.VALIDATION_CD = 'ce-stream_id';
-commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-stream_id', 'sql%rowcount', NULL, sql%rowcount, NULL);
+	commit;
+
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-basis_cd', NULL, NULL, NULL, NULL);
         INSERT /*+ APPEND */ INTO CEV_STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
@@ -2241,8 +2245,8 @@ and not exists (
                     where
                           fg.fga_gaap_id = ce.BASIS_CD
                );
-commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-basis_cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
+commit;
 
 
 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-acct_cd', NULL, NULL, NULL, NULL);
@@ -2274,19 +2278,18 @@ pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : 
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
                     vdl.VALIDATION_CD = 'ce-acct_cd'
-and 
+and
 ( ce.ACCOUNT_CD is not NULL AND
 not exists (
-                   select null 
+                   select null
                    from
                           fdr.fr_account_lookup fgal
                     where
                           fgal.al_lookup_5        = ce.ACCOUNT_CD
                                      )
                                      );
-commit;
 pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-acct_cd', 'sql%rowcount', NULL, sql%rowcount, NULL);
-
+commit;
 
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-transaction_ccy', NULL, NULL, NULL, NULL);
         INSERT /*+ APPEND */ INTO CEV_STANDARDISATION_LOG
@@ -2327,8 +2330,9 @@ and not exists (
                           fcl.cul_currency_lookup_code = ce.TRANSACTION_CCY
                       and fcl.cul_sil_sys_inst_clicode = ced.SYSTEM_INSTANCE
                );
-commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-transaction_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
+commit;
+	
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-functional_ccy', NULL, NULL, NULL, NULL);
         INSERT /*+ APPEND */ INTO CEV_STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
@@ -2368,8 +2372,9 @@ and not exists (
                           fcl.cul_currency_lookup_code = ce.FUNCTIONAL_CCY
                       and fcl.cul_sil_sys_inst_clicode = ced.SYSTEM_INSTANCE
                );
-commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-functional_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
+commit;
+	
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-reporting_ccy', NULL, NULL, NULL, NULL);
         INSERT /*+ APPEND */ INTO CEV_STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
@@ -2409,8 +2414,9 @@ and not exists (
                           fcl.cul_currency_lookup_code = ce.REPORTING_CCY
                       and fcl.cul_sil_sys_inst_clicode = ced.SYSTEM_INSTANCE
                );
-commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-reporting_ccy', 'sql%rowcount', NULL, sql%rowcount, NULL);
+commit;
+	
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-event_typ', NULL, NULL, NULL, NULL);
         INSERT /*+ APPEND */ INTO CEV_STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
@@ -2448,10 +2454,9 @@ and not exists (
                     where
                           faet.aet_acc_event_type_id = ce.EVENT_TYP
                );
-commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-event_typ', 'sql%rowcount', NULL, sql%rowcount, NULL);
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-posting_method', 'sql%rowcount', NULL, sql%rowcount, NULL);
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-event-hier', NULL, NULL, NULL, NULL);
+commit;
+	        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-event-hier', NULL, NULL, NULL, NULL);
         INSERT /*+ APPEND */ INTO CEV_STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
@@ -2488,8 +2493,9 @@ and not exists (
                     where
                           ehr.event_typ = ce.EVENT_TYP
                );
-commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-event-hier', 'sql%rowcount', NULL, sql%rowcount, NULL);
+commit;
+	
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-correlation-uuid-dup', NULL, NULL, NULL, NULL);
         INSERT /*+ APPEND */ INTO CEV_STANDARDISATION_LOG
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
@@ -2530,8 +2536,9 @@ commit;
                           and trunc(hce.srae_accevent_date,'MONTH') = trunc(ce.accounting_dt,'MONTH')
                           and ce.LPG_ID=hce.lpg_id
                           );
-               commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-correlation-uuid-dup', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        commit;
+		
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : ce-correlation_uuid_error', NULL, NULL, NULL, NULL);
         INSERT /*+ APPEND */ INTO CEV_STANDARDISATION_LOG
             (CATEGORY_ID, ERROR_STATUS, ERROR_TECHNOLOGY, ERROR_VALUE, EVENT_TEXT, EVENT_TYPE, FIELD_IN_ERROR_NAME, LPG_ID, PROCESSING_STAGE, ROW_IN_ERROR_KEY_ID, TABLE_IN_ERROR_NAME, RULE_IDENTITY, CODE_MODULE_NM, STEP_RUN_SID, FEED_SID)
@@ -2599,8 +2606,9 @@ and not exists (
               stn.cev_standardisation_log sl3
        where
               ce.ROW_SID = sl3.row_in_error_key_id)) "ce-validate-correlation-uuid";
-        commit;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : ce-correlation-uuid-error', 'sql%rowcount', NULL, sql%rowcount, NULL);
+       commit;
+ 
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Loaded correlated records to stn.cev_standardisation_log', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
 
