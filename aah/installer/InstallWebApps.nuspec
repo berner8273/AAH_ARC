@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>AahInstaller</id>
+    <id>RunUpgrade</id>
     <version>22.1.1</version>
     <title>Aah Installer</title>
     <authors>Ryan Quigley</authors>
@@ -11,5 +11,8 @@
   </metadata>
   <files>
     <file src="AahInstaller.yaml"/>
+    <file src="InstallWebApps.sh"/>
+    <file src="AAH.web.legacy.prepare.acc.yaml"/>
+    <file src="AplicationResources.properties"/>
   </files>
 </package>

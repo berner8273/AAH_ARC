@@ -14,7 +14,7 @@ variablesValues:
     # TNS Listener port
     port: "1521"
     # Oracle Instance Name
-    instanceName: "#{aptitudeDatabaseHost}"
+    instanceName: "#{aptitudeDatabaseServiceName}"
     # (Optional) connection string to be used if defined (the hostname, port and instanceName will not be used to construct the connection string)
     connectionString:
     # Install user name
