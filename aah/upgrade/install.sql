@@ -28,7 +28,7 @@ conn ~sys_logon
 /* Begin AAH custom upgrades */
 
 conn ~slr_logon
-@@stn/upgrade_slr_packages.sql
+@@slr/upgrade_slr_packages.sql
 
 conn~gui_logon
 @@gui/upgrade_gui_packages.sql
