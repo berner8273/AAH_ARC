@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>RunUpgrade</id>
+    <id>InstallWebApps</id>
     <version>22.1.1</version>
-    <title>Aah Installer</title>
+    <title>Aah Web apps Installer</title>
     <authors>Ryan Quigley</authors>
     <owners>Ryan Quigley</owners>
     <description>Package The Aah Installer</description>
