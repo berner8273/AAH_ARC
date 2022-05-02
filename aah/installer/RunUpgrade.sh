@@ -1,8 +1,9 @@
 #!/bin/bash
 PROGRAM="${0##*/}"
-OracleConnString=0
+OracleConnString=$1
+RemoveInstallYaml=$2
 AahInstallerYaml="AahInstaller.yaml"
-
+echo OracleConn: ${OracleConnString}
 # Set Oracle environment
 
 # Functions ===================================================================
@@ -45,10 +46,17 @@ function runUpdateSecurityEntries()
 printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 
 printf "Running installer for setupDatabaseSchemas\n"
-./run.sh unattended -rf ${AahInstallerYaml} -op setupDatabaseSchemas
+./run.sh unattended -rf ${AahInstallerYaml} -op setupDatabaseSchemas || ERR_EXIT "ERROR running installer for setupDatabaseSchemas\n"
 
 printf "Run Update Security entries\n"
-runUpdateSecurityEntries
+runUpdateSecurityEntries || ERR_EXIT "ERROR updating security entries\n"
 
 printf "Running installer for configureEngines\n"
-./run.sh unattended -rf ${AahInstallerYaml} -op configureEngines
+./run.sh unattended -rf ${AahInstallerYaml} -op configureEngines || ERR_EXIT "Error Running installer for configureEngines\n"
+
+if [ -f $RemoveInstallYaml ]; then
+    printf "removing yaml installation file\n"
+   rm rm ${AahInstallerYaml} || "Error removing yaml file\n"
+fi
+
+printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
