@@ -13,6 +13,6 @@
     <file src="AahInstaller.yaml"/>
     <file src="InstallWebApps.sh"/>
     <file src="AAH.web.legacy.prepare.acc.yaml"/>
-    <file src="AplicationResources.properties"/>
+    <file src="ApplicationResources.properties"/>
   </files>
 </package>
