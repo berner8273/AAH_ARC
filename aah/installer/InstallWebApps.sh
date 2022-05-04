@@ -28,8 +28,7 @@ cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR co
 
 
 printf "***** running security api ******\n"
-nohup ${AahInstallerYaml}/bin/security-external.sh &
-
+nohup ${AahInstallerYaml}/bin/security-external.sh service&
 
 if [ -f $RemoveInstallYaml ]; then
     printf "removing yaml installation file\n"
