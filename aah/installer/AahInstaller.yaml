@@ -95,7 +95,7 @@ variablesValues:
     # @type(bool)
     migrateAAH: false
     securityUsers:
-      uiUser: SECURITY_UI"
+      uiUser: "SECURITY_UI"
       uiPass: "#{security_uiPassword}"
       uiRole: "security_ui_role"
       appUser: "SECURITY_APP"

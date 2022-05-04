@@ -56,7 +56,7 @@ printf "Running installer for configureEngines\n"
 
 if [ -f $RemoveInstallYaml ]; then
     printf "removing yaml installation file\n"
-   rm rm ${AahInstallerYaml} || "Error removing yaml file\n"
+    rm ${AahInstallerYaml} || "Error removing yaml file\n"
 fi
 
 printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
