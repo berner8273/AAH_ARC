@@ -108,7 +108,7 @@ variablesValues:
       uiUser: "SCHEDULER_UI"
       uiPass: "#{scheduler_uiPassword}"
       uiRole: "scheduler_ui_role"
-      appUser: "#{scheduler_appUsername}"
+      appUser: "SCHEDULER_APP"
       appPass: "#{scheduler_appPassword}"
       appRole: "scheduler_app_role"
       coreUser: "SCHEDULER_CORE"
@@ -125,7 +125,7 @@ variablesValues:
       rdrPass: "#{rdrPassword}"
       guiUser: "GUI"
       guiPass: "#{guiPassword}"
-      uiUser: "aah_ui"
+      uiUser: "AAH_UI"
       uiPass: "#{aah_uiPassword}"
     superuser:
       username:
@@ -148,7 +148,7 @@ variablesValues:
       # DEPLOY (deploys deployment package)
       installationType: "DEPLOY"
       # ip or hostname of web server
-      hostname: "#{aptitudeHost}"
+      hostname: "localhost"
       # expected web server protocol to use, valid values: {http, https}
       protocol: "https"
       # domain or ip address to web application
@@ -160,9 +160,9 @@ variablesValues:
       # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SECURITY
       securityWebAppFolder: "SECURITY"
       # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SCHEDULER
-      schedulerWebAppFolder: "scheduler-web"
+      schedulerWebAppFolder: "SCHEDULER"
       # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SCHEDULER
-      aahWebAppFolder: "aah"
+      aahWebAppFolder: "AAH"
       aahWebAppStrutsUrl: ""
       jboss:
         # jboss management port
