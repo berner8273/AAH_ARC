@@ -22,8 +22,9 @@ define unittest_login=~8
 
 /* Check AAH upgrade versions - do not remove */
 
-conn ~sys_logon
-@@sys/00001_check_upgrade_versions.sql
+--comment out for upgrade as this is not repeatable
+--conn ~sys_logon
+--@@sys/00001_check_upgrade_versions.sql
 
 /* Begin AAH custom upgrades */
 
