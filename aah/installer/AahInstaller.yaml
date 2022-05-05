@@ -148,7 +148,7 @@ variablesValues:
       # DEPLOY (deploys deployment package)
       installationType: "DEPLOY"
       # ip or hostname of web server
-      hostname: "localhost"
+      hostname: "#{aptitudeHost}"
       # expected web server protocol to use, valid values: {http, https}
       protocol: "https"
       # domain or ip address to web application
