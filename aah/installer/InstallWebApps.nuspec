@@ -14,5 +14,6 @@
     <file src="InstallWebApps.sh"/>
     <file src="AAH.web.legacy.prepare.acc.yaml"/>
     <file src="ApplicationResources.properties"/>
+    <file src="application.properties"/>
   </files>
 </package>

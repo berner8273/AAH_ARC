@@ -28,7 +28,7 @@ cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR co
 
 
 printf "***** running security api ******\n"
-chmod +x InstallWebApps.sh ${SecurityApiDirectory}
+chmod +x ${SecurityApiDirectory}/bin/security-external.sh
 nohup ${SecurityApiDirectory}/bin/security-external.sh service&
 
 if [ -f $RemoveInstallYaml ]; then
