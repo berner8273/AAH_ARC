@@ -155,8 +155,8 @@ variablesValues:
       domain: "#{aptitudeHost}"
       # web server port
       port: "443"
-      username: "#{tomcatUsername}"
-      password: "#{tomcatPassword}"
+      username: "#{aahTomcatUsername}"
+      password: "#{aahTomcatPassword}"
       # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SECURITY
       securityWebAppFolder: "SECURITY"
       # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SCHEDULER
