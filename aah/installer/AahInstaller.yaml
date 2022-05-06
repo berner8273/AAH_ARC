@@ -160,9 +160,9 @@ variablesValues:
       # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SECURITY
       securityWebAppFolder: "SECURITY"
       # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SCHEDULER
-      schedulerWebAppFolder: "SCHEDULER"
+      schedulerWebAppFolder: "scheduler-web"
       # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SCHEDULER
-      aahWebAppFolder: "AAH"
+      aahWebAppFolder: "aah"
       aahWebAppStrutsUrl: ""
       jboss:
         # jboss management port
@@ -369,7 +369,7 @@ variablesValues:
             path: "/opt/tomcat/conf/FederationMetadata.xml"
             entity-id: "http://adfs.agltd.com/adfs/services/trust"
             group-attribute: "http://schemas.xmlsoap.org/claims/Group"
-          service-provider-entity-id: "aptitudedev.agl.com"
+          service-provider-entity-id: "#{aptitudeHost}"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
           key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
@@ -437,7 +437,7 @@ variablesValues:
             path: "/opt/tomcat/conf/FederationMetadata.xml"
             entity-id: "http://adfs.agltd.com/adfs/services/trust"
             group-attribute: "http://schemas.xmlsoap.org/claims/Group"
-          service-provider-entity-id: "aptitudedev.agl.com_security"
+          service-provider-entity-id: "#{aptitudeHost}_security"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
           key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
@@ -516,7 +516,7 @@ variablesValues:
             path: "/opt/tomcat/conf/FederationMetadata.xml"
             entity-id: "http://adfs.agltd.com/adfs/services/trust"
             group-attribute: "http://schemas.xmlsoap.org/claims/Group"
-          service-provider-entity-id: "aptitudedev.agl.com_scheduler_web"
+          service-provider-entity-id: "#{aptitudeHost}_scheduler_web" 
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
           key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
