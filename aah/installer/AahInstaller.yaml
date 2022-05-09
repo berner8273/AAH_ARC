@@ -137,7 +137,7 @@ variablesValues:
   web:
     security:
       server:
-        url: "https://#{aptitudeHost}"
+        url: "https://#{aptitudeHost}:8090"
         authentication: "none"
         applicationTokenValue: ""
     deployment:
@@ -379,7 +379,7 @@ variablesValues:
         session:
           numberOfSessionsControl: "false"
           preventLoginWhenSessionNumberExceeded: "true"
-          webApplicationName: "aah"
+          webApplicationName: "AAH"
           maxInactiveIntervalInSeconds: "1800"
       reporting:
         reportsText: "Reports"
@@ -533,7 +533,7 @@ variablesValues:
           # Enables users sessions number limit
           numberOfSessionsControl: "false"
           preventLoginWhenSessionNumberExceeded: "true"
-          webApplicationName: "scheduler-web"
+          webApplicationName: "ASHED"
           maxInactiveIntervalInSeconds: "1800"
       log:
         appender: "stdout"
