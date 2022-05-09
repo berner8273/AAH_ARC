@@ -3,7 +3,7 @@ PROGRAM="${0##*/}"
 OracleConnString=$1
 RemoveInstallYaml=$2
 AahInstallerYaml="AahInstaller.yaml"
-echo OracleConn: ${OracleConnString}
+# echo OracleConn: ${OracleConnString}
 # Set Oracle environment
 
 # Functions ===================================================================
