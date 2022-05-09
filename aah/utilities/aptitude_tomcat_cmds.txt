@@ -1,0 +1,24 @@
+$ sudo –u tomcat -s
+$ sudo –u tomcat /bin/bash
+
+
+
+Start/stop/restart/status Tomcat service:
+$ sudo systemctl start tomcat
+$ sudo systemctl stop tomcat
+$ sudo systemctl restart tomcat
+$ sudo systemctl status tomcat
+$ sudo systemctl status tomcat –l # Long format
+
+
+
+Start/stop/restart/status Aptitude service:
+$ /aah/scripts/startApt.sh
+$ /aah/scripts/startProjects.sh
+$ /aah/scripts/stopApt.sh
+or
+$ sudo systemctl start aptitude
+$ sudo systemctl stop aptitude
+$ sudo systemctl restart aptitude
+$ sudo systemctl status aptitude
+$ sudo systemctl status aptitude –l # Long format
