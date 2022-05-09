@@ -137,7 +137,7 @@ variablesValues:
   web:
     security:
       server:
-        url: "https://#{aptitudeHost}:8090"
+        url: "http://#{aptitudeHost}:8090"
         authentication: "none"
         applicationTokenValue: ""
     deployment:
