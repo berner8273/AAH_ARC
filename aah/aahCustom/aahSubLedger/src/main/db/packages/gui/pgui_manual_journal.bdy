@@ -4780,48 +4780,48 @@ lvPeriodStartDate := NULL;
          END;
 
                 -- Check that local and base currency is used consistently across all journal lines
-                BEGIN
-             INSERT INTO temp_gui_jrnl_line_errors (
-                    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                    jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-                    jle_amended_by, jle_amended_on
-             )
-             SELECT /* jle_jrnl_process_id */	 	        0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	        jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1062',
-                      /* jle_error_string */		'Journal uses local and base amounts but values missing for line '||jlu_jrnl_line_number,
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
-             FROM temp_gui_jrnl_lines_unposted tsjlu
-             WHERE tsjlu.jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-             AND   tsjlu.user_session_id = gSessionId
-                         AND   (tsjlu.jlu_base_amount IS NULL OR tsjlu.jlu_local_amount IS NULL)
-						 
-/*-----------UPGRADE 20.1.1 MERGE START-----------*/
-
+--                BEGIN
+--             INSERT INTO temp_gui_jrnl_line_errors (
+--                    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+--                    jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+--                    jle_amended_by, jle_amended_on
+--             )
+--             SELECT /* jle_jrnl_process_id */	 	        0,
+--                      /* user_session_id */			gSessionId,
+--                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
+--                      /* jle_jrnl_line_number */	        jlu_jrnl_line_number,
+--                      /* jle_error_code */	  		'MADJ-1062',
+--                      /* jle_error_string */		'Journal uses local and base amounts but values missing for line '||jlu_jrnl_line_number,
+--                      /* jle_created_by */			'SYSTEM',
+--                      /* jle_created_on */			SYSDATE,
+--                      /* jle_amended_by */			'SYSTEM',
+--                      /* jle_amended_on */	 		SYSDATE
+--             FROM temp_gui_jrnl_lines_unposted tsjlu
+--             WHERE tsjlu.jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+--             AND   tsjlu.user_session_id = gSessionId
+--                         AND   (tsjlu.jlu_base_amount IS NULL OR tsjlu.jlu_local_amount IS NULL)
+--						 
+-- /*-----------UPGRADE 20.1.1 MERGE START-----------*/
+--
 --             AND   EXISTS(SELECT 1
 --                                      FROM   gui_jrnl_lines_unposted sjlu
 --                                      WHERE  sjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
 --                                      AND    NVL(sjlu.jlu_base_amount,0) != 0
 --                                      AND    NVL(sjlu.jlu_local_amount,0) != 0);
-			
-             AND   EXISTS(SELECT 1
-							  FROM   temp_gui_jrnl_lines_unposted tgjlu
-							  WHERE  tgjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
-							  AND    tgjlu.user_session_id = tsjlu.user_session_id
-							  AND  ( NVL(tgjlu.jlu_base_amount,0) != 0
-                              OR     NVL(tgjlu.jlu_local_amount,0) != 0) );
-/*-----------UPGRADE 20.1.1 MERGE END-----------*/
-			
-         EXCEPTION
-            WHEN OTHERS THEN
-                 pr_error(1, SQLERRM, 0, 'fnui_check_currencies.6', 'slr_entity_currencies', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-                 lvSuccess := FALSE;
-         END;
+--			
+--             AND   EXISTS(SELECT 1
+--							  FROM   temp_gui_jrnl_lines_unposted tgjlu
+--							  WHERE  tgjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
+--							  AND    tgjlu.user_session_id = tsjlu.user_session_id
+--							  AND  ( NVL(tgjlu.jlu_base_amount,0) != 0
+--                              OR     NVL(tgjlu.jlu_local_amount,0) != 0) );
+-- /*-----------UPGRADE 20.1.1 MERGE END-----------*/
+--			
+--         EXCEPTION
+--            WHEN OTHERS THEN
+--                 pr_error(1, SQLERRM, 0, 'fnui_check_currencies.6', 'slr_entity_currencies', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+--                 lvSuccess := FALSE;
+--         END;
 
 
         --check fx rates for local and base ccy only if apply fx translation flag equals 'Y' and journal date is <= entity business date
