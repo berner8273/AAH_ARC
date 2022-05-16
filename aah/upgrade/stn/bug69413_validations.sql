@@ -26,6 +26,6 @@ IF NOT nCount > 0 THEN
     Values
     (87, 291);
 END IF;
-   
+commit;   
 END;
 /
