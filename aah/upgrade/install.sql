@@ -30,10 +30,12 @@ conn ~stn_logon
 @@stn/jl_desc_stn_columns.sql
 @@stn/jl_desc_stn_views.sql
 @@stn/bug68620_reversal_hist.sql
+@@stn/bug69413_validations.sql
 @@stn/pk_cev.sql
 
 conn ~fdr_logon
 alter table fr_stan_raw_acc_event modify SRAE_CLIENT_SPARE_ID19 varchar2( 100 byte);
+@@fdr/bug69413_fr_log_update.sql
 
 conn ~slr_logon
 @@slr/offset_desc_slr_pkg.sql
