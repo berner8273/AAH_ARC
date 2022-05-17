@@ -10,6 +10,11 @@ IF NOT nCount > 0 THEN
     (VALIDATION_ID, VALIDATION_CD, CODE_MODULE_ID, VALIDATION_TYP_ID, VALIDATION_LEVEL_ID)
     Values
     (87, 'ce-acct_cd', 12, 5, 1);
+ELSE
+    update stn.validation
+    set VALIDATION_CD = 'ce-acct_cd', CODE_MODULE_ID = 12, VALIDATION_TYP_ID = 5, VALIDATION_LEVEL_ID = 1
+    where validation_id=87;
+   
 END IF;
 
 select count(*) into nCount from stn.db_tab_column where dtc_id = 291;
@@ -17,6 +22,9 @@ IF NOT nCount > 0 THEN
     INSERT INTO STN.DB_TAB_COLUMN (
     DTC_ID, DBT_ID, COLUMN_NM) 
     VALUES (291,7,'account_cd');
+ELSE
+    update STN.DB_TAB_COLUMN set dbt_id = 7,column_nm = 'account_cd'
+    where dtc_id = 291;
 END IF;
 
 select count(*) into nCount from STN.VALIDATION_COLUMN where validation_id = 87;
@@ -25,6 +33,9 @@ IF NOT nCount > 0 THEN
     (VALIDATION_ID, DTC_ID)
     Values
     (87, 291);
+ELSE
+    update stn.validation_column
+        set dtc_id = 291 where validation_id = 87;           
 END IF;
 commit;   
 END;
