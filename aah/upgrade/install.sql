@@ -41,7 +41,6 @@ conn ~stn_logon
 conn ~fdr_logon
 @@fdr/purge_dup_combo_rules.sql;
 
-<<<<<<< .mine
 -- this is still in prod - check with Marc if still needed
 @@fdr/hotfix_fr_general_lookup_cash_offset.sql
 
@@ -49,21 +48,6 @@ conn ~stn_logon
 -- add new posting rules data loader below
 @@stn/ROB204_posting_drivers.sql
 
-conn~gui_logon
--- @@gui/us53060_gui_event_class.sql
-
-=======
-
-
-
-
-
-
-
-
-
-
->>>>>>> .theirs
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
