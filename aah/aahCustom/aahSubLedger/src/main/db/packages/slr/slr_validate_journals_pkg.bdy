@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
+create or replace PACKAGE BODY     "SLR_VALIDATE_JOURNALS_PKG" AS
 -- -------------------------------------------------------------------------------
 /* ***************************************************************************
 *
@@ -70,8 +70,8 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         p_process_id IN NUMBER,
         p_status IN CHAR
     );
-    
-    PROCEDURE pValidateFuturePeriod     
+
+    PROCEDURE pValidateFuturePeriod
     (
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_process_id IN NUMBER,
@@ -79,8 +79,8 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         p_UseHeaders IN BOOLEAN := FALSE
     );
 
-    PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_process_id in NUMBER, p_status IN CHAR);
 
+PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_process_id in NUMBER, p_status IN CHAR);
 
     /**************************************************************************
     * Declare private global variables
@@ -258,7 +258,14 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
             jlu_tran_ccy,
             jlu_jrnl_ent_rate_set,
             jlu_jrnl_process_id,
-            jlu_account
+            jlu_account,
+            JLU_SEGMENT_2,
+            jlu_local_ccy,
+            jlu_base_ccy,
+            jlu_local_rate,
+            jlu_base_rate,
+            jlu_local_amount,
+            jlu_base_amount
           from slr_jrnl_lines_unposted
           where jlu_epg_id = :pc_epg_id and jlu_jrnl_status = :pc_status
         ), entities as (
@@ -267,55 +274,55 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         ), dates as (
           select distinct jlu_epg_id, jrnl_date_type, jrnl_date, jlu_entity, jlu_jrnl_type
           from jrnl_lines
-          unpivot (jrnl_date for jrnl_date_type in (jlu_effective_date as 'jlu_effective_date', jlu_translation_date as 'jlu_translation_date', jlu_jrnl_rev_date as 'jlu_jrnl_rev_date', jlu_value_date as 'jlu_value_date')) 
+          unpivot (jrnl_date for jrnl_date_type in (jlu_effective_date as 'jlu_effective_date', jlu_translation_date as 'jlu_translation_date', jlu_jrnl_rev_date as 'jlu_jrnl_rev_date', jlu_value_date as 'jlu_value_date'))
         ), epg_validate as (
-          select distinct jlu_epg_id, jlu_entity, 'EPG validation' as validation, cast(null as varchar2(200)) as value1, cast(null as varchar2(200)) as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, 'EPG validation' as validation, cast(null as varchar2(200)) as value1, cast(null as varchar2(200)) as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from entities
           where not exists (
-            select 1 from slr_entity_proc_group  where epg_entity = jlu_entity and epg_id = jlu_epg_id    
+            select 1 from slr_entity_proc_group  where epg_entity = jlu_entity and epg_id = jlu_epg_id
           )
         ), periods_validate as (
-          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Periods' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Periods' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
-          from dates 
-          where not exists ( 
-            select 1 
+          from dates
+          where not exists (
+            select 1
             from slr_entity_periods
             where ep_entity = jlu_entity and jrnl_date between ep_cal_period_start and ep_cal_period_end and ep_status = 'O'
           ) and jrnl_date_type != 'jlu_value_date'
         ), days_validate as (
-          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Dates' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Dates' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
-          from dates    
+          from dates
           where not exists (
-            select 1 
+            select 1
             from slr_entity_days
             where ed_entity_set = (select ent_periods_and_days_set from slr_entities where ent_entity = jlu_entity)
               and ed_date = jrnl_date
               and ed_status = 'O'
-          ) and jrnl_date_type != 'jlu_value_date'  
+          ) and jrnl_date_type != 'jlu_value_date'
         ), value_date_period_validate as (
-          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Period containing Value Date' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Period containing Value Date' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from dates join slr_entities on ent_entity = jlu_entity
-          where not exists ( 
-            select 1 
+          where not exists (
+            select 1
             from slr_entity_periods
             where ep_entity = jlu_entity and jrnl_date between ep_cal_period_start and ep_cal_period_end and ep_status = 'O'
           ) and jrnl_date_type = 'jlu_value_date'
           and ent_post_val_date = 'Y'
-        ), value_date_day_validate as ( 
-          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Value date' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+        ), value_date_day_validate as (
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type, jrnl_date, 'Value date' as validation, jrnl_date_type as value1, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from dates join slr_entities on ent_entity = jlu_entity
-          where not exists ( 
-            select 1 
+          where not exists (
+            select 1
             from slr_entity_days
             where ed_entity_set = (select ent_periods_and_days_set from slr_entities where ent_entity = jlu_entity)
               and ed_date = jrnl_date
@@ -323,8 +330,8 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
           ) and jrnl_date_type = 'jlu_value_date'
           and ent_post_val_date = 'Y'
         ), ext_type_none_validate as (
-          select distinct jlu_epg_id, jlu_entity, 'External type: None' as validation, jlu_jrnl_type as value1, ext.ejt_rev_ejtr_code as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, 'External type: None' as validation, jlu_jrnl_type as value1, ext.ejt_rev_ejtr_code as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from jrnl_lines join slr_entities ent on ent.ent_entity = jlu_entity
             join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
@@ -333,10 +340,10 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
           where jlu_jrnl_rev_date is null
 		    and jlu_jrnl_ref_id is null
             and typ.jt_reverse_flag = 'Y'
-            and ext.ejt_rev_ejtr_code = 'NONE'              		
-        ), ext_type_between_validate as (    
-          select distinct jlu_epg_id, jlu_entity, 'External type: BETWEEN' as validation, jlu_jrnl_type as value1, ejtr_code as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+            and ext.ejt_rev_ejtr_code = 'NONE'
+        ), ext_type_between_validate as (
+          select distinct jlu_epg_id, jlu_entity, 'External type: BETWEEN' as validation, jlu_jrnl_type as value1, ejtr_code as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from jrnl_lines join slr_entities ent on ent.ent_entity = jlu_entity
             join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
@@ -344,39 +351,39 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
             join slr_ext_jrnl_type_rule rul on rul.ejtr_code = ext.ejt_rev_ejtr_code
           where jlu_jrnl_rev_date is null
             and jlu_jrnl_ref_id is null
-            and typ.jt_reverse_flag = 'Y'      
+            and typ.jt_reverse_flag = 'Y'
             and (rul.ejtr_type = 'BETWEEN' or rul.ejtr_period_date = 'B' or  rul.ejtr_prior_next_current = 'B')
-        ), ext_type_validate as (    
-          select distinct jlu_entity, jlu_jrnl_type, 'Invalid Ext type' as validation, jlu_jrnl_type as value1, cast(null as varchar2(200)) as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+        ), ext_type_validate as (
+          select distinct jlu_entity, jlu_jrnl_type, 'Invalid Ext type' as validation, jlu_jrnl_type as value1, cast(null as varchar2(200)) as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from entities
           where not exists (
-            select 1 
+            select 1
             from slr_ext_jrnl_types ejt join slr_jrnl_types jt on ejt.ejt_jt_type = jt.jt_type
-            where ejt.ejt_type = jlu_jrnl_type 
-          )   
+            where ejt.ejt_type = jlu_jrnl_type
+          )
         ), rev_date_validate as (
-          select distinct jlu_epg_id, jlu_entity, jrnl_date_type as value1, jrnl_date, 'Reversing Date' as validation, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, jrnl_date_type as value1, jrnl_date, 'Reversing Date' as validation, to_char(jrnl_date, ']'||lDateFormat||q'[') as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from dates join slr_entities ent on ent.ent_entity = jlu_entity
             join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
             join slr_jrnl_types typ on ext.ejt_jt_type = typ.jt_type
             join slr_ext_jrnl_type_rule rul on rul.ejtr_code = ext.ejt_rev_ejtr_code
         where typ.jt_reverse_flag in ('Y','C')
-          and jrnl_date_type = 'jlu_jrnl_rev_date'   
+          and jrnl_date_type = 'jlu_jrnl_rev_date'
           and not exists (
-            select 1 
+            select 1
             from slr_entity_days
             where ed_entity_set = (select ent_periods_and_days_set from slr_entities where ent_entity = jlu_entity)
               and ed_date = jrnl_date
               and ed_status = 'O'
            )
         ), rev_date_rules_validate as (
-          select distinct jlu_epg_id, jlu_entity, msg.em_error_message, 'Reversing Date rules' as validation, jlu_jrnl_type as value1, ejtr_period_date as value2, 
-            to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value3, to_char(jlu_jrnl_rev_date, ']'||lDateFormat||q'[') as value4, em_error_message as value5, ejtr_prior_next_current as value6, 
-            ejtr_type as value7, to_char(ent_business_date, ']'||lDateFormat||q'[') as value8, 
+          select distinct jlu_epg_id, jlu_entity, msg.em_error_message, 'Reversing Date rules' as validation, jlu_jrnl_type as value1, ejtr_period_date as value2,
+            to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value3, to_char(jlu_jrnl_rev_date, ']'||lDateFormat||q'[') as value4, em_error_message as value5, ejtr_prior_next_current as value6,
+            ejtr_type as value7, to_char(ent_business_date, ']'||lDateFormat||q'[') as value8,
             ent_periods_and_days_set as value9
           from jrnl_lines join slr_entities ent on ent.ent_entity = jlu_entity
             join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
@@ -385,10 +392,10 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
             join slr_error_message msg on msg.em_error_code = rul.ejtr_em_error_code
           where jlu_jrnl_rev_date is not null
             and typ.jt_reverse_flag = 'Y'
-            and ext.ejt_rev_validation_flag = 'Y'    
+            and ext.ejt_rev_validation_flag = 'Y'
         ), rev_date_less as (
-          select distinct jlu_epg_id, jlu_entity, jlu_jrnl_rev_date, jlu_effective_date, 'Reversing Date < Effective Date' as validation, to_char(jlu_jrnl_rev_date, ']'||lDateFormat||q'[') as value1, 
-            to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value2,  cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, jlu_jrnl_rev_date, jlu_effective_date, 'Reversing Date < Effective Date' as validation, to_char(jlu_jrnl_rev_date, ']'||lDateFormat||q'[') as value1,
+            to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value2,  cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from jrnl_lines join slr_entities ent on ent.ent_entity = jlu_entity
             join slr_ext_jrnl_types ext on jlu_jrnl_type = ext.ejt_type
@@ -406,18 +413,18 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
             and jlu_jrnl_rev_date is not null
             and jlu_jrnl_rev_date <= jlu_effective_date
         ), accounts as (
-          select distinct jlu_epg_id, jlu_entity, jlu_account, 'Accounts' as validation, jlu_account as value1, cast(null as varchar2(200)) as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, jlu_account, 'Accounts' as validation, jlu_account as value1, cast(null as varchar2(200)) as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from entities where not exists (
             select 1 from slr_entity_accounts
             where ea_entity_set = (select ent_accounts_set from slr_entities where ent_entity = jlu_entity)
             and ea_status = 'A'
             and ea_account = jlu_account
-          ) 
+          )
         ), adjustment_balance as (
-          select distinct jlu_epg_id, jlu_entity, jlu_jrnl_type  as value1, 'Adjustment Balances' as validation, cast(null as varchar2(200)) as value2, 
-            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, jlu_jrnl_type  as value1, 'Adjustment Balances' as validation, cast(null as varchar2(200)) as value2,
+            cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from entities
             join slr_entities ent on jlu_entity = ent.ent_entity
@@ -426,25 +433,32 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
             from slr_ext_jrnl_types
             where ejt_type = jlu_jrnl_type
               and ((ejt_balance_type_1 = 20 and ejt_balance_type_2 is null) or (ejt_balance_type_2 = 20 and ejt_balance_type_1 is null)))
-            and ent.ent_adjustment_flag = 'N'  
+            and ent.ent_adjustment_flag = 'N'
         ), currency as (
-          select distinct jlu_epg_id, jlu_entity, trim(jlu_tran_ccy) as value1, 'Currency' as validation, to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value2, 
-            to_char(jlu_translation_date, ']'||lDateFormat||q'[') as value3, jlu_jrnl_ent_rate_set as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+          select distinct jlu_epg_id, jlu_entity, trim(jlu_tran_ccy) as value1, 'Currency' as validation, to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value2,
+            to_char(jlu_translation_date, ']'||lDateFormat||q'[') as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
             cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from jrnl_lines
-        ), entities_list as (
-          select distinct jlu_epg_id, jlu_entity, jlu_tran_ccy as value1, 'Entities' as validation, cast(null as varchar2(200)) as value2, 
-          cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6, 
+        ), fx_rate as (
+          select distinct jlu_epg_id, jlu_entity, trim(jlu_tran_ccy) as value1, 'FX Rates' as validation, to_char(jlu_effective_date, ']'||lDateFormat||q'[') as value2,
+            to_char(jlu_translation_date, ']'||lDateFormat||q'[') as value3, jlu_jrnl_ent_rate_set as value4, trim(coalesce(jlu_local_ccy, ent_local_ccy)) as value5, trim(coalesce(jlu_base_ccy, ent_base_ccy)) as value6,
+            JLU_SEGMENT_2 as value7, case when JLU_BASE_AMOUNT is not null then '1' else null end as value8, case when JLU_LOCAL_AMOUNT is not null then '1' else null end as value9
+          from jrnl_lines
+          join slr_entities on jlu_entity = ent_entity and ent_apply_fx_translation = 'Y'
+           where JLU_BASE_AMOUNT is null or JLU_LOCAL_AMOUNT is null
+    ),entities_list as (
+          select distinct jlu_epg_id, jlu_entity, jlu_tran_ccy as value1, 'Entities' as validation, cast(null as varchar2(200)) as value2,
+          cast(null as varchar2(200)) as value3, cast(null as varchar2(200)) as value4, cast(null as varchar2(200)) as value5, cast(null as varchar2(200)) as value6,
           cast(null as varchar2(200)) as value7, cast(null as varchar2(200)) as value8, cast(null as varchar2(200)) as value9
           from jrnl_lines
         ) select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from epg_validate
-        union all 
+        union all
           select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from periods_validate
-        union all 
+        union all
           select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from days_validate
-        union all 
+        union all
           select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from value_date_period_validate
-        union all 
+        union all
           select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from value_date_day_validate
         union all
           select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from ext_type_none_validate
@@ -467,7 +481,9 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         union all
           select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from currency
         union all
-          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from entities_list]';
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from entities_list
+        union all
+          select validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 from fx_rate]';
 
       TYPE lValidateRc IS REF CURSOR;
       lValidateCur lValidateRc;
@@ -475,11 +491,11 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
 
       lEpgValidation SIMPLE_INTEGER DEFAULT 0;
       lVal VARCHAR2(200);
-
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
       TYPE cur_type IS REF CURSOR;
       cValidateRows cur_type;
       lv_sql VARCHAR2(32000);
-
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
       PROCEDURE validateReversingDateRules (
         pEntity IN slr_entities.ent_entity%TYPE,
         pJrnlType IN slr_jrnl_lines_unposted.jlu_jrnl_type%TYPE,
@@ -652,8 +668,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         pEntity IN slr_entities.ent_entity%TYPE,
         pEffectiveDate IN slr_jrnl_lines_unposted.jlu_effective_date%TYPE,
         pTranslationDate IN slr_jrnl_lines_unposted.jlu_translation_date%TYPE,
-        pTranCcy IN slr_jrnl_lines_unposted.jlu_tran_ccy%TYPE,
-        pJrnlEntRateSet IN slr_jrnl_lines_unposted.jlu_jrnl_ent_rate_set%TYPE
+        pTranCcy IN slr_jrnl_lines_unposted.jlu_tran_ccy%TYPE
       ) IS
         lEntityConfiguration slr_entities%ROWTYPE;
         lIsFound SMALLINT;
@@ -667,67 +682,168 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
           AND TRIM(ec_ccy) = pTranCcy
           AND ec_status = 'A';
 
-        IF (lEntityConfiguration.ent_apply_fx_translation = 'Y' AND pEffectiveDate <= lEntityConfiguration.ent_business_date) THEN
-
-          BEGIN
-            SELECT 1 INTO lIsFound FROM slr_entity_rates JOIN slr_entities ON TRIM(er_ccy_to) = TRIM(ent_local_ccy)
-            WHERE er_entity_set = NVL(p_rate_set, NVL(pJrnlEntRateSet, lEntityConfiguration.ent_rate_set))
-              AND ent_entity = pEntity
-                AND TRIM(er_ccy_from) = pTranCcy
-                AND er_date = NVL(pTranslationDate, pEffectiveDate)
-				AND er_rate_type = 'SPOT'
-                AND er_rate > 0;
-          EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-              pWriteLineError(
-                pEntity, p_process_id, 'FX Rate',
-                'No local FX Rate for source currency ['||pTranCcy||'] and entity ['||pEntity||'] and date ['||to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd')||']',
-                ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE '
-                ||CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
-                p_epg_id, p_status, p_useHeaders
-              );
-            WHEN OTHERS THEN
-              pWriteLineError(
-                pEntity, p_process_id, 'FX Rate',
-                'FX local rate error for source currency ['||pTranCcy||'] and entity ['||pEntity||'] and date ['|| to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd')||']',
-                ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE '
-                || CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
-                p_epg_id, p_status, p_useHeaders
-              );
-          END;
-
-          BEGIN
-            SELECT 1 INTO lIsFound FROM slr_entity_rates JOIN slr_entities ON TRIM(er_ccy_to) = TRIM(ent_base_ccy)
-            WHERE er_entity_set = NVL(p_rate_set, NVL(pJrnlEntRateSet, lEntityConfiguration.ent_rate_set))
-              AND ent_entity = pEntity
-              AND TRIM(er_ccy_from) = pTranCcy
-              AND er_date = NVL(pTranslationDate, pEffectiveDate)
-			  AND er_rate_type = 'SPOT'
-              AND er_rate > 0;
-          EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-              pWriteLineError(
-                pEntity, p_process_id, 'FX Rate',
-                'No base FX Rate for source currency ['||pTranCcy||'] and entity ['||pEntity||'] and date [' || to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd') || ']',
-                ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE ' 
-                || CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
-                p_epg_id, p_status, p_useheaders
-              );
-            WHEN OTHERS THEN
-              pWriteLineError(
-                pEntity, p_process_id, 'FX Rate',
-                'FX base rate error for source currency ['||pTranCcy||'] and entity ['||pEntity||'] and date [' || to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd') || ']',
-                ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE ' 
-                || CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
-                p_epg_id, p_status, p_useheaders
-              );
-          END;
-        END IF;
-
       EXCEPTION
         WHEN NO_DATA_FOUND THEN
           pWriteLineError(pEntity, p_process_id, 'Currency', 'Invalid transaction currency: '||pTranCcy, ' AND JLU_TRAN_CCY = '''||pTranCcy||'''', p_epg_id, p_status, p_UseHeaders);
       END pValidateCurrency;
+
+        PROCEDURE pValidateRates (
+            pEntity IN slr_entities.ent_entity%TYPE,
+            pEffectiveDate IN slr_jrnl_lines_unposted.jlu_effective_date%TYPE,
+            pTranslationDate IN slr_jrnl_lines_unposted.jlu_translation_date%TYPE,
+            pTranCcy IN slr_jrnl_lines_unposted.jlu_tran_ccy%TYPE,
+            pJrnlEntRateSet IN slr_jrnl_lines_unposted.jlu_jrnl_ent_rate_set%TYPE,
+            pLocalCcy IN slr_jrnl_lines_unposted.jlu_local_ccy%TYPE,
+            pBaseCcy IN slr_jrnl_lines_unposted.jlu_base_ccy%TYPE,
+            pSegment2 IN slr_jrnl_lines_unposted.JLU_SEGMENT_2%TYPE,
+            pBaseAmount IN slr_jrnl_lines_unposted.JLU_BASE_AMOUNT%TYPE,
+            pLocalAmount IN slr_jrnl_lines_unposted.JLU_LOCAL_AMOUNT%TYPE
+        ) IS
+            lEntityConfiguration slr_entities%ROWTYPE;
+            lIsFound SMALLINT;
+            lFxMode SLR_FX_TRANSLATION_CONFIG.FTC_FX_MODE%TYPE;
+            LCheckB SMALLINT;
+            LCheckL SMALLINT;
+        BEGIN
+            SELECT * INTO lEntityConfiguration FROM slr_entities
+            WHERE ent_entity = pEntity;
+            LCheckB:=1;
+            LCheckL:=1;
+
+
+            IF (lEntityConfiguration.ent_apply_fx_translation = 'Y' AND pEffectiveDate <= lEntityConfiguration.ent_business_date
+                ) THEN
+
+                -- when not valid exception NO_DATA_FOUND is raised
+                BEGIN
+                    SELECT 1,FTC_FX_MODE
+                    INTO lIsFound,lFxMode
+                    FROM slr_entities
+                             join SLR_FX_TRANSLATION_CONFIG
+                                  on ENT_ENTITY = FTC_ENTITY and FTC_GAAP = pSegment2 and FTC_PROCESS_TYPE = 'FX_TRANSLATION'
+                    where ENT_ENTITY = pEntity
+                      and FTC_TARGET_AMOUNT_TYPE = 'Base';
+                EXCEPTION
+                    WHEN NO_DATA_FOUND THEN
+                        pWriteLineError(
+                                pEntity, p_process_id, 'FX Rate',
+                                'Missing configuration for Target Amount Type [Base] , Process Type [FX_TRANSLATION], Entity [' || pEntity || '] and Gaap [' ||
+                                pSegment2 || ']',
+                                ' AND JLU_ENTITY = ''' || pEntity || ''' AND JLU_SEGMENT_2 = ''' || pSegment2 ||
+                                ''' AND JLU_EFFECTIVE_DATE = DATE ''' || to_char(pEffectiveDate, 'yyyy-mm-dd') ||
+                                ''' AND JLU_TRANSLATION_DATE '
+                                    || CASE
+                                           WHEN pTranslationDate IS NULL THEN ' IS NULL '
+                                           ELSE ' = DATE ''' || to_char(pTranslationDate, 'yyyy-mm-dd') || '''' END,
+                                p_epg_id, p_status, p_useHeaders
+                            );
+                        LCheckB:=0;
+                END;
+                --1:1 translate rate not required and also when pBaseAmount is already calculated
+                IF LCheckB=1 and ((lFxMode='Step-by-Step' and pLocalCcy<>pBaseCcy) OR (lFxMode='Direct' and pTranCcy<>pBaseCcy)) and pBaseAmount is null THEN
+                    BEGIN
+                        SELECT 1,FTC_FX_MODE
+                        INTO lIsFound,lFxMode
+                        FROM slr_entities
+                                 join SLR_FX_TRANSLATION_CONFIG
+                                      on SLR_ENTITIES.ENT_ENTITY = FTC_ENTITY and FTC_GAAP = pSegment2 and
+                                         FTC_PROCESS_TYPE = 'FX_TRANSLATION'
+                                 join slr_entity_rates
+                                      on er_date = nvl(pTranslationDate, pEffectiveDate)
+                                          and er_entity_set = coalesce(FTC_FX_RATE_SET, lEntityConfiguration.ent_rate_set)
+                                          and
+                                         er_ccy_from = case when FTC_FX_MODE = 'Step-by-Step' then pLocalCcy else pTranCcy end
+                                          and er_ccy_to = pBaseCcy
+                                          and er_rate_type = FTC_RATE_TYPE
+                        where ENT_ENTITY = pEntity
+                          and FTC_TARGET_AMOUNT_TYPE = 'Base';
+                    EXCEPTION
+                        WHEN NO_DATA_FOUND THEN
+                            pWriteLineError(
+                                    pEntity, p_process_id, 'FX Rate',
+                                    'No Base FX Rate '||lFxMode||' mode, for source currency ['||case when lFxMode = 'Step-by-Step' then pLocalCcy else pTranCcy end||'] to target ['||pBaseCcy||'] and entity ['||pEntity||'] and date [' || to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd') || ']',
+                                    ' AND '||case when lFxMode = 'Step-by-Step' then 'JLU_LOCAL_CCY' else 'JLU_TRAN_CCY' end||' = '''||case when lFxMode = 'Step-by-Step' then pLocalCcy else pTranCcy end||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_SEGMENT_2 = ''' || pSegment2 || ''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE '
+                                        || CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
+                                    p_epg_id, p_status, p_useheaders
+                                );
+                        WHEN OTHERS THEN
+                            pWriteLineError(
+                                    pEntity, p_process_id, 'FX Rate',
+                                    'FX Base rate error '||lFxMode||' mode, for source currency ['||case when lFxMode = 'Step-by-Step' then pLocalCcy else pTranCcy end||'] to target ['||pBaseCcy||'] and entity ['||pEntity||'] and date [' || to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd') || ']',
+                                    ' AND '||case when lFxMode = 'Step-by-Step' then 'JLU_LOCAL_CCY' else 'JLU_TRAN_CCY' end||' = '''||case when lFxMode = 'Step-by-Step' then pLocalCcy else pTranCcy end||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_SEGMENT_2 = ''' || pSegment2 || ''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE '
+                                        || CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
+                                    p_epg_id, p_status, p_useheaders
+                                );
+                    END;
+                end if;
+
+                BEGIN
+
+                    SELECT 1,FTC_FX_MODE
+                    INTO lIsFound,lFxMode
+                    FROM slr_entities
+                             join SLR_FX_TRANSLATION_CONFIG
+                                  on ENT_ENTITY = FTC_ENTITY and FTC_GAAP = pSegment2 and FTC_PROCESS_TYPE = 'FX_TRANSLATION'
+                    where ENT_ENTITY = pEntity
+                      and FTC_TARGET_AMOUNT_TYPE = 'Local';
+                EXCEPTION
+                    WHEN NO_DATA_FOUND THEN
+                        pWriteLineError(
+                                pEntity, p_process_id, 'FX Rate',
+                                'Missing configuration for Target Amount Type [Local] , Process Type [FX_TRANSLATION], Entity [' || pEntity || '] and Gaap [' ||
+                                pSegment2 || ']',
+                                ' AND JLU_ENTITY = ''' || pEntity || ''' AND JLU_SEGMENT_2 = ''' || pSegment2 ||
+                                ''' AND JLU_EFFECTIVE_DATE = DATE ''' || to_char(pEffectiveDate, 'yyyy-mm-dd') ||
+                                ''' AND JLU_TRANSLATION_DATE '
+                                    || CASE
+                                           WHEN pTranslationDate IS NULL THEN ' IS NULL '
+                                           ELSE ' = DATE ''' || to_char(pTranslationDate, 'yyyy-mm-dd') || '''' END,
+                                p_epg_id, p_status, p_useHeaders
+                            );
+                        LCheckL:=0;
+                END;
+                --1:1 translate rate not required and also when pLocalAmount is already calculated
+                IF LCheckL=1 and pTranCcy<>pLocalCcy and pLocalAmount is null THEN
+                    BEGIN
+
+                        SELECT 1,FTC_FX_MODE
+                        INTO lIsFound,lFxMode
+                        FROM slr_entities
+                                 join SLR_FX_TRANSLATION_CONFIG
+                                      on SLR_ENTITIES.ENT_ENTITY = FTC_ENTITY and FTC_GAAP = pSegment2 and
+                                         FTC_PROCESS_TYPE = 'FX_TRANSLATION'
+                                 join slr_entity_rates
+                                      on er_date = nvl(pTranslationDate, pEffectiveDate)
+                                          and er_entity_set = coalesce(FTC_FX_RATE_SET, lEntityConfiguration.ent_rate_set)
+                                          and
+                                         er_ccy_from = pTranCcy
+                                          and er_ccy_to = pLocalCcy
+                                          and er_rate_type = FTC_RATE_TYPE
+                        where ENT_ENTITY = pEntity
+                          and FTC_TARGET_AMOUNT_TYPE = 'Local';
+                    EXCEPTION
+                        WHEN NO_DATA_FOUND THEN
+                            pWriteLineError(
+                                    pEntity, p_process_id, 'FX Rate',
+                                    'No Local FX Rate '||lFxMode||' mode, for source currency ['||pTranCcy||'] to target ['||pLocalCcy||'] and entity ['||pEntity||'] and date ['||to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd')||']',
+                                    ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_SEGMENT_2 = ''' || pSegment2 || ''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE '
+                                        ||CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
+                                    p_epg_id, p_status, p_useHeaders
+                                );
+                        WHEN OTHERS THEN
+                            pWriteLineError(
+                                    pEntity, p_process_id, 'FX Rate',
+                                    'FX Local rate error for source currency ['||pTranCcy||'] to target ['||pLocalCcy||'] and entity ['||pEntity||'] and date ['|| to_char(NVL(pTranslationDate, pEffectiveDate), 'yyyy-mm-dd')||']',
+                                    ' AND JLU_TRAN_CCY = '''||pTranCcy||''' AND JLU_ENTITY = '''||pEntity||''' AND JLU_SEGMENT_2 = ''' || pSegment2 || ''' AND JLU_EFFECTIVE_DATE = DATE '''||to_char(pEffectiveDate, 'yyyy-mm-dd')||''' AND JLU_TRANSLATION_DATE '
+                                        || CASE WHEN pTranslationDate IS NULL THEN ' IS NULL ' ELSE ' = DATE '''||to_char(pTranslationDate, 'yyyy-mm-dd')||'''' END,
+                                    p_epg_id, p_status, p_useHeaders
+                                );
+                    END;
+                end if;
+
+            END IF;
+
+        END pValidateRates;
 
       PROCEDURE pValidateSegments IS
         lNumberOfSegemnts SIMPLE_INTEGER DEFAULT 10;
@@ -771,8 +887,8 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         lAllSegments VARCHAR2(2000);
 
         lSegmentSql VARCHAR2(32767) DEFAULT '
-          select 
-            case when count(distinct fd_segment_[:segment_no]_balance_check) = 1 and max(fd_segment_[:segment_no]_balance_check) = ''Y'' then '',jlu_segment_[:segment_no]'' else '''' end, 
+          select
+            case when count(distinct fd_segment_[:segment_no]_balance_check) = 1 and max(fd_segment_[:segment_no]_balance_check) = ''Y'' then '',jlu_segment_[:segment_no]'' else '''' end,
             case when count(distinct fd_segment_[:segment_no]_balance_check) <> 1 then ''FALSE'' else '' '' end
           from slr_fak_definitions inner join slr_entity_proc_group on fd_entity = epg_entity where epg_id = ''[:epg_id]''';
       BEGIN
@@ -807,7 +923,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
 
       pInitializeProcedure(p_epg_id, p_process_id);
       pDeleteLineErrors(p_epg_id, p_process_id, p_status);
-      
+
       UPDATE slr_jrnl_lines_unposted SET jlu_jrnl_status = 'W'
       WHERE jlu_epg_id = p_epg_id AND jlu_jrnl_status = p_status
         AND jlu_effective_date > lCurrBusDate;
@@ -816,7 +932,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
       <<validate_loop>>
       LOOP
         FETCH lValidateCur BULK COLLECT INTO lValidationTable LIMIT cROWLIMIT;
-        EXIT WHEN lValidationTable.COUNT = 0;        
+        EXIT WHEN lValidationTable.COUNT = 0;
 
         -- EPG validation
         FOR rec IN (
@@ -846,7 +962,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
               raise_application_error(-20001, 'Fatal error during SLR_EXT_JRNL_TYPES validation');
           END;
 
-          SLR_ADMIN_PKG.Debug('Validation. Records in SLR_EXT_JRNL_TYPES exist.');   
+          SLR_ADMIN_PKG.Debug('Validation. Records in SLR_EXT_JRNL_TYPES exist.');
 
           COMMIT;
           SLR_ADMIN_PKG.Debug('Validation. Future records moved.', NULL);
@@ -891,7 +1007,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
             FROM TABLE(lValidationTable) WHERE validation = 'Dates' AND value1 != 'jlu_jrnl_rev_date'
         ) LOOP
           pWriteLineError(rec.jlu_entity, p_process_id, rec.short_name, 'Invalid '||rec.long_name||': ['||rec.value2|| '] not valid in entity days table for Entity ['||rec.jlu_entity||'] ',
-          ' AND '||rec.value1||' = ''' || rec.value2|| '''', p_epg_id, p_status, p_UseHeaders);
+          ' AND '||rec.value1||' = DATE ''' || rec.value2|| '''', p_epg_id, p_status, p_UseHeaders);
         END LOOP;
 
         SLR_ADMIN_PKG.Debug('Validation. Dates validated.', lValidateSQL);
@@ -925,7 +1041,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
             FROM TABLE(lValidationTable) WHERE validation = 'Value date'
         ) LOOP
           pWriteLineError(rec.jlu_entity, p_process_id, rec.short_name, 'Invalid '||rec.long_name||': ['||rec.value2|| '] not valid in entity days table for Entity ['||rec.jlu_entity||'] ',
-          ' AND '||rec.value1||' = ''' || rec.value2|| '''', p_epg_id, p_status, p_UseHeaders);
+          ' AND '||rec.value1||' = DATE ''' || rec.value2|| '''', p_epg_id, p_status, p_UseHeaders);
         END LOOP;
 
         SLR_ADMIN_PKG.Debug('Validation. Value Dates validated.', lValidateSQL);
@@ -1000,18 +1116,37 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
 
         -- Currencies
         FOR rec IN (
-          SELECT DISTINCT validation, jlu_entity, value1, value2, value3, value4 FROM TABLE(lValidationTable) WHERE validation = 'Currency'
+          SELECT DISTINCT validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7 FROM TABLE(lValidationTable) WHERE validation = 'Currency'
         ) LOOP
           pValidateCurrency (
             pEntity => rec.jlu_entity,
             pEffectiveDate => TO_DATE(rec.value2, lDateFormat),
             pTranslationDate => TO_DATE(rec.value3, lDateFormat),
-            pTranCcy => rec.value1,
-            pJrnlEntRateSet => rec.value4
+            pTranCcy => rec.value1
           );
         END LOOP;
 
         SLR_ADMIN_PKG.Debug('Validation. Currency validated.', lValidateSQL);
+
+        -- Fx Rates
+        FOR rec IN (
+            SELECT DISTINCT validation, jlu_entity, value1, value2, value3, value4, value5, value6, value7, value8, value9 FROM TABLE(lValidationTable) WHERE validation = 'FX Rates'
+            ) LOOP
+                pValidateRates (
+                        pEntity => rec.jlu_entity,
+                        pEffectiveDate => TO_DATE(rec.value2, lDateFormat),
+                        pTranslationDate => TO_DATE(rec.value3, lDateFormat),
+                        pTranCcy => rec.value1,
+                        pJrnlEntRateSet => rec.value4,
+                        pLocalCcy => rec.value5,
+                        pBaseCcy => rec.value6,
+                        pSegment2 => rec.value7,
+                        pBaseAmount => rec.value8,
+                        pLocalAmount => rec.value9
+                    );
+            END LOOP;
+
+        SLR_ADMIN_PKG.Debug('Validation. FX Rates validated.', lValidateSQL);
 
         -- Balances
         -- Adjustment Balances
@@ -1038,8 +1173,8 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         EXIT WHEN lValidateCur%NOTFOUND;
       END LOOP;
       CLOSE lValidateCur;
-	  
-	  
+
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
 	  -- Custom AG validation...
 	  -- Event Class Periods
 
@@ -1088,6 +1223,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
 
       SLR_ADMIN_PKG.Debug('Validation. Event Class Periods validated.', lv_sql);
 	  --- End of AG custom validations
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
 
       -- Segments
       pValidateSegments();
@@ -1097,13 +1233,13 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
       pValidateBalances();
       SLR_ADMIN_PKG.Debug('Validation. Balances validated.');
       COMMIT;
-      
+
       pValidateFuturePeriod(p_epg_id, p_process_id, p_status, p_UseHeaders);
-      SLR_ADMIN_PKG.Debug('Validation. Future period validated.');    
-      
+      SLR_ADMIN_PKG.Debug('Validation. Future period validated.');
+
       pUpdateJLUPeriods(p_epg_id, p_process_id, p_status);
       SLR_ADMIN_PKG.Debug('Validation. JLU periods updated.');
-      
+
       pInsertFakEbaCombinations(p_epg_id, p_process_id, p_status);
 
       SLR_ADMIN_PKG.Info('Validation end');
@@ -1442,8 +1578,8 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
             RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pWriteLineError: ' || SQLERRM ||' line: '||substr(dbms_utility.format_error_backtrace, 1, instr(dbms_utility.format_error_backtrace, chr(10))));
 
     END pWriteLineError;
-	
 
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
     -- ---------------------------------------------------------------------------
     -- Procedure:    pWriteLineErrorEventClass
     -- Description:  Custom procedure to write journal errors based on Event Class.
@@ -1553,6 +1689,8 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
             RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pWriteLineError: ' || SQLERRM);
 
     END pWriteLineErrorEventClass;
+	
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
 
     --------------------------------------------------------------------------------
 
@@ -1917,13 +2055,13 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
           99999,
           ''Invalid Segment:'||p_seg_no||'''' -- added for consistency, replaces ''||FD_SEGMENT_'||p_seg_no||'_NAME'
           ||' FROM SLR_JRNL_LINES_UNPOSTED
-          INNER JOIN SLR_ENTITIES 
+          INNER JOIN SLR_ENTITIES
             ON JLU_ENTITY = ENT_ENTITY
           LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
             ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
             AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
             AND FS'||p_seg_no||'_STATUS = ''A''
-          WHERE 
+          WHERE
             FS.ROWID IS NULL
             AND JLU_JRNL_STATUS IN (:p_status,''E'')
             AND JLU_EPG_ID = :p_epg_id ';
@@ -1931,10 +2069,10 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
       IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
         lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS''';
       END IF;
-         
+
       SLR_ADMIN_PKG.Debug('Validation. Segment: '||p_seg_no || ' validated.', lv_sql);
         EXECUTE IMMEDIATE lv_sql USING p_process_id, p_status, p_epg_id;
-    
+
         IF SQL%ROWCOUNT > 0 THEN
 
           IF p_UseHeaders THEN
@@ -1953,7 +2091,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
                   ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
                   AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
                   AND FS'||p_seg_no||'_STATUS = ''A''
-                WHERE 
+                WHERE
                   FS.ROWID IS NULL
                   AND JLU_JRNL_STATUS  = :p_status
                   AND JLU_EPG_ID = :p_epg_id ';
@@ -1963,7 +2101,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
           ELSE
               lv_sql := lv_sql || ')';
           END IF;
-          
+
           EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id;
 
         END IF;
@@ -1985,7 +2123,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
                     ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
                     AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
                     AND FS'||p_seg_no||'_STATUS = ''A''
-                  WHERE 
+                  WHERE
                     FS.ROWID IS NULL
                     AND JLU_JRNL_STATUS  = :p_status
                     AND JLU_EPG_ID = :p_epg_id ';
@@ -2369,10 +2507,10 @@ lv_sql := '
             SLR_ADMIN_PKG.Error('Error during validating balances: ' || SQLERRM);
             RAISE e_internal_processing_error; -- raised to stop execution
     END pValidateBalance;
-    
+
 --------------------------------------------------------------------------------
 
-    PROCEDURE pValidateFuturePeriod 
+    PROCEDURE pValidateFuturePeriod
     (
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_process_id IN NUMBER,
@@ -2406,7 +2544,7 @@ lv_sql := '
           ' AND JLU_ENTITY = ''' || rec_missing_future_period.ent_entity || '''', p_epg_id, p_status, p_UseHeaders
         );
       END LOOP;
-    END pValidateFuturePeriod;  
+    END pValidateFuturePeriod;
 
 --------------------------------------------------------------------------------
 
@@ -2520,10 +2658,10 @@ lv_sql := '
                   JLU_ENTITY,
                   JLU_ACCOUNT,
                   JLU_TRAN_CCY,
-                  JLU_SEGMENT_1, 
-                  JLU_SEGMENT_2, 
-                  JLU_SEGMENT_3, 
-                  JLU_SEGMENT_4, 
+                  JLU_SEGMENT_1,
+                  JLU_SEGMENT_2,
+                  JLU_SEGMENT_3,
+                  JLU_SEGMENT_4,
                   JLU_SEGMENT_5,
                   JLU_SEGMENT_6,
                   JLU_SEGMENT_7,
@@ -2546,10 +2684,10 @@ lv_sql := '
               JLU_ENTITY,
               JLU_ACCOUNT,
               JLU_TRAN_CCY,
-              JLU_SEGMENT_1, 
-              JLU_SEGMENT_2, 
-              JLU_SEGMENT_3, 
-              JLU_SEGMENT_4, 
+              JLU_SEGMENT_1,
+              JLU_SEGMENT_2,
+              JLU_SEGMENT_3,
+              JLU_SEGMENT_4,
               JLU_SEGMENT_5,
               JLU_SEGMENT_6,
               JLU_SEGMENT_7,
@@ -2590,24 +2728,24 @@ lv_sql := '
                   JLU_EBA_ID
               FROM SLR_JRNL_LINES_UNPOSTED SUBPARTITION FOR (''' || p_epg_id || ''', '''||p_status||''')
               WHERE NOT EXISTS (
-                SELECT 1 FROM SLR_EBA_COMBINATIONS PARTITION FOR (''' || p_epg_id || ''') 
+                SELECT 1 FROM SLR_EBA_COMBINATIONS PARTITION FOR (''' || p_epg_id || ''')
                 WHERE JLU_EPG_ID = EC_EPG_ID
                     AND JLU_ATTRIBUTE_1 = EC_ATTRIBUTE_1
                     AND JLU_ATTRIBUTE_2 = EC_ATTRIBUTE_2
                     AND JLU_ATTRIBUTE_3 = EC_ATTRIBUTE_3
                     AND JLU_ATTRIBUTE_4 = EC_ATTRIBUTE_4
                     AND JLU_ATTRIBUTE_5 = EC_ATTRIBUTE_5
-                    AND EC_FAK_ID = JLU_FAK_ID              
-              )     
+                    AND EC_FAK_ID = JLU_FAK_ID
+              )
           )
           SELECT
             JLU_EPG_ID,
             JLU_FAK_ID,
             JLU_EBA_ID,
-            JLU_ATTRIBUTE_1, 
-            JLU_ATTRIBUTE_2, 
-            JLU_ATTRIBUTE_3, 
-            JLU_ATTRIBUTE_4,  
+            JLU_ATTRIBUTE_1,
+            JLU_ATTRIBUTE_2,
+            JLU_ATTRIBUTE_3,
+            JLU_ATTRIBUTE_4,
             JLU_ATTRIBUTE_5
           FROM ROWS_TO_INSERT
       ';

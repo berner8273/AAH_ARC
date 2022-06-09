@@ -37,7 +37,11 @@ CREATE OR REPLACE PACKAGE SLR."SLR_UTILITIES_PKG" AS
                                             p_end_date    in date,
                                             p_status      in SLR_ENTITY_DAYS.ED_STATUS%TYPE,
                                             p_calendar_name in FR_HOLIDAY_DATE.HD_CA_CALENDAR_NAME%TYPE := 'DEFAULT',
-                                            p_delete_existing_days in CHAR := 'Y');
+/*-----------UPGRADE 22.1.1 MERGE START-----------*/
+--                                            p_delete_existing_days in CHAR := 'Y');
+                                            p_delete_existing_days in CHAR := 'Y',
+                                            user_id       in varchar2 := USER);
+/*-----------UPGRADE 22.1.1 MERGE END-----------*/						   
 
     PROCEDURE pUPDATE_SLR_ENTITY_PERIODS   (p_entity in SLR_ENTITIES.ENT_ENTITY%TYPE,
                                             p_start_bus_year_month in NUMBER,

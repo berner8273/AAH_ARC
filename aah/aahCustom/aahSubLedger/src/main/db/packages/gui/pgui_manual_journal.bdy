@@ -1107,7 +1107,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
          -- Update Header Stats
          prui_update_header_stats(gJournalHeader.jhu_jrnl_id);
-         PGUI_MANUAL_JOURNAL.pCombinationCheck_GJLU ('AG', SEQ_PROCESS_NUMBER.NEXTVAL, 'M');
+         PGUI_MANUAL_JOURNAL.pCombinationCheck_GJLU ('AG', 1, 'M');
          COMMIT;
 
     EXCEPTION
@@ -1593,7 +1593,7 @@ CREATE OR REPLACE PACKAGE BODY GUI."PGUI_MANUAL_JOURNAL" AS
 
 		  begin
 		  -- Combo Edit Check
-          pCombinationCheck_GJLU ('AG', SEQ_PROCESS_NUMBER.CURRVAL, 'M');
+          pCombinationCheck_GJLU ('AG',1, 'M');
 
           /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
           prui_lock_journal(journal_id,updated_by);
@@ -4780,37 +4780,48 @@ lvPeriodStartDate := NULL;
          END;
 
                 -- Check that local and base currency is used consistently across all journal lines
-                BEGIN
-             INSERT INTO temp_gui_jrnl_line_errors (
-                    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                    jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-                    jle_amended_by, jle_amended_on
-             )
-             SELECT /* jle_jrnl_process_id */	 	        0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	        jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1062',
-                      /* jle_error_string */		'Journal uses local and base amounts but values missing for line '||jlu_jrnl_line_number,
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
-             FROM temp_gui_jrnl_lines_unposted tsjlu
-             WHERE tsjlu.jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-             AND   tsjlu.user_session_id = gSessionId
-                         AND   (tsjlu.jlu_base_amount IS NULL OR tsjlu.jlu_local_amount IS NULL)
-             AND   EXISTS(SELECT 1
-                                      FROM   gui_jrnl_lines_unposted sjlu
-                                      WHERE  sjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
-                                      AND    NVL(sjlu.jlu_base_amount,0) != 0
-                                      AND    NVL(sjlu.jlu_local_amount,0) != 0);
-
-         EXCEPTION
-            WHEN OTHERS THEN
-                 pr_error(1, SQLERRM, 0, 'fnui_check_currencies.6', 'slr_entity_currencies', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-                 lvSuccess := FALSE;
-         END;
+--                BEGIN
+--             INSERT INTO temp_gui_jrnl_line_errors (
+--                    jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+--                    jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+--                    jle_amended_by, jle_amended_on
+--             )
+--             SELECT /* jle_jrnl_process_id */	 	        0,
+--                      /* user_session_id */			gSessionId,
+--                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
+--                      /* jle_jrnl_line_number */	        jlu_jrnl_line_number,
+--                      /* jle_error_code */	  		'MADJ-1062',
+--                      /* jle_error_string */		'Journal uses local and base amounts but values missing for line '||jlu_jrnl_line_number,
+--                      /* jle_created_by */			'SYSTEM',
+--                      /* jle_created_on */			SYSDATE,
+--                      /* jle_amended_by */			'SYSTEM',
+--                      /* jle_amended_on */	 		SYSDATE
+--             FROM temp_gui_jrnl_lines_unposted tsjlu
+--             WHERE tsjlu.jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+--             AND   tsjlu.user_session_id = gSessionId
+--                         AND   (tsjlu.jlu_base_amount IS NULL OR tsjlu.jlu_local_amount IS NULL)
+--						 
+-- /*-----------UPGRADE 20.1.1 MERGE START-----------*/
+--
+--             AND   EXISTS(SELECT 1
+--                                      FROM   gui_jrnl_lines_unposted sjlu
+--                                      WHERE  sjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
+--                                      AND    NVL(sjlu.jlu_base_amount,0) != 0
+--                                      AND    NVL(sjlu.jlu_local_amount,0) != 0);
+--			
+--             AND   EXISTS(SELECT 1
+--							  FROM   temp_gui_jrnl_lines_unposted tgjlu
+--							  WHERE  tgjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
+--							  AND    tgjlu.user_session_id = tsjlu.user_session_id
+--							  AND  ( NVL(tgjlu.jlu_base_amount,0) != 0
+--                              OR     NVL(tgjlu.jlu_local_amount,0) != 0) );
+-- /*-----------UPGRADE 20.1.1 MERGE END-----------*/
+--			
+--         EXCEPTION
+--            WHEN OTHERS THEN
+--                 pr_error(1, SQLERRM, 0, 'fnui_check_currencies.6', 'slr_entity_currencies', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+--                 lvSuccess := FALSE;
+--         END;
 
 
         --check fx rates for local and base ccy only if apply fx translation flag equals 'Y' and journal date is <= entity business date
@@ -4823,27 +4834,67 @@ lvPeriodStartDate := NULL;
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
+			
+/*-----------UPGRADE 20.1.1 MERGE START-----------*/
+
+--            SELECT /* jle_jrnl_process_id */	 	        0,
+--                      /* user_session_id */			gSessionId,
+--                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
+--                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
+--                      /* jle_error_code */	  		'MADJ-1066',
+--                      /* jle_error_string */		'No local FX Rate for source currency ['||tjlu.JLU_TRAN_CCY||'] and entity ['||gEntityConfiguration.ent_entity||']',
+--					  
+--					  
+--                      /* jle_created_by */			'SYSTEM',
+--                      /* jle_created_on */			SYSDATE,
+--                      /* jle_amended_by */			'SYSTEM',
+--                      /* jle_amended_on */	 		SYSDATE
+--            FROM temp_gui_jrnl_lines_unposted tjlu
+--            WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+--            AND   user_session_id = gSessionId
+--            AND NOT EXISTS (SELECT 1 FROM SLR_ENTITY_RATES
+--                    WHERE ER_ENTITY_SET = gEntityConfiguration.ENT_RATE_SET
+--                    AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY
+--                    AND ER_CCY_TO = gEntityConfiguration.ENT_LOCAL_CCY
+--                    AND ER_DATE = gJournalHeader.jhu_jrnl_date
+--					AND ER_RATE_TYPE = 'SPOT'
+--                    AND ER_RATE > 0);
+
             SELECT /* jle_jrnl_process_id */	 	        0,
                       /* user_session_id */			gSessionId,
                       /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
                       /* jle_jrnl_line_number */	jlu_jrnl_line_number,
                       /* jle_error_code */	  		'MADJ-1066',
-                      /* jle_error_string */		'No local FX Rate for source currency ['||tjlu.JLU_TRAN_CCY||'] and entity ['||gEntityConfiguration.ent_entity||']',
+                      /* jle_error_string */		case when SFTC_local.FTC_ENTITY IS NOT NULL then
+														'No local FX Rate for Source Currency ['||tjlu.JLU_TRAN_CCY||'], Target Currency ['||gEntityConfiguration.ENT_LOCAL_CCY||'], Gaap ['||tjlu.JLU_SEGMENT_2||'] and Entity ['||gEntityConfiguration.ent_entity||']'
+													else
+														'Missing configuration for Target Amount Type [Local], Process Type [FX_TRANSLATION], Entity ['||gEntityConfiguration.ent_entity||'] and Gaap ['||tjlu.JLU_SEGMENT_2||']'
+													end ,
                       /* jle_created_by */			'SYSTEM',
                       /* jle_created_on */			SYSDATE,
                       /* jle_amended_by */			'SYSTEM',
                       /* jle_amended_on */	 		SYSDATE
             FROM temp_gui_jrnl_lines_unposted tjlu
+			LEFT JOIN slr.SLR_FX_TRANSLATION_CONFIG SFTC_local
+                       on SFTC_local.FTC_ENTITY = tjlu.JLU_ENTITY
+                           and SFTC_local.FTC_GAAP = tjlu.JLU_SEGMENT_2
+                           and SFTC_local.FTC_PROCESS_TYPE = 'FX_TRANSLATION'
+						   and SFTC_local.FTC_TARGET_AMOUNT_TYPE = 'Local'
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+			AND   JLU_ENTITY = gEntityConfiguration.ENT_ENTITY
+			AND   NVL(tjlu.jlu_local_amount,0) = 0
             AND   user_session_id = gSessionId
             AND NOT EXISTS (SELECT 1 FROM SLR_ENTITY_RATES
-                    WHERE ER_ENTITY_SET = gEntityConfiguration.ENT_RATE_SET
-                    AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY
+					WHERE tjlu.JLU_TRAN_CCY = gEntityConfiguration.ENT_LOCAL_CCY
+                    OR ( ER_ENTITY_SET = SFTC_local.FTC_FX_RATE_SET
+					AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY
                     AND ER_CCY_TO = gEntityConfiguration.ENT_LOCAL_CCY
                     AND ER_DATE = gJournalHeader.jhu_jrnl_date
-					AND ER_RATE_TYPE = 'SPOT'
-                    AND ER_RATE > 0);
-
+					AND ER_RATE_TYPE = SFTC_local.FTC_RATE_TYPE
+					AND ER_RATE_TYPE = 'SPOT' --AG CUSTOMIZED LINE
+                    AND ER_RATE > 0));
+					
+/*-----------UPGRADE 20.1.1 MERGE END-----------*/
 
             EXCEPTION
               WHEN OTHERS THEN
@@ -4859,27 +4910,73 @@ lvPeriodStartDate := NULL;
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
+			
+/*-----------UPGRADE 20.1.1 MERGE START-----------*/
+
+--            SELECT /* jle_jrnl_process_id */	 	        0,
+--                      /* user_session_id */			gSessionId,
+--                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
+--                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
+--                      /* jle_error_code */	  		'MADJ-1066',
+--                      /* jle_error_string */		'No base FX Rate for source currency ['||tjlu.JLU_TRAN_CCY||'] and entity ['||gEntityConfiguration.ent_entity||']',
+--                      /* jle_created_by */			'SYSTEM',
+--                      /* jle_created_on */			SYSDATE,
+--                      /* jle_amended_by */			'SYSTEM',
+--                      /* jle_amended_on */	 		SYSDATE
+--            FROM temp_gui_jrnl_lines_unposted tjlu
+--            WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+--            AND   user_session_id = gSessionId
+--            AND NOT EXISTS (SELECT 1 FROM SLR_ENTITY_RATES
+--                    WHERE ER_ENTITY_SET = gEntityConfiguration.ENT_RATE_SET
+--                    AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY
+--                    AND ER_CCY_TO = gEntityConfiguration.ENT_BASE_CCY
+--                    AND ER_DATE = gJournalHeader.jhu_jrnl_date
+--					AND ER_RATE_TYPE = 'SPOT'
+--                    AND ER_RATE > 0);
+
             SELECT /* jle_jrnl_process_id */	 	        0,
                       /* user_session_id */			gSessionId,
                       /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
                       /* jle_jrnl_line_number */	jlu_jrnl_line_number,
                       /* jle_error_code */	  		'MADJ-1066',
-                      /* jle_error_string */		'No base FX Rate for source currency ['||tjlu.JLU_TRAN_CCY||'] and entity ['||gEntityConfiguration.ent_entity||']',
+                      /* jle_error_string */		case when SFTC_base.FTC_ENTITY IS NOT NULL then
+														'No base FX Rate for Source Currency ['||case when SFTC_base.FTC_FX_MODE = 'Step-by-Step' then gEntityConfiguration.ENT_LOCAL_CCY
+																									  when SFTC_base.FTC_FX_MODE = 'Direct' then tjlu.JLU_TRAN_CCY
+																									  else tjlu.JLU_TRAN_CCY end
+																							   ||'], Target Currency ['||gEntityConfiguration.ENT_BASE_CCY||'], Gaap ['||tjlu.JLU_SEGMENT_2||'] and Entity ['||gEntityConfiguration.ent_entity||']'
+													else
+														'Missing configuration for Target Amount Type [Base], Process Type [FX_TRANSLATION], Entity ['||gEntityConfiguration.ent_entity||'] and Gaap ['||tjlu.JLU_SEGMENT_2||']'
+													end ,
                       /* jle_created_by */			'SYSTEM',
                       /* jle_created_on */			SYSDATE,
                       /* jle_amended_by */			'SYSTEM',
                       /* jle_amended_on */	 		SYSDATE
             FROM temp_gui_jrnl_lines_unposted tjlu
+			LEFT JOIN slr.SLR_FX_TRANSLATION_CONFIG SFTC_base
+			   on SFTC_base.FTC_ENTITY = tjlu.JLU_ENTITY
+				   and SFTC_base.FTC_GAAP = tjlu.JLU_SEGMENT_2
+				   and SFTC_base.FTC_PROCESS_TYPE = 'FX_TRANSLATION'
+				   and SFTC_base.FTC_TARGET_AMOUNT_TYPE = 'Base'
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+			AND   JLU_ENTITY = gEntityConfiguration.ENT_ENTITY
+			AND   NVL(tjlu.jlu_base_amount,0) = 0
             AND   user_session_id = gSessionId
             AND NOT EXISTS (SELECT 1 FROM SLR_ENTITY_RATES
-                    WHERE ER_ENTITY_SET = gEntityConfiguration.ENT_RATE_SET
-                    AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY
-                    AND ER_CCY_TO = gEntityConfiguration.ENT_BASE_CCY
-                    AND ER_DATE = gJournalHeader.jhu_jrnl_date
-					AND ER_RATE_TYPE = 'SPOT'
-                    AND ER_RATE > 0);
-
+                    WHERE (SFTC_base.FTC_FX_RATE_SET IS NULL
+                    AND gEntityConfiguration.ENT_BASE_CCY = tjlu.JLU_TRAN_CCY )
+                    OR (SFTC_base.FTC_FX_RATE_SET IS NOT NULL
+                    AND gEntityConfiguration.ENT_BASE_CCY = case when SFTC_base.FTC_FX_MODE = 'Step-by-Step' then gEntityConfiguration.ENT_LOCAL_CCY
+																 when SFTC_base.FTC_FX_MODE = 'Direct' then tjlu.JLU_TRAN_CCY else tjlu.JLU_TRAN_CCY end )
+					OR ( ER_ENTITY_SET = SFTC_base.FTC_FX_RATE_SET
+					AND ER_CCY_FROM = case when SFTC_base.FTC_FX_MODE = 'Step-by-Step' then gEntityConfiguration.ENT_LOCAL_CCY
+										   when SFTC_base.FTC_FX_MODE = 'Direct' then tjlu.JLU_TRAN_CCY else 'NVS' end
+					AND ER_CCY_TO = gEntityConfiguration.ENT_BASE_CCY
+					AND ER_DATE = gJournalHeader.jhu_jrnl_date
+					AND ER_RATE_TYPE = SFTC_base.FTC_RATE_TYPE
+					AND ER_RATE_TYPE = 'SPOT' --AG CUSTOMIZED LINE
+					AND ER_RATE > 0) );
+					
+/*-----------UPGRADE 20.1.1 MERGE END-----------*/
 
             EXCEPTION
               WHEN OTHERS THEN
@@ -4894,8 +4991,11 @@ lvPeriodStartDate := NULL;
               INTO	 lvFound
               FROM	 temp_gui_jrnl_line_errors
               WHERE	 jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-              AND    user_session_id = gSessionId
-              AND	 jle_error_code IN ('MADJ-1011','MADJ-1061','MADJ-1066');
+              AND    user_session_id = gSessionId			  
+/*-----------UPGRADE 20.1.1 MERGE START-----------*/
+--              AND	 jle_error_code IN ('MADJ-1011','MADJ-1061','MADJ-1066');
+              AND	 jle_error_code IN ('MADJ-1011','MADJ-1061','MADJ-1062','MADJ-1066');
+/*-----------UPGRADE 20.1.1 MERGE END-----------*/
          EXCEPTION
               WHEN NO_DATA_FOUND THEN
                    NULL;
@@ -6574,7 +6674,10 @@ lvPeriodStartDate := NULL;
 
     BEGIN
 
-        sql_stmnt := 'SELECT DISTINCT lookup_key FROM vw_ui_' || field_name || ' WHERE source_system_id = '''|| src_sys_id || ''' AND fdr_code ='''|| fdr_code ||''' AND ROWNUM < 2';
+/*-----------UPGRADE 20.1.1 MERGE START-----------*/
+--        sql_stmnt := 'SELECT DISTINCT lookup_key FROM vw_ui_' || field_name || ' WHERE source_system_id = '''|| src_sys_id || ''' AND fdr_code ='''|| fdr_code ||''' AND ROWNUM < 2';
+        sql_stmnt := 'SELECT /*+ no_query_transformation */ DISTINCT lookup_key FROM vw_ui_' || field_name || ' WHERE source_system_id = '''|| src_sys_id || ''' AND fdr_code ='''|| fdr_code ||''' AND ROWNUM < 2';
+/*-----------UPGRADE 20.1.1 MERGE END-----------*/
 
         EXECUTE IMMEDIATE sql_stmnt INTO src_code;
 
@@ -7996,28 +8099,99 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
     end prui_increment_journal_version;
 
+/*-----------UPGRADE 20.1.1 MERGE START-----------*/
+
+--    PROCEDURE prui_calculate_journal_rates(journal_id in NUMBER)
+--    IS
+--    begin
+--
+--      UPDATE gui_jrnl_lines_unposted
+--			SET	 jlu_base_rate =
+--				CASE
+--					WHEN jlu_tran_amount = 0
+--					THEN 0
+--					WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
+--					THEN 0
+--					ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)
+--					END
+--				, jlu_local_rate =
+--				CASE
+--					WHEN jlu_tran_amount = 0
+--					THEN 0
+--					WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
+--					THEN 0
+--					ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
+--					END
+--			WHERE jlu_jrnl_hdr_id = journal_id;
+--
+--		-- Execute any custom processes
+--        pgui_jrnl_custom.prui_update_rates(journal_id);
+--
+--       EXCEPTION
+--           WHEN OTHERS THEN
+--             --prui_log_error(journal_id, 0, 9999, 'Failed to update base and local rates for journal '||TO_CHAR(journal_id));
+--             null;
+--
+--    end prui_calculate_journal_rates;
+
+
     PROCEDURE prui_calculate_journal_rates(journal_id in NUMBER)
     IS
     begin
 
-      UPDATE gui_jrnl_lines_unposted
+      if  (gEntityConfiguration.ENT_APPLY_FX_TRANSLATION = 'Y' ) then
+		MERGE INTO gui_jrnl_lines_unposted gjlu
+		USING (SELECT * FROM slr.SLR_FX_TRANSLATION_CONFIG
+			   WHERE   FTC_PROCESS_TYPE = 'FX_TRANSLATION'
+				   and FTC_TARGET_AMOUNT_TYPE = 'Base'
+			) SFTC_base
+			ON (SFTC_base.FTC_ENTITY = gjlu.JLU_ENTITY
+			   and SFTC_base.FTC_GAAP = gjlu.JLU_SEGMENT_2
+			   and gjlu.jlu_jrnl_hdr_id = journal_id)
+			WHEN MATCHED THEN
+			UPDATE
 			SET	 jlu_base_rate =
-				CASE
-					WHEN jlu_tran_amount = 0
-					THEN 0
-					WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
-					THEN 0
-					ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)
-					END
-				, jlu_local_rate =
-				CASE
-					WHEN jlu_tran_amount = 0
-					THEN 0
-					WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
-					THEN 0
-					ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
-					END
-			WHERE jlu_jrnl_hdr_id = journal_id;
+			CASE
+				WHEN jlu_tran_amount = 0
+				THEN 0 ELSE
+					case when SFTC_base.FTC_FX_MODE = 'Step-by-Step' then
+						CASE WHEN NVL(jlu_local_amount,0) = 0 OR LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_local_amount, 9)))) > 9
+						THEN 0
+						ELSE ROUND(jlu_base_amount/jlu_local_amount, 9) END
+					when SFTC_base.FTC_FX_MODE = 'Direct' then
+						CASE WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
+						THEN 0
+						ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)	END
+					else 0 end
+				END
+			, jlu_local_rate =
+			CASE
+				WHEN jlu_tran_amount = 0
+				THEN 0
+				WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
+				THEN 0
+				ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
+			END;
+	  else
+        UPDATE gui_jrnl_lines_unposted
+			SET	 jlu_base_rate =
+			CASE
+				WHEN jlu_tran_amount = 0
+				THEN 0
+				WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
+				THEN 0
+				ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)
+			END
+			, jlu_local_rate =
+			CASE
+				WHEN jlu_tran_amount = 0
+				THEN 0
+				WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
+				THEN 0
+				ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
+			END
+		WHERE jlu_jrnl_hdr_id = journal_id;
+	  end if;
 
 		-- Execute any custom processes
         pgui_jrnl_custom.prui_update_rates(journal_id);
@@ -8028,6 +8202,8 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
              null;
 
     end prui_calculate_journal_rates;
+	
+/*-----------UPGRADE 20.1.1 MERGE END-----------*/
 
     PROCEDURE prui_add_jrnl_to_posting_queue(journal_id IN NUMBER, epg_id in varchar2,jrnl_num_of_lines in number)
     IS

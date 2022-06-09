@@ -513,14 +513,17 @@ PROCEDURE pPostJournals
                 NVL(MAX(JLU_AMENDED_ON),SYSDATE),
                 ''' || lv_business_date || '''
                         ,MAX(JLU_JRNL_INTERNAL_PERIOD_FLAG),
-                NVL(MAX(JLU_JRNL_ENT_RATE_SET), ''' || lv_rate_set || ''') ,
+				MAX(JLU_JRNL_ENT_RATE_SET),
                 MAX(JLU_TRANSLATION_DATE)
             FROM SLR_JRNL_LINES_UNPOSTED
             WHERE JLU_EPG_ID = ''' || p_epg_id || '''
                 AND JLU_JRNL_STATUS = ''' || p_status || '''
             GROUP BY JLU_JRNL_HDR_ID
         ';
-
+/*-----------UPGRADE 22.1.1 MERGE START-----------*/
+--above line NVL(MAX(JLU_JRNL_ENT_RATE_SET), ''' || lv_rate_set || ''') ,
+--replace with MAX(JLU_JRNL_ENT_RATE_SET),
+/*-----------UPGRADE 22.1.1 MERGE END-----------*/
         SLR_ADMIN_PKG.PerfInfo( 'JH. Journal Header query execution elapsed time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
         SLR_ADMIN_PKG.Debug('Headers inserted into SLR_JRNL_HEADERS');
 
@@ -1862,6 +1865,8 @@ BEGIN
         ON
         (
             CLC.EDB_BALANCE_DATE = B.EDB_BALANCE_DATE
+            AND CLC.EDB_PERIOD_YEAR=B.EDB_PERIOD_YEAR
+            AND CLC.EDB_PERIOD_MONTH=B.EDB_PERIOD_MONTH
             AND CLC.EDB_EBA_ID = B.EDB_EBA_ID
             AND CLC.EDB_BALANCE_TYPE = B.EDB_BALANCE_TYPE
             AND CLC.EDB_EPG_ID = B.EDB_EPG_ID
@@ -1946,11 +1951,19 @@ BEGIN
             CLC.EDB_PROCESS_ID,
             CLC.EDB_AMENDED_ON
         )';
-
+/*-----------UPGRADE 22.1.1 MERGE START-----------*/
+--lines added above to the ON condition
+--            AND CLC.EDB_PERIOD_YEAR=B.EDB_PERIOD_YEAR
+--            AND CLC.EDB_PERIOD_MONTH=B.EDB_PERIOD_MONTH
+/*-----------UPGRADE 22.1.1 MERGE END-----------*/
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+/*-----------UPGRADE 22.1.1 MERGE START-----------*/
+	SLR_ADMIN_PKG.Debug('EBA Daily Balances generated (Merge).', lv_sql);
+--line move from the bottom
+/*-----------UPGRADE 22.1.1 MERGE END-----------*/
     EXECUTE IMMEDIATE lv_sql USING p_process_id, p_oldest_backdate, p_oldest_backdate, p_oldest_backdate;
     SLR_ADMIN_PKG.PerfInfo( 'EBAM. Merge EBA Daily Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-    SLR_ADMIN_PKG.Debug('EBA Daily Balances generated (Merge).', lv_sql);
+--    SLR_ADMIN_PKG.Debug('EBA Daily Balances generated (Merge).', lv_sql);
 
 END pGenerateEBADailyBalancesMerge;
 
@@ -2842,6 +2855,8 @@ BEGIN
         ON
         (
             CLC.FDB_BALANCE_DATE = B.FDB_BALANCE_DATE
+            AND CLC.FDB_PERIOD_YEAR=B.FDB_PERIOD_YEAR
+            AND CLC.FDB_PERIOD_MONTH=B.FDB_PERIOD_MONTH
             AND CLC.FDB_FAK_ID = B.FDB_FAK_ID
             AND CLC.FDB_BALANCE_TYPE = B.FDB_BALANCE_TYPE
             AND CLC.FDB_EPG_ID = B.FDB_EPG_ID
@@ -2925,6 +2940,11 @@ BEGIN
             CLC.FDB_AMENDED_ON
         )';
 
+/*-----------UPGRADE 22.1.1 MERGE START-----------*/
+--lines added above to the ON condition
+--            AND CLC.EDB_PERIOD_YEAR=B.EDB_PERIOD_YEAR
+--            AND CLC.EDB_PERIOD_MONTH=B.EDB_PERIOD_MONTH
+/*-----------UPGRADE 22.1.1 MERGE END-----------*/
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
     EXECUTE IMMEDIATE lv_sql USING p_process_id, p_oldest_backdate, p_oldest_backdate, p_oldest_backdate;
     SLR_ADMIN_PKG.PerfInfo( 'MFAK. Merge FAK Daily Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');

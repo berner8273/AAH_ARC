@@ -1,13 +1,13 @@
-create or replace PACKAGE  SLR.SLR_BALANCE_MOVEMENT_PKG AS 
+create or replace PACKAGE SLR_BALANCE_MOVEMENT_PKG AS
 
-  
+
 procedure pBMRunBalanceMovementProcess( pProcess     IN slr_process.p_process%TYPE
                                          ,pEntProcSet  IN slr_bm_entity_processing_set.bmeps_set_id%TYPE
                                          ,pConfig      IN slr_process_config.pc_config%TYPE
                                          ,pSource      IN slr_process_source.sps_source_name%TYPE
                                          ,pBalanceDate IN DATE
                                          ,pRateSet     IN slr_entity_rates.er_entity_set%type
-										 ,gProcId OUT number 
+										 ,gProcId OUT number
                                         );
 PROCEDURE pBMUpdateJLUFakEbaId(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type);
 
@@ -25,9 +25,6 @@ FUNCTION fBMGetEPGId(pEntity slr_jrnl_lines_temp.jl_entity%TYPE
                                       ,pS10 slr_jrnl_lines_temp.jl_segment_10%TYPE)
 RETURN slr_jrnl_lines_unposted.jlu_epg_id%TYPE;
 
-
-FUNCTION getBaseAmountStmt (pMethod IN VARCHAR2) RETURN VARCHAR2;
-FUNCTION getLocalAmountStmt (pMethod IN VARCHAR2) RETURN VARCHAR2;
 FUNCTION getPeriodMonth (pEntity SLR_ENTITY_PERIODS.EP_ENTITY%TYPE, pEffectiveDate DATE) RETURN SLR_ENTITY_PERIODS.EP_BUS_PERIOD%TYPE;
 FUNCTION getPeriodYear (pEntity SLR_ENTITY_PERIODS.EP_ENTITY%TYPE, pEffectiveDate DATE) RETURN SLR_ENTITY_PERIODS.EP_BUS_YEAR%TYPE;
 FUNCTION getPeriodLTD (pEntity SLR_ENTITY_PERIODS.EP_ENTITY%type, pEffectiveDate date, pAccount slr_entity_accounts.EA_ACCOUNT%type) RETURN SLR_ENTITY_PERIODS.EP_BUS_YEAR%type;
@@ -38,7 +35,7 @@ PROCEDURE pBMFxPnLSweep(lines_created out INTEGER);
 PROCEDURE pBMPositionRebalancing(lines_created out INTEGER);
 PROCEDURE pBMFXClearDown(lines_created out INTEGER);
 PROCEDURE pBMPLRepatriation(lines_created out INTEGER);
-PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER); 
+PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER);
 PROCEDURE pBMValidateConfigForEPG;
 
 
@@ -55,7 +52,7 @@ gRateSet     slr_entity_rates.er_entity_set%type;
 gJournalType slr_process_config.pc_jt_type%TYPE;
 gFakEbaFlag  slr_process_config.pc_fak_eba_flag%TYPE;
 gWhichAmount slr_process_config.pc_aggregation%TYPE;
-gFxManagaCcy slr_process_config.PC_FX_MANAGE_CCY%TYPE;
+gFxManageCcy slr_process_config.PC_FX_MANAGE_CCY%TYPE;
 gMethod  slr_process_config.PC_METHOD%TYPE;
 gCustomProcedure slr_process_config.PC_CUSTOM_PROCEDURE%TYPE;
 

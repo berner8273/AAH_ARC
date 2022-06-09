@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>InstallWebApps</id>
+    <version>22.1.1</version>
+    <title>Aah Web apps Installer</title>
+    <authors>Ryan Quigley</authors>
+    <owners>Ryan Quigley</owners>
+    <description>Package The Aah Installer</description>
+    <tags>AAH server</tags>
+  </metadata>
+  <files>
+    <file src="AahInstaller.yaml"/>
+    <file src="InstallWebApps.sh"/>
+    <file src="AAH.web.legacy.prepare.acc.yaml"/>
+    <file src="ApplicationResources.properties"/>
+    <file src="application.properties"/>
+  </files>
+</package>

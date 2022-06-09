@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE "SLR"."SLR_POST_JOURNALS_PKG" AS
+create or replace PACKAGE       "SLR"."SLR_POST_JOURNALS_PKG" AS
 -- -------------------------------------------------------------------------------
 -- 124
 -- Id:          $Id: slr_post_journals_pkg.sql,v 1.10 2005/05/31 07:48:14 pfrench Exp $
@@ -85,7 +85,7 @@ CREATE OR REPLACE PACKAGE "SLR"."SLR_POST_JOURNALS_PKG" AS
   /*    PROCEDURE pCreateFakBalancesFromLines
     (
         p_table_name IN VARCHAR2 -- name of balances table, which will be created
-    ); 
+    );
 */
     -- do the same but using different algorithm (MODEL clause)
 	-- !!!DEPRECATED until next roadmap build. Logic nieed to take INTERNAL_PERIOD_FLAG into account!!!
@@ -103,10 +103,10 @@ CREATE OR REPLACE PACKAGE "SLR"."SLR_POST_JOURNALS_PKG" AS
 
 	   PROCEDURE pCreate_reversing_journal
     (jrnl_id_list varchar2, entity_proc_group VARCHAR2, status CHAR, process_id number);
-	
+
 	PROCEDURE pCreate_rev_journal_batch
     (orignal_jrnl_id VARCHAR2, entity_proc_group VARCHAR2, status CHAR, process_id number);
-	
+
 	PROCEDURE pCreate_reversing_journal_madj
     (jrnl_id_list varchar2, entity_proc_group VARCHAR2, status CHAR, process_id number);
 
@@ -116,6 +116,6 @@ CREATE OR REPLACE PACKAGE "SLR"."SLR_POST_JOURNALS_PKG" AS
         p_process_id IN NUMBER,
         p_day DATE -- last balances will be generated for this day
     );
-	
+
 END SLR_POST_JOURNALS_PKG;
 /

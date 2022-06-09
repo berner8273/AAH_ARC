@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
+CREATE OR REPLACE PACKAGE BODY "SLR"."SLR_BALANCE_MOVEMENT_PKG" AS
 
   PROCEDURE pBMTraceJob(pDescription IN VARCHAR2, pSQL IN VARCHAR2) AS
     PRAGMA AUTONOMOUS_TRANSACTION;
@@ -15,57 +15,55 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
                                          ,pSource      IN slr_process_source.sps_source_name%TYPE
                                          ,pBalanceDate IN DATE
                                          ,pRateSet     IN slr_entity_rates.er_entity_set%type
-                                         ,gProcId OUT number
+										 ,gProcId OUT number
                                         ) AS
 
      vProcName VARCHAR2(30) := 'pBMRunBalanceMovementProcess';
      v_count INTEGER := 0;
-     v_count2 INTEGER := 0;
+	 v_count2 INTEGER := 0;
      v_lines_count INTEGER :=0;
-     v_min_id slr_jrnl_lines_unposted.jlu_jrnl_hdr_id%TYPE;
-     v_max_id slr_jrnl_lines_unposted.jlu_jrnl_hdr_id%type;
-     v_SID VARCHAR2(256);
-    gEND_BLOCK_GETS NUMBER(38);
-    gEND_CONSISTENT_GETS NUMBER(38);
-    gEND_PHYSICAL_READS NUMBER(38);
-    gEND_BLOCK_CHANGES NUMBER(38);
-    gEND_CONSISTENT_CHANGES    NUMBER(38);
+	 v_SID VARCHAR2(256);
+	gEND_BLOCK_GETS NUMBER(38);
+	gEND_CONSISTENT_GETS NUMBER(38);
+	gEND_PHYSICAL_READS NUMBER(38);
+	gEND_BLOCK_CHANGES NUMBER(38);
+	gEND_CONSISTENT_CHANGES    NUMBER(38);
      CURSOR cEntityProcGroups IS
         SELECT DISTINCT JLU_EPG_ID
         FROM slr_jrnl_lines_unposted
         WHERE jlu_jrnl_process_id = gProcessId;
   BEGIN
 
-        if (pProcess is not null and pProcess not in ('FXREVALUE','FXPLSWEEP','FXPOSITION','FXCLEARDOWN','PLREPATRIATION','PLRETEARNINGS')) then
-            RAISE_APPLICATION_ERROR(-20001,'Unsupported process: ' || pProcess ||'. Supported processes: ''FXPLSWEEP'', ''FXREVALUE'', ''FXPOSITION'', ''FXCLEARDOWN'', ''PLREPATRIATION'', ''PLRETEARNINGS''');
-        end if;
+		if (pProcess is not null and pProcess not in ('FXREVALUE','FXPLSWEEP','FXPOSITION','FXCLEARDOWN','PLREPATRIATION','PLRETEARNINGS')) then
+			RAISE_APPLICATION_ERROR(-20001,'Unsupported process: ' || pProcess ||'. Supported processes: ''FXPLSWEEP'', ''FXREVALUE'', ''FXPOSITION'', ''FXCLEARDOWN'', ''PLREPATRIATION'', ''PLRETEARNINGS''');
+		end if;
 
-        /*check for null params*/
-        IF (pProcess IS NULL OR pEntProcSet IS NULL OR pConfig IS NULL OR pSource IS NULL )THEN
-            RAISE_APPLICATION_ERROR(-20001,'Process, entity processing set, config and source cannot be null');
-        END IF;
+		/*check for null params*/
+		IF (pProcess IS NULL OR pEntProcSet IS NULL OR pConfig IS NULL OR pSource IS NULL )THEN
+			RAISE_APPLICATION_ERROR(-20001,'Process, entity processing set, config and source cannot be null');
+		END IF;
 
-        --for retained earnings date must be specified
-        IF(pBalanceDate IS NULL AND pProcess = 'PLRETEARNINGS') THEN
-            RAISE_APPLICATION_ERROR(-20001,'Balance date parameter has not been provided. Balance date must be the last working day of the year');
-        end if;
-        /*check for null params*/
+		--for retained earnings date must be specified
+		IF(pBalanceDate IS NULL AND pProcess = 'PLRETEARNINGS') THEN
+			RAISE_APPLICATION_ERROR(-20001,'Balance date parameter has not been provided. Balance date must be the last working day of the year');
+		end if;
+		/*check for null params*/
 
-        /*check entity set*/
+		/*check entity set*/
     SELECT count(*)
-        INTO v_count
-        FROM SLR_BM_ENTITY_PROCESSING_SET
-        WHERE BMEPS_SET_ID = pEntProcSet;
+		INTO v_count
+		FROM SLR_BM_ENTITY_PROCESSING_SET
+		WHERE BMEPS_SET_ID = pEntProcSet;
 
-        IF v_count = 0 THEN
-            RAISE_APPLICATION_ERROR(-20001,'Unable to find entity processing set: '||pEntProcSet);
-        END IF;
-        /*check entity set*/
+		IF v_count = 0 THEN
+			RAISE_APPLICATION_ERROR(-20001,'Unable to find entity processing set: '||pEntProcSet);
+		END IF;
+		/*check entity set*/
 
-        /*check config*/
-        begin
+		/*check config*/
+		begin
       SELECT pc_jt_type, pc_fak_eba_flag, PC_AGGREGATION, PC_FX_MANAGE_CCY, PC_CUSTOM_PROCEDURE, PC_METHOD
-      INTO  gJournalType, gFakEbaFlag, gWhichAmount, gFxManagaCcy, gCustomProcedure, gMethod
+      INTO  gJournalType, gFakEbaFlag, gWhichAmount, gFxManageCcy, gCustomProcedure, gMethod
       FROM slr_process_config_detail
       INNER JOIN slr_process_config ON (pcd_pc_config = pc_config AND pcd_pc_p_process = pc_p_process)
       WHERE pcd_pc_config = pConfig AND  pcd_pc_p_process = pProcess and rownum < 2;
@@ -74,48 +72,50 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
       WHEN NO_DATA_FOUND THEN
         RAISE_APPLICATION_ERROR(-20001,'Unable to find process configuration for config '||pConfig||' and process '||pProcess);
 
-        END;
+	  END;
+	  if gMethod <> 'DEFAULT' then
+        RAISE_APPLICATION_ERROR(-20001,'The FAS52 process is no longer supported. Please use the Step by Step Revaluation mode, defined in FX Translation Configuration instead.');
+      end if;
+		--if process is set on FAK level check that all attributes in config detail are null
+		if gFakEbaFlag = 'F' then
+			SELECT count(*) into v_count
+            FROM slr_process_config_detail
+            WHERE pcd_pc_config = pConfig
+            AND   pcd_pc_p_process = pProcess
+            AND  (pcd_attribute_1 IS NOT NULL OR pcd_attribute_2 IS NOT NULL OR pcd_attribute_3 IS NOT NULL OR pcd_attribute_4 IS NOT NULL OR pcd_attribute_5 IS NOT NULL);
 
-        --if process is set on FAK level check that all attributes in config detail are null
-        if gFakEbaFlag = 'F' then
-            SELECT count(*) into v_count
-      FROM slr_process_config_detail
-      WHERE pcd_pc_config = pConfig
-      AND   pcd_pc_p_process = pProcess
-      AND  (pcd_attribute_1 IS NOT NULL OR pcd_attribute_2 IS NOT NULL OR pcd_attribute_3 IS NOT NULL OR pcd_attribute_4 IS NOT NULL OR pcd_attribute_5 IS NOT NULL);
+			IF v_count > 0 THEN
+				RAISE_APPLICATION_ERROR(-20001,'Process config detail cannot specify attributes (pcd_attribute_1..5) when config FAK_EBA_FLAG equals ''F''.');
+			END IF;
 
-            IF v_count > 0 THEN
-                RAISE_APPLICATION_ERROR(-20001,'Process config detail cannot specify attributes (pcd_attribute_1..5) when config FAK_EBA_FLAG equals ''F''.');
-            END IF;
+		end if;
 
-        end if;
+		/*Validation when: SLR_PROCESS_CONFIG.PC_FAK_EBA_FLAG = 'F' and ENT_POST_FAK_BALANCES = 'N'*/
 
-        /*Validation when: SLR_PROCESS_CONFIG.PC_FAK_EBA_FLAG = 'F' and ENT_POST_FAK_BALANCES = 'N'*/
+		if gFakEbaFlag = 'F' then
 
-        if gFakEbaFlag = 'F' then
-
-        SELECT COUNT(*) INTO v_count FROM
-         slr_bm_entity_processing_set, slr_entities
+		SELECT COUNT(*) INTO v_count FROM
+		 slr_bm_entity_processing_set, slr_entities
          WHERE
-        bmeps_set_id = pEntProcSet AND ent_entity = BMEPS_ENTITY AND ENT_POST_FAK_BALANCES = 'N' ;
+		bmeps_set_id = pEntProcSet AND ent_entity = BMEPS_ENTITY AND ENT_POST_FAK_BALANCES = 'N' ;
 
-        SELECT COUNT(*) INTO v_count2 FROM
-        slr_process_config_detail,slr_entities
-        WHERE pcd_pc_config = pConfig AND  pcd_pc_p_process = pProcess AND pcd_entity <> '**SOURCE**' AND pcd_entity = ent_entity AND ENT_POST_FAK_BALANCES = 'N'
-        ;
+		SELECT COUNT(*) INTO v_count2 FROM
+		slr_process_config_detail,slr_entities
+		WHERE pcd_pc_config = pConfig AND  pcd_pc_p_process = pProcess AND pcd_entity <> '**SOURCE**' AND pcd_entity = ent_entity AND ENT_POST_FAK_BALANCES = 'N'
+		;
 
-        IF (v_count > 0 OR v_count2 > 0) THEN
-                RAISE_APPLICATION_ERROR(-20001,'Inconsistent setup for FAK balance posting. Check entities in Entity Processing Set: ' || pEntProcSet);
-        END IF;
+		IF (v_count > 0 OR v_count2 > 0) THEN
+				RAISE_APPLICATION_ERROR(-20001,'Inconsistent setup for FAK balance posting. Check entities in Entity Processing Set: ' || pEntProcSet);
+		END IF;
 
-        end if;
+		end if;
 
-        --******************************
+		--******************************
     /*check config*/
 
 
-        /*check source*/
-            begin
+		/*check source*/
+			begin
         SELECT sps_db_object_name, sps_db_object_name2, SPS_FAK_EBA_FLAG, pSource
         INTO gProcessSource.ps_source_obj1, gProcessSource.ps_source_obj2, gProcessSource.ps_fak_eba_flag, gProcessSource.ps_source
         FROM slr_process_source
@@ -132,40 +132,27 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
         RAISE_APPLICATION_ERROR(-20001,'Process source '||pSource||' does not exist or is not activated');
 
       end;
-        /*check source*/
+		/*check source*/
 
 
-        /*check rate set*/
-        IF pRateSet IS NOT NULL THEN
-            IF (pProcess = 'PLRETEARNINGS' or pProcess = 'FXCLEARDOWN') THEN
-        RAISE_APPLICATION_ERROR(-20001,'Rate set parameter ['||pRateSet||'] has been provided.');
-      end if;
+		/*check rate set*/
+		IF pRateSet IS NOT NULL THEN
+          IF (pProcess = 'PLRETEARNINGS' or pProcess = 'FXCLEARDOWN') THEN
+            RAISE_APPLICATION_ERROR(-20001,'Rate set parameter ['||pRateSet||'] has been provided.');
+          END IF;
+		END IF;
+
+		IF (pProcess = 'PLRETEARNINGS' and gWhichAmount <>'L') THEN
+			RAISE_APPLICATION_ERROR(-20001,'PLRETEARNINGS can only move LTD. PC_AGGREGATION must be set to L.');
+		end if;
 
 
-            begin
-        SELECT 1 INTO v_count
-        FROM slr_entity_rates
-        WHERE er_entity_set = pRateSet
-        and rownum < 2;
-
-            EXCEPTION
-      WHEN NO_DATA_FOUND THEN
-                RAISE_APPLICATION_ERROR(-20001,'No rates defined for rate set: '||pRateSet);
-
-      end;
-        END IF;
-
-        IF (pProcess = 'PLRETEARNINGS' and gWhichAmount <>'L') THEN
-            RAISE_APPLICATION_ERROR(-20001,'PLRETEARNINGS can only move LTD. PC_AGGREGATION must be set to L.');
-        end if;
+		/*check rate set*/
 
 
-        /*check rate set*/
-
-
-        --for retained earnings last working day of the year must be the same for all entities within entity processing set
-        IF(pProcess = 'PLRETEARNINGS') THEN
-            BEGIN
+		--for retained earnings last working day of the year must be the same for all entities within entity processing set
+		IF(pProcess = 'PLRETEARNINGS') THEN
+			BEGIN
         SELECT MAX(c.rnk) into v_count FROM
         (SELECT RANK() OVER (ORDER BY b.ep_bus_period_end) AS rnk FROM
         SLR_BM_ENTITY_PROCESSING_SET LEFT JOIN slr_entity_periods a ON (a.EP_ENTITY = BMEPS_ENTITY)
@@ -183,47 +170,49 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
         null;
 
       end;
-        end if;
+		end if;
 
-        gBalanceDate := pBalancedate;
+		gBalanceDate := pBalancedate;
 
-        if pBalanceDate is null then
+		if pBalanceDate is null then
 
-            --check if balance date is the same for all entities within processing set--
-            SELECT MAX(a.rnk) into v_count FROM
-            (SELECT
-                RANK() OVER (ORDER BY ENT_BUSINESS_DATE) AS rnk
-                FROM slr_entities where ent_entity in (select BMEPS_ENTITY from SLR_BM_ENTITY_PROCESSING_SET where BMEPS_SET_ID = pEntProcSet)
-            ) a;
+			--check if balance date is the same for all entities within processing set--
+			SELECT MAX(a.rnk) into v_count FROM
+			(SELECT
+				RANK() OVER (ORDER BY ENT_BUSINESS_DATE) AS rnk
+				FROM slr_entities where ent_entity in (select BMEPS_ENTITY from SLR_BM_ENTITY_PROCESSING_SET where BMEPS_SET_ID = pEntProcSet)
+			) a;
 
-            IF v_count > 1 THEN
-                RAISE_APPLICATION_ERROR(-20001,'Entity business date not consistent within entity processing set: '||pEntProcSet);
-            end if;
+			IF v_count > 1 THEN
+				RAISE_APPLICATION_ERROR(-20001,'Entity business date not consistent within entity processing set: '||pEntProcSet);
+			end if;
 
-            select ENT_BUSINESS_DATE into gBalanceDate
-            from slr_entities,SLR_BM_ENTITY_PROCESSING_SET
-            where ent_entity = BMEPS_ENTITY
-            AND BMEPS_SET_ID = pEntProcSet
+			select ENT_BUSINESS_DATE into gBalanceDate
+			from slr_entities,SLR_BM_ENTITY_PROCESSING_SET
+			where ent_entity = BMEPS_ENTITY
+			AND BMEPS_SET_ID = pEntProcSet
       AND ROWNUM < 2;
     else
-            --check if provided date is open for each entity within entity processing set
-            SELECT
-            count(*) into v_count
-            FROM
-            SLR_BM_ENTITY_PROCESSING_SET INNER JOIN slr_entities ON (ent_entity = bmeps_entity)
-            LEFT JOIN  slr_entity_days a ON (ED_ENTITY_SET = ENT_PERIODS_AND_DAYS_SET)
-            LEFT JOIN slr_entity_periods b ON (b.EP_ENTITY = BMEPS_ENTITY)
-            WHERE BMEPS_SET_ID = pEntProcSet
-            AND ED_DATE =  pBalanceDate
-            AND ED_DATE BETWEEN b.ep_cal_period_start AND b.ep_cal_period_end
-            AND (nvl(a.ed_status,'C') = 'C' OR nvl(b.ep_status,'C') = 'C')
-			AND pProcess <> 'PLRETEARNINGS'
-            ;
+			--check if provided date is open for each entity within entity processing set
+			SELECT
+			count(*) into v_count
+			FROM
+			SLR_BM_ENTITY_PROCESSING_SET INNER JOIN slr_entities ON (ent_entity = bmeps_entity)
+			LEFT JOIN  slr_entity_days a ON (ED_ENTITY_SET = ENT_PERIODS_AND_DAYS_SET)
+			LEFT JOIN slr_entity_periods b ON (b.EP_ENTITY = BMEPS_ENTITY)
+			WHERE BMEPS_SET_ID = pEntProcSet
+			AND ED_DATE =  pBalanceDate
+			AND ED_DATE BETWEEN b.ep_cal_period_start AND b.ep_cal_period_end
+			AND (nvl(a.ed_status,'C') = 'C' OR nvl(b.ep_status,'C') = 'C')
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
+			AND pProcess <> 'PLRETEARNINGS'  
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
+			;
 
-            if v_count > 0 then
-                RAISE_APPLICATION_ERROR(-20001,'Balance date must be a working day for all entities within entity processing set: '||pEntProcSet);
-            end if;
-        end if;
+			if v_count > 0 then
+				RAISE_APPLICATION_ERROR(-20001,'Balance date must be a working day for all entities within entity processing set: '||pEntProcSet);
+			end if;
+		end if;
 
     gProcess     := pProcess;
     gEntProcSet  := pEntprocset;
@@ -238,10 +227,10 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     INTO     gProcessId
     FROM     DUAL;
 
-    gProcId := gProcessId;
-    select sys_context('userenv','SID') SID
-    into v_SID
-    from DUAL;
+	gProcId := gProcessId;
+	select sys_context('userenv','SID') SID
+	into v_SID
+	from DUAL;
 
     -- Record process in SLR_JOB_STATISTICS
     INSERT INTO SLR_JOB_STATISTICS (
@@ -251,7 +240,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
                                   JS_JRNL_TYPE,
                                   JS_BUSINESS_DATE,
                                   JS_START_TIME,
-                                  JS_SID
+								  JS_SID
                                   )
                           VALUES (
                                  gProcessId,
@@ -260,7 +249,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
                                  gJournalType,
                                  gBalanceDate,
                                  SYSDATE,
-                                 v_SID
+								 v_SID
                                  );
 
 
@@ -281,7 +270,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
         WHERE   JS_PROCESS_ID = gProcessId
         AND     JS_PROCESS_NAME = gProcess;
 
-        COMMIT;
+		COMMIT;
 -----------------------------------------------
 
     IF pProcess = 'FXREVALUE' THEN
@@ -296,27 +285,16 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
       pBMPLRepatriation(v_lines_count);
     elsif pProcess = 'PLRETEARNINGS' THEN
       pBMPLRetainedEarnings(v_lines_count);
-      ELSE
+	  ELSE
       RAISE_APPLICATION_ERROR(-20001,'Unsupported process: ' || gProcess);
     end if;
 
-    begin
-      SELECT MIN(jlu_jrnl_hdr_id), MAX(jlu_jrnl_hdr_id) into v_min_id, v_max_id
-      FROM slr_jrnl_lines_unposted
-      WHERE jlu_jrnl_process_id = gProcessId;
-
-    exception
-    WHEN NO_DATA_FOUND THEN
-      v_min_id := 0;
-      v_max_id := 0;
-    END;
-
-    /*run custom procedure*/
-    if gCustomProcedure is not null then
-        pBMTraceJob('Custom procedure START', 'call '||gCustomProcedure||'('||gProcessId||')');
-        execute immediate 'call '||gCustomProcedure||'('||gProcessId||')';
-        pBMTraceJob('Custom procedure END', null);
-    end if;
+	/*run custom procedure*/
+	if gCustomProcedure is not null then
+		pBMTraceJob('Custom procedure START', 'call '||gCustomProcedure||'('||gProcessId||')');
+		execute immediate 'call '||gCustomProcedure||'('||gProcessId||')';
+		pBMTraceJob('Custom procedure END', null);
+	end if;
 
     /*update job statistics record*/
     UPDATE SLR_JOB_STATISTICS
@@ -352,26 +330,13 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
   exception
     WHEN others THEN
-      RAISE_APPLICATION_ERROR(-20001,'pBMUpdateFakEbaId'||':'||sqlerrm);
+        IF SQLCODE =-20001 THEN
+            RAISE_APPLICATION_ERROR(-20001,'pBMUpdateFakEbaId'||':'||sqlerrm);
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001,'pBMUpdateFakEbaId'||':'||sqlerrm||';'||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+        END IF;
+
   end pBMUpdateJLUFakEbaId;
-
- FUNCTION getBaseAmountStmt (pMethod IN VARCHAR2) RETURN VARCHAR2
-  IS
-  BEGIN
-    RETURN case pMethod when 'LOCAL-BASE' THEN ',Round(sum(LOCAL_BALANCE) * max(br.ER_RATE),cast(nvl(max(bec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(BASE_BALANCE)' WHEN 'DEFAULT'
-    then ',Round(sum(TRAN_BALANCE) * max(br.ER_RATE),cast(nvl(max(bec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(BASE_BALANCE)' when 'TRANS-BASE'
-    THEN ',Round(sum(TRAN_BALANCE) * max(br.ER_RATE),cast(nvl(max(lec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(BASE_BALANCE)' else ',0' end;
-  end getBaseAmountStmt;
-
- FUNCTION getLocalAmountStmt (pMethod IN VARCHAR2) RETURN VARCHAR2
-  IS
-  BEGIN
-    RETURN case pMethod WHEN 'LOCAL-BASE' THEN ',0'  WHEN 'DEFAULT'
-    THEN ',Round(sum(TRAN_BALANCE) * max(lr.ER_RATE),cast(nvl(max(lec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(LOCAL_BALANCE)'  when 'TRANS-LOCAL'
-    THEN ',Round(sum(TRAN_BALANCE) * max(lr.ER_RATE),cast(nvl(max(lec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(LOCAL_BALANCE)'  else ',0' end;
-  end getLocalAmountStmt;
-
-
   FUNCTION getPeriodMonth (pEntity SLR_ENTITY_PERIODS.EP_ENTITY%type, pEffectiveDate date) RETURN SLR_ENTITY_PERIODS.EP_BUS_PERIOD%type
   AS
     v_period_month SLR_ENTITY_PERIODS.EP_BUS_PERIOD%type;
@@ -481,7 +446,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
       ,'Management currency not set for entity['||BMEPS_ENTITY||']'
       FROM SLR_BM_ENTITY_PROCESSING_SET
       where BMEPS_SET_ID = gEntProcSet
-      and exists (select 1 from slr_entities where ent_entity = BMEPS_ENTITY and ENT_FX_MANAGE_FLAG is null and gFxManagaCcy is null);
+      and exists (select 1 from slr_entities where ent_entity = BMEPS_ENTITY and ENT_FX_MANAGE_FLAG is null and gFxManageCcy is null);
 
     IF (SQL%ROWCOUNT > 0) THEN
        COMMIT;
@@ -516,7 +481,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     SELECT slr_process_config_detail.*
     into processConfig
     FROM slr_process_config_detail INNER JOIN slr_process_config ON (pcd_pc_config = pc_config AND pcd_pc_p_process = pc_p_process)
-        WHERE pcd_pc_config = gConfig AND  pcd_pc_p_process = gProcess AND  pcd_config_type = config_type;
+		WHERE pcd_pc_config = gConfig AND  pcd_pc_p_process = gProcess AND  pcd_config_type = config_type;
 
     return processConfig;
 
@@ -637,37 +602,74 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     vSql VARCHAR2(500);
     vDimention VARCHAR2(30);
     vCount integer := 0;
+    vSegment SLR_PROCESS_CONFIG_DETAIL.PCD_SEGMENT_2%TYPE;
 
   BEGIN
 
+	/*check currency set*/
+	IF(gProcess = 'FXCLEARDOWN') THEN
+		SELECT count(*) INTO vCount
+		FROM slr_process_config
+		WHERE pc_config = gConfig
+		and pc_fx_manage_ccy is not null;
+
+		IF(vCount > 0)THEN
+				RAISE_APPLICATION_ERROR(-20001,'Invalid config: '||gConfig||' FX Management Currency cannot be overridden for FX cleardown');
+		end if;
+	END IF;
+
+	IF(gProcess = 'PLREPATRIATION' OR gProcess = 'FXPLSWEEP') THEN
+		SELECT count(*) INTO vCount
+		FROM slr_bm_entity_processing_set, slr_process_config, slr_entities
+		WHERE bmeps_set_id = gEntProcSet
+		and pc_config = gConfig
+		and ent_entity = bmeps_entity
+		and pc_fx_manage_ccy is not null
+		and not exists(SELECT ent_currency_set FROM slr_entity_currencies WHERE ec_entity_set = ent_currency_set and ec_ccy = pc_fx_manage_ccy);
+
+		IF(vCount > 0)THEN
+				RAISE_APPLICATION_ERROR(-20001,'Invalid pc_fx_manage_ccy for config: '|| gConfig);
+		end if;
+	END IF;
+
+    IF(gProcess = 'FXREVALUE') THEN
+        SELECT count(*) INTO vCount
+        FROM SLR_PROCESS_CONFIG_DETAIL pcd
+            LEFT JOIN SLR_FX_TRANSLATION_CONFIG ftc
+                ON (coalesce(pcd.PCD_SEGMENT_2,'NVS') = ftc.FTC_GAAP
+                AND ftc.FTC_PROCESS_TYPE = 'FX_REVALUATION')
+        WHERE coalesce(pcd.PCD_SEGMENT_2,'NVS') <> '**SOURCE**'
+        AND pcd.PCD_CONFIG_TYPE='Adjust'
+        AND pcd.PCD_PC_CONFIG = gConfig
+        AND pcd.PCD_PC_P_PROCESS = gProcess
+        AND ftc.FTC_RATE_TYPE IS NULL;
+
+        IF(vCount > 0) THEN
+            RAISE_APPLICATION_ERROR(-20001,'Invalid process configuration: ' || gProcess || ' for ' || gConfig || ' for or missing FX Translation Configuration for given Segment 2');
+        END IF;
+    END IF;
+
+    IF(gProcess = 'FXPOSITION') THEN
+        SELECT count(*) INTO vCount
+        FROM SLR_PROCESS_CONFIG_DETAIL pcd
+                 LEFT JOIN SLR_FX_TRANSLATION_CONFIG ftc
+                           ON (coalesce(pcd.PCD_SEGMENT_2,'NVS') = ftc.FTC_GAAP
+                               AND ftc.FTC_PROCESS_TYPE = 'FX_REVALUATION'
+                               AND ftc.FTC_TARGET_AMOUNT_TYPE = 'Base')
+        WHERE coalesce(pcd.PCD_SEGMENT_2,'NVS') <> '**SOURCE**'
+          AND pcd.PCD_CONFIG_TYPE='Adjust'
+          AND pcd.PCD_PC_CONFIG = gConfig
+          AND pcd.PCD_PC_P_PROCESS = gProcess
+          AND ftc.FTC_RATE_TYPE IS NULL;
+
+        IF(vCount > 0) THEN
+            RAISE_APPLICATION_ERROR(-20001,'Invalid process configuration: ' || gProcess || ' for ' || gConfig || ' for or missing FX Translation Configuration for given Segment 2');
+        END IF;
+    END IF;
+
     /*check currency set*/
-    IF(gProcess = 'FXCLEARDOWN') THEN
-        SELECT count(*) INTO vCount
-        FROM slr_process_config
-        WHERE pc_config = gConfig
-        and pc_fx_manage_ccy is not null;
 
-        IF(vCount > 0)THEN
-                RAISE_APPLICATION_ERROR(-20001,'Invalid config: '||gConfig||' FX Management Currency cannot be overridden for FX cleardown');
-        end if;
-    END IF;
-
-    IF(gProcess = 'PLREPATRIATION' OR gProcess = 'FXPLSWEEP') THEN
-        SELECT count(*) INTO vCount
-        FROM slr_bm_entity_processing_set, slr_process_config, slr_entities
-        WHERE bmeps_set_id = gEntProcSet
-        and pc_config = gConfig
-        and ent_entity = bmeps_entity
-        and pc_fx_manage_ccy is not null
-        and not exists(SELECT ent_currency_set FROM slr_entity_currencies WHERE ec_entity_set = ent_currency_set and ec_ccy = pc_fx_manage_ccy);
-
-        IF(vCount > 0)THEN
-                RAISE_APPLICATION_ERROR(-20001,'Invalid pc_fx_manage_ccy for config: '|| gConfig);
-        end if;
-    END IF;
-        /*check currency set*/
-
-    --get source config--
+	--get source config--
     sourceConfig := fBMGetProcessConfig(source_config_type);
 
     --get target config--
@@ -745,10 +747,13 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     END IF;
 
-
     exception
       WHEN others THEN
-        RAISE_APPLICATION_ERROR(-20001,'pBMValidateProcessConfig: '||sqlerrm);
+        IF SQLCODE =-20001 THEN
+            RAISE_APPLICATION_ERROR(-20001,'pBMValidateProcessConfig: '||sqlerrm);
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001,'pBMValidateProcessConfig: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+        END IF;
   END pBMValidateProcessConfig;
 
   procedure pBMValidateConfigForEPG
@@ -804,15 +809,19 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     exception
       WHEN others THEN
-        RAISE_APPLICATION_ERROR(-20001,'pBMValidateConfigForEPG: '||sqlerrm);
+          IF SQLCODE =-20001 THEN
+              RAISE_APPLICATION_ERROR(-20001,'pBMValidateConfigForEPG: '||sqlerrm);
+          ELSE
+              RAISE_APPLICATION_ERROR(-20001,'pBMValidateConfigForEPG: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+          END IF;
   end pBMValidateConfigForEPG;
 
   PROCEDURE pBMCreateOffset AS
     processConfig slr_process_config_detail%rowtype;
     v_insert_stmt VARCHAR2(1000);
     v_stmt VARCHAR2(6000);
-      v_sel_stmt VARCHAR2(3000);
-      v_from_clause VARCHAR2(1500);
+	  v_sel_stmt VARCHAR2(3000);
+	  v_from_clause VARCHAR2(1500);
   BEGIN
     --get offset config--
     processConfig := fBMGetProcessConfig('Offset');
@@ -870,15 +879,19 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     exception
       WHEN others THEN
-        RAISE_APPLICATION_ERROR(-20001,'pBMCreateOffset: '||sqlerrm);
+          IF SQLCODE =-20001 THEN
+              RAISE_APPLICATION_ERROR(-20001,'pBMCreateOffset: '||sqlerrm);
+          ELSE
+              RAISE_APPLICATION_ERROR(-20001,'pBMCreateOffset: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+          END IF;
   END pBMCreateOffset;
 
   PROCEDURE pBMCreateNostro AS
     processConfig slr_process_config_detail%rowtype;
     v_insert_stmt VARCHAR2(1000);
     v_stmt VARCHAR2(6000);
-      v_sel_stmt VARCHAR2(3000);
-      v_from_clause VARCHAR2(1500);
+	  v_sel_stmt VARCHAR2(3000);
+	  v_from_clause VARCHAR2(1500);
   BEGIN
     --get offset config--
     processConfig := fBMGetProcessConfig('Nostro');
@@ -936,7 +949,11 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     exception
       WHEN others THEN
-        RAISE_APPLICATION_ERROR(-20001,'pBMCreateNostro: '||sqlerrm);
+          IF SQLCODE =-20001 THEN
+              RAISE_APPLICATION_ERROR(-20001,'pBMCreateNostro: '||sqlerrm);
+          ELSE
+              RAISE_APPLICATION_ERROR(-20001,'pBMCreateNostro: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+          END IF;
   END pBMCreateNostro;
 
   FUNCTION fBMGetEPGId(pEntity slr_jrnl_lines_temp.jl_entity%TYPE
@@ -955,7 +972,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     vDimentionValue slr_entity_proc_group.epg_dimension%TYPE;
     vSql VARCHAR2(300);
     vEpgId slr_jrnl_lines_unposted.jlu_epg_id%TYPE;
-    vMsgError VARCHAR2(200);
+	vMsgError VARCHAR2(200);
   BEGIN
 --dbms_output.put_line('fBMGetEPGId called');
     BEGIN
@@ -1000,24 +1017,24 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
       end if;
 
-        SELECT DISTINCT EPG_ID
-        INTO vEpgId
-        FROM SLR_ENTITY_PROC_GROUP
-        WHERE EPG_ID = vEpgId;
+		SELECT DISTINCT EPG_ID
+		INTO vEpgId
+		FROM SLR_ENTITY_PROC_GROUP
+		WHERE EPG_ID = vEpgId;
 
       RETURN vEpgId;
 
 
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
+		EXCEPTION
+			WHEN NO_DATA_FOUND THEN
 
-                IF vDimentionValue IS NULL THEN
-                    vMsgError := 'fBMGetEPGId: Entity Processing Group not found for EPG_ENTITY = ' || pEntity;
-                ELSE
-                    vMsgError := 'fBMGetEPGId: Entity Processing Group not found for EPG_ENTITY = ' || pEntity || ' and EPG_DIMENSION = ' || vDimentionValue;
-                END IF;
+				IF vDimentionValue IS NULL THEN
+					vMsgError := 'fBMGetEPGId: Entity Processing Group not found for EPG_ENTITY = ' || pEntity;
+				ELSE
+					vMsgError := 'fBMGetEPGId: Entity Processing Group not found for EPG_ENTITY = ' || pEntity || ' and EPG_DIMENSION = ' || vDimentionValue;
+				END IF;
 
-                RAISE_APPLICATION_ERROR(-20001,vMsgError);
+				RAISE_APPLICATION_ERROR(-20001,vMsgError);
 
   END fBMGetEPGId;
 
@@ -1065,7 +1082,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
       v_group_by_clause := v_group_by_clause||'||jl_segment_10';
     END IF;
 
-    v_insert_sql := 'INSERT INTO slr_jrnl_lines_unposted 
+    v_insert_sql := 'INSERT INTO slr_jrnl_lines_unposted
          (jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_epg_id, jlu_fak_id, jlu_eba_id,
           jlu_jrnl_status, jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description,
           jlu_source_jrnl_id, jlu_effective_date, jlu_value_date, jlu_entity, jlu_account,
@@ -1081,7 +1098,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     v_sel_cur_sql := '
       SELECT
-        standard_hash(c.rnk||''-'||to_char(gProcessId)||''', ''MD5'') AS jl_jrnl_hdr_id, 
+        standard_hash(c.rnk||''-'||to_char(gProcessId)||''', ''MD5'') AS jl_jrnl_hdr_id,
         rowNo,
         epg_id,
         standard_hash(jl_entity||epg_id||jl_account||jl_segment_1||jl_segment_2||jl_segment_3||jl_segment_4||jl_segment_5||jl_segment_6||jl_segment_7||jl_segment_8||jl_segment_9||jl_segment_10||jl_tran_ccy, ''MD5''),
@@ -1099,20 +1116,20 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
               WHEN ent_apply_fx_translation = ''Y'' OR jl_base_amount IS NOT NULL THEN
                   jl_base_amount
               ELSE 0
-            END AS jl_base_amount, 
-            jl_base_rate, jl_local_ccy, 
+            END AS jl_base_amount,
+            jl_base_rate, jl_local_ccy,
             CASE
               WHEN ent_apply_fx_translation = ''Y'' OR jl_local_amount IS NOT NULL THEN
                   jl_local_amount
               ELSE 0
-            END AS jl_local_amount, 
+            END AS jl_local_amount,
             jl_local_rate,
             ''SLR'', sysdate, ''SLR'', sysdate, jl_jrnl_type, jl_effective_date, :pProcess,
             ''SLR'', sysdate, :pConfig,
             0,
             totalHashDebit,
             totalHashCredit,
-            jl_jrnl_internal_period_flag, jl_jrnl_ent_rate_set, jl_type, ep_bus_period AS jlu_period_month, ep_bus_year AS jlu_period_year, 
+            jl_jrnl_internal_period_flag, jl_jrnl_ent_rate_set, jl_type, ep_bus_period AS jlu_period_month, ep_bus_year AS jlu_period_year,
             CASE WHEN ea_account_type_flag = ''P'' THEN ep_bus_year else 1 END AS jl_period_ltd
         FROM (
           SELECT b.*
@@ -1162,11 +1179,13 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
                   jl_segment_6, jl_segment_7, jl_segment_8, jl_segment_9, jl_segment_10, jl_attribute_1, jl_attribute_2,
                   jl_attribute_3, jl_attribute_4, jl_attribute_5, jl_type
                 HAVING sum(jl_tran_amount) <> 0 or sum(jl_base_amount) <> 0 or sum(jl_local_amount) <> 0
-        ) a) b) c 
-          LEFT JOIN slr_entity_periods ON jl_effective_date between ep_cal_period_start AND ep_cal_period_end AND ep_entity = jl_entity AND ep_period_type != 0 
+        ) a) b) c
+          LEFT JOIN slr_entity_periods ON jl_effective_date between ep_cal_period_start AND ep_cal_period_end AND ep_entity = jl_entity AND ep_period_type != 0
           LEFT JOIN slr_entities ON ent_entity = jl_entity
           LEFT JOIN slr_entity_accounts ON ea_account = jl_account AND ea_entity_set = ent_accounts_set';
+
     v_stmt := v_insert_sql||v_sel_cur_sql;
+
 
     pBMTraceJob('pBMCreateUnpostedJournals',v_stmt||';bindings ['||gProcessId||','|| gProcess||','||gConfig||']');
 
@@ -1176,8 +1195,11 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     exception
       WHEN others THEN
-        RAISE_APPLICATION_ERROR(-20001,'pBMCreateUnpostedJournals: '||sqlerrm);
-
+          IF SQLCODE =-20001 THEN
+              RAISE_APPLICATION_ERROR(-20001,'pBMCreateUnpostedJournals: '||sqlerrm);
+          ELSE
+              RAISE_APPLICATION_ERROR(-20001,'pBMCreateUnpostedJournals: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+          END IF;
   end pBMCreateUnpostedJournals;
 
 
@@ -1185,17 +1207,14 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
   --processes--
   PROCEDURE pBMFxRevaluation(lines_created out INTEGER) AS
     processConfig slr_process_config_detail%rowtype;
-    v_stmt VARCHAR2(9000);
+    v_stmt VARCHAR2(10000);
     v_insert_stmt VARCHAR2(1000);
-    v_sel_stmt VARCHAR2(4000);
+    v_sel_stmt VARCHAR2(4500);
     v_group_by_clause VARCHAR2(500);
     v_from_clause VARCHAR2(2000);
-    v_from_clause2 varchar2(1000);
-    v_gr_by varchar2(50);
-    v_gr_by2 varchar2(50);
-    v_base_rate varchar2(500);
-    v_local_rate varchar2(500);
-    v_local_trans_ccy varchar2(200);
+    v_from_clause2 varchar2(2000);
+    v_local_amount varchar2(250);
+
 
   BEGIN
     pBMTraceJob(gProcess||' START',null);
@@ -1212,8 +1231,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     pBMGetLatestBalance(gBalanceDate,gEntProcSet);
 
     IF gFakEbaFlag = 'E' THEN
-      v_from_clause := ' from '||nvl(gProcessSource.ps_source_obj2, 'SLR_BM_LATEST_BAL_TMP')||' edb inner join slr_fak_combinations on (epg_id = fc_epg_id and FAK_ID = fc_fak_id) ';
-
+      v_from_clause := ' from '||coalesce(gProcessSource.ps_source_obj2, 'SLR_BM_LATEST_BAL_TMP')||' edb inner join slr_fak_combinations on (epg_id = fc_epg_id and FAK_ID = fc_fak_id) ';
       --join to eba_combinations only if config specifies attributes--
       IF(processConfig.pcd_attribute_1 IS NOT NULL OR processConfig.pcd_attribute_2 IS NOT NULL OR processConfig.pcd_attribute_3 IS NOT NULL
           OR processConfig.pcd_attribute_4 IS NOT NULL OR processConfig.pcd_attribute_5 IS NOT NULL) THEN
@@ -1224,92 +1242,103 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
       END IF;
 
     ELSE
-      v_from_clause := ' from '||nvl(gProcessSource.ps_source_obj2, 'SLR_BM_LATEST_BAL_TMP')||' fdb inner join slr_fak_combinations on (epg_id = fc_epg_id and KEY_ID = fc_fak_id) ';
+      v_from_clause := ' from '||coalesce(gProcessSource.ps_source_obj2, 'SLR_BM_LATEST_BAL_TMP')||' fdb inner join slr_fak_combinations on (epg_id = fc_epg_id and KEY_ID = fc_fak_id) ';
+
       v_from_clause := v_from_clause||' inner join SLR_BM_ENTITY_PROCESSING_SET on (fc_entity = BMEPS_ENTITY and BMEPS_SET_ID = :pEntProcSet)';
     end if;
+    --validate fx translation config--
+    v_stmt := 'INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)'
+        ||' SELECT :pProcessId,:pProcess,:pConfig,:pSource,:pEntProcSet,null'
+        ||',v_fx_rate_type||'' FX Translation Config not found for SEGMENTS 2 [''||(listagg(coalesce(FC_SEGMENT_2,''NVS''),'','') WITHIN GROUP (ORDER BY FC_SEGMENT_2))||'']'''
+        ||' FROM '
+        ||' (SELECT distinct coalesce(FC_SEGMENT_2,''NVS'') as FC_SEGMENT_2 '
+        ||',''Local'' v_fx_rate_type'
+        ||  v_from_clause
+        ||' INNER JOIN SLR_ENTITIES on (fc_entity = ent_entity) '
+        ||' LEFT JOIN SLR_FX_TRANSLATION_CONFIG on ('
+        ||' fc_entity = FTC_ENTITY '
+        ||' AND coalesce(FC_SEGMENT_2,''NVS'') = FTC_GAAP '
+        ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'''
+        ||' AND FTC_TARGET_AMOUNT_TYPE = ''Local'')'
+        ||' WHERE FTC_FX_RATE_SET IS NULL'
+        ||' UNION ALL'
+        ||' SELECT distinct coalesce(FC_SEGMENT_2,''NVS'') as FC_SEGMENT_2 '
+        ||',''Base'' v_fx_rate_type'
+        ||  v_from_clause
+        ||' INNER JOIN SLR_ENTITIES on (fc_entity = ent_entity) '
+        ||' LEFT JOIN SLR_FX_TRANSLATION_CONFIG on ('
+        ||' fc_entity = FTC_ENTITY '
+        ||' AND coalesce(FC_SEGMENT_2,''NVS'') = FTC_GAAP '
+        ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'''
+        ||' AND FTC_TARGET_AMOUNT_TYPE = ''Base'')'
+        ||' WHERE FTC_FX_RATE_SET IS NULL)'
+        ||' GROUP BY v_fx_rate_type';
 
+    pBMTraceJob('validate FX Translation Config',v_stmt||'; bindings['||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||','||gEntProcSet||']');
+    EXECUTE IMMEDIATE v_stmt using gProcessId, gProcess, gConfig, gSource, gEntProcSet, gEntProcSet, gEntProcSet;
 
-    -- set SLR_ENTITY_RATES for trans/local currencies
-    IF (gMethod    = 'DEFAULT') THEN
-    v_local_trans_ccy := 'fc_ccy';
-    ELSE
-    v_local_trans_ccy := 'ENT_LOCAL_CCY';
+    IF(sql%rowcount > 0) THEN
+        COMMIT;
+        RAISE_APPLICATION_ERROR(-20001,'FX Translation Config not found');
     END IF;
-
-    ---LOGIC FOR NEW METHOD (2 steps)
-    IF (gMethod = 'TRANS-LOCAL') THEN
-        v_base_rate := ',0';
-        v_local_rate := ',max(lr.ER_RATE)';
-    ELSIF (gMethod = 'TRANS-BASE') THEN
-        v_base_rate := ',max(br.ER_RATE)';
-        v_local_rate := ',0';
-    ELSIF (gMethod = 'LOCAL-BASE') THEN
-        v_base_rate := ',max(br.ER_RATE)';
-        v_local_rate := ',0';
-    ELSE
-        v_base_rate := ',max(br.ER_RATE)';
-        v_local_rate := ',max(lr.ER_RATE)';
-    END IF;
-
-
-    IF (gRateSet IS NULL and gMethod = 'DEFAULT') THEN
-      v_gr_by := ' group by ent_rate_set,fc_ccy';
-      v_gr_by2 := ' group by ent_rate_set,fc_ccy';
-      --v_rate_set := 'ent_rate_set';
-    ELSIF (gRateSet IS NULL and gMethod <> 'DEFAULT') THEN
-      v_gr_by := ' group by ent_rate_set,fc_ccy';
-      v_gr_by2 := ' group by ent_rate_set,ent_local_ccy';
-    ELSIF (gRateSet IS NOT NULL and gMethod = 'DEFAULT') THEN
-      v_gr_by := ' group by fc_ccy';
-      v_gr_by2 := ' group by fc_ccy';
-    ELSE
-      v_gr_by := ' group by fc_ccy';
-      v_gr_by2 := ' group by ent_local_ccy';
-    end if;
-
+	
 
 
     --validate rates--
     v_stmt := 'INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)'
               ||' select :pProcessId,:pProcess,:pConfig,:pSource,:pEntProcSet,null'
-              ||',''Rate not found for rate set ['||nvl(gRateSet,'''||ent_rate_set||''')||'] and date ['||to_char(gBalanceDate,'YYYY-MM-DD')||']'
-              ||' from currency [''||fc_ccy||''] to currency [''||ENT_LOCAL_CCY||'']'''
-              ||v_from_clause
-              ||' inner join slr_entities on (fc_entity = ent_entity) '
-              ||'LEFT JOIN SLR_ENTITY_RATES ON ('
-              ||'ER_ENTITY_SET = nvl(:v_rate_set,ent_rate_set)'
+              ||',''Local rate not found for rate set [''||FTC_FX_RATE_SET||''] and date ['||to_char(gBalanceDate,'YYYY-MM-DD')||']'
+              ||' from currency [''|| FC_CCY ||''] to currency [''|| ENT_LOCAL_CCY ||'']'''
+              ||  v_from_clause
+              ||' INNER JOIN SLR_ENTITIES ON (FC_ENTITY = ENT_ENTITY) '
+              ||' INNER JOIN SLR_FX_TRANSLATION_CONFIG ON ('
+              ||' FC_ENTITY = FTC_ENTITY'
+              ||' AND coalesce(FC_SEGMENT_2,''NVS'') = FTC_GAAP'
+              ||' AND FTC_TARGET_AMOUNT_TYPE = ''Local'' '
+              ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'')'
+              ||' LEFT JOIN SLR_ENTITY_RATES ON ('
+              ||' ER_ENTITY_SET = FTC_FX_RATE_SET'
+              ||' AND ER_RATE_TYPE = FTC_RATE_TYPE'
               ||' AND ER_DATE = :pBalanceDate'
-              ||' AND ER_CCY_FROM = fc_ccy'
+              ||' AND ER_CCY_FROM = FC_CCY'
               ||' AND ER_CCY_TO = ENT_LOCAL_CCY)'
               ||' WHERE ER_RATE IS NULL '
-              ||v_gr_by
-              ||',ENT_LOCAL_CCY'
+              ||' AND FC_CCY <> ENT_LOCAL_CCY '
+              ||' GROUP BY FTC_FX_RATE_SET, FC_CCY, ENT_LOCAL_CCY'
               ||' union all '
               ||' select :pProcessId,:pProcess,:pConfig,:pSource,:pEntProcSet,null'
-              ||',''Rate not found for rate set ['||nvl(gRateSet,'''||ent_rate_set||''')||'] and date ['||to_char(gBalanceDate,'YYYY-MM-DD')||']'
-              ||' from currency [''|| '|| v_local_trans_ccy  ||'||''] to currency [''||ENT_BASE_CCY||'']'''
-              ||v_from_clause
-              ||' inner join slr_entities on (fc_entity = ent_entity) '
-              ||'LEFT JOIN SLR_ENTITY_RATES ON ('
-              ||'ER_ENTITY_SET = nvl(:v_rate_set,ent_rate_set)'
+              ||',''Base rate not found for rate set [''||FTC_FX_RATE_SET||''] and date ['||to_char(gBalanceDate,'YYYY-MM-DD')||']'
+              ||' from currency [''|| (CASE WHEN FTC_FX_MODE = ''Step-by-Step'' THEN ENT_LOCAL_CCY '
+              ||' WHEN FTC_FX_MODE = ''Direct'' THEN FC_CCY END) ||''] to currency [''|| ENT_BASE_CCY ||'']'''
+              ||  v_from_clause
+              ||' INNER JOIN SLR_ENTITIES on (FC_ENTITY = ENT_ENTITY) '
+              ||' INNER JOIN SLR_FX_TRANSLATION_CONFIG on ('
+              ||' FC_ENTITY = FTC_ENTITY'
+              ||' AND coalesce(FC_SEGMENT_2,''NVS'') = FTC_GAAP'
+              ||' AND FTC_TARGET_AMOUNT_TYPE = ''Base'''
+              ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'')'
+              ||' LEFT JOIN SLR_ENTITY_RATES ON ('
+              ||' ER_ENTITY_SET = FTC_FX_RATE_SET'
+              ||' AND ER_RATE_TYPE = FTC_RATE_TYPE'
               ||' AND ER_DATE = :pBalanceDate'
-              ||' AND ER_CCY_FROM =' || v_local_trans_ccy
+              ||' AND ER_CCY_FROM = '
+              ||' (CASE WHEN FTC_FX_MODE = ''Step-by-Step'' THEN ENT_LOCAL_CCY'
+              ||'       WHEN FTC_FX_MODE = ''Direct'' THEN FC_CCY END)'
               ||' AND ER_CCY_TO = ENT_BASE_CCY)'
               ||' WHERE ER_RATE IS NULL '
-              ||v_gr_by2
-              ||',ENT_BASE_CCY';
+              ||' AND (CASE WHEN FTC_FX_MODE = ''Step-by-Step'' THEN ENT_LOCAL_CCY'
+              ||'       WHEN FTC_FX_MODE = ''Direct'' THEN FC_CCY END) <> ENT_BASE_CCY '
+              ||' GROUP BY FTC_FX_RATE_SET, FTC_FX_MODE, FC_CCY, ENT_LOCAL_CCY, ENT_BASE_CCY';
 
-     pBMTraceJob('validate FX RATES',v_stmt||'; bindings['||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||','||nvl(gRateSet,'null')||','||gBalanceDate||','
-                                                          ||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||','||nvl(gRateSet,'null')||','||gBalanceDate||']');
+    pBMTraceJob('validate FX RATES',v_stmt||'; bindings['||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||','||gBalanceDate||','
+                                                          ||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||','||gBalanceDate||']');
     EXECUTE IMMEDIATE v_stmt
-      using gProcessId,gProcess,gConfig,gSource,gEntProcSet,gEntProcSet,gRateSet,gBalanceDate,gProcessId,gProcess,gConfig,gSource,gEntProcSet,gEntProcSet,gRateSet,gBalanceDate;
-
+      using gProcessId,gProcess,gConfig,gSource,gEntProcSet,gEntProcSet,gBalanceDate,gProcessId,gProcess,gConfig,gSource,gEntProcSet,gEntProcSet,gBalanceDate;
+	  
     IF(sql%rowcount > 0) THEN
       COMMIT;
       RAISE_APPLICATION_ERROR(-20001,'Rates not found');
-        END IF;
-
-
+		END IF;
 
     --construct adjustment line insert--
     v_insert_stmt := 'insert into SLR_JRNL_LINES_TEMP (jl_description,jl_effective_date,jl_value_date,'
@@ -1321,17 +1350,28 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     v_from_clause2 := ' inner join slr_entities on (fc_entity = ent_entity) left join SLR_ENTITY_CURRENCIES bec on (bec.EC_ENTITY_SET = ENT_CURRENCY_SET AND bec.EC_CCY = ENT_BASE_CCY AND bec.EC_STATUS = ''A'')'
                   ||' left join SLR_ENTITY_CURRENCIES lec on (lec.EC_ENTITY_SET = ENT_CURRENCY_SET AND lec.EC_CCY = ENT_LOCAL_CCY AND lec.EC_STATUS = ''A'')'
-                  ||' ,SLR_ENTITY_RATES lr, SLR_ENTITY_RATES br'
-                  ||' WHERE'
-                  ||' lr.ER_ENTITY_SET = nvl(:v_rate_set,ent_rate_set)'
+                  ||' INNER JOIN SLR_FX_TRANSLATION_CONFIG lfxtc ON (FC_ENTITY = lfxtc.FTC_ENTITY AND coalesce(FC_SEGMENT_2,''NVS'') = lfxtc.FTC_GAAP)'
+                  ||' INNER JOIN SLR_FX_TRANSLATION_CONFIG bfxtc ON (FC_ENTITY = bfxtc.FTC_ENTITY AND coalesce(FC_SEGMENT_2,''NVS'') = bfxtc.FTC_GAAP)'
+                  ||' LEFT JOIN SLR_ENTITY_RATES lr ON '
+                  ||' (lr.ER_ENTITY_SET = lfxtc.FTC_FX_RATE_SET'
+                  ||' AND lr.ER_RATE_TYPE = lfxtc.FTC_RATE_TYPE'
                   ||' AND lr.ER_DATE = :pBalanceDate'
-                  ||' AND lr.ER_CCY_FROM = fc_ccy'
-                  ||' AND lr.ER_CCY_TO = ENT_LOCAL_CCY'
-                  ||' and br.ER_ENTITY_SET = nvl(:v_rate_set,ent_rate_set)'
+                  ||' AND lr.ER_CCY_FROM = FC_CCY'
+                  ||' AND lr.ER_CCY_TO = ENT_LOCAL_CCY)'
+                  ||' LEFT JOIN SLR_ENTITY_RATES br ON '
+                  ||' (br.ER_ENTITY_SET = bfxtc.FTC_FX_RATE_SET'
+                  ||' AND br.ER_RATE_TYPE = bfxtc.FTC_RATE_TYPE'
                   ||' AND br.ER_DATE = :pBalanceDate'
-                  ||' AND br.ER_CCY_FROM = ' || v_local_trans_ccy
-                  ||' AND br.ER_CCY_TO = ENT_BASE_CCY ';
-
+                  ||' AND br.ER_CCY_FROM = '
+                  ||' (CASE WHEN bfxtc.FTC_FX_MODE = ''Step-by-Step'' THEN ENT_LOCAL_CCY'
+                  ||'       WHEN bfxtc.FTC_FX_MODE = ''Direct'' THEN FC_CCY END)'
+                  ||' AND br.ER_CCY_TO = ENT_BASE_CCY)'
+                  ||' WHERE'
+                  ||' lfxtc.FTC_TARGET_AMOUNT_TYPE  = ''Local'''
+                  ||' AND lfxtc.FTC_PROCESS_TYPE = ''FX_REVALUATION'''
+                  ||' AND bfxtc.FTC_TARGET_AMOUNT_TYPE  = ''Base'''
+                  ||' AND bfxtc.FTC_PROCESS_TYPE = ''FX_REVALUATION''';
+				  
     v_sel_stmt := ' select ';
     v_sel_stmt := v_sel_stmt ||':pcd_description,:pBalanceDate,:pBalanceDate';
 
@@ -1345,19 +1385,23 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt := v_sel_stmt || ',max(ENT_LOCAL_CCY)';
 
     --local amount--
-    v_sel_stmt := v_sel_stmt || getLocalAmountStmt(gMethod) ;
+    v_local_amount := 'Round(sum(TRAN_BALANCE) * max(coalesce(lr.ER_RATE,1)),cast(coalesce(max(lec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(LOCAL_BALANCE)';
+    v_sel_stmt := v_sel_stmt || ',' || v_local_amount;
 
     --local rate--
-    v_sel_stmt := v_sel_stmt || v_local_rate;
+    v_sel_stmt := v_sel_stmt || ',max(coalesce(lr.ER_RATE,1))';
 
     --base currency--
     v_sel_stmt := v_sel_stmt || ',max(ENT_BASE_CCY)';
 
     --base amount--
-    v_sel_stmt := v_sel_stmt || getBaseAmountStmt(gMethod) ;
+    v_sel_stmt := v_sel_stmt || ',CASE
+                                    WHEN max(bfxtc.ftc_fx_mode) = ''Step-by-Step'' THEN Round((sum(LOCAL_BALANCE) + ' || v_local_amount || ') * max(coalesce(br.ER_RATE,1)),cast(coalesce(max(bec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(BASE_BALANCE)
+                                    WHEN max(bfxtc.ftc_fx_mode) = ''Direct'' THEN Round(sum(TRAN_BALANCE) * max(coalesce(br.ER_RATE,1)),cast(coalesce(max(bec.EC_DIGITS_AFTER_POINT),2) as integer)) - sum(BASE_BALANCE)
+                                  END';
 
     --base rate--
-    v_sel_stmt := v_sel_stmt || v_base_rate;
+    v_sel_stmt := v_sel_stmt || ',max(coalesce(br.ER_RATE,1))';
 
     --jrnl_type
     v_sel_stmt := v_sel_stmt || ',:pJournalType';
@@ -1369,27 +1413,26 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt := v_sel_stmt || ',''N''';
 
     --rate set--
-    v_sel_stmt := v_sel_stmt || ',:pRateSet';
-
+    v_sel_stmt := v_sel_stmt || ',null';
 
     v_sel_stmt := v_sel_stmt ||',TARGET_ENTITY,FC_ACCOUNT,MAX(FC_SEGMENT_1),MAX(FC_SEGMENT_2),MAX(FC_SEGMENT_3),MAX(FC_SEGMENT_4),MAX(FC_SEGMENT_5)'
                              ||',MAX(FC_SEGMENT_6),MAX(FC_SEGMENT_7),MAX(FC_SEGMENT_8),MAX(FC_SEGMENT_9),MAX(FC_SEGMENT_10)'
                              ||',MAX(EC_ATTRIBUTE_1),MAX(EC_ATTRIBUTE_2),MAX(EC_ATTRIBUTE_3),MAX(EC_ATTRIBUTE_4),MAX(EC_ATTRIBUTE_5)';
 
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
 --  v_sel_stmt := v_sel_stmt ||' from (select BASE_BALANCE,LOCAL_BALANCE,TRAN_BALANCE,FC_CCY,FC_ENTITY'||fBMGenSelectSQL(processConfig);
 --  Original line above modified with fHint in three lines below
     v_sel_stmt := v_sel_stmt ||' from (select ';
     v_sel_stmt := v_sel_stmt ||  SLR_UTILITIES_PKG.fHint('AG', 'FX_REVALUATION_ADJUST');
     v_sel_stmt := v_sel_stmt ||' BASE_BALANCE,LOCAL_BALANCE,TRAN_BALANCE,FC_CCY,FC_ENTITY'||fBMGenSelectSQL(processConfig);
-
-
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
     v_group_by_clause := fBMGenGroupBySQL(processConfig,' group by TARGET_ENTITY, FC_ACCOUNT, FC_CCY');
 
     v_stmt := v_insert_stmt || v_sel_stmt||v_from_clause ||') a '||v_from_clause2||v_group_by_clause;
 
-    pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||nvl(gRateSet,'null')||','||gEntProcSet||','||nvl(gRateSet,'null')||','||gBalanceDate||','||nvl(gRateSet,'null')||','||gBalanceDate||']');
+    pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||gEntProcSet||','||gBalanceDate||','||gBalanceDate||']');
     EXECUTE IMMEDIATE v_stmt
-      using processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gRateSet,gEntProcSet,gRateSet,gBalanceDate,gRateSet,gBalanceDate;
+    using processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gEntProcSet,gBalanceDate,gBalanceDate;
 
     --create offset--
     pBMCreateOffset;
@@ -1400,10 +1443,16 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     pBMTraceJob(gProcess||' END',null);
 
-    exception
+    EXCEPTION
       WHEN OTHERS THEN
         pBMTraceJob(gProcess||' STOPPED',null);
-        RAISE_APPLICATION_ERROR(-20001,'pBMFxRevaluation: '||sqlerrm);
+
+        IF SQLCODE =-20001 THEN
+            RAISE_APPLICATION_ERROR(-20001,'pBMFxRevaluation: '||sqlerrm);
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001,'pBMFxRevaluation: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+        END IF;
+
   END pBMFxRevaluation;
 
   PROCEDURE pBMFxPnLSweep(lines_created out INTEGER) AS
@@ -1458,8 +1507,6 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
                   ||'jl_segment_8,jl_segment_9,jl_segment_10,jl_attribute_1,jl_attribute_2,jl_attribute_3,jl_attribute_4,'
                   ||'jl_attribute_5)';
 
-
-
     v_sel_stmt := ' select ';
     v_sel_stmt := v_sel_stmt ||':pcd_description,:pBalanceDate,:pBalanceDate';
 
@@ -1481,7 +1528,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt := v_sel_stmt || ',''N''';
 
     --rate set--
-    v_sel_stmt := v_sel_stmt || ',:pRateSet';
+    v_sel_stmt := v_sel_stmt || ',null';
 
     v_sel_stmt := v_sel_stmt ||',TARGET_ENTITY,FC_ACCOUNT,MAX(FC_SEGMENT_1),MAX(FC_SEGMENT_2),MAX(FC_SEGMENT_3),MAX(FC_SEGMENT_4),MAX(FC_SEGMENT_5)'
                              ||',MAX(FC_SEGMENT_6),MAX(FC_SEGMENT_7),MAX(FC_SEGMENT_8),MAX(FC_SEGMENT_9),MAX(FC_SEGMENT_10)'
@@ -1493,34 +1540,65 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     v_stmt := v_insert_stmt || v_sel_stmt||v_from_clause||') a '||v_from_clause2 ||v_group_by_clause;
 
-    pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||nvl(gRateSet,'null')||','||gEntProcSet||']');
+    pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||gEntProcSet||']');
     EXECUTE IMMEDIATE v_stmt
-      using processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gRateSet,gEntProcSet;
+      using processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gEntProcSet;
+
+    --validate FX Translation Config--
+    pBMTraceJob('Validate FX Translation Config', null);
+    INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)
+    SELECT gProcessId,gProcess,gConfig,gSource,gEntProcSet,null,
+           ftc_target_amount_type || ' FX Translation Config not found for SEGMENTS 2 ['||(listagg(coalesce(JL_SEGMENT_2,'NVS'),',') WITHIN GROUP (ORDER BY JL_SEGMENT_2))||']'
+    FROM
+    (SELECT distinct coalesce(JL_SEGMENT_2,'NVS') JL_SEGMENT_2, (CASE WHEN ENT_FX_MANAGE_FLAG = 'B' THEN 'Base' ELSE 'Local' END) as ftc_target_amount_type
+    FROM SLR_JRNL_LINES_TEMP
+    INNER JOIN SLR_ENTITIES on (jl_entity = ent_entity)
+    LEFT JOIN SLR_FX_TRANSLATION_CONFIG on (
+    jl_entity = FTC_ENTITY
+    AND coalesce(JL_SEGMENT_2,'NVS') = FTC_GAAP
+    AND ftc_process_type = 'FX_REVALUATION'
+    AND ftc_target_amount_type = (CASE WHEN ENT_FX_MANAGE_FLAG = 'B' THEN 'Base' ELSE 'Local' END))
+    WHERE ftc_fx_rate_set IS NULL)
+    GROUP BY ftc_target_amount_type;
+
+    IF(sql%rowcount > 0) THEN
+        COMMIT;
+        RAISE_APPLICATION_ERROR(-20001,'FX Translation Config not found');
+    END IF;
 
     pBMTraceJob('Validate rates', null);
     --validate rates--
+
     INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)
-    SELECT gProcessId,gProcess,gConfig,gSource,gEntProcSet,NULL
-    ,'Rate not found for rate set ['||rateSet||'] and date ['||to_char(gBalanceDate,'YYYY-MM-DD')||'] from currency ['||nvl(JL_TRAN_CCY,' ')||'] to currency ['||nvl(manageCcy,' ')||']'
-    FROM (
-      select jl_entity,nvl(gRateSet,ENT_RATE_SET) as rateSet,JL_TRAN_CCY, CASE when gFxManagaCcy is not null then gFxManagaCcy WHEN ent_fx_manage_flag = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END as manageCcy
-      from SLR_JRNL_LINES_TEMP
-      inner join slr_entities on (jl_entity = ent_entity)
-      LEFT JOIN SLR_ENTITY_RATES ON (
-        ER_ENTITY_SET = nvl(gRateSet,ENT_RATE_SET)
-        AND ER_DATE = gBalanceDate
-        AND ER_CCY_FROM = JL_TRAN_CCY
-        AND ER_CCY_TO = (CASE when gFxManagaCcy is not null then gFxManagaCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)
-      )
-      WHERE ER_RATE IS NULL
-    ) a
-    group by rateSet,JL_TRAN_CCY,manageCcy;
+    select gProcessId, gProcess, gConfig, gSource, gEntProcSet,null,
+    'Rate not found for rate set ['||FTC_FX_RATE_SET||'] and date ['||to_char(gBalanceDate,'YYYY-MM-DD')||'] from currency ['|| JL_TRAN_CCY ||'] to currency ['|| FX_MANAGE_CCY ||']'
+    from (
+    select FTC_FX_RATE_SET, JL_TRAN_CCY, (CASE when gFxManageCcy is not null then gFxManageCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END) as FX_MANAGE_CCY
+    FROM SLR_JRNL_LINES_TEMP
+    INNER JOIN SLR_ENTITIES on (JL_ENTITY = ENT_ENTITY)
+    LEFT JOIN SLR_ENTITY_CURRENCIES on (
+    EC_ENTITY_SET = ENT_CURRENCY_SET
+    AND EC_CCY = ENT_BASE_CCY
+    AND EC_STATUS = 'A')
+    INNER JOIN SLR_FX_TRANSLATION_CONFIG on (
+    JL_ENTITY = FTC_ENTITY
+    AND coalesce(JL_SEGMENT_2,'NVS') = FTC_GAAP
+    AND FTC_TARGET_AMOUNT_TYPE  = (CASE WHEN ENT_FX_MANAGE_FLAG = 'B' THEN 'Base' ELSE 'Local' END)
+    AND FTC_PROCESS_TYPE = 'FX_REVALUATION')
+    LEFT JOIN SLR_ENTITY_RATES ON (
+    ER_ENTITY_SET = FTC_FX_RATE_SET
+    AND ER_RATE_TYPE = FTC_RATE_TYPE
+    AND ER_DATE = gBalanceDate
+    AND ER_CCY_FROM = JL_TRAN_CCY
+    AND ER_CCY_TO = (CASE when gFxManageCcy is not null then gFxManageCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END))
+    WHERE ER_RATE IS NULL
+    AND JL_TRAN_CCY <> (CASE when gFxManageCcy is not null then gFxManageCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)) missing_rates
+    GROUP BY FTC_FX_RATE_SET, JL_TRAN_CCY, FX_MANAGE_CCY;
 
     IF(sql%rowcount > 0) THEN
-      commit;
-      RAISE_APPLICATION_ERROR(-20001,'Rates not found');
-    end if;
-
+        COMMIT;
+        RAISE_APPLICATION_ERROR(-20001,'Rates not found');
+    END IF;
 
     --begin create adjustments in management ccy--
     pBMTraceJob('ADJUSTMENT in management ccy', null);
@@ -1528,21 +1606,27 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     INSERT INTO SLR_JRNL_LINES_TEMP (JL_DESCRIPTION,JL_EFFECTIVE_DATE,JL_VALUE_DATE,JL_TRAN_CCY,JL_TRAN_AMOUNT,jl_base_ccy, jl_local_ccy
               ,JL_JRNL_TYPE, JL_TYPE,JL_JRNL_INTERNAL_PERIOD_FLAG,JL_JRNL_ENT_RATE_SET,JL_ENTITY,JL_ACCOUNT,JL_SEGMENT_1,JL_SEGMENT_2,JL_SEGMENT_3,JL_SEGMENT_4,JL_SEGMENT_5,JL_SEGMENT_6
               ,JL_SEGMENT_7,JL_SEGMENT_8,JL_SEGMENT_9,JL_SEGMENT_10,JL_ATTRIBUTE_1,JL_ATTRIBUTE_2,JL_ATTRIBUTE_3,JL_ATTRIBUTE_4,JL_ATTRIBUTE_5)
-    SELECT JL_DESCRIPTION,JL_EFFECTIVE_DATE,JL_VALUE_DATE,CASE when gFxManagaCcy is not null then gFxManagaCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END,
-              (-1)*Round(JL_TRAN_AMOUNT * ER_RATE,cast(nvl(EC_DIGITS_AFTER_POINT,2) as INTEGER)),jl_base_ccy, jl_local_ccy
+    SELECT JL_DESCRIPTION,JL_EFFECTIVE_DATE,JL_VALUE_DATE,CASE when gFxManageCcy is not null then gFxManageCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END,
+              (-1)*Round(JL_TRAN_AMOUNT * coalesce(ER_RATE,1),cast(nvl(EC_DIGITS_AFTER_POINT,2) as INTEGER)),jl_base_ccy, jl_local_ccy
               ,JL_JRNL_TYPE, JL_TYPE,JL_JRNL_INTERNAL_PERIOD_FLAG,JL_JRNL_ENT_RATE_SET,JL_ENTITY,JL_ACCOUNT,JL_SEGMENT_1,JL_SEGMENT_2,JL_SEGMENT_3,JL_SEGMENT_4,JL_SEGMENT_5,JL_SEGMENT_6
               ,JL_SEGMENT_7,JL_SEGMENT_8,JL_SEGMENT_9,JL_SEGMENT_10,JL_ATTRIBUTE_1,JL_ATTRIBUTE_2,JL_ATTRIBUTE_3,JL_ATTRIBUTE_4,JL_ATTRIBUTE_5
     FROM SLR_JRNL_LINES_TEMP
     INNER JOIN SLR_ENTITIES ON (JL_ENTITY = ENT_ENTITY)
-    INNER JOIN SLR_ENTITY_RATES ON (ER_ENTITY_SET = NVL(gRateSet,ENT_RATE_SET))
+    INNER JOIN SLR_FX_TRANSLATION_CONFIG ON (
+                FTC_ENTITY = JL_ENTITY
+            AND FTC_GAAP = coalesce(JL_SEGMENT_2,'NVS')
+            AND FTC_TARGET_AMOUNT_TYPE = (CASE WHEN ENT_FX_MANAGE_FLAG = 'B' THEN 'Base' ELSE 'Local' END)
+            AND FTC_PROCESS_TYPE = 'FX_REVALUATION')
+    LEFT JOIN SLR_ENTITY_RATES ON (
+        ER_ENTITY_SET = FTC_FX_RATE_SET
+        AND ER_RATE_TYPE = FTC_RATE_TYPE
+        AND ER_DATE = gBalanceDate
+        AND ER_CCY_FROM = JL_TRAN_CCY
+        AND ER_CCY_TO = (CASE when gFxManageCcy is not null then gFxManageCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END))
     LEFT JOIN SLR_ENTITY_CURRENCIES on (
-      EC_ENTITY_SET = ENT_CURRENCY_SET
-      AND EC_CCY = (CASE when gFxManagaCcy is not null then gFxManagaCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)
-      AND EC_STATUS = 'A')
-    WHERE
-      ER_DATE = gBalanceDate
-    AND ER_CCY_FROM = JL_TRAN_CCY
-    AND ER_CCY_TO = (CASE when gFxManagaCcy is not null then gFxManagaCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END);
+      EC_ENTITY_SET = FTC_FX_RATE_SET
+      AND EC_CCY = (CASE when gFxManageCcy is not null then gFxManageCcy WHEN ENT_FX_MANAGE_FLAG = 'B' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)
+      AND EC_STATUS = 'A');
 
     --create offset--
     pBMCreateOffset;
@@ -1556,7 +1640,12 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     exception
       WHEN OTHERS THEN
         pBMTraceJob(gProcess||' STOPPED',null);
-        RAISE_APPLICATION_ERROR(-20001,'pBMFxPnLSweep: '||sqlerrm);
+        IF SQLCODE =-20001 THEN
+            RAISE_APPLICATION_ERROR(-20001,'pBMFxPnLSweep: '||sqlerrm);
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001,'pBMFxPnLSweep: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+        END IF;
+
   END pBMFxPnLSweep;
 
 
@@ -1585,25 +1674,6 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     --pBMGetLatestBalance
     pBMGetLatestBalance(gBalanceDate,gEntProcSet);
 
-    pBMTraceJob('Validate rates', null);
-    --validate local to base rates if balances found--
-    INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)
-    SELECT gProcessId,gProcess,gConfig,gSource,gEntProcSet,ENT_ENTITY
-    ,'Rate not found for rate set ['||nvl(gRateSet,ent_rate_set)||'] and date ['||to_char(gBalanceDate,'YYYY-MM-DD')||'] from currency ['||nvl(ENT_LOCAL_CCY,' ')||'] to currency ['||nvl(ENT_BASE_CCY,' ')||']'
-    from SLR_ENTITIES inner join SLR_BM_ENTITY_PROCESSING_SET on (BMEPS_ENTITY = ENT_ENTITY and BMEPS_SET_ID = gEntProcSet)
-    WHERE NOT EXISTS (SELECT 1 FROM SLR_ENTITY_RATES
-      WHERE ER_ENTITY_SET = nvl(gRateSet,ent_rate_set)
-      AND ER_DATE = gBalanceDate
-      AND ER_CCY_FROM = ENT_LOCAL_CCY
-      AND ER_CCY_TO = ENT_BASE_CCY)
-    and exists (select 1 from SLR_BM_LATEST_BAL_TMP);
-
-    IF(sql%rowcount > 0) THEN
-      commit;
-      RAISE_APPLICATION_ERROR(-20001,'Rates not found');
-    end if;
-
-
     IF gFakEbaFlag = 'E' THEN
       v_from_clause := ' from '||nvl(gProcessSource.ps_source_obj2, 'SLR_BM_LATEST_BAL_TMP')||' edb inner join slr_fak_combinations on (epg_id = fc_epg_id and FAK_ID = fc_fak_id) ';
 
@@ -1621,6 +1691,64 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
       v_from_clause := v_from_clause||' inner join SLR_BM_ENTITY_PROCESSING_SET on (fc_entity = BMEPS_ENTITY and BMEPS_SET_ID = :pEntProcSet)';
     end if;
 
+    --validate fx translation config--
+    v_stmt := 'INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)'
+        ||' SELECT :pProcessId,:pProcess,:pConfig,:pSource,:pEntProcSet,null'
+        ||',FTC_TARGET_AMOUNT_TYPE || ''FX Translation Config not found for SEGMENTS 2 [''||(listagg(coalesce(FC_SEGMENT_2,''NVS''),'','') WITHIN GROUP (ORDER BY FC_SEGMENT_2))||'']'''
+        ||' FROM '
+        ||' (SELECT distinct coalesce(FC_SEGMENT_2,''NVS'') as FC_SEGMENT_2, ''Base'' FTC_TARGET_AMOUNT_TYPE '
+        ||  v_from_clause
+        ||' INNER JOIN SLR_ENTITIES on (fc_entity = ent_entity) '
+        ||' LEFT JOIN SLR_FX_TRANSLATION_CONFIG on ('
+        ||' fc_entity = FTC_ENTITY '
+        ||' AND coalesce(FC_SEGMENT_2,''NVS'') = FTC_GAAP '
+        ||' AND ftc_process_type = ''FX_REVALUATION'''
+        ||' AND FTC_TARGET_AMOUNT_TYPE  = ''Base'')'
+        ||' WHERE ftc_fx_rate_set IS NULL)'
+        ||' GROUP BY FTC_TARGET_AMOUNT_TYPE';
+
+    pBMTraceJob('validate FX Translation Config',v_stmt||'; bindings['||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||']');
+    EXECUTE IMMEDIATE v_stmt using gProcessId, gProcess, gConfig, gSource, gEntProcSet, gEntProcSet;
+
+    IF(sql%rowcount > 0) THEN
+        COMMIT;
+        RAISE_APPLICATION_ERROR(-20001,'FX Translation Config not found');
+    END IF;
+
+    --validate rates--
+    v_stmt := 'INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)'
+        ||' select :pProcessId,:pProcess,:pConfig,:pSource,:pEntProcSet,null'
+        ||',''Base rate not found for rate set [''||FTC_FX_RATE_SET||''] and date ['||to_char(gBalanceDate,'YYYY-MM-DD')||']'
+        ||' from currency [''|| ENT_LOCAL_CCY ||''] to currency [''|| ENT_BASE_CCY ||'']'''
+        ||  v_from_clause
+        ||' INNER JOIN SLR_ENTITIES on (FC_ENTITY = ENT_ENTITY) '
+        ||' left join SLR_ENTITY_CURRENCIES on ('
+        ||' EC_ENTITY_SET = ENT_CURRENCY_SET '
+        ||' AND EC_CCY = ENT_BASE_CCY '
+        ||' AND EC_STATUS = ''A'')'
+        ||' INNER JOIN SLR_FX_TRANSLATION_CONFIG on ('
+        ||' FC_ENTITY = FTC_ENTITY '
+        ||' AND coalesce(FC_SEGMENT_2,''NVS'') = FTC_GAAP '
+        ||' AND FTC_TARGET_AMOUNT_TYPE = ''Base'' '
+        ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'')'
+        ||' LEFT JOIN SLR_ENTITY_RATES ON ('
+        ||' ER_ENTITY_SET = FTC_FX_RATE_SET'
+        ||' AND ER_RATE_TYPE = FTC_RATE_TYPE'
+        ||' AND ER_DATE = :pBalanceDate'
+        ||' AND ER_CCY_FROM = ENT_LOCAL_CCY'
+        ||' AND ER_CCY_TO = ENT_BASE_CCY)'
+        ||' WHERE ER_RATE IS NULL '
+        ||' AND ENT_LOCAL_CCY <> ENT_BASE_CCY '
+        ||' GROUP BY FTC_FX_RATE_SET, ENT_LOCAL_CCY, ENT_BASE_CCY';
+
+    pBMTraceJob('validate FX RATES',v_stmt||'; bindings['||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||','||gBalanceDate||']');
+    EXECUTE IMMEDIATE v_stmt
+        using gProcessId,gProcess,gConfig,gSource,gEntProcSet,gEntProcSet,gBalanceDate;
+
+    IF(sql%rowcount > 0) THEN
+        COMMIT;
+        RAISE_APPLICATION_ERROR(-20001,'Rates not found');
+    END IF;
 
     --construct adjustment line insert--
     v_insert_stmt := 'insert into SLR_JRNL_LINES_TEMP (jl_description,jl_effective_date,jl_value_date,'
@@ -1632,8 +1760,14 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     v_from_clause2 := ' inner join SLR_ENTITIES ON (ENT_ENTITY = FC_ENTITY)'
                   ||' left join SLR_ENTITY_CURRENCIES on (EC_ENTITY_SET = ENT_CURRENCY_SET AND EC_CCY = ENT_BASE_CCY AND EC_STATUS = ''A'')'
-                  ||' inner join SLR_ENTITY_RATES on'
-                  ||' (ER_ENTITY_SET = nvl(:v_rate_set,ent_rate_set)'
+                  ||' inner join SLR_FX_TRANSLATION_CONFIG on ('
+                  ||' FTC_ENTITY = FC_ENTITY '
+                  ||' AND FTC_GAAP = coalesce(FC_SEGMENT_2,''NVS'') '
+                  ||' AND FTC_TARGET_AMOUNT_TYPE = ''Base'' '
+                  ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'') '
+                  ||' left join SLR_ENTITY_RATES on'
+                  ||' (ER_ENTITY_SET = FTC_FX_RATE_SET'
+                  ||' AND ER_RATE_TYPE = FTC_RATE_TYPE'
                   ||' AND ER_DATE = :pBalanceDate'
                   ||' AND ER_CCY_FROM = ENT_LOCAL_CCY'
                   ||' AND ER_CCY_TO = ENT_BASE_CCY) ';
@@ -1666,11 +1800,11 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt2 := v_sel_stmt2 || ',max(ENT_BASE_CCY)';
 
     --base amount--
-    v_sel_stmt := v_sel_stmt || ',(-1)*Round(sum(LOCAL_BALANCE)*max(ER_RATE),cast(nvl(max(EC_DIGITS_AFTER_POINT),2) as INTEGER))';
-    v_sel_stmt2 := v_sel_stmt2 || ',(-1)*sum(BASE_BALANCE) + Round(sum(LOCAL_BALANCE)*max(ER_RATE),cast(nvl(max(EC_DIGITS_AFTER_POINT),2) as INTEGER))';
+    v_sel_stmt := v_sel_stmt || ',(-1)*Round(sum(LOCAL_BALANCE)*max(coalesce(ER_RATE,1)),cast(nvl(max(EC_DIGITS_AFTER_POINT),2) as INTEGER))';
+    v_sel_stmt2 := v_sel_stmt2 || ',(-1)*sum(BASE_BALANCE) + Round(sum(LOCAL_BALANCE)*max(coalesce(ER_RATE,1)),cast(nvl(max(EC_DIGITS_AFTER_POINT),2) as INTEGER))';
 
     --base rate--
-    v_sel_stmt := v_sel_stmt ||',max(ER_RATE)';
+    v_sel_stmt := v_sel_stmt ||',max(coalesce(ER_RATE,1))';
     v_sel_stmt2 := v_sel_stmt2 ||',null';
 
     --jrnl_type
@@ -1686,8 +1820,8 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt2 := v_sel_stmt2 || ',''N''';
 
     --rate set--
-    v_sel_stmt := v_sel_stmt || ',:pRateSet';
-    v_sel_stmt2 := v_sel_stmt2 || ',:pRateSet';
+    v_sel_stmt := v_sel_stmt || ', null';
+    v_sel_stmt2 := v_sel_stmt2 || ', null';
 
     v_sel_stmt := v_sel_stmt ||',TARGET_ENTITY,FC_ACCOUNT,MAX(FC_SEGMENT_1),MAX(FC_SEGMENT_2),MAX(FC_SEGMENT_3),MAX(FC_SEGMENT_4),MAX(FC_SEGMENT_5)'
                              ||',MAX(FC_SEGMENT_6),MAX(FC_SEGMENT_7),MAX(FC_SEGMENT_8),MAX(FC_SEGMENT_9),MAX(FC_SEGMENT_10)'
@@ -1706,11 +1840,11 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
 
     v_stmt := v_insert_stmt || v_sel_stmt||v_from_clause ||') a '||v_from_clause2||v_group_by_clause||' UNION ALL '||v_sel_stmt2||v_from_clause ||') b '||v_from_clause2||v_group_by_clause;
 
-    pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||nvl(gRateSet,'null')||','||gEntProcSet||','||nvl(gRateSet,'null')||','||gBalanceDate||','
-                                                  ||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||nvl(gRateSet,'null')||','||gEntProcSet||','||nvl(gRateSet,'null')||','||gBalanceDate||']');
+    pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||gEntProcSet||','||gBalanceDate||','
+                                                  ||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||gEntProcSet||','||gBalanceDate||']');
     EXECUTE IMMEDIATE v_stmt
-      USING processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gRateSet,gEntProcSet,gRateSet,gBalanceDate
-            ,processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gRateSet,gEntProcSet,gRateSet,gBalanceDate;
+      USING processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gEntProcSet,gBalanceDate
+            ,processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gEntProcSet,gBalanceDate;
 
     --create offset--
     pBMCreateOffset;
@@ -1724,7 +1858,12 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     exception
       WHEN OTHERS THEN
         pBMTraceJob(gProcess||' STOPPED',null);
-        RAISE_APPLICATION_ERROR(-20001,'pBMPositionRebalancing: '||sqlerrm);
+        IF SQLCODE =-20001 THEN
+            RAISE_APPLICATION_ERROR(-20001,'pBMPositionRebalancing: '||sqlerrm);
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001,'pBMPositionRebalancing: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+        END IF;
+
   END pBMPositionRebalancing;
 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -1943,7 +2082,12 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
    exception
       WHEN OTHERS THEN
         pBMTraceJob(gProcess||' STOPPED',null);
-        RAISE_APPLICATION_ERROR(-20001,'pBMFXClearDown: '||sqlerrm);
+        IF SQLCODE =-20001 THEN
+            RAISE_APPLICATION_ERROR(-20001,'pBMFXClearDown: '||sqlerrm);
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001,'pBMFXClearDown: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+        END IF;
+
   END pBMFXClearDown;
 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -1956,8 +2100,6 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_group_by_clause VARCHAR2(500);
     v_from_clause VARCHAR2(2000);
     v_from_clause2 VARCHAR2(1000);
-    v_sel_cols VARCHAR2(2000);
-    v_gr_by varchar2(50);
 
   BEGIN
     pBMTraceJob(gProcess||' START',null);
@@ -1996,41 +2138,70 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
       v_from_clause := v_from_clause||' inner join SLR_BM_ENTITY_PROCESSING_SET on (fc_entity = BMEPS_ENTITY and BMEPS_SET_ID = :pEntProcSet)';
     END IF;
 
+    --validate fx translation config--
+    v_stmt := 'INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)'
+        ||' SELECT :pProcessId,:pProcess,:pConfig,:pSource,:pEntProcSet,null'
+        ||',FTC_TARGET_AMOUNT_TYPE || '' FX Translation Config not found for SEGMENTS 2 [''||(listagg(coalesce(FC_SEGMENT_2,''NVS''),'','') WITHIN GROUP (ORDER BY FC_SEGMENT_2))||'']'''
+        ||' FROM '
+        ||' (SELECT distinct coalesce(FC_SEGMENT_2,''NVS'') as FC_SEGMENT_2, (CASE WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ''Base'' ELSE ''Local'' END) as FTC_TARGET_AMOUNT_TYPE '
+        ||  v_from_clause
+        ||' INNER JOIN SLR_ENTITIES on (fc_entity = ent_entity) '
+        ||' LEFT JOIN SLR_FX_TRANSLATION_CONFIG on ('
+        ||' fc_entity = FTC_ENTITY '
+        ||' AND coalesce(FC_SEGMENT_2,''NVS'') = FTC_GAAP '
+        ||' AND ftc_process_type = ''FX_REVALUATION'''
+        ||' AND FTC_TARGET_AMOUNT_TYPE = (CASE WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ''Base'' ELSE ''Local'' END)'
+        ||' )'
+        ||' WHERE ftc_fx_rate_set IS NULL)'
+        ||' GROUP BY FTC_TARGET_AMOUNT_TYPE';
 
-    IF gRateSet IS NULL THEN
-      v_gr_by := ' group by ent_rate_set,fc_ccy';
-    ELSE
-      v_gr_by := ' group by fc_ccy';
-    end if;
+    pBMTraceJob('validate FX Translation Config',v_stmt||'; bindings['||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||']');
+    EXECUTE IMMEDIATE v_stmt using gProcessId, gProcess, gConfig, gSource, gEntProcSet, gEntProcSet;
 
+    IF(sql%rowcount > 0) THEN
+        COMMIT;
+        RAISE_APPLICATION_ERROR(-20001,'FX Translation Config not found');
+    END IF;
 
     --validate rates--
     v_stmt := 'INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)'
               ||' select :pProcessId,:pProcess,:pConfig,:pSource,:pEntProcSet,null'
-              ||',''Rate not found for rate set ['||nvl(gRateSet,'''||ent_rate_set||''')||'] and date ['||to_char(gBalanceDate,'YYYY-MM-DD')||']'
-              ||' from currency [''||fc_ccy||''] to currency [''||CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '||case when gFxManagaCcy is not null then ''''
-              ||gFxManagaCcy||'''' else 'NULL' end||' when ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END||'']'''
-              ||v_from_clause||' inner join SLR_ENTITIES ON (ENT_ENTITY = FC_ENTITY)'
+              ||',''Rate not found for rate set [''||FTC_FX_RATE_SET||''] and date ['|| to_char(gBalanceDate,'YYYY-MM-DD')|| ']'
+              ||' from currency [''||fc_ccy||''] to currency [''||CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '
+              || case when gFxManageCcy is not null then '''' || gFxManageCcy|| '''' else 'NULL' end
+              ||' when ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END||'']'''
+              || v_from_clause|| ' inner join SLR_ENTITIES ON (ENT_ENTITY = FC_ENTITY)'
+              ||' INNER JOIN SLR_FX_TRANSLATION_CONFIG ON ('
+              ||' FTC_ENTITY = FC_ENTITY'
+              ||' AND FTC_GAAP = coalesce(FC_SEGMENT_2,''NVS'')'
+              ||' AND FTC_TARGET_AMOUNT_TYPE = (CASE WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ''Base'' ELSE ''Local'' END)'
+              ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'')'
               ||' LEFT JOIN SLR_ENTITY_RATES ON ('
-              ||'ER_ENTITY_SET = nvl(:v_rate_set,ent_rate_set)'
+              ||' ER_ENTITY_SET = FTC_FX_RATE_SET'
+              ||' AND ER_RATE_TYPE = FTC_RATE_TYPE'
               ||' AND ER_DATE = :pBalanceDate'
               ||' AND ER_CCY_FROM = fc_ccy'
-              ||' AND ER_CCY_TO = (CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '||case when gFxManagaCcy is not null then ''''
-              ||gFxManagaCcy||'''' else 'NULL' end||' when ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END))'
+              ||' AND ER_CCY_TO = (CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '
+              || case when gFxManageCcy is not null then '''' || gFxManageCcy|| '''' else 'NULL' end
+              ||' when ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END))'
               ||' WHERE ER_RATE IS NULL '
-              ||v_gr_by
-              ||',(CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '||case when gFxManagaCcy is not null then ''''
-              ||gFxManagaCcy||'''' else 'NULL' end||' when ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)';
+              ||' AND fc_ccy <> (CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '
+              || case when gFxManageCcy is not null then '''' || gFxManageCcy|| '''' else 'NULL' end
+              ||' when ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)'
+              ||' group by ftc_fx_rate_set, fc_ccy'
+              ||',(CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '
+              || case when gFxManageCcy is not null then '''' || gFxManageCcy || '''' else 'NULL' end
+              ||' when ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)';
 
 
-    pBMTraceJob('validate FX RATES',v_stmt||'; bindings['||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||','||nvl(gRateSet,'null')||','||gBalanceDate||']');
+    pBMTraceJob('validate FX RATES',v_stmt||'; bindings['||gProcessId||','||gProcess||','||gConfig||','||gSource||','||gEntProcSet||','||gEntProcSet||','||gBalanceDate||']');
     EXECUTE IMMEDIATE v_stmt
-      using gProcessId,gProcess,gConfig,gSource,gEntProcSet,gEntProcSet,gRateSet,gBalanceDate;
+      using gProcessId,gProcess,gConfig,gSource,gEntProcSet,gEntProcSet,gBalanceDate;
 
     IF(sql%rowcount > 0) THEN
       COMMIT;
       RAISE_APPLICATION_ERROR(-20001,'Rates not found');
-        END IF;
+		END IF;
 
     --construct adjustment line insert--
     v_insert_stmt := 'insert into SLR_JRNL_LINES_TEMP (jl_description,jl_effective_date,jl_value_date,'
@@ -2040,26 +2211,35 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
                   ||'jl_segment_8,jl_segment_9,jl_segment_10,jl_attribute_1,jl_attribute_2,jl_attribute_3,jl_attribute_4,'
                   ||'jl_attribute_5)';
 
-    v_from_clause2 := ' inner join slr_entities on (fc_entity = ent_entity)'
-                  ||' left join SLR_ENTITY_CURRENCIES on (EC_ENTITY_SET = ENT_CURRENCY_SET AND EC_CCY = (CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '
-                  ||case when gFxManagaCcy is not null then ''''||gFxManagaCcy||'''' else 'NULL' end||' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END) AND EC_STATUS = ''A'')'
-                  ||' ,SLR_ENTITY_RATES'
-                  ||' WHERE'
-                  ||' ER_ENTITY_SET = nvl(:v_rate_set,ent_rate_set)'
+    v_from_clause2 := ' INNER JOIN slr_entities on (fc_entity = ent_entity)'
+                  ||' INNER JOIN SLR_FX_TRANSLATION_CONFIG ON ('
+                  ||' FTC_ENTITY = FC_ENTITY'
+                  ||' AND FTC_GAAP = coalesce(FC_SEGMENT_2,''NVS'')'
+                  ||' AND FTC_TARGET_AMOUNT_TYPE = (CASE WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ''Base'' ELSE ''Local'' END)'
+                  ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'')'
+                  ||' LEFT JOIN SLR_ENTITY_CURRENCIES on (EC_ENTITY_SET = ENT_CURRENCY_SET AND EC_CCY = (CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '
+				  ||  case when gFxManageCcy is not null then ''''|| gFxManageCcy||'''' else 'NULL' end|| ' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END) AND EC_STATUS = ''A'')'
+                  ||' LEFT JOIN SLR_ENTITY_RATES ON ('
+                  ||' ER_ENTITY_SET = FTC_FX_RATE_SET'
+                  ||' AND ER_RATE_TYPE = FTC_RATE_TYPE'
                   ||' AND ER_DATE = :pBalanceDate'
                   ||' AND ER_CCY_FROM = fc_ccy'
-                  ||' AND ER_CCY_TO = (CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '||case when gFxManagaCcy is not null then ''''||gFxManagaCcy||'''' else 'NULL' end
-                  ||' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)';
+                  ||' AND ER_CCY_TO = (CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '
+                  || case when gFxManageCcy is not null then ''''|| gFxManageCcy||'''' else 'NULL' end
+                  ||' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END))';
 
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
 --  v_sel_stmt := ' select ';
 --  Original line above modified with fHint in one line below
     v_sel_stmt := ' select ' || SLR_UTILITIES_PKG.fHint('AG', 'PL_REPATRIATION') || ' ';
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
     v_sel_stmt := v_sel_stmt ||':pcd_description,:pBalanceDate,:pBalanceDate';
 
     --trans currency--
-    v_sel_stmt := v_sel_stmt || ',(CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '||case when gFxManagaCcy is not null then ''''||gFxManagaCcy||'''' else 'NULL' end||' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)';
+    v_sel_stmt := v_sel_stmt || ',(CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '|| case when gFxManageCcy is not null
+                                                                                                             then ''''|| gFxManageCcy||'''' else 'NULL' end|| ' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)';
     --trans amount--
-    v_sel_stmt := v_sel_stmt || ',(-1)*Round(sum(TRAN_BALANCE)*max(ER_RATE),cast(nvl(max(EC_DIGITS_AFTER_POINT),2) as integer))';
+    v_sel_stmt := v_sel_stmt || ',(-1)*Round(sum(TRAN_BALANCE)*max(coalesce(ER_RATE,1)),cast(nvl(max(EC_DIGITS_AFTER_POINT),2) as integer))';
 
     --local currency--
     v_sel_stmt := v_sel_stmt || ',max(ENT_LOCAL_CCY)';
@@ -2085,7 +2265,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt := v_sel_stmt || ',''N''';
 
     --rate set--
-    v_sel_stmt := v_sel_stmt || ',:pRateSet';
+    v_sel_stmt := v_sel_stmt || ',null';
 
 
     v_sel_stmt := v_sel_stmt ||',TARGET_ENTITY,FC_ACCOUNT,MAX(FC_SEGMENT_1),MAX(FC_SEGMENT_2),MAX(FC_SEGMENT_3),MAX(FC_SEGMENT_4),MAX(FC_SEGMENT_5)'
@@ -2096,13 +2276,14 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt := v_sel_stmt ||' from (select TRAN_BALANCE,FC_CCY,FC_ENTITY'||fBMGenSelectSQL(processConfig);
 
 
-    v_group_by_clause := fBMGenGroupBySQL(processConfig,' group by TARGET_ENTITY, FC_ACCOUNT, FC_CCY, (CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '||case when gFxManagaCcy is not null then ''''||gFxManagaCcy||'''' else 'NULL' end||' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)');
+    v_group_by_clause := fBMGenGroupBySQL(processConfig, ' group by TARGET_ENTITY, FC_ACCOUNT, FC_CCY, (CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '|| case when gFxManageCcy is not null
+                                                                                                                                                                                  then ''''|| gFxManageCcy||'''' else 'NULL' end|| ' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END)');
 
     v_stmt := v_insert_stmt || v_sel_stmt||v_from_clause ||') a '||v_from_clause2||v_group_by_clause;
 
-    pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||nvl(gRateSet,'null')||','||gEntProcSet||','||nvl(gRateSet,'null')||','||gBalanceDate||']');
+    pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||gEntProcSet||','||gBalanceDate||']');
     EXECUTE IMMEDIATE v_stmt
-      using processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gRateSet,gEntProcSet,gRateSet,gBalanceDate;
+      using processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gEntProcSet,gBalanceDate;
 
 
     --post--
@@ -2129,9 +2310,10 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt := v_sel_stmt ||':pcd_description,:pBalanceDate,:pBalanceDate';
 
     --trans currency--
-    v_sel_stmt := v_sel_stmt || ',(CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '||case when gFxManagaCcy is not null then ''''||gFxManagaCcy||'''' else 'NULL' end||' WHEN se.ENT_FX_MANAGE_FLAG = ''B'' THEN se.ENT_BASE_CCY ELSE se.ENT_LOCAL_CCY END)';
+    v_sel_stmt := v_sel_stmt || ',(CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '|| case when gFxManageCcy is not null
+                                                                                                             then ''''|| gFxManageCcy||'''' else 'NULL' end|| ' WHEN se.ENT_FX_MANAGE_FLAG = ''B'' THEN se.ENT_BASE_CCY ELSE se.ENT_LOCAL_CCY END)';
     --trans amount--
-    v_sel_stmt := v_sel_stmt || ',Round(sum(TRAN_BALANCE)*max(ER_RATE),cast(nvl(max(EC_DIGITS_AFTER_POINT),2) as integer))';
+    v_sel_stmt := v_sel_stmt || ',Round(sum(TRAN_BALANCE)*max(coalesce(ER_RATE,1)),cast(nvl(max(EC_DIGITS_AFTER_POINT),2) as integer))';
 
     --local currency--
     v_sel_stmt := v_sel_stmt || ',max(te.ENT_LOCAL_CCY)';
@@ -2157,7 +2339,7 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt := v_sel_stmt || ',''N''';
 
     --rate set--
-    v_sel_stmt := v_sel_stmt || ',:pRateSet';
+    v_sel_stmt := v_sel_stmt || ',null';
 
 
     v_sel_stmt := v_sel_stmt ||',TARGET_ENTITY,FC_ACCOUNT,MAX(FC_SEGMENT_1),MAX(FC_SEGMENT_2),MAX(FC_SEGMENT_3),MAX(FC_SEGMENT_4),MAX(FC_SEGMENT_5)'
@@ -2168,24 +2350,32 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
     v_sel_stmt := v_sel_stmt ||' from (select TRAN_BALANCE,FC_CCY,FC_ENTITY'||fBMGenSelectSQL(processConfig);
 
     v_from_clause2 := ' inner join slr_entities se on (fc_entity = se.ent_entity)'
-                  ||' left join slr_entities te on (te.ent_entity = TARGET_ENTITY)'
-                  ||' left join SLR_ENTITY_CURRENCIES on (EC_ENTITY_SET = te.ENT_CURRENCY_SET AND EC_CCY = (CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '
-                  ||case when gFxManagaCcy is not null then ''''||gFxManagaCcy||'''' else 'NULL' end||' WHEN se.ENT_FX_MANAGE_FLAG = ''B'' THEN se.ENT_BASE_CCY ELSE se.ENT_LOCAL_CCY END) AND EC_STATUS = ''A'')'
-                  ||' ,SLR_ENTITY_RATES'
-                  ||' WHERE'
-                  ||' ER_ENTITY_SET = nvl(:v_rate_set,se.ent_rate_set)'
-                  ||' AND ER_DATE = :pBalanceDate'
-                  ||' AND ER_CCY_FROM = fc_ccy'
-                  ||' AND ER_CCY_TO = (CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '||case when gFxManagaCcy is not null then ''''||gFxManagaCcy||'''' else 'NULL' end||' WHEN se.ENT_FX_MANAGE_FLAG = ''B'' THEN se.ENT_BASE_CCY ELSE se.ENT_LOCAL_CCY END)';
+              || ' left join slr_entities te on (te.ent_entity = TARGET_ENTITY)'
+              ||' INNER JOIN SLR_FX_TRANSLATION_CONFIG ON ('
+              ||' FTC_ENTITY = FC_ENTITY'
+              ||' AND FTC_GAAP = coalesce(FC_SEGMENT_2,''NVS'')'
+              ||' AND FTC_TARGET_AMOUNT_TYPE = (CASE WHEN se.ENT_FX_MANAGE_FLAG = ''B'' THEN ''Base'' ELSE ''Local'' END)'
+              ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'')'
+              ||' left join SLR_ENTITY_CURRENCIES on (EC_ENTITY_SET = te.ENT_CURRENCY_SET AND EC_CCY = (CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '
+              ||  case when gFxManageCcy is not null then ''''|| gFxManageCcy||'''' else 'NULL' end|| ' WHEN se.ENT_FX_MANAGE_FLAG = ''B'' THEN se.ENT_BASE_CCY ELSE se.ENT_LOCAL_CCY END) AND EC_STATUS = ''A'')'
+              ||' LEFT JOIN SLR_ENTITY_RATES ON ('
+              ||' ER_ENTITY_SET = FTC_FX_RATE_SET'
+              ||' AND ER_RATE_TYPE = FTC_RATE_TYPE'
+              ||' AND ER_DATE = :pBalanceDate'
+              ||' AND ER_CCY_FROM = fc_ccy'
+              ||' AND ER_CCY_TO = (CASE when '|| NVL(gFxManageCcy, 'NULL') || ' is not null then '
+              ||  case when gFxManageCcy is not null then ''''|| gFxManageCcy||'''' else 'NULL' end
+              ||' WHEN se.ENT_FX_MANAGE_FLAG = ''B'' THEN se.ENT_BASE_CCY ELSE se.ENT_LOCAL_CCY END))';
 
 
-    v_group_by_clause := fBMGenGroupBySQL(processConfig,' group by TARGET_ENTITY, FC_ACCOUNT, FC_CCY,(CASE when '||NVL(gFxManagaCcy, 'NULL')||' is not null then '||case when gFxManagaCcy is not null then ''''||gFxManagaCcy||'''' else 'NULL' end||' WHEN se.ENT_FX_MANAGE_FLAG = ''B'' THEN se.ENT_BASE_CCY ELSE se.ENT_LOCAL_CCY END)');
+    v_group_by_clause := fBMGenGroupBySQL(processConfig, ' group by TARGET_ENTITY, FC_ACCOUNT, FC_CCY,(CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '|| case when gFxManageCcy is not null
+                                                                                                                                                                                 then ''''|| gFxManageCcy||'''' else 'NULL' end|| ' WHEN se.ENT_FX_MANAGE_FLAG = ''B'' THEN se.ENT_BASE_CCY ELSE se.ENT_LOCAL_CCY END)');
 
     v_stmt := v_insert_stmt || v_sel_stmt||v_from_clause ||') a '||v_from_clause2||v_group_by_clause;
 
-    pBMTraceJob('POST',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||nvl(gRateSet,'null')||','||gEntProcSet||','||nvl(gRateSet,'null')||','||gBalanceDate||']');
+    pBMTraceJob('POST',v_stmt||'; bindings['||processConfig.pcd_description||','||gBalanceDate||','||gBalanceDate||','||gJournalType||','||gEntProcSet||','||gBalanceDate||']');
     EXECUTE IMMEDIATE v_stmt
-      using processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gRateSet,gEntProcSet,gRateSet,gBalanceDate;
+      using processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gEntProcSet,gBalanceDate;
 
    --offset--
    pBMCreateOffset;
@@ -2202,10 +2392,15 @@ create or replace PACKAGE BODY      SLR.slr_balance_movement_pkg as
    exception
       WHEN OTHERS THEN
         pBMTraceJob(gProcess||' STOPPED',null);
-        RAISE_APPLICATION_ERROR(-20001,'pBMPLRepatriation: '||sqlerrm);
+        IF SQLCODE =-20001 THEN
+            RAISE_APPLICATION_ERROR(-20001,'pBMPLRepatriation: '||sqlerrm);
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001,'pBMPLRepatriation: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+        END IF;
+
   END pBMPLRepatriation;
 
-PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
+  PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
     processConfig slr_process_config_detail%rowtype;
     v_stmt VARCHAR2(13000);
     v_insert_stmt VARCHAR2(1000);
@@ -2235,7 +2430,7 @@ PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
     LEFT JOIN slr_entity_periods b ON (a.EP_ENTITY = b.EP_ENTITY AND a.EP_BUS_YEAR = b.EP_BUS_YEAR )
     WHERE
       BMEPS_SET_ID = gEntProcSet
-      AND    gBalanceDate BETWEEN  A.ep_cal_period_start AND A.ep_cal_period_end
+      AND	gBalanceDate BETWEEN  A.ep_cal_period_start AND A.ep_cal_period_end
       and (gBalanceDate <> a.ep_bus_period_end OR a.ep_period_type <> 2)
       and  b.ep_period_type = 2;
 
@@ -2298,9 +2493,11 @@ PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
                     ||' inner join SLR_ENTITY_PERIODS p1 on (p1.EP_ENTITY = BMEPS_ENTITY and :pBalanceDate between p1.EP_CAL_PERIOD_START and p1.EP_CAL_PERIOD_END)'
                     ||' inner join SLR_ENTITY_PERIODS p2 on (p2.EP_ENTITY = p1.EP_ENTITY and p2.EP_BUS_YEAR = p1.EP_BUS_YEAR+1 and p2.EP_BUS_PERIOD = 1)';
 
-
-/*T.Nulty added clause  and jh.jh_jrnl_source = :gConfig  - otherwise applied JE to all rules*/
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
+--    v_from_clause2 := ' from slr_jrnl_headers jh INNER JOIN slr_jrnl_lines jl ON (jh_jrnl_date = jl_effective_date and jh_jrnl_epg_id = jl_epg_id and JH_JRNL_ID=JL_JRNL_HDR_ID AND jh.JH_JRNL_INTERNAL_PERIOD_FLAG = ''Y'')'
+/*T.Nulty added clause  and jh.jh_jrnl_source = :gConfig  - otherwise applied JE to all rules*/																		   
     v_from_clause2 := ' from slr_jrnl_headers jh INNER JOIN slr_jrnl_lines jl ON (jh_jrnl_date = jl_effective_date and jh_jrnl_epg_id = jl_epg_id and JH_JRNL_ID=JL_JRNL_HDR_ID AND jh.JH_JRNL_INTERNAL_PERIOD_FLAG = ''Y'' and jh.jh_jrnl_source = :gConfig  )'
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
                    ||' INNER JOIN SLR_BM_ENTITY_PROCESSING_SET ON (BMEPS_ENTITY = JL_ENTITY and BMEPS_SET_ID = :pEntProcSet)'
                    ||' inner join slr_entities on (JL_ENTITY = ent_entity)'
                    ||' inner join SLR_ENTITY_PERIODS p1 on (p1.EP_ENTITY = BMEPS_ENTITY and :pBalanceDate between p1.EP_CAL_PERIOD_START and p1.EP_CAL_PERIOD_END)'
@@ -2315,10 +2512,11 @@ PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
                   ||'jl_segment_8,jl_segment_9,jl_segment_10,jl_attribute_1,jl_attribute_2,jl_attribute_3,jl_attribute_4,'
                   ||'jl_attribute_5)';
 
-
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
 --  v_sel_stmt := ' select ';
---  Original line above modified with fHint in one line below
+--  Original line above modified with fHint in one line below												 
     v_sel_stmt := ' select ' || SLR_UTILITIES_PKG.fHint('AG', 'PL_RETAINED_EARNINGS') || ' ';
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
     v_sel_stmt := v_sel_stmt ||':pcd_description,max(p2.EP_BUS_PERIOD_START),max(p2.EP_BUS_PERIOD_START)';
 
     --trans currency--
@@ -2377,15 +2575,16 @@ PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
 
     v_stmt := v_insert_stmt || v_sel_stmt||v_from_clause ||v_group_by_clause||' UNION ALL '||v_sel_stmt2||v_from_clause2 ||v_group_by_clause2;
 
-/*T.Nulty added pConfig variable*/
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
+/*T.Nulty added pConfig variable*/								  
     pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gJournalType||','||gEntProcSet||','||gBalanceDate||','
                                                   ||processConfig.pcd_description||','||gJournalType||','||gConfig||','||gEntProcSet||','||gBalanceDate||','||gJournalType||']');
-
 /*T.Nulty added pConfig variable*/
+
     EXECUTE IMMEDIATE v_stmt
       USING processConfig.pcd_description,gJournalType,gEntProcSet,gBalanceDate
             ,processConfig.pcd_description,gJournalType,gConfig,gEntProcSet,gBalanceDate,gJournalType;
-
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
    --offset--
    pBMCreateOffset;
    commit;
@@ -2398,57 +2597,62 @@ PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER) AS
    exception
       WHEN OTHERS THEN
         pBMTraceJob(gProcess||' STOPPED',null);
-        RAISE_APPLICATION_ERROR(-20001,'pBMPLRetainedEarnings: '||sqlerrm);
+        IF SQLCODE =-20001 THEN
+            RAISE_APPLICATION_ERROR(-20001,'pBMPLRetainedEarnings: '||sqlerrm);
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001,'pBMPLRetainedEarnings: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
+        END IF;
+
   END pBMPLRetainedEarnings;
 
 
 procedure pBMGetLatestBalance(pBalanceDate in date, pEntProcSet in slr_bm_entity_processing_set.bmeps_set_id%type)
 as
-    sql_string VARCHAR2(10000);
-    pdate_string varchar2(10);
-    amount_string varchar2(1024);
+	sql_string VARCHAR2(10000);
+	pdate_string varchar2(10);
+	amount_string varchar2(1024);
 BEGIN
-    pBMTraceJob('pBMGetLatestBalance TRUNCATE', 'truncate table SLR_BM_LATEST_BAL_TMP');
-    EXECUTE IMMEDIATE 'truncate table SLR_BM_LATEST_BAL_TMP';
+	pBMTraceJob('pBMGetLatestBalance TRUNCATE', 'truncate table SLR_BM_LATEST_BAL_TMP');
+	EXECUTE IMMEDIATE 'truncate table SLR_BM_LATEST_BAL_TMP';
 
-    pdate_string := to_char(pBalanceDate, 'YYYY-MM-DD');
+	pdate_string := to_char(pBalanceDate, 'YYYY-MM-DD');
 
-    if(gWhichAmount = 'L') then
-        amount_string := 'TRAN_LTD_BALANCE as BTRAN, BASE_LTD_BALANCE as BBASE, LOCAL_LTD_BALANCE as BLOCAL';
-    end if;
-    if(gWhichAmount = 'Y') then
-        amount_string := 'case when p1.EP_BUS_YEAR = PERIOD_YEAR then TRAN_YTD_BALANCE else 0 end as BTRAN, case when p1.EP_BUS_YEAR = PERIOD_YEAR then BASE_YTD_BALANCE else 0 end as BBASE, case when p1.EP_BUS_YEAR = PERIOD_YEAR then LOCAL_YTD_BALANCE else 0 end as BLOCAL';
-    end if;
-    if(gWhichAmount = 'P') then
-        amount_string := 'case when p1.EP_BUS_YEAR = PERIOD_YEAR and p1.EP_BUS_PERIOD = PERIOD_MONTH then TRAN_MTD_BALANCE else 0 end as BTRAN, case when p1.EP_BUS_YEAR = PERIOD_YEAR and p1.EP_BUS_PERIOD = PERIOD_MONTH then BASE_MTD_BALANCE else 0 end as BBASE, case when p1.EP_BUS_YEAR = PERIOD_YEAR and p1.EP_BUS_PERIOD = PERIOD_MONTH then LOCAL_MTD_BALANCE else 0 end as BLOCAL';
-    end if;
+	if(gWhichAmount = 'L') then
+		amount_string := 'TRAN_LTD_BALANCE as BTRAN, BASE_LTD_BALANCE as BBASE, LOCAL_LTD_BALANCE as BLOCAL';
+	end if;
+	if(gWhichAmount = 'Y') then
+		amount_string := 'case when p1.EP_BUS_YEAR = PERIOD_YEAR then TRAN_YTD_BALANCE else 0 end as BTRAN, case when p1.EP_BUS_YEAR = PERIOD_YEAR then BASE_YTD_BALANCE else 0 end as BBASE, case when p1.EP_BUS_YEAR = PERIOD_YEAR then LOCAL_YTD_BALANCE else 0 end as BLOCAL';
+	end if;
+	if(gWhichAmount = 'P') then
+		amount_string := 'case when p1.EP_BUS_YEAR = PERIOD_YEAR and p1.EP_BUS_PERIOD = PERIOD_MONTH then TRAN_MTD_BALANCE else 0 end as BTRAN, case when p1.EP_BUS_YEAR = PERIOD_YEAR and p1.EP_BUS_PERIOD = PERIOD_MONTH then BASE_MTD_BALANCE else 0 end as BBASE, case when p1.EP_BUS_YEAR = PERIOD_YEAR and p1.EP_BUS_PERIOD = PERIOD_MONTH then LOCAL_MTD_BALANCE else 0 end as BLOCAL';
+	end if;
 
-    sql_string := '
-        insert into SLR_BM_LATEST_BAL_TMP(KEY_ID, FAK_ID, BALANCE_DATE, BALANCE_TYPE, TRAN_BALANCE, BASE_BALANCE, LOCAL_BALANCE, EPG_ID)
-        select BID, BFAK, BDATE, BTYPE, BTRAN, BBASE, BLOCAL, BEPGID from
-        (
-        select KEY_ID as BID, FAK_ID as BFAK, BALANCE_DATE as BDATE, BALANCE_TYPE as BTYPE, ENTITY as BENTITY, '||amount_string||', EPG_ID AS BEPGID
-        ,ROW_NUMBER() over (partition by BALANCE_TYPE, KEY_ID order by BALANCE_DATE desc) rn
-        from '||gProcessSource.ps_source_obj1
-        ||' inner join SLR_ENTITY_PERIODS p1 on p1.EP_ENTITY = ENTITY and to_date('''||pdate_string||''', ''YYYY-MM-DD'') between p1.EP_CAL_PERIOD_START and p1.EP_CAL_PERIOD_END'
-        ;
+	sql_string := '
+		insert into SLR_BM_LATEST_BAL_TMP(KEY_ID, FAK_ID, BALANCE_DATE, BALANCE_TYPE, TRAN_BALANCE, BASE_BALANCE, LOCAL_BALANCE, EPG_ID)
+		select BID, BFAK, BDATE, BTYPE, BTRAN, BBASE, BLOCAL, BEPGID from
+		(
+		select KEY_ID as BID, FAK_ID as BFAK, BALANCE_DATE as BDATE, BALANCE_TYPE as BTYPE, ENTITY as BENTITY, '||amount_string||', EPG_ID AS BEPGID
+		,ROW_NUMBER() over (partition by BALANCE_TYPE, KEY_ID order by BALANCE_DATE desc) rn
+		from '||gProcessSource.ps_source_obj1
+		||' inner join SLR_ENTITY_PERIODS p1 on p1.EP_ENTITY = ENTITY and to_date('''||pdate_string||''', ''YYYY-MM-DD'') between p1.EP_CAL_PERIOD_START and p1.EP_CAL_PERIOD_END'
+		;
 
     IF (gProcess NOT IN ('PLRETEARNINGS','FXPLSWEEP','PLREPATRIATION')) THEN
       sql_string := sql_string||' where 1=1 ';
     ELSE
       sql_string := sql_string
-            ||'    INNER JOIN SLR_ENTITY_PERIODS p2 ON (p2.EP_ENTITY = p1.EP_ENTITY AND p2.EP_BUS_YEAR = p1.EP_BUS_YEAR AND p2.EP_BUS_PERIOD = 1)'
-            ||' WHERE BALANCE_DATE >= p2.EP_BUS_PERIOD_START'
-            ;
+			||'	INNER JOIN SLR_ENTITY_PERIODS p2 ON (p2.EP_ENTITY = p1.EP_ENTITY AND p2.EP_BUS_YEAR = p1.EP_BUS_YEAR AND p2.EP_BUS_PERIOD = 1)'
+			||' WHERE BALANCE_DATE >= p2.EP_BUS_PERIOD_START'
+			;
     end if;
 
     sql_string := sql_string||' and ENTITY in (select BMEPS_ENTITY from SLR_BM_ENTITY_PROCESSING_SET where BMEPS_SET_ID = '''||pEntProcSet||''')
-        and BALANCE_DATE <= to_date('''||pdate_string||''' , ''YYYY-MM-DD'')
-        )'
-        ||' where rn=1';
+		and BALANCE_DATE <= to_date('''||pdate_string||''' , ''YYYY-MM-DD'')
+		)'
+		||' where rn=1';
 
-    pBMTraceJob('pBMGetLatestBalance', sql_string);
-    execute immediate sql_string;
+	pBMTraceJob('pBMGetLatestBalance', sql_string);
+	execute immediate sql_string;
 
 end pBMGetLatestBalance;
 

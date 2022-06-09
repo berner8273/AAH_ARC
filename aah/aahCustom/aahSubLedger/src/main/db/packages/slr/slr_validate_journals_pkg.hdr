@@ -51,7 +51,7 @@ AS
       p_status IN CHAR := 'U',
       p_UseHeaders IN BOOLEAN := FALSE
     );
-
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
     -- AG custom
     PROCEDURE pWriteLineErrorEventClass
     (
@@ -64,7 +64,7 @@ AS
         p_status IN CHAR := 'U',
         p_UseHeaders IN BOOLEAN := FALSE
     );
-
+/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
     PROCEDURE pWriteLogError(  
       p_proc_name     in  VARCHAR2,
       p_table_name    in  VARCHAR2,

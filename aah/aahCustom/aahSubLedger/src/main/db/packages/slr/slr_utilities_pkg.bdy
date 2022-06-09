@@ -624,7 +624,11 @@ PROCEDURE pUPDATE_SLR_ENTITY_DAYS
     p_end_date    in date,
     p_status      in SLR_ENTITY_DAYS.ED_STATUS%TYPE,
     p_calendar_name in FR_HOLIDAY_DATE.HD_CA_CALENDAR_NAME%TYPE := 'DEFAULT',
-    p_delete_existing_days in CHAR := 'Y'
+/*-----------UPGRADE 22.1.1 MERGE START-----------*/
+--    p_delete_existing_days in CHAR := 'Y'
+    p_delete_existing_days in CHAR := 'Y',
+    user_id       in varchar2 := USER
+/*-----------UPGRADE 22.1.1 MERGE END-----------*/
 )
 AS
     s_proc_name       VARCHAR2(80) := 'SLR_UTILITIES_PKG.pUPDATE_SLR_ENTITY_DAYS';
@@ -670,8 +674,12 @@ BEGIN
 				then 'C'
 				else p_status
 			end as status,
-			user, trunc(sysdate),
-			user, trunc(sysdate)
+/*-----------UPGRADE 22.1.1 MERGE START-----------*/
+--			user, trunc(sysdate),
+--			user, trunc(sysdate)
+			user_id, trunc(sysdate),
+			user_id, trunc(sysdate)
+/*-----------UPGRADE 22.1.1 MERGE END-----------*/
 	FROM days_range
 	LEFT JOIN FR_CALENDAR_WEEK ON (CAW_CA_CALENDAR_NAME = p_calendar_name)
 	WHERE
