@@ -28,8 +28,8 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~slr_logon
-@@slr/upgrade_slr_packages.sql
+conn ~stn_logon
+@@stn/archive_slr_setup.sql
 
 conn~gui_logon
 @@gui/upgrade_gui_packages.sql
