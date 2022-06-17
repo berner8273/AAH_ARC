@@ -28,14 +28,15 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
+conn ~fdr_logon
+-- update control file
+update fdr.fr_archive_ctl
+set arct_archive = 'Y',arct_archive_days=182
+where arct_id in (132,135,254,255,257,261,263);
+commit;
+
 conn ~stn_logon
 @@stn/archive_slr_setup.sql
-
-conn~gui_logon
-@@gui/upgrade_gui_packages.sql
-
-conn ~fdr_logon
-@@fdr/upgrade_trigger_fix.sql
 
 /* End AAH custom upgrades */
 
