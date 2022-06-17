@@ -1,8 +1,3 @@
--- update control file
-update fdr.fr_archive_ctl
-set arct_archive = 'Y',arct_archive_days=182
-where arct_id in (132,135,254,255,257,261,263);
-
 -- create parameter reference data
 delete from stn.param_set_item where param_set_id in (11);
 delete from stn.step_run_param where step_run_sid in (select step_run_sid from stn.step_run where step_id in (56));
