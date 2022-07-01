@@ -34,7 +34,7 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
   FOR r_slr IN c_slr
   LOOP    
 
-    IF r_slr.arct_id not in (401,402,403)  THEN
+    IF r_slr.arct_id not in (144,145)  THEN
         v_sql := 'select count(*) into :v_count1 from slr.'||r_slr.t_name||q'[ where ]'||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
         s_lpg := R_slr.lpg_col;
     ELSE
