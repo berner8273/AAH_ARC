@@ -18,10 +18,7 @@ DECLARE
         fdr.fr_archive_ctl 
     WHERE
         arct_archive = 'Y' and arct_schema_name = 'SLR';
-
---    arct_id in (132,135,254,255,257,261,263);
-
-        
+       
        
 BEGIN
 
