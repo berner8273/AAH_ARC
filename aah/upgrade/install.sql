@@ -30,6 +30,7 @@ define unittest_login=~8
 
 conn ~fdr_logon
 -- update control file
+@@fdr/FR_ARCHIVE_CTL_SLR.sql
 update fdr.fr_archive_ctl
 set arct_archive = 'Y',arct_archive_days=182, arct_archive_group = 3, arct_generate_script_only = 'N'
 where arct_id in (132,135,254,255,257,261,263);
