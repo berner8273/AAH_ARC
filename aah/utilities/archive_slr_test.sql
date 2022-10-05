@@ -31,27 +31,24 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
   FOR r_slr IN c_slr
   LOOP    
 
-    IF r_slr.arct_id not in (144,145)  THEN
+    IF r_slr.arct_archive_where_clause is null  THEN
         v_sql := 'select count(*) into :v_count1 from slr.'||r_slr.t_name||q'[ where ]'||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
         s_lpg := R_slr.lpg_col;
     ELSE
-        v_sql :=  'select count(*) into :v_count1 from slr.'||r_slr.t_name||' where '||r_slr.arct_archive_where_clause;
-        s_lpg := '1';
-    END IF;               
+        v_sql :=  'select count(*) into :v_count1 from slr.'||r_slr.t_name||' where '||r_slr.arct_archive_where_clause||' and '||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
+        s_lpg := '2';
+    END IF;    
+                   
     EXECUTE IMMEDIATE v_sql INTO v_count1;
         
     v_sql := 'select count(*) INTO :v_count2 from slr.'||r_slr.t_name;
     EXECUTE IMMEDIATE v_sql INTO v_count2;
-    
-    v_sql:= 'select count(*) into :v_count_arc from all_tables where owner = ''ARC'' and table_name = '||''''||r_slr.a_name||'''';
-    EXECUTE IMMEDIATE v_sql INTO v_count_arc;                
   
-    v_lpg_id:= 1;
+   v_lpg_id:= 2;
     
-   IF v_count_arc > 0 THEN
-        v_sql := 'select count(*) INTO :v_count3 from ARC.'||r_slr.a_name||q'[ where event_status in ('P','E') and ]'||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
---        dbms_output.put_line(' 5- '||v_sql);
---        EXECUTE IMMEDIATE v_sql INTO v_count3;
+   IF r_slr.arct_arc_schema_name <> 'PURGE' THEN
+        v_sql := 'select count(*) INTO :v_count3 from SLR.'||r_slr.a_name; --||q'[ where ]'||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
+        EXECUTE IMMEDIATE v_sql INTO v_count3;
     ELSE
         v_count3 :=0;
     END IF;                
