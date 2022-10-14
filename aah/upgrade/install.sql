@@ -28,14 +28,13 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~slr_logon
-@@slr/upgrade_slr_packages.sql
-
-conn~gui_logon
-@@gui/upgrade_gui_packages.sql
 
 conn ~fdr_logon
-@@fdr/upgrade_trigger_fix.sql
+@@fdr/fdr_cleardown.sql
+
+conn ~stn_logon
+delete from stn.vie_posting_method_ledger;
+@@stn/posting_rules_rob_9.sql
 
 /* End AAH custom upgrades */
 
