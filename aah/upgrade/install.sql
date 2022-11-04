@@ -28,14 +28,8 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~slr_logon
-@@slr/upgrade_slr_packages.sql
-
-conn~gui_logon
-@@gui/upgrade_gui_packages.sql
-
-conn ~fdr_logon
-@@fdr/upgrade_trigger_fix.sql
+conn ~stn_logon
+@@../aahCustom/aahStandardisation/src/main/db/views/stn/policy_tax.sql
 
 /* End AAH custom upgrades */
 
