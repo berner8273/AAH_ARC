@@ -45,7 +45,6 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
   
    v_lpg_id:= 2;
      
-
    BEGIN    
         IF r_slr.arct_arc_schema_name <> 'PURGE' THEN
             v_sql := 'select count(*) INTO :v_count3 from SLR.'||r_slr.a_name; --||q'[ where ]'||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
@@ -55,9 +54,10 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
         END IF;                
     EXCEPTION WHEN NO_DATA_FOUND THEN
      v_count3:=0;
+      WHEN OTHERS THEN
+      v_count3:=0;
     END;    
-
-        
+       
     BEGIN 
     v_sql := 'select nvl(FL.ARL_RECORDS_ARCHIVED,0) INTO :v_count4 from fdr.fr_archive_ctl fc, fdr.fr_archive_log fl, fdr.fr_archive_log_header fh where FC.ARCT_ID = fl.arl_arct_id and fc.arct_table_name = '||''''||r_slr.t_name||''''||' and fl.arl_arlh_id = FH.ARLH_ID'
             ||' and fl.arl_arlh_id = FH.ARLH_ID and fl.arl_arlh_id in (select max(arlh_id) from fdr.fr_archive_log_header flh where flh.arlh_lpg_id = 1)';
