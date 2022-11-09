@@ -29,7 +29,7 @@ define unittest_login=~8
 /* Begin AAH custom upgrades */
 
 conn ~sys_logon
-@@sys/archive_slr.sql;
+@@sys/archive_scheduler.sql;
 
 
 /* End AAH custom upgrades */
