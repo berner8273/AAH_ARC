@@ -28,14 +28,9 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~slr_logon
-@@slr/upgrade_slr_packages.sql
+conn ~sys_logon
+update scheduler_core.batch set batch = 'ARCHIVE_SLR2' where batch = 'ARCHIVE_SLR';
 
-conn~gui_logon
-@@gui/upgrade_gui_packages.sql
-
-conn ~fdr_logon
-@@fdr/upgrade_trigger_fix.sql
 
 /* End AAH custom upgrades */
 
