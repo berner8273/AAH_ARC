@@ -1,6 +1,5 @@
 DECLARE
   v_sql varchar2(1256);
-  v_count_arc integer :=0;
   v_count1 integer :=0;
   v_count2 integer :=0;
   v_count3 number :=0;
@@ -37,7 +36,7 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
     ELSE
         v_sql :=  'select count(*) into :v_count1 from slr.'||r_slr.t_name||' where '||r_slr.arct_archive_where_clause||' and '||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
         s_lpg := '2';
-    END IF;    
+    END IF;   
                    
     EXECUTE IMMEDIATE v_sql INTO v_count1;
         
@@ -45,13 +44,20 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
     EXECUTE IMMEDIATE v_sql INTO v_count2;
   
    v_lpg_id:= 2;
-    
-   IF r_slr.arct_arc_schema_name <> 'PURGE' THEN
-        v_sql := 'select count(*) INTO :v_count3 from SLR.'||r_slr.a_name; --||q'[ where ]'||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
-        EXECUTE IMMEDIATE v_sql INTO v_count3;
-    ELSE
-        v_count3 :=0;
-    END IF;                
+     
+
+   BEGIN    
+        IF r_slr.arct_arc_schema_name <> 'PURGE' THEN
+            v_sql := 'select count(*) INTO :v_count3 from SLR.'||r_slr.a_name; --||q'[ where ]'||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
+--            dbms_output.put_line(v_sql);
+            EXECUTE IMMEDIATE v_sql INTO v_count3;
+        ELSE
+            v_count3 :=0;
+        END IF;                
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+     v_count3:=0;
+    END;    
+
         
     BEGIN 
     v_sql := 'select nvl(FL.ARL_RECORDS_ARCHIVED,0) INTO :v_count4 from fdr.fr_archive_ctl fc, fdr.fr_archive_log fl, fdr.fr_archive_log_header fh where FC.ARCT_ID = fl.arl_arct_id and fc.arct_table_name = '||''''||r_slr.t_name||''''||' and fl.arl_arlh_id = FH.ARLH_ID'
