@@ -49,7 +49,6 @@ dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total
    BEGIN    
         IF r_slr.arct_arc_schema_name <> 'PURGE' THEN
             v_sql := 'select count(*) INTO :v_count3 from SLR.'||r_slr.a_name; --||q'[ where ]'||r_slr.a_date||q'[ <= to_date(']'||bus_date||q'[','mm/dd/yyyy')]'||'  - '||r_slr.a_days;
---            dbms_output.put_line(v_sql);
             EXECUTE IMMEDIATE v_sql INTO v_count3;
         ELSE
             v_count3 :=0;
