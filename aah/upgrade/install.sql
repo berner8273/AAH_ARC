@@ -29,7 +29,7 @@ define unittest_login=~8
 /* Begin AAH custom upgrades */
 
 conn ~sys_logon
-update scheduler_core.batch set batch = 'ARCHIVE_SLR2' where batch = 'ARCHIVE_SLR';
+update scheduler_core.batch set batch = 'ARCHIVE_SLR' where batch = 'ARCHIVE_SLR';
 
 
 /* End AAH custom upgrades */
