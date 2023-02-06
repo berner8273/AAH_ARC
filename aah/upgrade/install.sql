@@ -31,6 +31,7 @@ define unittest_login=~8
 conn ~fdr_logon
 -- update control file
 @@fdr/FR_ARCHIVE_CTL_SLR.sql
+@@fdr/fdr_archiving_pkg.sql
 
 conn ~stn_logon
 @@stn/archive_slr_setup.sql
