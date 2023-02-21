@@ -341,6 +341,8 @@ Insert into GUI.UI_GEN_LOOKUP_TYPE_PROPERTIES
    ('MADJ_BALANCE_COLUMNS', 'LK_MATCH_KEY1 asc', 'UTGL_MATCH_KEY1 asc', 'Y', 'N', 
     'Y');
 
+COMMIT;    
+
 
 
 
