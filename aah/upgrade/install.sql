@@ -33,7 +33,7 @@ conn ~sys_logon
 @@sys../us60544_table_inserts.sql
 
 conn ~gui_logon
-@@gui../aahCustom/aahSubLedger/src/main/db/packages/gui/pgui_manual_journal.bdy
+@@../aahCustom/aahSubLedger/src/main/db/packages/gui/pgui_manual_journal.bdy
 
 conn ~stn_logon
 
