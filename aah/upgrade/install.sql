@@ -30,7 +30,7 @@ define unittest_login=~8
 
 
 conn ~sys_logon
-@@sys../us60544_table_inserts.sql
+@@sys/us60544_table_inserts.sql
 
 conn ~gui_logon
 @@../aahCustom/aahSubLedger/src/main/db/packages/gui/pgui_manual_journal.bdy
