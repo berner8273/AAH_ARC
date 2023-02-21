@@ -3980,7 +3980,7 @@ lvPeriodStartDate := NULL;
                           FD_SEGMENT_4_BALANCE_CHECK,FD_SEGMENT_5_BALANCE_CHECK,FD_SEGMENT_6_BALANCE_CHECK,
                           FD_SEGMENT_7_BALANCE_CHECK,FD_SEGMENT_8_BALANCE_CHECK,FD_SEGMENT_9_BALANCE_CHECK,
                           FD_SEGMENT_10_BALANCE_CHECK
-                        FROM slr.SLR_FAK_DEFINITIONS WHERE fd_entity = 'FSANY') fd ON (1=1)               
+                        FROM slr.SLR_FAK_DEFINITIONS WHERE fd_entity = gEntityConfiguration.ent_entity) fd ON (1=1)
              WHERE COLUMN_TYPE = 'L'
              order by COLUMN_NAME;
 
