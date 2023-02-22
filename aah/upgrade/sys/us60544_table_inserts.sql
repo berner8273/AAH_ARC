@@ -1,4 +1,3 @@
-
 delete from fdr.fr_general_lookup where lk_LKT_LOOKUP_TYPE_CODE = 'MADJ_BALANCE_COLUMNS';
 delete from gui.ui_general_lookup where ugl_lkt_lookup_type_code = 'MADJ_BALANCE_COLUMNS';
 delete from gui.ui_gen_lookup_type_properties where UGLTP_LOOKUP_TYPE_CODE = 'MADJ_BALANCE_COLUMNS'; 
@@ -10,12 +9,12 @@ UGLTP_LOOKUP_TYPE_CODE  , UGLTP_ORDER_EXP_SEARCH, UGLTP_ORDER_EXP_USER, UGLTP_AD
 ('MADJ_BALANCE_COLUMNS','LK_MATCH_KEY1 asc','UTGL_MATCH_KEY1 asc','N','N','N');
 
 insert into fdr.fr_general_lookup_aud (
-lk_LKT_LOOKUP_TYPE_CODE ,LK_MATCH_KEY1,lk_lookup_value1  ,LK_INPUT_BY    ,LK_AUTH_BY   , LK_ACTIVE )
-values ('MADJ_BALANCE_COLUMNS','Affiliate','N','FDR','FDR','A');
+lk_LKT_LOOKUP_TYPE_CODE ,LK_MATCH_KEY1,LK_MATCH_KEY2,lk_lookup_value1  ,LK_INPUT_BY    ,LK_AUTH_BY   , LK_ACTIVE )
+values ('MADJ_BALANCE_COLUMNS','Affiliate','SEGMENT_4','N','FDR','FDR','A');
 
 insert into fdr.fr_general_lookup_aud (
-lk_LKT_LOOKUP_TYPE_CODE ,LK_MATCH_KEY1,lk_lookup_value1  ,LK_INPUT_BY    ,LK_AUTH_BY   , LK_ACTIVE )
-values ('MADJ_BALANCE_COLUMNS','Comments','N','FDR','FDR','A');
+lk_LKT_LOOKUP_TYPE_CODE ,LK_MATCH_KEY1,LK_MATCH_KEY2,lk_lookup_value1  ,LK_INPUT_BY    ,LK_AUTH_BY   , LK_ACTIVE )
+values ('MADJ_BALANCE_COLUMNS','Comments','REFERENCE_1','N','FDR','FDR','A');
 
 insert into fdr.fr_general_lookup_type (
 LKT_LOOKUP_TYPE_CODE ,lkt_lookup_type_name,LKT_INPUT_BY    ,LKT_AUTH_BY   , LKT_ACTIVE )
@@ -342,10 +341,3 @@ Insert into GUI.UI_GEN_LOOKUP_TYPE_PROPERTIES
     'Y');
 
 COMMIT;    
-
-
-
-
-
-
-
