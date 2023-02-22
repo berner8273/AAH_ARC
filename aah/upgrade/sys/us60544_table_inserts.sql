@@ -14,7 +14,7 @@ values ('MADJ_BALANCE_COLUMNS','Affiliate','SEGMENT_4','N','FDR','FDR','A');
 
 insert into fdr.fr_general_lookup_aud (
 lk_LKT_LOOKUP_TYPE_CODE ,LK_MATCH_KEY1,LK_MATCH_KEY2,lk_lookup_value1  ,LK_INPUT_BY    ,LK_AUTH_BY   , LK_ACTIVE )
-values ('MADJ_BALANCE_COLUMNS','Comments','REFERENCE_1','N','FDR','FDR','A');
+values ('MADJ_BALANCE_COLUMNS','Journal Description','REFERENCE_1','N','FDR','FDR','A');
 
 insert into fdr.fr_general_lookup_type (
 LKT_LOOKUP_TYPE_CODE ,lkt_lookup_type_name,LKT_INPUT_BY    ,LKT_AUTH_BY   , LKT_ACTIVE )
@@ -26,7 +26,7 @@ values ('MADJ_BALANCE_COLUMNS','Affiliate','SEGMENT_4','N','FDR','FDR','A');
 
 insert into fdr.fr_general_lookup (
 lk_LKT_LOOKUP_TYPE_CODE ,LK_MATCH_KEY1,LK_MATCH_KEY2,lk_lookup_value1  ,LK_INPUT_BY    ,LK_AUTH_BY   , LK_ACTIVE )
-values ('MADJ_BALANCE_COLUMNS','Comments','REFERENCE_1','N','FDR','FDR','A');
+values ('MADJ_BALANCE_COLUMNS','Journal Description','REFERENCE_1','N','FDR','FDR','A');
 
 delete from gui.ui_field where uf_id >= 4433375 and uf_id  <= 4433399 ;
 
