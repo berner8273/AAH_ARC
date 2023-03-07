@@ -9,8 +9,6 @@ as (
         join maxbal m on db.EDB_FAK_ID = m.EDB_FAK_ID and db.edb_balance_date = m.mdate
                 and db.EDB_EBA_ID = m.EDB_EBA_ID
         join fdr.fr_global_parameter gp on gp.lpg_id = 2
-        join fdr.fr_archive_ctl arc on arc.arct_id = 255           
-        where m.mdate < (gp.gp_todays_bus_date - arc.arct_archive_days )
-    ) 
+        join fdr.fr_archive_ctl arc on arc.arct_id = 255 )
 group by edb_balance_date,EDB_BALANCE_TYPE,edb_entity 
 order by edb_balance_date,EDB_BALANCE_TYPE
