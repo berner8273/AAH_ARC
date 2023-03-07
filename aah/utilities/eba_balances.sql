@@ -7,8 +7,6 @@ as (
     select db.EDB_FAK_ID||db.EDB_EBA_ID||db.edb_balance_date 
         from slr.slr_eba_daily_balances db
         join maxbal m on db.EDB_FAK_ID = m.EDB_FAK_ID and db.edb_balance_date = m.mdate
-                and db.EDB_EBA_ID = m.EDB_EBA_ID
-        join fdr.fr_global_parameter gp on gp.lpg_id = 2
-        join fdr.fr_archive_ctl arc on arc.arct_id = 255 )
+                and db.EDB_EBA_ID = m.EDB_EBA_ID  )
 group by edb_balance_date,EDB_BALANCE_TYPE,edb_entity 
 order by edb_balance_date,EDB_BALANCE_TYPE
