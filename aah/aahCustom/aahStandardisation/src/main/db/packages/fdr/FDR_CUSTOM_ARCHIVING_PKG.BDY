@@ -2026,17 +2026,18 @@ FDB_FAK_ID, new_bal_date, FDB_BALANCE_TYPE,
    FDB_LOCAL_QTD_BALANCE, FDB_PERIOD_QTR
 FROM SLR.SLR_FAK_DAILY_BALANCES
 WHERE FDB_BALANCE_TYPE = r_jt.BAL_TYPE
-    and fdb_fak_id||fdb_balance_date in (
+    and FDB_BALANCE_TYPE||fdb_fak_id||fdb_balance_date in (
 with maxbal
 as (
     select fdb_fak_id,FDB_BALANCE_TYPE,max(fdb_balance_date) mdate from slr.slr_fak_daily_balances
     group by fdb_fak_id,FDB_BALANCE_TYPE)
-    select db.fdb_fak_id||db.fdb_balance_date
+    select db.FDB_BALANCE_TYPE||db.fdb_fak_id||db.fdb_balance_date
         from slr.slr_fak_daily_balances db
         join maxbal m on db.fdb_fak_id = m.fdb_fak_id and db.fdb_balance_date = m.mdate
         join fdr.fr_global_parameter gp on gp.lpg_id = pLPGId
         join fdr.fr_archive_ctl arc on arc.arct_id = pARCT_ID
         where m.mdate < (gp.gp_todays_bus_date - arc.arct_archive_days )
+        and db.edb_balance_type = m.edb_balance_type
         AND db.fdb_balance_type= r_jt.BAL_TYPE);
 
 END LOOP;
@@ -2098,18 +2099,19 @@ EDB_FAK_ID, EDB_EBA_ID, new_bal_date,
    EDB_BASE_QTD_BALANCE, EDB_LOCAL_QTD_BALANCE, EDB_PERIOD_QTR
 FROM SLR.SLR_EBA_DAILY_BALANCES
 WHERE EDB_BALANCE_TYPE = r_jt.BAL_TYPE
- AND EDB_FAK_ID||EDB_EBA_ID||EDB_BALANCE_DATE in (
+ AND EDB_BALANCE_TYPE||EDB_FAK_ID||EDB_EBA_ID||EDB_BALANCE_DATE in (
 with maxbal
 as (
     select EDB_FAK_ID,EDB_EBA_ID,EDB_BALANCE_TYPE,max(edb_balance_date) mdate from slr.slr_eba_daily_balances
     group by EDB_FAK_ID,EDB_EBA_ID,EDB_BALANCE_TYPE)
-    select db.EDB_FAK_ID||db.EDB_EBA_ID||db.edb_balance_date
+    select db.EDB_BALANCE_TYPE||db.EDB_FAK_ID||db.EDB_EBA_ID||db.edb_balance_date
         from slr.slr_eba_daily_balances db
         join maxbal m on db.EDB_FAK_ID = m.EDB_FAK_ID and db.edb_balance_date = m.mdate
                 and db.EDB_EBA_ID = m.EDB_EBA_ID
         join fdr.fr_global_parameter gp on gp.lpg_id = pLPGId
         join fdr.fr_archive_ctl arc on arc.arct_id = pARCT_ID
         where m.mdate < (gp.gp_todays_bus_date - arc.arct_archive_days )
+        and db.edb_balance_type = m.edb_balance_type
         AND db.edb_balance_type= r_jt.BAL_TYPE);
 
 END LOOP;
