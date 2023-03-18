@@ -2036,7 +2036,7 @@ as (
         join maxbal m on db.fdb_fak_id = m.fdb_fak_id and db.fdb_balance_date = m.mdate
         join fdr.fr_global_parameter gp on gp.lpg_id = pLPGId
         join fdr.fr_archive_ctl arc on arc.arct_id = pARCT_ID
-        where m.mdate < (gp.gp_todays_bus_date - arc.arct_archive_days )
+        where m.mdate <= (gp.gp_todays_bus_date - arc.arct_archive_days )
         and db.fdb_balance_type = m.fdb_balance_type
         AND db.fdb_balance_type= r_jt.BAL_TYPE);
 
@@ -2110,7 +2110,7 @@ as (
                 and db.EDB_EBA_ID = m.EDB_EBA_ID
         join fdr.fr_global_parameter gp on gp.lpg_id = pLPGId
         join fdr.fr_archive_ctl arc on arc.arct_id = pARCT_ID
-        where m.mdate < (gp.gp_todays_bus_date - arc.arct_archive_days )
+        where m.mdate <= (gp.gp_todays_bus_date - arc.arct_archive_days )
         and db.edb_balance_type = m.edb_balance_type
         AND db.edb_balance_type= r_jt.BAL_TYPE);
 
