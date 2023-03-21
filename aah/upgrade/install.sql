@@ -29,7 +29,7 @@ define unittest_login=~8
 /* Begin AAH custom upgrades */
 
 conn ~fdr_logon
-@@../aahCustom/aahStandardisation/src/main/db/triggers/fdr/us63704_close_period.sql
+@@fdr/us63704_close_period.sql
 
 
 /* End AAH custom upgrades */
