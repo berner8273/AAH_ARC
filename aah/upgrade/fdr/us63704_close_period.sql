@@ -1,1 +1,1 @@
-@@../aahCustom/aahStandardisation/src/main/db/triggers/fdr/FRTR_CLOSE_PERIODS.sql;
+@@../aahCustom/aahStandardisation/src/main/db/triggers/fdr/FRTR_CLOSE_PERIODS.SQL;
