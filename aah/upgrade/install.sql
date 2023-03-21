@@ -29,10 +29,8 @@ define unittest_login=~8
 /* Begin AAH custom upgrades */
 
 conn ~fdr_logon
-@@../aahCustom/aahStandardisation/src/main/db/grants/tables/fdr/fr_general_codes.sql
+@@../aahCustom/aahStandardisation/src/main/db/triggers/fdr/us63704_close_period.sql
 
-conn ~stn_logon
-@@../aahCustom/aahStandardisation/src/main/db/views/stn/policy_tax.sql
 
 /* End AAH custom upgrades */
 
