@@ -28,11 +28,19 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
+conn ~stn_logon
+--@@../aahCustom/aahStandardisation/src/main/db/views/stn/policy_tax.sql
+
 conn ~fdr_logon
 @@../aahCustom/aahStandardisation/src/main/db/grants/tables/fdr/fr_general_codes.sql
 
-conn ~stn_logon
-@@../aahCustom/aahStandardisation/src/main/db/views/stn/policy_tax.sql
+conn ~slr_logon
+@@slr/upgrade_slr_packages.sql
+
+conn ~gui_logon
+@@gui/upgrade_gui_packages.sql
+
+
 
 /* End AAH custom upgrades */
 
