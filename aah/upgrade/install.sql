@@ -24,16 +24,14 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
+conn ~slr_logon
+@@slr/upgrade_slr_packages.sql
+
 conn ~gui_logon
 @@gui/upgrade_gui_packages.sql
 
 conn ~fdr_logon
-@@Trigger_Fix.sql
-@@../aahCustom/aahStandardisation/src/main/db/grants/tables/fdr/fr_general_codes.sql
-
-conn ~slr_logon
-@@slr/upgrade_slr_packages.sql
-
+@@fdr/upgrade_trigger_fix.sql
 
 
 
