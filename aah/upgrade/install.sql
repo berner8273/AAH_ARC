@@ -22,23 +22,18 @@ define unittest_login=~8
 
 /* Check AAH upgrade versions - do not remove */
 
---comment out for upgrade as this is not repeatable
---conn ~sys_logon
---@@sys/00001_check_upgrade_versions.sql
-
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
---@@../aahCustom/aahStandardisation/src/main/db/views/stn/policy_tax.sql
+conn ~gui_logon
+@@gui/upgrade_gui_packages.sql
 
 conn ~fdr_logon
+@@Trigger_Fix.sql
 @@../aahCustom/aahStandardisation/src/main/db/grants/tables/fdr/fr_general_codes.sql
 
 conn ~slr_logon
 @@slr/upgrade_slr_packages.sql
 
-conn ~gui_logon
-@@gui/upgrade_gui_packages.sql
 
 
 
