@@ -31,6 +31,7 @@ conn ~gui_logon
 @@gui/upgrade_gui_packages.sql
 
 conn ~fdr_logon
+@@fdr/upgrade_fdr_procedures.sql
 @@fdr/upgrade_trigger_fix.sql
 
 
