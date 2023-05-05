@@ -26,6 +26,8 @@ define unittest_login=~8
 
 conn ~sys_logon as sysdba
 grant execute on dbms_alert to SLR;
+create or replace synonym scheduler_app.process_group for scheduler_core.process_group;
+create or replace synonym aah_ui.frv_static_data_auth for fdr.frv_static_data_auth;
 
 conn ~slr_logon
 @@slr/upgrade_slr_packages.sql
