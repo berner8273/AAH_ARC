@@ -1,0 +1,1 @@
+grant select on rdr.rrv_ag_slr_jrnl_lines to aah_rdr;
