@@ -1,0 +1,85 @@
+CREATE OR REPLACE PACKAGE SLR.SLR_BALANCE_MOVEMENT_PKG AS
+
+
+procedure pBMRunBalanceMovementProcess( pProcess     IN slr_process.p_process%TYPE
+                                         ,pEntProcSet  IN slr_bm_entity_processing_set.bmeps_set_id%TYPE
+                                         ,pConfig      IN slr_process_config.pc_config%TYPE
+                                         ,pSource      IN slr_process_source.sps_source_name%TYPE
+                                         ,pBalanceDate IN DATE
+                                         ,pRateSet     IN slr_entity_rates.er_entity_set%type
+										 ,gProcId OUT number
+                                        );
+PROCEDURE pBMUpdateJLUFakEbaId(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type);
+
+
+FUNCTION fBMGetEPGId(pEntity slr_jrnl_lines_temp.jl_entity%TYPE
+                                      ,pS1 slr_jrnl_lines_temp.jl_segment_1%TYPE
+                                      ,pS2 slr_jrnl_lines_temp.jl_segment_2%type
+                                      ,pS3 slr_jrnl_lines_temp.jl_segment_3%TYPE
+                                      ,pS4 slr_jrnl_lines_temp.jl_segment_4%TYPE
+                                      ,pS5 slr_jrnl_lines_temp.jl_segment_5%TYPE
+                                      ,pS6 slr_jrnl_lines_temp.jl_segment_6%TYPE
+                                      ,pS7 slr_jrnl_lines_temp.jl_segment_7%TYPE
+                                      ,pS8 slr_jrnl_lines_temp.jl_segment_8%TYPE
+                                      ,pS9 slr_jrnl_lines_temp.jl_segment_9%TYPE
+                                      ,pS10 slr_jrnl_lines_temp.jl_segment_10%TYPE)
+RETURN slr_jrnl_lines_unposted.jlu_epg_id%TYPE;
+
+FUNCTION getPeriodMonth (pEntity SLR_ENTITY_PERIODS.EP_ENTITY%TYPE, pEffectiveDate DATE) RETURN SLR_ENTITY_PERIODS.EP_BUS_PERIOD%TYPE;
+FUNCTION getPeriodYear (pEntity SLR_ENTITY_PERIODS.EP_ENTITY%TYPE, pEffectiveDate DATE) RETURN SLR_ENTITY_PERIODS.EP_BUS_YEAR%TYPE;
+FUNCTION getPeriodLTD (pEntity SLR_ENTITY_PERIODS.EP_ENTITY%type, pEffectiveDate date, pAccount slr_entity_accounts.EA_ACCOUNT%type) RETURN SLR_ENTITY_PERIODS.EP_BUS_YEAR%type;
+
+procedure pBMGetLatestBalance(pBalanceDate in date, pEntProcSet in slr_bm_entity_processing_set.bmeps_set_id%type);
+PROCEDURE pBMFxRevaluation(lines_created out INTEGER);
+PROCEDURE pBMFxPnLSweep(lines_created out INTEGER);
+PROCEDURE pBMPositionRebalancing(lines_created out INTEGER);
+PROCEDURE pBMFXClearDown(lines_created out INTEGER);
+PROCEDURE pBMPLRepatriation(lines_created out INTEGER);
+PROCEDURE pBMPLRetainedEarnings(lines_created out INTEGER);
+PROCEDURE pBMValidateConfigForEPG;
+
+
+
+/*global declarations*/
+
+gProcessId   varchar2(30);
+gProcess     slr_process.p_process%TYPE;
+gEntProcSet  slr_bm_entity_processing_set.bmeps_set_id%TYPE;
+gConfig      slr_process_config.pc_config%TYPE;
+gSource      slr_process_source.sps_source_name%TYPE;
+gBalanceDate DATE;
+gRateSet     slr_entity_rates.er_entity_set%type;
+gJournalType slr_process_config.pc_jt_type%TYPE;
+gFakEbaFlag  slr_process_config.pc_fak_eba_flag%TYPE;
+gWhichAmount slr_process_config.pc_aggregation%TYPE;
+gFxManageCcy slr_process_config.PC_FX_MANAGE_CCY%TYPE;
+gMethod  slr_process_config.PC_METHOD%TYPE;
+gCustomProcedure slr_process_config.PC_CUSTOM_PROCEDURE%TYPE;
+
+type gtProcessSource is record (
+   ps_source slr_process_source.sps_source_name%TYPE
+  ,ps_source_obj1 slr_process_source.SPS_DB_OBJECT_NAME%type
+  ,ps_source_obj2 slr_process_source.SPS_DB_OBJECT_NAME2%type
+  ,ps_fak_eba_flag slr_process_source.SPS_FAK_EBA_FLAG%type
+  );
+
+gProcessSource gtProcessSource;
+
+TYPE gtFAKBalanceKey IS record (
+   s1_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_1_BALANCE_CHECK%TYPE
+  ,s2_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_2_BALANCE_CHECK%TYPE
+  ,s3_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_3_BALANCE_CHECK%TYPE
+  ,s4_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_4_BALANCE_CHECK%TYPE
+  ,s5_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_5_BALANCE_CHECK%TYPE
+  ,s6_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_6_BALANCE_CHECK%TYPE
+  ,s7_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_7_BALANCE_CHECK%TYPE
+  ,s8_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_8_BALANCE_CHECK%TYPE
+  ,s9_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_9_BALANCE_CHECK%TYPE
+  ,s10_bc SLR_FAK_DEFINITIONS.FD_SEGMENT_10_BALANCE_CHECK%TYPE
+  );
+
+/*global declarations*/
+
+END SLR_BALANCE_MOVEMENT_PKG;
+
+/
