@@ -1,4 +1,4 @@
-CREATE OR REPLACE FORCE EDITIONABLE VIEW RDR.RRV_AG_SLR_JRNL_HEADERS
+create or replace force editionable view rdr.rrv_ag_slr_jrnl_headers
 (
    JH_JRNL_ID,
    JH_JRNL_TYPE,
