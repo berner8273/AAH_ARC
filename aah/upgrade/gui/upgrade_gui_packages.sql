@@ -1,5 +1,5 @@
-@@../aahCustom/aahSubLedger/src/main/db/packages/gui/pgui_manual_journal.hdr;
-@@../aahCustom/aahSubLedger/src/main/db/packages/gui/pgui_manual_journal.bdy;
+@@../aahCustom/aahSubLedger/src/main/db/packages/gui/PGUI_MANUAL_JOURNAL.hdr;
+@@../aahCustom/aahSubLedger/src/main/db/packages/gui/PGUI_MANUAL_JOURNAL.bdy;
 
 
 grant select on gui.temp_gui_jrnl_lines_unposted to rdr;
