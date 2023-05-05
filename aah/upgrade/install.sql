@@ -24,11 +24,18 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
+conn ~sys_logon as sysdba
+@@sys/refresh_grants.sql;
+
 conn ~slr_logon
 @@slr/upgrade_slr_packages.sql
 
 conn ~gui_logon
 @@gui/upgrade_gui_packages.sql
+
+conn ~rdr_logon
+@@gui/upgrade_rdr_packages.sql
+@@gui/upgrade_rdr_views.sql
 
 conn ~fdr_logon
 @@fdr/upgrade_fdr_procedures.sql
