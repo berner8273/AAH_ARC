@@ -9,3 +9,7 @@ grant select on gui.gui_jrnl_line_errors to rdr;
 grant select on gui.gui_jrnl_headers_unposted to slr;
 grant insert on gui.gui_jrnl_headers_unposted to slr;
 grant update on gui.gui_jrnl_headers_unposted to slr;
+
+update gui.t_ui_jrnl_line_meta
+set column_nullable = 'Y'
+where column_name in ('SEGMENT_3','SEGMENT_5');
