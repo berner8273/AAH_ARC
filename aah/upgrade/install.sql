@@ -37,7 +37,6 @@ conn ~gui_logon
 
 conn ~rdr_logon
 @@gui/upgrade_rdr_packages.sql
-@@gui/upgrade_rdr_views.sql
 
 conn ~fdr_logon
 @@fdr/upgrade_fdr_procedures.sql
