@@ -25,7 +25,7 @@ define unittest_login=~8
 /* Begin AAH custom upgrades */
 
 conn ~sys_logon as sysdba
-@@sys/refresh_grants.sql;
+grant execute on dbms_alert to SLR;
 
 conn ~slr_logon
 @@slr/upgrade_slr_packages.sql
