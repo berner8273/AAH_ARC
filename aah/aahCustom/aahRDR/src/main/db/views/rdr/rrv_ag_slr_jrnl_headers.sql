@@ -88,7 +88,6 @@ AS
           jhu_jrnl_rev_date
      FROM slr.slr_jrnl_headers_unposted
    UNION ALL
-   --SELECT CAST (STANDARD_HASH (jhu_jrnl_id, 'MD5') AS VARCHAR2 (32)),
    SELECT jhu_jrnl_id,
           jhu_jrnl_type,
           jhu_jrnl_date,
