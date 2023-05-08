@@ -265,7 +265,6 @@ AS
            GROUP BY faei2.ae_acc_event_id) faei
              ON jlu.jlu_source_jrnl_id = faei.ae_acc_event_id
    UNION ALL
-   --SELECT CAST (STANDARD_HASH (gjlu.jlu_jrnl_hdr_id, 'MD5') AS VARCHAR2 (32)),
    SELECT gjlu.jlu_jrnl_hdr_id,
           gjlu.jlu_jrnl_line_number,
           CAST (gjlu.jlu_fak_id AS VARCHAR2 (32)),
