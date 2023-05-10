@@ -15,7 +15,6 @@ grant select on gui.gui_jrnl_line_errors to rdr with grant option
 grant select on gui.gui_jrnl_lines_unposted to rdr with grant option
 grant select on gui.gui_jrnl_headers_unposted to rdr with grant option
 grant select on gui.gui_jrnl_headers_unposted  to rdr with grant option
-grant select on rdr.rrv_ag_slr_jrnl_lines to aah_rdr;
 
 update gui.t_ui_jrnl_line_meta
 set column_nullable = 'Y'
