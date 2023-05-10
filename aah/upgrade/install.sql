@@ -39,7 +39,7 @@ conn ~gui_logon
 @@gui/upgrade_gui_objects.sql
 
 conn ~rdr_logon
-@@gui/upgrade_rdr_objects.sql
+@@rdr/upgrade_rdr_objects.sql
 
 conn ~fdr_logon
 @@fdr/upgrade_fdr_procedures.sql
