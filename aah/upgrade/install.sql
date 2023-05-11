@@ -43,7 +43,7 @@ conn ~rdr_logon
 
 conn ~fdr_logon
 @@fdr/upgrade_fdr_procedures.sql
-@@fdr/upgrade_trigger_fix.sql
+-- @@fdr/upgrade_trigger_fix.sql
 
 
 
