@@ -54,7 +54,7 @@ conn ~sys_logon as sysdba
 @@sys/99999_refresh_aah_roles.sql;
 
 /* recompile any packages or procedures that are not compiled */
-@@sys/recompile_objects.sql
+@@sys/recompile_all_objects.sql
 
 /* Register upgrade - do not remove */
 conn ~fdr_logon
