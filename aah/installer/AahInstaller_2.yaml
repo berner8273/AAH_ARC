@@ -1,0 +1,549 @@
+# Aptitude Configuration Console - response file
+#
+
+---
+aptitude-console-version: 1
+appName: "Aptitude Software Solution Installer"
+createDate: "2022.04.05 07:03:01"
+variablesValues:
+  db:
+    # Database type (Oracle is the only supported)
+    type: "Oracle"
+    # Database hostname or IP address
+    hostname: "#{aptitudeDatabaseHost}"
+    # TNS Listener port
+    port: "1521"
+    # Oracle Instance Name
+    instanceName: "#{aptitudeDatabaseServiceName}"
+    # (Optional) connection string to be used if defined (the hostname, port and instanceName will not be used to construct the connection string)
+    connectionString:
+    # Install user name
+    user: "#{sysUsername}"
+    # Install user password
+    pass: "#{sysPassword}"
+    # Is the database instance running on AWS RDS (apply only during database setup)
+    isAwsRds: "false"
+    isSysDba: "false"
+    # Settings for import metadata to Security Module and Scheduler
+    metadata:
+      # Settings for import metadata to Security Module
+      security:
+        # valid values: {Merge, Replace}
+        uploadMode: "Merge"
+        scheduler:
+          # @type(bool)
+          runImport: true
+          uploadFile: "../../scheduler-db/scheduler-db/scheduler-security.json"
+        aah:
+          # @type(bool)
+          runImport: true
+          uploadFile: "../../aah-database-setup/database/DatabaseInit/aah-security.json"
+        aice:
+          # @type(bool)
+          runImport: false
+          uploadFile: "../../aice-db/aice-db/aice-security.json"
+        ac:
+          # @type(bool)
+          runImport: false
+          uploadFile: "../../ac-db/ac-security.json"
+        reporting:
+          # @type(bool)
+          runImport: false
+          uploadFile: "../../reporting-db/reporting-security.json"
+        users:
+          # @type(bool)
+          runImport: true
+          uploadFile: "../../security-db/security-db/users-security.json"
+        migration:
+          # @type(bool)
+          runImport: false
+          uploadFile: "../../aah-migration-setup/aah-migration.json"
+      # Settings for import metadata to Scheduler module
+      scheduler:
+        # valid values: {Merge, Replace}
+        uploadMode: "Merge"
+        aah:
+          # @type(bool)
+          runImport: true
+          uploadFile: "../../aah-database-setup/database/DatabaseInit/aah-dsr-scheduler.json"
+        aice:
+          # @type(bool)
+          runImport: false
+          uploadFile: "../../aice-db/aice-db/aice-scheduler.json"
+    # @type(bool)
+    setupSecurity: true
+    # @type(bool)
+    setupScheduler: true
+    # @type(bool)
+    setupAAH: true
+    # @type(bool)
+    setupAICE: false
+    # @type(bool)
+    setupAC: false
+    # @type(bool)
+    setupReporting: false
+    # @type(bool)
+    initSecurity: false
+    # @type(bool)
+    initScheduler: false
+    # @type(bool)
+    initAAH: false
+    # @type(bool)
+    migrateSecurity: false
+    # @type(bool)
+    migrateScheduler: false
+    # @type(bool)
+    migrateAAH: false
+    securityUsers:
+      uiUser: "SECURITY_UI"
+      uiPass: "#{security_uiPassword}"
+      uiRole: "security_ui_role"
+      appUser: "SECURITY_APP"
+      appPass: "#{security_appPassword}"
+      appRole: "security_app_role"
+      coreUser: "SECURITY_CORE"
+      corePass: "#{security_corePassword}"
+      coreRole: "security_core_role"
+    schedulerUsers:
+      uiUser: "SCHEDULER_UI"
+      uiPass: "#{scheduler_uiPassword}"
+      uiRole: "scheduler_ui_role"
+      appUser: "SCHEDULER_APP"
+      appPass: "#{scheduler_appPassword}"
+      appRole: "scheduler_app_role"
+      coreUser: "SCHEDULER_CORE"
+      corePass: "#{scheduler_corePassword}"
+      coreRole: "scheduler_core_role"
+    aahUsers:
+      fdrUser: "FDR"
+      fdrPass: "#{fdrPassword}"
+      stnUser: "STN"
+      stnPass: "#{stnPassword}"
+      slrUser: "SLR"
+      slrPass: "#{slrPassword}"
+      rdrUser: "RDR"
+      rdrPass: "#{rdrPassword}"
+      guiUser: "GUI"
+      guiPass: "#{guiPassword}"
+      uiUser: "AAH_UI"
+      uiPass: "#{aah_uiPassword}"
+    superuser:
+      username:
+      firstname:
+      lastname:
+      email:
+      password:
+    connectionTimeout: "60000"
+  web:
+    security:
+      server:
+        url: "http://#{aptitudeHost}:8090"
+        authentication: "none"
+        applicationTokenValue: ""
+    deployment:
+      # Type of web server, valid values: {Tomcat, JBoss, WebLogic}
+      serverType: "Tomcat"
+      # Preferred type of deployment. Valid values:
+      # PREPARE (prepares deployment package for manual deployment),
+      # DEPLOY (deploys deployment package)
+      installationType: "DEPLOY"
+      # ip or hostname of web server
+      hostname: "#{aptitudeHost}"
+      # expected web server protocol to use, valid values: {http, https}
+      protocol: "https"
+      # domain or ip address to web application
+      domain: "#{aptitudeHost}"
+      # web server port
+      port: "443"
+      username: "#{aahTomcatUsername}"
+      password: "#{aahTomcatPassword}"
+      # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SECURITY
+      securityWebAppFolder: "SECURITY"
+      # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SCHEDULER
+      schedulerWebAppFolder: "scheduler-web"
+      # postfix of expected URL for the web app. ie: protocol://domain:port/webAppFolder eg. http://aptitude.com:8080/SCHEDULER
+      aahWebAppFolder: "aah"
+      aahWebAppStrutsUrl: ""
+      jboss:
+        # jboss management port
+        # @int
+        mngmPort: "9990"
+        # override app with same name
+        # @bool
+        override: "true"
+        # enable (run) application after deployment
+        # @bool
+        enable: "true"
+        # JBoss server type, valid values {STANDALONE, DOMAIN}
+        serverType: "STANDALONE"
+        # Managed domain server deployment group name
+        groupName: "main-server-group"
+      webLogic:
+        # valid values {Server, Cluster}
+        targetType: "Server"
+        targetName: "AdminServer"
+        # Flag indicating that WebLogic server is on remote machine than installation machine (if true, than using -remote and -upload flags in weblogic.Deployer)
+        # @bool
+        isRemote: "true"
+        # Administration port used to deployment
+        # @int
+        adminPort: "9002"
+        # Administration protocol used to deployment, valid values: {http, https, t3, t3s}
+        adminProtocol: "t3s"
+        dataSourceName: "AAH_JDBC"
+        jndiName: "jdbc/fdr"
+    menu:
+      link:
+        ac:
+          text: ""
+          url: ""
+        aice:
+          text: ""
+          url: ""
+        aah:
+          text: "Accounting Hub"
+          url: "https://#{aptitudeHost}/aah"
+        scheduler:
+          text: "Scheduler"
+          url: "https://#{aptitudeHost}/scheduler-web"
+        security:
+          text: "Security"
+          url: "https://#{aptitudeHost}/SECURITY"
+    reporting:
+      server:
+        # the text displayed in the GUI for the Reporting Server menu item, e.g. Reporting Server
+        text: "Reporting Server"
+        # (Optional) The URL to the JasperReports Server, e.g. http://localhost:8080/jasperserver-pro
+        url: ""
+        # (Optional) The URL to the JasperReports Server backend, e.g. http://localhost:8080/jasperserver-pro
+        backendUrl: ""
+      token:
+        # The secret key used to authenticate against JasperReports Server. It must match the value configured in the distributed by Aptitude Software authentication token.
+        secret: "REPORTING_TOKEN_SECRET"
+    # i18n settings
+    i18n:
+      dateFormat: "d"
+      timeFormat: "G"
+      numberFormat: "n"
+      integerNumberFormat: "##0"
+      fractionalNumberFormat: "##0.00"
+      financialNumberFormat: "a"
+      percentageNumberFormat: "p2"
+    # @type(bool)
+    installSecurity: true
+    # @type(bool)
+    installScheduler: true
+    # @type(bool)
+    installAAH: true
+    # @type(bool)
+    installAICE: false
+    # @type(bool)
+    installAC: false
+    # @type(bool)
+    installReporting: false
+  installer:
+  engine:
+    # @type(bool)
+    configureAAHApt: true
+    # @type(bool)
+    configureAAHDsr: true
+    # @type(bool)
+    configureAICE: false
+  server:
+    # @type(bool)
+    configureSecurityApi: true
+  aah:
+    aptitude:
+      version: "6.10"
+      osAuth: "true"
+      user: "admin"
+      pass: "m1cRogene"
+      hostname: "127.0.0.1"
+      port: "2500"
+      executionFolder: "core"
+      encryption: "false"
+      bus:
+        hostname: "127.0.0.1"
+        port: "2503"
+        clientIP: "127.0.0.1"
+      aptcmdPath: "/opt/aptitude/bin"
+    scheduler:
+      dsr:
+        port: "8123"
+        serviceName: "DEFAULT"
+      loader:
+        port: "8234"
+        serviceName: "DEFAULT"
+    db:
+      oracle:
+        wallet:
+          # Type of Oracle security, valid values {CLASSIC, OW}
+          securityType: "CLASSIC"
+          location: "/path/to/wallet"
+          tnsadminPath: "/path/to/tnsnames"
+          fdrConn: "AAH_FDR"
+          stnConn: "AAH_STN"
+          slrConn: "AAH_SLR"
+          rdrConn: "AAH_RDR"
+          guiConn: "AAH_GUI"
+        tablespace:
+          # Tablespace type, valid values {SINGLE_TBLSP, DOUBLE_TBLSP, ASM_SINGLE_TBLSP, ASM_DOUBLE_TBLSP}
+          type: "DOUBLE_TBLSP"
+          # Tablespace file type, valid values {DEFAULT_FILE, BIG_FILE, SMALL_FILE}
+          fileType: "DEFAULT_FILE"
+          # Path to DBF files folder
+          dbfPath: "/oradata/#{aptitudeDatabaseServiceName}/datafile"
+          # Path to DBF index files folder
+          dbfIdxPath: "/oradata/#{aptitudeDatabaseServiceName}/datafile"
+          # Autoextend files, valid values {ON, OFF}
+          autoextendMode: "ON"
+          nextExtentSize: "5M"
+          extentMaxSize: "UNLIMITED"
+          initialDbfSize: "512M"
+          initialIdxDbfSize: "256M"
+          userProfile: "DEFAULT"
+          tmpName: "TEMP"
+          fdrName: "FDR_DATA"
+          stnName: "STN_DATA"
+          rdrName: "RDR_DATA"
+          slrName: "SLR_DATA"
+          fdrFile: "FDR_DATA"
+          stnFile: "STN_DATA"
+          rdrFile: "RDR_DATA"
+          slrFile: "SLR_DATA"
+          fdrIdxName: "FDR_DATA_IDX"
+          stnIdxName: "STN_DATA_IDX"
+          rdrIdxName: "RDR_DATA_IDX"
+          slrIdxName: "SLR_DATA_IDX"
+          fdrIdxFile: "FDR_DATA_IDX"
+          stnIdxFile: "STN_DATA_IDX"
+          rdrIdxFile: "RDR_DATA_IDX"
+          slrIdxFile: "SLR_DATA_IDX"
+        partitioning:
+          configurer:
+            files:
+              # Location (has to be an abolute path) to a file that will replace SLR_INSTALL_CONFIG_populate.sql file
+              SLR_INSTALL_CONFIG:
+              # Location (has to be an abolute path) to a file that will replace SLR_ENTITY_PROC_GROUP_populate.sql file
+              SLR_ENTITY_PROC_GROUP:
+    # settings for ACC installer
+    installer:
+    dsr:
+      log:
+        appender: "file"
+        level: "info"
+        maxFileSize: "100mb"
+        levelForDsr: "info"
+      management:
+        endpoints:
+          enabledByDefault: "false"
+        endpoint:
+          shutdownEnabled: "false"
+          metricsEnabled: "true"
+          prometheusEnabled: "true"
+          flywayEnabled: "false"
+          healthEnabled: "true"
+    web:
+      prepare:
+        files:
+          # Path (absolute) to ApplicationResource.properties file to use
+          ApplicationResources: "../assets/ApplicationResources.properties"
+          # Path (absolute) to webproperties tu use (WEB-INF/classes/webproperties/)
+          WebProperties: "../assets/webproperties"
+          # Path (absolute) to i18n Assets directory
+          i18nAssets: "../assets/i18n"
+          # Path (absolute) to aptitude-aah-journal-line-enricher-1.0.jar file to use
+          JournalLineEnricher:
+          # Path (absolute) to MADJ template CSV file to use (filename to use as a template is specified by jrnls.download.template.file.name property in ApplicationResource.properties)
+          MadjUploadTemplate: "../assets/UploadTemplate.csv"
+          # Path (absolute) to log4j2.xml file to use
+          Log4j2Xml:
+          # Path (absolute) to logback.xml file to use
+          LogbackXml:
+      security:
+        # Authentication type. Possible values: db, saml, preauthenticated, token.
+        authenticationType: "saml"
+        # @type(map)
+        saml:
+          # web application session configuration
+          signature-algorithm: "sha256"
+          default-configuration:
+            path: "/opt/tomcat/conf/FederationMetadata_aah.xml"
+            entity-id: "http://adfs.agltd.com/adfs/services/trust"
+            group-attribute: "http://schemas.xmlsoap.org/claims/Group"
+          service-provider-entity-id: "#{aptitudeHost}"
+          key-store-path: "/opt/tomcat/conf/saml.jks"
+          key-store-alias: "aah"
+          key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
+          private-key-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
+          maximum-authentication-lifetime: "15552000"
+
+        session:
+          numberOfSessionsControl: "false"
+          preventLoginWhenSessionNumberExceeded: "true"
+          webApplicationName: "AAH"
+          maxInactiveIntervalInSeconds: "1800"
+      reporting:
+        reportsText: "Reports"
+        reportsShow: "true"
+        serverText: "Reporting Server"
+        serverUrl: ""
+        serverBackendUrl: ""
+        serverUsernamePrefix: "AAH_"
+        rootFolder: "AAH"
+        tenant: "AAH_Base"
+        tokenSecret: "REPORTING_TOKEN_SECRET"
+        tokenTimeout: "2m"
+        homeDashboardCustomPath: "/Dashboards/"
+        homeDashboardDefaultPath: "/AAH/Defaults/home_dashboard"
+      management:
+        endpoints:
+          enabledByDefault: "false"
+        endpoint:
+          shutdownEnabled: "false"
+          metricsEnabled: "true"
+          prometheusEnabled: "true"
+          flywayEnabled: "false"
+          healthEnabled: "true"
+  security:
+    db:
+      oracle:
+        connectionPoolSize: "32"
+        tablespace:
+          name: "SECURITY_DATA"
+          tempName: "TEMP"
+          datafile: "security_data"
+          datafileSizeOpRead: "100M"
+          datafileSize: "100"
+          datafileSizeUnit: "M"
+          datafileExtendSizeOpRead: "10M"
+          datafileExtendSize: "10"
+          datafileExtendSizeUnit: "M"
+    web:
+      connectionPoolSize: "32"
+      security:
+        # Authentication type. Possible values: db, saml, preauthenticated, token.
+        authenticationType: "saml"
+        allowUserOwnDetailEdit: "false"
+        # @type(map)
+        # Custom scope for security property types:
+        # USER (available only on user screen),
+        # GROUP (available only on group screen),
+        # ROLE (available only on role screen),
+        # ALL (available on all screens: user, group, role)
+        scopes:
+          custom: "USER"
+        # @type(map)
+        saml:
+          default-configuration:
+            path: "/opt/tomcat/conf/FederationMetadata_security.xml"
+            entity-id: "http://adfs.agltd.com/adfs/services/trust"
+            group-attribute: "http://schemas.xmlsoap.org/claims/Group"
+          service-provider-entity-id: "#{aptitudeHost}_security"
+          key-store-path: "/opt/tomcat/conf/saml.jks"
+          key-store-alias: "aah"
+          key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
+          private-key-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
+          maximum-authentication-lifetime: "15552000"
+        kerberos:
+          # keytab location
+          keyTabLocation: "keytab_location"
+          # service principal used in keytab, for web applications this is HTTP/full-qualified-domain-name@DOMAIN format
+          servicePrincipal: "HTTP/full-qualified-domain-name@DOMAIN"
+        enableUsersEnpoint: "false"
+        # Web application session configuration
+        session:
+          # Enables users sessions number limit
+          numberOfSessionsControl: "false"
+          preventLoginWhenSessionNumberExceeded: "true"
+          webApplicationName: "ASEC"
+          maxInactiveIntervalInSeconds: "1800"
+      log:
+        appender: "stdout"
+        level: "info"
+      maxThreads: "32"
+      webMaxFileSize: "50MB"
+      service:
+        name: "DEFAULT"
+        threads: "4"
+    externalApi:
+      connectionPoolSize: "32"
+      # @type(int)
+      # security external api http server port
+      serverPort: 8090
+      security:
+        enableUsersEnpoint: "false"
+      log:
+        appender: "stdout"
+        level: "info"
+      maxThreads: "32"
+  scheduler:
+    db:
+      oracle:
+        connectionPoolSize: "32"
+        tablespace:
+          name: "SCHEDULER"
+          tempName: "TEMP"
+          datafile: "scheduler_data"
+          datafileSizeOpRead: "100M"
+          datafileSize: "100"
+          datafileSizeUnit: "M"
+          datafileExtendSizeOpRead: "10M"
+          datafileExtendSize: "10"
+          datafileExtendSizeUnit: "M"
+    whitelist:
+      uploadScriptFile:
+    adminUser:
+      name: "scheduleradmin"
+      pass: "admin"
+      firstName: "FirstName"
+      lastName: "LastName"
+      email: "admin@admin.com"
+    web:
+      connectionPoolSize: "32"
+      security:
+        # Authentication type. Possible values: db, saml, preauthenticated, token.
+        authenticationType: "saml"
+        # @type(map)
+        # Custom scope for security property types:
+        # USER (available only on user screen),
+        # GROUP (available only on group screen),
+        # ROLE (available only on role screen),
+        # ALL (available on all screens: user, group, role)
+        scopes:
+          custom: "USER"
+        # @type(map)
+        saml:
+          default-configuration:
+            path: "/opt/tomcat/conf/FederationMetadata_scheduler.xml"
+            entity-id: "http://adfs.agltd.com/adfs/services/trust"
+            group-attribute: "http://schemas.xmlsoap.org/claims/Group"
+          service-provider-entity-id: "#{aptitudeHost}_scheduler-web" 
+          key-store-path: "/opt/tomcat/conf/saml.jks"
+          key-store-alias: "aah"
+          key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
+          private-key-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
+          maximum-authentication-lifetime: "15552000"
+        kerberos:
+          # keytab location
+          keyTabLocation: "keytab_location"
+          # service principal used in keytab, for web applications this is HTTP/full-qualified-domain-name@DOMAIN format
+          servicePrincipal: "HTTP/full-qualified-domain-name@DOMAIN"
+        enableUsersEnpoint: "false"
+        # Web application session configuration
+        session:
+          # Enables users sessions number limit
+          numberOfSessionsControl: "false"
+          preventLoginWhenSessionNumberExceeded: "true"
+          webApplicationName: "ASHED"
+          maxInactiveIntervalInSeconds: "1800"
+      log:
+        appender: "stdout"
+        level: "info"
+      # Maximal fil size than can be uploaded.
+      webMaxFileSize: "50MB"
+      maxThreads: "32"
+      service:
+        name: "DEFAULT"
+        threads: "4"
+
