@@ -28,7 +28,7 @@ cp ./drivers/*.jar ${SecurityApiDirectory}/drivers || ERR_EXIT "ERROR copy drive
 cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR copying application.properties file\n"
 
 
-printf "***** running security api ******\n"
+printf "***** running security api ****** ** JB\n"
 chmod +x ${SecurityApiDirectory}/bin/security-external.sh
 nohup ${SecurityApiDirectory}/bin/security-external.sh service&
 
