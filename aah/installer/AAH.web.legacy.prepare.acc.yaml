@@ -1,0 +1,443 @@
+aptitude-console-version: 1
+info:
+  appname: 'Aptitude Accounting Hub'
+variables: 
+  aah:
+    web:
+      # @hidden
+      legacy:
+        # @hidden
+        webXmlContent: ""
+        # snippet with content for Tomcats web.xml file
+        # @hidden
+        webXmlTomcatServletSnippet: "
+<servlet>\n
+\  <servlet-name>DefaultServletOverride</servlet-name>\n
+\  <servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>\n
+\  <init-param>\n
+\     <param-name>debug</param-name>\n
+\     <param-value>0</param-value>\n
+\  </init-param>\n
+\  <init-param>\n
+\     <param-name>listings</param-name>\n
+\     <param-value>false</param-value>\n
+\  </init-param>\n
+\  <load-on-startup>4</load-on-startup>\n
+</servlet>\n\n
+<servlet-mapping>\n
+\  <servlet-name>DefaultServletOverride</servlet-name>\n
+\  <url-pattern>/</url-pattern>\n
+</servlet-mapping>\n"
+        # @hidden
+        webXmlWebLogicResourceSnippet: "
+<resource-ref>\n
+\  <res-ref-name>jdbc/fdr</res-ref-name>\n
+\  <res-type>javax.sql.DataSource</res-type>\n
+\  <res-auth>Container</res-auth>\n
+</resource-ref>\n"
+        # @hidden
+        tmp:
+          # @encrypted(AahDESede)
+          fdrUserEncryptedDes: ""
+          # @encrypted(AahDESede)
+          fdrPassEncryptedDes: ""
+groups: []
+options:
+- name: aahWebLegacyPrepare  
+  label: "Run Prepare/Deploy Legacy Web Application"
+  group: grpAahConfiguration
+  position: 60
+  tasks:
+#  - task: debugVariables
+#    title: "Debug all variables"
+
+  - task: installSteps
+    title: "Prepare Legacy AAH Web Application (WAR)"
+    progressTitle: "'Preparing: '+getResourceDefinition('aahLegWebApp_web_xml').getZipContainer()"
+    finishMessage: "getResourceDefinition('aahLegWebApp_web_xml').getZipContainer()+' prepared'"
+    jobs:
+    # copy GUI.war to destination folder
+    - step: fsOperation
+      operation: copy
+      runCondition: aah.installer.IS_STANDALONE
+      path: "'../resources/GUI.war'"
+      targetPath: "'../war/aah-web-legacy.war'"
+      description: "Copying GUI.war template into target folder for configuration"
+    
+    # read content of web.xml from aah-web-legacy.war
+    - step: resourceRead
+      description: "Reading configuration from web.xml"
+      resource: aahLegWebApp_web_xml
+      onResourceNotFoundAction: fail
+      reload: true
+    
+    # Tomcat: modify web.xml
+    - step: variablesUpdate
+      description: "Preparing configuration"
+      runCondition: web.deployment.serverType.equals('Tomcat')
+      assignments:
+      - variable: aah.web.legacy.webXmlContent
+        value: aah.web.legacy.webXmlContent.replace('<!--servlet-name>DefaultServletOverride</servlet-name-->',aah.web.legacy.webXmlTomcatServletSnippet)
+      - variable: aah.web.legacy.tmp.fdrUserEncryptedDes
+        value: db.aahUsers.fdrUser
+      - variable: aah.web.legacy.tmp.fdrPassEncryptedDes
+        value: decryptIfNeeded(db.aahUsers.fdrPass)
+
+    # WebLogic: modify web.xml
+    - step: variablesUpdate
+      description: "Preparing configuration"
+      runCondition: web.deployment.serverType.equals('WebLogic')
+      assignments:
+        - variable: aah.web.legacy.webXmlContent
+          value: aah.web.legacy.webXmlContent.replace('<!--resource-ref<>res-ref-name>jdbc/fdr</res-ref-name<>/resource-ref-->',aah.web.legacy.webXmlWebLogicResourceSnippet)
+
+    # Tomcat/WebLogic: save web.xml
+    - step: resourceWrite
+      description: "Writing configuration to web.xml"
+      runCondition: web.deployment.serverType.equals('Tomcat') || web.deployment.serverType.equals('WebLogic')
+      resource: aahLegWebApp_web_xml
+      onResourceNotFoundAction: fail
+    
+    # JBoss/WebLogic: upload tomcat-util.jar file into GUI.war (WEB-INF/lib/)
+    - step: zipFileOperation
+      description: "Copying tomcat-util.jar"
+      runCondition: aah.installer.IS_STANDALONE && (web.deployment.serverType.equals('JBoss') || web.deployment.serverType.equals('WebLogic'))
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/tomcat-util.jar'"
+      pathInSys: "'./' + aah.installer.AAH_LIB_DIR + 'tomcat-util.jar'"
+      onNotFoundAction: fail  
+
+    # upload ojdbc8.jar file into GUI.war (WEB-INF/lib/)
+    - step: zipFileOperation
+      description: "Copying ojdbc8.jar"
+      runCondition: aah.installer.IS_STANDALONE
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/ojdbc8-' + aah.installer.AAH_ORA_LIB_VER + '.jar'"
+      pathInSys: "'./' + aah.installer.AAH_DRV_DIR + 'ojdbc8-' + aah.installer.AAH_ORA_LIB_VER + '.jar'"
+      onNotFoundAction: fail
+
+    # upload oraclepki.jar file into GUI.war (WEB-INF/lib/)
+    - step: zipFileOperation
+      description: "Copying oraclepki.jar"
+      runCondition: aah.installer.IS_STANDALONE
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/oraclepki.jar'"
+      pathInSys: "'./' + aah.installer.AAH_LIB_DIR + 'oraclepki.jar'"
+      onNotFoundAction: fail 
+
+    # Upload oraclepki.jar
+    - step: zipFileOperation
+      description: "Copy oraclepki.jar"
+      runCondition: aah.installer.IS_STANDALONE
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/oraclepki-' + installer.ORACLE_VERSION + '.jar'"
+      pathInSys: "'../../drivers/oraclepki-' + installer.ORACLE_VERSION + '.jar'"
+      onNotFoundAction: skip
+
+    # Upload osdt_cert.jar
+    - step: zipFileOperation
+      description: "Copying osdt_cert.jar"
+      runCondition: aah.installer.IS_STANDALONE
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/osdt_cert.jar'"
+      pathInSys: "'./' + aah.installer.AAH_LIB_DIR + 'osdt_cert.jar'"
+      onNotFoundAction: fail   
+    
+    # upload osdt_core.jar file into GUI.war (WEB-INF/lib/)
+    - step: zipFileOperation
+      description: "Copying osdt_core.jar"
+      runCondition: aah.installer.IS_STANDALONE
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/osdt_core.jar'"
+      pathInSys: "'./' + aah.installer.AAH_LIB_DIR + 'osdt_core.jar'"
+      onNotFoundAction: fail
+
+    # Journal Line Enricher START ------------------------------------------------------------------------------------------
+    # upload aptitude-aah-journal-line-enricher-1.0.jar file into GUI.war (WEB-INF/lib/)
+    - step: zipFileOperation
+      description: "Copying aptitude-aah-journal-line-enricher-1.0.jar"
+      runCondition: aah.installer.IS_STANDALONE && !isNullOrWhitespace(aah.web.prepare.files.JournalLineEnricher)
+      resource: aahLegWebApp_WEB-INF_JournalLineEnricher
+      operation: upload
+      fileInZip: "'WEB-INF/lib/aptitude-aah-journal-line-enricher-1.0.jar'"
+      pathInSys: "aah.web.prepare.files.JournalLineEnricher"
+      onNotFoundAction: skip
+
+    - step: fsOperation
+      operation: copy
+      runCondition: "!aah.installer.IS_STANDALONE && !isNullOrWhitespace(aah.web.prepare.files.JournalLineEnricher)"
+      path: aah.web.prepare.files.JournalLineEnricher
+      targetPath: "'../webapps/legacy/WEB-INF/lib/aptitude-aah-journal-line-enricher-1.0.jar'"
+      description: "Copying aptitude-aah-journal-line-enricher-1.0.jar"
+    # Journal Line Enricher END ------------------------------------------------------------------------------------------
+
+    # Upload ApplicationResources.properties START ------------------------------------------------------------------------------------------
+    # copy ApplicationResources.properties template into GUI.war (WEB-INF/classes/resources/)
+    - step: zipFileOperation
+      description: "Copying ApplicationResources.properties template"
+      runCondition: aah.installer.IS_STANDALONE && !isNullOrWhitespace(aah.web.prepare.files.ApplicationResources)
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/classes/resources/ApplicationResources.properties'"
+      pathInSys: "aah.web.prepare.files.ApplicationResources"
+      onNotFoundAction: skip
+
+    - step: fsOperation
+      operation: copy
+      runCondition: "!aah.installer.IS_STANDALONE && !isNullOrWhitespace(aah.web.prepare.files.ApplicationResources)"
+      path: aah.web.prepare.files.ApplicationResources
+      targetPath: "'../webapps/legacy/WEB-INF/classes/resources/ApplicationResources.properties'"
+      description: "Copying ApplicationResources.properties template"
+      # Upload ApplicationResources.properties END ------------------------------------------------------------------------------------------
+
+      # Upload log4j2.xml START ------------------------------------------------------------------------------------------
+      # Tomcat/WebLogic: copy log4j2.xml into GUI.war (WEB-INF/classes/)
+    - step: zipFileOperation
+      description: "Copying log4j2.xml file"
+      runCondition: aah.installer.IS_STANDALONE && (web.deployment.serverType.equals('Tomcat') || web.deployment.serverType.equals('WebLogic')) && !isNullOrWhitespace(aah.web.prepare.files.Log4j2Xml)
+      resource: aahLegWebApp_log4j2.xml
+      operation: upload
+      fileInZip: "'WEB-INF/classes/log4j2.xml'"
+      pathInSys: "aah.web.prepare.files.Log4j2Xml"
+      onNotFoundAction: skip
+
+    - step: fsOperation
+      operation: copy
+      runCondition: "!aah.installer.IS_STANDALONE && (web.deployment.serverType.equals('Tomcat') || web.deployment.serverType.equals('WebLogic')) && !isNullOrWhitespace(aah.web.prepare.files.Log4j2Xml)"
+      path: aah.web.prepare.files.Log4j2Xml
+      targetPath: "'../webapps/legacy/WEB-INF/classes/log4j2.xml'"
+      description: "Copying log4j2.xml file"
+      # Upload log4j2.xml END ------------------------------------------------------------------------------------------
+
+      # prepare jdbc string
+    - step: variablesUpdate
+      description: "Preparing database connection"
+      assignments:
+      - variable: aah.internal.jdbc
+        value: "(db.connectionString?.trim() <= '' ? ('jdbc:oracle:thin:@//' + db.hostname+':'+db.port+'/'+db.instanceName) : ('jdbc:oracle:thin:@' + db.connectionString))"
+
+    # save configuration to META-INF/context.xml
+    - step: resourceWrite
+      description: "Writing configuration to context.xml"
+      runCondition: aah.db.oracle.wallet.securityType.equals('CLASSIC')
+      resource: aahLegWebApp_META-INF-context_xml
+      onResourceNotFoundAction: fail
+      properties:
+        "//Resource[@name='jdbc/fdr']/@url": aah.internal.jdbc
+        "//Resource[@name='jdbc/fdr']/@username": aah.web.legacy.tmp.fdrUserEncryptedDes
+        "//Resource[@name='jdbc/fdr']/@password": aah.web.legacy.tmp.fdrPassEncryptedDes
+        "/@xmlValidation": "false"
+        "/@docBase": web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX
+        "/@path": "'/'+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX"
+
+    - step: resourceWrite
+      description: "Writing configuration to context.xml"
+      runCondition: aah.db.oracle.wallet.securityType.equals('OW')
+      resource: aahLegWebApp_META-INF-context_xml
+      onResourceNotFoundAction: fail
+      properties:
+        "//Resource[@name='jdbc/fdr']/@url": "'jdbc:oracle:thin:@' + aah.db.oracle.wallet.fdrConn"
+        "//Resource[@name='jdbc/fdr']/@password": "''"
+        "//Resource[@name='jdbc/fdr']/@username": "''"
+        "/@docBase": web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX
+        "/@path": "'/'+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX"
+
+    # save tokenEncryptionKey, jee.server.type to ApplicationResources.properties
+    - step: resourceWrite
+      description: "Writing configuration to ApplicationResources.properties"
+      resource: aahLegWebApp_WEB-INF_ApplicationResources.properties
+      onResourceNotFoundAction: fail
+      properties:
+        jee.server.type: web.deployment.serverType.toUpperCase()
+        security.token.generator.tokenEncryptionKey: aah.internal.tokenEncryptionKey
+
+    # Tomcat/JBoss: save log4j.properties
+    - step: resourceWrite
+      description: "Writing configuration to log4j.properties"
+      runCondition: web.deployment.serverType.equals('Tomcat') || web.deployment.serverType.equals('JBoss')
+      resource: aahLegWebApp_log4j.properties
+      onResourceNotFoundAction: fail
+      properties:
+        log4j.appender.fdr.File: "IF(web.deployment.serverType.equals('Tomcat'),'''${catalina.home}/logs/''+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX+''.log'' ', eIF(web.deployment.serverType.equals('JBoss'), '''${jboss.server.log.dir}/''+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX+''.log''' , ''' '''))"
+
+    # save log4j2.xml
+    - step: resourceWrite
+      description: "Writing configuration to log4j2.xml"
+      resource: aahLegWebApp_log4j2.xml
+      onResourceNotFoundAction: fail
+      properties:
+        "//Property[@name='logPath']": "IF(web.deployment.serverType.equals('Tomcat'), '''${sys:catalina.home}/logs''', eIF(web.deployment.serverType.equals('WebLogic'), '''${sys:user.dir}/servers/${sys:weblogic.Name}/logs''', '''${sys:jboss.server.log.dir}'''))"
+        "//Property[@name='rollingFileName']": "web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX"
+
+    # prepare logs folder
+    - step: fsOperation
+      operation: mkdir
+      path: aah.installer.LOGS_DIR
+      workingDir: "currentDir()"
+      description: "Create Logs Folder"
+      runCondition: " web.deployment.installationType.equals('DEPLOY') "
+
+    # prepare archive
+    - step: fsOperation
+      operation: move
+      path: "'../war/aah-web-legacy.war'"
+      targetPath: "'../war/' + web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX + '.war'"
+      description: "Preparing Legacy Web Application"
+      runCondition: "aah.installer.IS_STANDALONE && web.deployment.installationType.equals('PREPARE')"
+
+  # --- DEPLOY LEGACY WEB APP TO TOMCAT ---
+  - task: singleJob
+    title: "Deploy Legacy AAH Web Application to Tomcat"
+    showCondition: "web.deployment.installationType.equals('DEPLOY') && web.deployment.serverType.equals('Tomcat')"
+    progressTitle: "'Deploying Legacy Web Application to Tomcat:'"
+    finishMessage: "'Legacy Web Application /'+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX +' deployed to Tomcat'"
+    job:
+      step: deployTomcat
+      warFilePath: getResourceDefinition('aahLegWebApp_WEB-INF_ApplicationResources.properties').getZipContainer()
+      description: "Deploy to Tomcat"
+      # use secure protocol to deploy app
+      useHttpsProtocol: "web.deployment.protocol.equals('https')"
+      host: web.deployment.hostname
+      port: web.deployment.port
+      user: web.deployment.username
+      pass: web.deployment.password
+      # name of deplayment folder on Tomcat server, for. ex. localhost:8080/SAMPLE_ACC_APP
+      deploymentPath: web.deployment.aahWebAppFolder  + aah.installer.OLD_APP_FOLDER_SUFIX
+      # undeploy older app before new deployment
+      override: true
+      # save log to file (Expression)
+      log: "aah.installer.LOGS_DIR + '/aah.tomcat.deploy-legacy.' + currentDateTimeStamp() + '.txt'"
+
+  # --- UNDEPLOY LEGACY WEB APP FROM WEBLOGIC ---
+  - task: singleJob
+    title: "Undeploy Legacy AAH Web Application from WebLogic"
+    showCondition: "web.deployment.serverType.equals('WebLogic') && web.deployment.installationType.equals('DEPLOY') && isWebLogic()"
+    progressTitle: "'Undeploying Legacy Web Application from WebLogic:'"
+    finishMessage: "'Legacy Web Application undeployed from WebLogic'"
+    job:
+      step: deployWebLogic
+      description: "Undeploy Legacy Web Application from WebLogic"
+      # valid values {distribute,start,stop,redeploy,undeploy,deploy,update,extendloader,removePlanOverride,cancel,list,listtask,listapps}
+      action: undeploy
+      name: web.deployment.aahWebAppFolder  + aah.installer.OLD_APP_FOLDER_SUFIX
+      adminUrl: "web.deployment.webLogic.adminProtocol + '://' + web.deployment.hostname +':' + web.deployment.webLogic.adminPort"
+      user: web.deployment.username
+      pass: web.deployment.password
+      ignoreError: true
+      ignoreHostnameVerification: true
+      skipModuleScanning: true
+      keyStore: "'DemoTrust'"
+      verbose: true
+      debug: true
+      showCommand: false
+
+  # --- DEPLOY MYFACES TO WEBLOGIC ---
+  - task: singleJob
+    title: "Deploy MyFaces to WebLogic"
+    showCondition: "web.deployment.serverType.equals('WebLogic') && web.deployment.installationType.equals('DEPLOY') && isWebLogic()"
+    progressTitle: "'Deploying MyFaces to WebLogic:'"
+    finishMessage: "'MyFaces deployed to WebLogic'"
+    job:
+      step: deployWebLogic
+      # deploy WAR file defined as resource
+      resourceName: aahWebApp_myfaces
+      description: "Deploy MyFaces to WebLogic"
+      action: redeploy
+      adminUrl: "web.deployment.webLogic.adminProtocol + '://' + web.deployment.hostname +':' + web.deployment.webLogic.adminPort"
+      user: web.deployment.username
+      pass: web.deployment.password
+      ignoreHostnameVerification: true
+      skipModuleScanning: true
+      keyStore: "'DemoTrust'"
+      isLibrary: true
+      isRemote: web.deployment.webLogic.isRemote
+      doUpload: true
+      verbose: true
+      noStage: false
+      noWait: false
+#      timeout: 2
+      debug: true
+      showCommand: false
+      name: "'myfaces'"
+#      options:
+#        -stage:
+#        -retiretimeout: 20
+#        -adminmode:
+#        -ignoresessions:
+#        -altappdd: "'./bin/app.file'"
+#      javaArgs:
+#        - "'-Dweblogic.security.allowCryptoJDefaultJCEVerification=true'"
+#      environment:
+#        WL_EXAMPLE_ENV_VAR: "'value'"
+#      # working dir for a script
+#      workingDir: "'./'"
+
+  # --- DEPLOY LEGACY WEB APP TO WEBLOGIC ---
+  - task: singleJob
+    title: "Deploy Legacy AAH Web Application to WebLogic"
+    showCondition: "web.deployment.serverType.equals('WebLogic') && web.deployment.installationType.equals('DEPLOY') && isWebLogic()"
+    progressTitle: "'Deploying Legacy AAH Web Application to WebLogic:'"
+    finishMessage: "'Legacy AAH Web Application deployed'"
+    job:
+      step: deployWebLogic
+      # deploy WAR file defined as resource
+      resourceName: aahLegWebApp_WEB-INF_ApplicationResources.properties
+      description: "Deploy Legacy AAH Web Application to WebLogic"
+      # valid values {distribute,start,stop,redeploy,undeploy,deploy,update,extendloader,removePlanOverride,cancel,list,listtask,listapps}
+      action: redeploy
+      contextRoot: web.deployment.aahWebAppFolder  + aah.installer.OLD_APP_FOLDER_SUFIX
+      adminUrl: "web.deployment.webLogic.adminProtocol + '://' + web.deployment.hostname +':' + web.deployment.webLogic.adminPort"
+      user: web.deployment.username
+      pass: web.deployment.password
+      ignoreHostnameVerification: true
+      skipModuleScanning: true
+      keyStore: "'DemoTrust'"
+      isLibrary: false
+      isRemote: web.deployment.webLogic.isRemote
+      doUpload: true
+      verbose: true
+      noStage: false
+      noWait: false
+#      timeout: 2
+      debug: true
+      showCommand: false
+      name: web.deployment.aahWebAppFolder  + aah.installer.OLD_APP_FOLDER_SUFIX
+#      options:
+#        -stage:
+#        -retiretimeout: 20
+#        -adminmode:
+#        -ignoresessions:
+#        -altappdd: "'./bin/app.file'"
+      javaArgs:
+        - "'-Xms256m'"
+        - "'-Xmx512m'"
+#      environment:
+#        WL_EXAMPLE_ENV_VAR: "'value'"
+#      # working dir for a script
+#      workingDir: "'./'"
+
+  # --- DEPLOY LEGACY WEB APP TO JBOSS ---
+  - task: singleJob
+    title: "Deploy Legacy AAH Web Application to JBoss server"
+    showCondition: "web.deployment.installationType.equals('DEPLOY') && web.deployment.serverType.equals('JBoss')"
+    progressTitle: "'JBoss web server deployment progress:'"
+    finishMessage: "'JBoss deployment /'+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX +' done'"
+    job:
+      step: deployJBoss
+      description: "Deploy to JBoss AAH WAR file"
+      deploymentName: web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX
+      host: web.deployment.hostname
+      port: web.deployment.jboss.mngmPort
+      user: web.deployment.username
+      pass: web.deployment.password
+      resourceName: aahLegWebApp_WEB-INF_ApplicationResources.properties  # deploy WAR file defined as resource
+      deploymentPath: web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX
+      serverGroup: "web.deployment.jboss.serverType.equals('DOMAIN') ? web.deployment.jboss.groupName : ''"
+      override: web.deployment.jboss.override                          # redeploy if needed
+      enable: web.deployment.jboss.enable
