@@ -29,7 +29,7 @@ cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR co
 
 printf "***** running security api ****** **\n"
 chmod +x ${SecurityApiDirectory}/bin/security-external.sh
-nohup ${SecurityApiDirectory}/bin/security-external.sh service&
+nohup ${SecurityApiDirectory}/bin/security-external.sh service  # log? &
 
 if [ -f $RemoveInstallYaml ]; then
     printf "removing yaml installation file\n"
