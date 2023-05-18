@@ -19,17 +19,17 @@ cp ./ApplicationResources.properties ./aah-web-setup/assets || ERR_EXIT "ERROR c
 cp ./AAH.web.legacy.prepare.acc.yaml ./aah-web-setup/.acc  || ERR_EXIT "ERROR coping acc legacy YAML file\n"
 ./run.sh unattended -rf ${AahInstallerYaml} -op installWebApps || ERR_EXIT "ERROR running aah insaller for web apps\n"
 
-# printf "setup security-external-api\n"
+printf "setup security-external-api\n"
 
-# mkdir -p ${SecurityApiDirectory} || ERR_EXIT "ERROR creating security api directory"
+mkdir -p ${SecurityApiDirectory} || ERR_EXIT "ERROR creating security api directory"
 
-# unzip -o ./security-external-api/zip/security-api-service.zip -d ${SecurityApiDirectory} || ERR_EXIT "ERROR unzipping security api\n"
-# cp ./drivers/*.jar ${SecurityApiDirectory}/drivers || ERR_EXIT "ERROR copy driver Jar files\n"
-# cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR copying application.properties file\n"
+unzip -o ./security-external-api/zip/security-api-service.zip -d ${SecurityApiDirectory} || ERR_EXIT "ERROR unzipping security api\n"
+cp ./drivers/*.jar ${SecurityApiDirectory}/drivers || ERR_EXIT "ERROR copy driver Jar files\n"
+cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR copying application.properties file\n"
 
-# printf "***** running security api ****** **\n"
-# chmod +x ${SecurityApiDirectory}/bin/security-external.sh
-# nohup ${SecurityApiDirectory}/bin/security-external.sh service  # & was here
+printf "***** running security api ****** **\n"
+chmod +x ${SecurityApiDirectory}/bin/security-external.sh
+nohup ${SecurityApiDirectory}/bin/security-external.sh service  # & was here
 
 if [ -f $RemoveInstallYaml ]; then
     printf "removing yaml installation file\n"
