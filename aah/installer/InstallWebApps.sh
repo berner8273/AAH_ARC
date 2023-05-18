@@ -2,7 +2,7 @@
 PROGRAM="${0##*/}"
 RemoveInstallYaml=$1
 AahInstallerYaml="AahInstaller.yaml"
-# SecurityApiDirectory="/aah/security_api"
+SecurityApiDirectory="/aah/security_api"
 
 # Functions ===================================================================
 # Exit with an error
