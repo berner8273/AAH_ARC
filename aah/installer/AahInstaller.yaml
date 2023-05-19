@@ -445,7 +445,7 @@ variablesValues:
             path: "/opt/tomcat/conf/FederationMetadata_security.xml"
             entity-id: "https://sts.windows.net/93dedaa7-e399-4bb7-ac57-d51a09a2ec66/"
             group-attribute: "http://schemas.xmlsoap.org/claims/Group"
-          service-provider-entity-id: "#{serviceProvider}_aah_security"
+          service-provider-entity-id: "#{serviceProvider}_security"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
           key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
@@ -524,7 +524,7 @@ variablesValues:
             path: "/opt/tomcat/conf/FederationMetadata_scheduler.xml"
             entity-id: "https://sts.windows.net/93dedaa7-e399-4bb7-ac57-d51a09a2ec66/"
             group-attribute: "http://schemas.xmlsoap.org/claims/Group"
-          service-provider-entity-id: "#{serviceProvider}_aah_scheduler-web"
+          service-provider-entity-id: "#{serviceProvider}_scheduler"
 
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
