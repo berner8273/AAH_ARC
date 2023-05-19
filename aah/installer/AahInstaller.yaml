@@ -377,7 +377,7 @@ variablesValues:
             path: "/opt/tomcat/conf/FederationMetadata_aah.xml"
             entity-id: "http://adfs.agltd.com/adfs/services/trust"
             group-attribute: "http://schemas.xmlsoap.org/claims/Group"
-          service-provider-entity-id: "#{aptitudeHost}"
+          service-provider-entity-id: "aptitudedev_aah"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
           key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
