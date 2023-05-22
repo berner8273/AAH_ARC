@@ -34,7 +34,7 @@ conn ~fdr_logon
 
 conn ~stn_logon
 delete from stn.vie_posting_method_ledger;
-@@stn/posting_rules_rob_9.sql
+@@stn/posting_rules_rob_12.sql
 
 /* End AAH custom upgrades */
 
