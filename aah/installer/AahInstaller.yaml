@@ -476,7 +476,7 @@ variablesValues:
       connectionPoolSize: "32"
       # @type(int)
       # security external api http server port
-      serverPort: 8090
+      serverPort: 443
       security:
         enableUsersEnpoint: "false"
       log:
