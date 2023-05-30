@@ -45,7 +45,8 @@ conn ~fdr_logon
 @@fdr/upgrade_fdr_procedures.sql
 -- @@fdr/upgrade_trigger_fix.sql
 
-
+conn ~sys_logon as sysdba
+@@sys/upgrade_security_core_app.sql
 
 /* End AAH custom upgrades */
 
