@@ -421,10 +421,6 @@ Begin
         mySelect_BC_Agg := '';
         mySelect_BC_NonAgg := '';
 
-    --    insert into rdr.rr_temp_jb (JBTEXT) values (mySQL_JLT);
-     --   commit;
-
-
         /* Collect the journals corresponding to the configuration that is to be processed along with their respective lines.
            If a source attribute comes from another Sub-Ledger source view, then this will be built upon later when the attributes are read. */
         myFrom_JLT := ' from rr_glint_temp_journal j'
