@@ -91,7 +91,7 @@ End fGetBatchControlID;
    For future consideration: Remove global temporary table - perhaps use collections (select from table(coll)) - will depend on volume, or re-use query directly.
 */
 Procedure pProcess(
-  pinLoadNamePrefix in rr_glint_batch_control.rgbc_load_name%TYPE, 
+  pinLoadNamePrefix in rr_glint_batch_control.rgbc_load_name%TYPE,
   pinCustomProcess  in all_objects.object_name%TYPE Default NULL,
   pinEPGID          in slr.slr_entity_proc_group.epg_id%TYPE Default NULL,
   pinArrayJournalID in Varchar2 Default NULL,
@@ -756,15 +756,16 @@ Begin
       mySQL_JLT := mySQL_JLT || 'rr_glint_temp_journal_line.JH_JRNL_INTERNAL_PERIOD_FLAG || ' || sys.dbms_assert.enquote_literal(lcSeparator) || ' || to_char(rr_glint_temp_journal_line.jh_jrnl_id) as "rgj_id",';
     End If;
     mySQL_JLT := mySQL_JLT
-              || 'Max(PG_GLINT.fGetBatchControlID) over (partition by ' || myGroup_BC2 ||',rr_glint_temp_journal_line.jh_jrnl_type ' || ') as "rgbc_id",'
+              -- AG Custom 05/31/23 Added jh_jrnl_type adn jrnl_description to partition_by
+              || 'Max(PG_GLINT.fGetBatchControlID) over (partition by ' || myGroup_BC2 ||',rr_glint_temp_journal_line.jh_jrnl_type, rr_glint_temp_journal_line.jh_jrnl_description ' || ') as "rgbc_id",'
               || 'rr_glint_temp_journal_line.jh_jrnl_type as "rgbc_process_type",'
               || 'rr_glint_temp_journal_line.JH_JRNL_DESCRIPTION as "rgbc_load_type",'
               || 'rr_glint_temp_journal_line.previous_flag as "previous_flag",'
               || 'rr_glint_temp_journal_line.aggregate_line_flag as "aggregate_line_flag",'
               || mySelect_JLT
               || ' from (';
-    
-    
+
+
     If Not(myAggregation) or (myAggregation and myWhere_JLT_Ex is not null) Then
       mySQL_JLT := mySQL_JLT
                 || 'Select '
