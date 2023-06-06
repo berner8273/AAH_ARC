@@ -375,8 +375,6 @@ variablesValues:
           signature-algorithm: "sha256"
           default-configuration:
             path: "/opt/tomcat/conf/FederationMetadata_aah.xml"
-#            entity-id: "http://adfs.agltd.com/adfs/services/trust"
-#            group-attribute: "http://schemas.xmlsoap.org/claims/Group"
           service-provider-entity-id: "#{serviceProvider}_aah"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
@@ -443,8 +441,6 @@ variablesValues:
         saml:
           default-configuration:
             path: "/opt/tomcat/conf/FederationMetadata_security.xml"
-#            entity-id: "https://sts.windows.net/93dedaa7-e399-4bb7-ac57-d51a09a2ec66/"
-#            group-attribute: "http://schemas.xmlsoap.org/claims/Group"
           service-provider-entity-id: "#{serviceProvider}_security"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
@@ -522,8 +518,6 @@ variablesValues:
         saml:
           default-configuration:
             path: "/opt/tomcat/conf/FederationMetadata_scheduler.xml"
-#            entity-id: "https://sts.windows.net/93dedaa7-e399-4bb7-ac57-d51a09a2ec66/"
-#            group-attribute: "http://schemas.xmlsoap.org/claims/Group"
           service-provider-entity-id: "#{serviceProvider}_scheduler"
 
           key-store-path: "/opt/tomcat/conf/saml.jks"
