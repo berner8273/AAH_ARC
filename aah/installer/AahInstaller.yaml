@@ -375,7 +375,7 @@ variablesValues:
           signature-algorithm: "sha256"
           default-configuration:
             path: "/opt/tomcat/conf/FederationMetadata_aah.xml"
-          service-provider-entity-id: "aptitudedev"
+          service-provider-entity-id: "aptitudedev_jb"
           # "#{serviceProvider}_aah"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
