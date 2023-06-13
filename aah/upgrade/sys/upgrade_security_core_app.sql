@@ -2,8 +2,8 @@ update security_core.application
 set base_url =
     case sys_context('userenv', 'db_name')
         when 'APTDEV' then 'https://aptitudedev.agl.com/aah'
-        when 'APTQA'  then 'https://aptitudedqa.agl.com/aah'       
-        when 'APTUAT' then 'https://aptitudeduat.agl.com/aah'
+        when 'APTQA'  then 'https://aptitudeqa.agl.com/aah'       
+        when 'APTUAT' then 'https://aptitudeuat.agl.com/aah'
         when 'APT'    then 'https://aptitude.agl.com/aah'
         end
 where application_name = 'AAH';
