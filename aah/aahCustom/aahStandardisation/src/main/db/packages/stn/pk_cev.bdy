@@ -1390,7 +1390,7 @@ and not exists (
                           join stn.event_hierarchy_reference   ehr      on cev_nid.event_typ                      = ehr.event_typ
                      left join stn.period_status               ps       on trunc( cev_nid.vie_acct_dt , 'MONTH' ) = trunc( ps.period_start , 'MONTH' )
                                                                        and ehr.event_class                        = ps.event_class
-                         where cev_nid.vie_status is not null and (cev_nid.premium_typ = 'NVS' or cev_nid.policy_premium_typ <> 'S')
+            where cev_nid.vie_status is not null and (nvl(cev_nid.premium_typ, 'NVS') = 'NVS' or cev_nid.policy_premium_typ <> 'S')
                      )
                 , vie_data
                   as (
