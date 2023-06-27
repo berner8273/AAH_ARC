@@ -42,6 +42,7 @@ BEGIN
         'Y', 'N', 'N', 1, 1, 
         1, 'N');
 
+    commit;
         
     END IF;
 
@@ -66,6 +67,7 @@ BEGIN
     Values
     (4433400, 'MADJ_BALANCE_COLUMNS');
     
+    commit;
 
    END IF;
 
