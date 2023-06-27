@@ -5,9 +5,11 @@ BEGIN
     SELECT COUNT(*) INTO i FROM GUI.UI_FIELD where uf_id in (730,731,4433400);
     IF i > 0 THEN
     
-    DELETE FROM GUI.UI_GENERAL_LOOKUP where UGL_UF_ID in (730,731,4433400);
-    DELETE FROM GUI.UI_FIELD where uf_id in (730,731,4433400);
-        
+        DELETE FROM GUI.UI_GENERAL_LOOKUP where UGL_UF_ID in (730,731,4433400);
+        DELETE FROM GUI.UI_FIELD where uf_id in (730,731,4433400);
+    
+    END IF;
+
     Insert into GUI.UI_FIELD
     (UF_ID, UF_USEC_ID, UF_SCHEMA_NAME, UF_OBJECT_NAME, UF_OBJECT_ALIAS, 
         UF_COLUMN_NAME, UF_LABEL, UF_COLUMN_TYPE, UF_COLUMN_LENGTH, UF_COLUMN_PRECISION, 
@@ -41,14 +43,6 @@ BEGIN
         'Y', 'N', 'N', 1, 1, 
         1, 'N');
 
-    commit;
-        
-    END IF;
-
-    SELECT COUNT(*) INTO i FROM GUI.UI_GENERAL_LOOKUP where UGL_UF_ID in (730,731,4433400);
-
-    IF i > 0 THEN
-
     Insert into GUI.UI_GENERAL_LOOKUP
     (UGL_UF_ID, UGL_LKT_LOOKUP_TYPE_CODE)
     Values
@@ -66,7 +60,6 @@ BEGIN
     
     commit;
 
-   END IF;
 
 END;
 /
