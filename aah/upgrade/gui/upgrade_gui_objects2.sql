@@ -7,7 +7,6 @@ BEGIN
     
     DELETE FROM GUI.UI_GENERAL_LOOKUP where UGL_UF_ID in (730,731,4433400);
     DELETE FROM GUI.UI_FIELD where uf_id in (730,731,4433400);
-
         
     Insert into GUI.UI_FIELD
     (UF_ID, UF_USEC_ID, UF_SCHEMA_NAME, UF_OBJECT_NAME, UF_OBJECT_ALIAS, 
@@ -50,8 +49,6 @@ BEGIN
 
     IF i > 0 THEN
 
-    
-    
     Insert into GUI.UI_GENERAL_LOOKUP
     (UGL_UF_ID, UGL_LKT_LOOKUP_TYPE_CODE)
     Values
