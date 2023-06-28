@@ -4154,7 +4154,7 @@ lvPeriodStartDate := NULL;
                  prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'Failed journal balance check');
                  lvSuccess := FALSE;
              END;
-             
+
         END IF;
 
 
@@ -4950,7 +4950,7 @@ lvPeriodStartDate := NULL;
               INTO	 lvFound
               FROM	 temp_gui_jrnl_line_errors
               WHERE	 jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-              AND    user_session_id = gSessionId			  
+              AND    user_session_id = gSessionId
 /*-----------UPGRADE 20.1.1 MERGE START-----------*/
 --              AND	 jle_error_code IN ('MADJ-1011','MADJ-1061','MADJ-1066');
               AND	 jle_error_code IN ('MADJ-1011','MADJ-1061','MADJ-1062','MADJ-1066');
@@ -7478,7 +7478,7 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_get_next_journal_id RETURN VARCHAR2
     IS
        lvSeq VARCHAR2(32);
-       lvJournalId VARCHAR2(200);				 
+       lvJournalId VARCHAR2(200);
     BEGIN
 
          /*SELECT SEQ_SLR_JRNL_HEADERS_ID.NEXTVAL
@@ -8060,7 +8060,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
     end prui_increment_journal_version;
 
-   
+
     PROCEDURE prui_calculate_journal_rates(journal_id in VARCHAR2)
     IS
     begin
@@ -8630,7 +8630,6 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         FROM gui_jrnl_headers_unposted gjhu
         WHERE gjhu.jhu_jrnl_id IN ('||journal_id_list||')
         and gjhu.jhu_jrnl_status = ''Q''';
-
         execute immediate vSql;
 
         IF SQL%ROWCOUNT = 0 THEN
@@ -8721,9 +8720,10 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         WHERE gjf.jf_jrnl_hdr_id = gjhu.jhu_jrnl_id
         AND gjhu.jhu_jrnl_id IN ('||journal_id_list||')
         and gjhu.jhu_jrnl_status = ''Q''';
-
+        
      OPEN jrnl_file_cursor FOR vsql;
      loop
+     
         fetch jrnl_file_cursor INTO jrnl_file_rec;
         EXIT WHEN jrnl_file_cursor%NOTFOUND;
 
@@ -8761,6 +8761,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         FROM DUAL;
 
      END loop;
+             
      close jrnl_file_cursor;
 
     exception
@@ -8810,7 +8811,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
           pProcessEliminations(journal_id_list,status, lv_header_id_list);
 
           IF LENGTH(lv_header_id_list) > 1 THEN
-            lv_journal_id_list := journal_id_list || ',' || lv_header_id_list;
+            lv_journal_id_list := journal_id_list || ',' ||lv_header_id_list;            
           ELSE
             lv_journal_id_list := journal_id_list;
           END IF;
@@ -10005,7 +10006,7 @@ return;
       lvID      NUMBER;
       nCount    NUMBER;
       nrcount   NUMBER;
-      vHeaderId VARCHAR2(20);
+      vHeaderId SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE;
 
       cursor c_elim (v_key varchar2) is
          SELECT distinct   COALESCE (PSMRE.REINS_LE_CD, ELE.ELIMINATION_LE_CD) ELIM_ENTITY
@@ -10033,26 +10034,23 @@ return;
    BEGIN
       success := 'S';
 
-
-    FOR r_elim IN c_elim (journal_id) LOOP
+    FOR r_elim IN c_elim (trim('''' FROM journal_id)) LOOP
 
         IF r_elim.elim_entity IS NULL THEN
             EXIT;
         END IF;
 
-
-        vHeaderId := TO_CHAR (fnui_get_next_journal_id);
-
+        vHeaderId := fnui_get_next_journal_id;        
+        
         IF LENGTH(lv_header_id_list) > 1 THEN
-               lv_header_id_list := lv_header_id_list || ',' || vHeaderId;
+               lv_header_id_list := lv_header_id_list || ',' ||''''||vHeaderId||'''';
         ELSE
-               lv_header_id_list := vHeaderId;
+               lv_header_id_list := ''''||vHeaderId||'''';
         END IF;
 
 
-
       INSERT INTO gui.gui_jrnl_headers_unposted
-         SELECT TO_NUMBER (vHeaderId) jhu_jrnl_id,
+         SELECT vHeaderId jhu_jrnl_id,
                 jhu_jrnl_type,
                 jhu_jrnl_date,
                 r_elim.elim_entity,
@@ -10102,7 +10100,7 @@ return;
                                AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
                   WHERE JLU.JLU_SEGMENT_7 IN ('AA', 'CA')) ce
           WHERE     gu.jhu_jrnl_id = ce.jlu_jrnl_hdr_id
-                AND gu.jhu_jrnl_id = journal_id
+                AND gu.jhu_jrnl_id = trim('''' FROM journal_id)
                 AND ce.jlu_entity = NVL(r_elim.elim_entity,'NVS');
 
 
@@ -10178,7 +10176,7 @@ return;
                      gjlu.JLU_PERIOD_MONTH,
                      gjlu.JLU_PERIOD_YEAR,
                      gjlu.JLU_PERIOD_LTD)
-         SELECT TO_NUMBER (vHeaderId) JLU_JRNL_HDR_ID,
+         SELECT vHeaderId JLU_JRNL_HDR_ID,
                   (SELECT NVL (MAX (JLU_JRNL_LINE_NUMBER), 0)
                      FROM gui.gui_jrnl_lines_unposted jlu
                     WHERE JLU.JLU_JRNL_HDR_ID = vHeaderId)
@@ -10278,8 +10276,9 @@ return;
                 LEFT JOIN STN.POSTING_LEDGER pl2 on (
                     pl2.ledger_id = pmd.OUTPUT_LEDGER_ID )
           WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
-                AND jlu.JLU_JRNL_HDR_ID = journal_id
+                AND jlu.JLU_JRNL_HDR_ID = trim('''' FROM journal_id)
                 AND COALESCE (PSMRE.REINS_LE_CD, ELE.ELIMINATION_LE_CD) = NVL(r_elim.elim_entity,'NVS');
+
 
       COMMIT;
     END LOOP;

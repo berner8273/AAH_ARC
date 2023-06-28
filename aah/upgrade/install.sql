@@ -37,13 +37,13 @@ conn ~slr_logon
 
 conn ~gui_logon
 @@gui/upgrade_gui_objects.sql
+@@gui/upgrade_gui_objects2.sql
 
 conn ~rdr_logon
 @@rdr/upgrade_rdr_objects.sql
 
 conn ~fdr_logon
 @@fdr/upgrade_fdr_procedures.sql
--- @@fdr/upgrade_trigger_fix.sql
 
 conn ~sys_logon as sysdba
 @@sys/upgrade_security_core_app.sql
