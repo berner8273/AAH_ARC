@@ -18,3 +18,9 @@ grant select on gui.gui_jrnl_headers_unposted  to rdr with grant option;
 update gui.t_ui_jrnl_line_meta
 set column_nullable = 'Y'
 where column_name in ('SEGMENT_3','SEGMENT_5');
+
+update gui.t_ui_jrnl_line_meta
+set column_nullable = 'Y'
+where column_screen_label = 'spare';
+
+commit;
