@@ -6411,7 +6411,6 @@ lvPeriodStartDate := NULL;
         -- Fetch details (with changes applied)
         BEGIN
 
-
              BEGIN
                  SELECT jlu_jrnl_line_number
                  INTO	lvJournalLine
@@ -8725,7 +8724,6 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
      OPEN jrnl_file_cursor FOR vsql;
      loop
      
-     
         fetch jrnl_file_cursor INTO jrnl_file_rec;
         EXIT WHEN jrnl_file_cursor%NOTFOUND;
 
@@ -8763,7 +8761,6 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         FROM DUAL;
 
      END loop;
-     
              
      close jrnl_file_cursor;
 
@@ -10043,11 +10040,7 @@ return;
             EXIT;
         END IF;
 
-
-
-        vHeaderId := fnui_get_next_journal_id;
-        
-        
+        vHeaderId := fnui_get_next_journal_id;        
         
         IF LENGTH(lv_header_id_list) > 1 THEN
                lv_header_id_list := lv_header_id_list || ',' ||''''||vHeaderId||'''';
