@@ -1,3 +1,8 @@
+alter table rdr.rr_glint_batch_control modify rgbc_load_type varchar(100);
+alter table rdr.rr_glint_batch_control modify rgbc_process_type varchar(40);
+alter table rdr.rr_glint_temp_journal_line modify rgbc_load_type varchar(100);
+alter table rdr.rr_glint_temp_journal_line modify rgbc_process_type varchar(40);
+
 grant select on rdr.rrv_ag_slr_jrnl_lines to aah_rdr;
 grant select on rdr.rr_glint_journal_line to aah_glint;        
 grant update on rdr.rr_glint_journal_line to aah_glint;
