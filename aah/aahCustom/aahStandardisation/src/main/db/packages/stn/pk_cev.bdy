@@ -1390,7 +1390,7 @@ and not exists (
                           join stn.event_hierarchy_reference   ehr      on cev_nid.event_typ                      = ehr.event_typ
                      left join stn.period_status               ps       on trunc( cev_nid.vie_acct_dt , 'MONTH' ) = trunc( ps.period_start , 'MONTH' )
                                                                        and ehr.event_class                        = ps.event_class
-            where cev_nid.vie_status is not null and (nvl(cev_nid.premium_typ, 'NVS') = 'NVS' or cev_nid.policy_premium_typ <> 'S')
+            where cev_nid.vie_status is not null 
                      )
                 , vie_data
                   as (
@@ -1453,6 +1453,8 @@ and not exists (
                               , cev_nid.reporting_ccy
                               , cev_nid.reporting_amt                           orig_reporting_amt
                               , ( case
+                                    when nvl(cev_nid.premium_typ,'NVS') <> 'NVS' and cev_nid.policy_premium_typ = 'S'   
+                                        then null
                                     when pfc.fin_calc_cd = 'BOP'
                                         then prpb.transaction_balance
                                     when pfc.fin_calc_cd = 'EOP'
@@ -1466,6 +1468,8 @@ and not exists (
                                     else null
                                     end) * vpml.negate_flag   transaction_amt
                               , ( case
+                                    when nvl(cev_nid.premium_typ,'NVS') <> 'NVS' and cev_nid.policy_premium_typ = 'S'
+                                        then null                              
                                     when pfc.fin_calc_cd = 'BOP'
                                         then prpb.functional_balance
                                     when pfc.fin_calc_cd = 'EOP'
@@ -1479,6 +1483,8 @@ and not exists (
                                     else null
                                     end ) * vpml.negate_flag   functional_amt
                               , ( case
+                                    when nvl(cev_nid.premium_typ,'NVS') <> 'NVS' and cev_nid.policy_premium_typ = 'S'
+                                        then null                             
                                     when pfc.fin_calc_cd = 'BOP'
                                         then prpb.reporting_balance
                                     when pfc.fin_calc_cd = 'EOP'
