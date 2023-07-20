@@ -1681,11 +1681,20 @@ and not exists (
                               , vhop.chartfield_1
                               , vhop.jl_description
                               , vhop.transaction_ccy
-                              , vhop.transaction_amt * vpml.negate_flag         transaction_amt
+                              , case
+                                    when vhop.premium_typ is not null and ipr.policy_premium_typ='S' then 0
+                                    else vhop.transaction_amt * vpml.negate_flag
+                                    end transaction_amt
                               , vhop.functional_ccy
-                              , vhop.functional_amt * vpml.negate_flag          functional_amt
+                              , case
+                                    when vhop.premium_typ is not null and ipr.policy_premium_typ='S' then 0
+                                    else vhop.functional_amt * vpml.negate_flag
+                                    end functional_amt                                                                                                                  
                               , vhop.reporting_ccy
-                              , vhop.reporting_amt * vpml.negate_flag           reporting_amt
+                              , case
+                                    when vhop.premium_typ is not null and ipr.policy_premium_typ='S' then 0
+                                    else vhop.reporting_amt * vpml.negate_flag 
+                                    end reporting_amt                                                                                                                  
                               , vhop.lpg_id
                               , null reversal_indicator
                               , ipr.vie_acct_dt
