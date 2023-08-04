@@ -1993,8 +1993,14 @@ new_bal_date FDR.FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE%type;
     WHERE EJT_BALANCE_TYPE_2 != 10;
 
 s_proc_name VARCHAR2(80) := 'FDR_CUSTOM_ARCHIVING_PKG.pCUST_RollFAKBalancesCUST';
-gv_ecode     NUMBER := -20999;
 gv_emsg VARCHAR(10000);
+
+--EXCEPTIONS
+SUCCESSED EXCEPTION;
+PRAGMA EXCEPTION_INIT(SUCCESSED, -20998);
+
+PROCEED EXCEPTION;
+PRAGMA EXCEPTION_INIT(PROCEED, -20997);
 
 begin
 
@@ -2048,11 +2054,12 @@ END LOOP;
 
 INSERT INTO SLR.SLR_FAK_DAILY_BALANCES SELECT * FROM SLR.SLR_FAK_DAILY_BALANCES_TMP;
 
-    EXCEPTION
-        WHEN OTHERS THEN
-            gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;
-            RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
-
+EXCEPTION
+    WHEN OTHERS THEN
+        gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+RAISE PROCEED;
 
 END;
 
@@ -2075,7 +2082,6 @@ new_bal_date FDR.FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE%type;
     WHERE EJT_BALANCE_TYPE_2 != 10;
 
 s_proc_name VARCHAR2(80) := 'FDR_CUSTOM_ARCHIVING_PKG.pCUST_RollEBABalancesCUST';
-gv_ecode     NUMBER := -20999;
 gv_emsg VARCHAR(10000);
 
 begin
@@ -2134,7 +2140,9 @@ INSERT INTO SLR.SLR_EBA_DAILY_BALANCES SELECT * FROM SLR.SLR_EBA_DAILY_BALANCES_
     EXCEPTION
         WHEN OTHERS THEN
             gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;
+            ROLLBACK;
             RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+RAISE PROCEED;
 
 END;
 
