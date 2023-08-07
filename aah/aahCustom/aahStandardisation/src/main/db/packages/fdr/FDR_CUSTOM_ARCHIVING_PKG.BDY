@@ -2056,8 +2056,8 @@ INSERT INTO SLR.SLR_FAK_DAILY_BALANCES SELECT * FROM SLR.SLR_FAK_DAILY_BALANCES_
 
 EXCEPTION
     WHEN OTHERS THEN
-        gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;
-        ROLLBACK;
+    ROLLBACK;
+        gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;    
         RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
 RAISE PROCEED;
 
@@ -2139,8 +2139,8 @@ INSERT INTO SLR.SLR_EBA_DAILY_BALANCES SELECT * FROM SLR.SLR_EBA_DAILY_BALANCES_
 
     EXCEPTION
         WHEN OTHERS THEN
-            gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;
-            ROLLBACK;
+        ROLLBACK;
+            gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;            
             RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
 RAISE PROCEED;
 
