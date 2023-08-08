@@ -2002,7 +2002,8 @@ PRAGMA EXCEPTION_INIT(SUCCESSED, -20998);
 PROCEED EXCEPTION;
 PRAGMA EXCEPTION_INIT(PROCEED, -20997);
 
-begin
+BEGIN
+ begin
 
   SELECT
    g.gp_todays_bus_date - a.arct_archive_days + 1
@@ -2059,6 +2060,8 @@ EXCEPTION
     ROLLBACK;
         gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;    
         RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+END;
+
 RAISE PROCEED;
 
 END;
@@ -2091,7 +2094,8 @@ PRAGMA EXCEPTION_INIT(SUCCESSED, -20998);
 PROCEED EXCEPTION;
 PRAGMA EXCEPTION_INIT(PROCEED, -20997);
 
-begin
+BEGIN
+ begin
 
   SELECT
    g.gp_todays_bus_date - a.arct_archive_days + 1
@@ -2149,6 +2153,8 @@ INSERT INTO SLR.SLR_EBA_DAILY_BALANCES SELECT * FROM SLR.SLR_EBA_DAILY_BALANCES_
         ROLLBACK;
             gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;            
             RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+ END;
+             
 RAISE PROCEED;
 
 END;
