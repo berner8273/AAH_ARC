@@ -1998,7 +1998,7 @@ gv_emsg VARCHAR(10000);
 BEGIN
 
   SELECT
-   g.gp_todays_bus_date - a.arct_archive_days + 1
+   g.gp_todays_bus_date - a.arct_archive_days + 360
  INTO new_bal_date
  FROM fdr.fr_global_parameter g
    join fdr.fr_archive_ctl a on a.arct_id = pARCT_ID
@@ -2079,7 +2079,7 @@ gv_emsg VARCHAR(10000);
 BEGIN
 
   SELECT
-   g.gp_todays_bus_date - a.arct_archive_days + 1
+   g.gp_todays_bus_date - a.arct_archive_days + 360
  INTO new_bal_date
  FROM fdr.fr_global_parameter g
    join fdr.fr_archive_ctl a on a.arct_id = pARCT_ID
