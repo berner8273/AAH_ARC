@@ -1995,15 +1995,7 @@ new_bal_date FDR.FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE%type;
 s_proc_name VARCHAR2(80) := 'FDR_CUSTOM_ARCHIVING_PKG.pCUST_RollFAKBalancesCUST';
 gv_emsg VARCHAR(10000);
 
---EXCEPTIONS
-SUCCESSED EXCEPTION;
-PRAGMA EXCEPTION_INIT(SUCCESSED, -20998);
-
-PROCEED EXCEPTION;
-PRAGMA EXCEPTION_INIT(PROCEED, -20997);
-
 BEGIN
- begin
 
   SELECT
    g.gp_todays_bus_date - a.arct_archive_days + 1
@@ -2060,9 +2052,6 @@ EXCEPTION
     ROLLBACK;
         gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;    
         RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
-END;
-
-RAISE PROCEED;
 
 END;
 
@@ -2087,15 +2076,7 @@ new_bal_date FDR.FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE%type;
 s_proc_name VARCHAR2(80) := 'FDR_CUSTOM_ARCHIVING_PKG.pCUST_RollEBABalancesCUST';
 gv_emsg VARCHAR(10000);
 
---EXCEPTIONS
-SUCCESSED EXCEPTION;
-PRAGMA EXCEPTION_INIT(SUCCESSED, -20998);
-
-PROCEED EXCEPTION;
-PRAGMA EXCEPTION_INIT(PROCEED, -20997);
-
 BEGIN
- begin
 
   SELECT
    g.gp_todays_bus_date - a.arct_archive_days + 1
@@ -2153,9 +2134,7 @@ INSERT INTO SLR.SLR_EBA_DAILY_BALANCES SELECT * FROM SLR.SLR_EBA_DAILY_BALANCES_
         ROLLBACK;
             gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;            
             RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
- END;
-             
-RAISE PROCEED;
+            
 
 END;
 
