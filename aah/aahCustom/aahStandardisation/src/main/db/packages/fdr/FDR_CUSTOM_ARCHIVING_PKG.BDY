@@ -1995,22 +1995,24 @@ new_bal_date FDR.FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE%type;
 s_proc_name VARCHAR2(80) := 'FDR_CUSTOM_ARCHIVING_PKG.pCUST_RollFAKBalancesCUST';
 gv_emsg VARCHAR(10000);
 
---EXCEPTIONS
-SUCCESSED EXCEPTION;
-PRAGMA EXCEPTION_INIT(SUCCESSED, -20998);
-
-PROCEED EXCEPTION;
-PRAGMA EXCEPTION_INIT(PROCEED, -20997);
-
 BEGIN
- begin
 
-  SELECT
-   g.gp_todays_bus_date - a.arct_archive_days + 1
- INTO new_bal_date
- FROM fdr.fr_global_parameter g
-   join fdr.fr_archive_ctl a on a.arct_id = pARCT_ID
-   WHERE g.lpg_id=pLPGId;
+
+   SELECT add_months(MIN(TO_DATE (fgl.lk_lookup_value3, 'DD-MON-YYYY')),-1)
+   INTO new_bal_date
+     FROM fdr.fr_general_lookup fgl
+          JOIN
+          (  SELECT MIN (fgl2.lk_match_key2 || LPAD (lk_match_key3, 2, '0'))
+                       min_period,
+                    fgl2.lk_match_key1 event_class
+               FROM fdr.fr_general_lookup fgl2
+              WHERE     fgl2.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
+                    AND fgl2.lk_lookup_value1 = 'O'
+           GROUP BY fgl2.lk_match_key1) open_period
+             ON     fgl.lk_match_key2 || lk_match_key3 =
+                       open_period.min_period
+                AND fgl.lk_match_key1 = open_period.event_class
+    WHERE fgl.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD';
    
 FOR r_jt IN cJrnTypes
 LOOP 
@@ -2060,9 +2062,6 @@ EXCEPTION
     ROLLBACK;
         gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;    
         RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
-END;
-
-RAISE PROCEED;
 
 END;
 
@@ -2087,22 +2086,23 @@ new_bal_date FDR.FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE%type;
 s_proc_name VARCHAR2(80) := 'FDR_CUSTOM_ARCHIVING_PKG.pCUST_RollEBABalancesCUST';
 gv_emsg VARCHAR(10000);
 
---EXCEPTIONS
-SUCCESSED EXCEPTION;
-PRAGMA EXCEPTION_INIT(SUCCESSED, -20998);
-
-PROCEED EXCEPTION;
-PRAGMA EXCEPTION_INIT(PROCEED, -20997);
-
 BEGIN
- begin
 
-  SELECT
-   g.gp_todays_bus_date - a.arct_archive_days + 1
- INTO new_bal_date
- FROM fdr.fr_global_parameter g
-   join fdr.fr_archive_ctl a on a.arct_id = pARCT_ID
-   WHERE g.lpg_id=pLPGId;
+   SELECT add_months(MIN(TO_DATE (fgl.lk_lookup_value3, 'DD-MON-YYYY')),-1)
+   INTO new_bal_date
+     FROM fdr.fr_general_lookup fgl
+          JOIN
+          (  SELECT MIN (fgl2.lk_match_key2 || LPAD (lk_match_key3, 2, '0'))
+                       min_period,
+                    fgl2.lk_match_key1 event_class
+               FROM fdr.fr_general_lookup fgl2
+              WHERE     fgl2.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
+                    AND fgl2.lk_lookup_value1 = 'O'
+           GROUP BY fgl2.lk_match_key1) open_period
+             ON     fgl.lk_match_key2 || lk_match_key3 =
+                       open_period.min_period
+                AND fgl.lk_match_key1 = open_period.event_class
+    WHERE fgl.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD';
 
 FOR r_jt IN cJrnTypes
 LOOP 
@@ -2153,9 +2153,7 @@ INSERT INTO SLR.SLR_EBA_DAILY_BALANCES SELECT * FROM SLR.SLR_EBA_DAILY_BALANCES_
         ROLLBACK;
             gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;            
             RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
- END;
-             
-RAISE PROCEED;
+            
 
 END;
 
