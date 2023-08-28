@@ -1,0 +1,35 @@
+CREATE OR REPLACE PACKAGE RDR.pg_glint
+/* Package for GL Interface. */
+AuthID Definer
+As
+
+/* Global Constants. */
+gcEntity_InterfaceControl       Constant all_objects.object_name%TYPE := 'RR_INTERFACE_CONTROL';
+
+/* Global Variables. */
+gSQLHint_InsertTempBatch Varchar2(200) := NULL;
+gSQLHint_SelectTempBatch Varchar2(200) := '/*+ Parallel(rcv_glint_journal) */';
+gSQLHint_InsertTempMADJ  Varchar2(200) := NULL;
+gSQLHint_SelectTempMADJ  Varchar2(200) := NULL;
+gSQLHint_InsertBatch     Varchar2(200) := '/*+ Parallel */';
+gSQLHint_InsertMADJ      Varchar2(200) := NULL;
+gSQLHint_SelectBatch     Varchar2(200) := '/*+ Parallel */';
+gSQLHint_SelectMADJ      Varchar2(200) := NULL;
+gErrorLogTempJournal     Boolean       := False;
+
+
+/* Public Function to return the next batch control sequence number. */
+Function fGetBatchControlID Return rr_glint_batch_control.rgbc_id%TYPE Parallel_Enable;
+
+/* Public Procedure to process posted journals for sending to a GL.
+   This would be called with journal identifiers in the custom GUI exit when a user authorises/posts the journals manually.
+   This would be called with no journal identifiers from a batch process. */
+Procedure pProcess(
+  pinLoadNamePrefix in     rr_glint_batch_control.rgbc_load_name%TYPE Default 'AAH',
+  pinCustomProcess  in     all_objects.object_name%TYPE Default NULL,
+  pinEPGID          in     slr.slr_entity_proc_group.epg_id%TYPE Default NULL,
+  pinArrayJournalID in     Varchar2 Default NULL,
+  pinResubmitFlag   in     Boolean Default False);
+
+End PG_GLINT;
+/

@@ -105,48 +105,58 @@ options:
       resource: aahLegWebApp_web_xml
       operation: upload
       fileInZip: "'WEB-INF/lib/tomcat-util.jar'"
-      pathInSys: "'./' + aah.installer.AAH_LIB_DIR + 'tomcat-util.jar'"
-      onNotFoundAction: fail  
-
-    # upload ojdbc8.jar file into GUI.war (WEB-INF/lib/)
-    - step: zipFileOperation
-      description: "Copying ojdbc8.jar"
-      runCondition: aah.installer.IS_STANDALONE
-      resource: aahLegWebApp_web_xml
-      operation: upload
-      fileInZip: "'WEB-INF/lib/ojdbc8-' + aah.installer.AAH_ORA_LIB_VER + '.jar'"
-      pathInSys: "'./' + aah.installer.AAH_DRV_DIR + 'ojdbc8-' + aah.installer.AAH_ORA_LIB_VER + '.jar'"
+      pathInSys: "'../lib/tomcat-util.jar'"
       onNotFoundAction: fail
 
-    # upload oraclepki.jar file into GUI.war (WEB-INF/lib/)
+    # Upload ojdbc8.jar
     - step: zipFileOperation
-      description: "Copying oraclepki.jar"
+      description: "Copy ojdbc8.jar"
       runCondition: aah.installer.IS_STANDALONE
       resource: aahLegWebApp_web_xml
       operation: upload
-      fileInZip: "'WEB-INF/lib/oraclepki.jar'"
-      pathInSys: "'./' + aah.installer.AAH_LIB_DIR + 'oraclepki.jar'"
-      onNotFoundAction: fail 
-
-    # upload osdt_cert.jar file into GUI.war (WEB-INF/lib/)
-    - step: zipFileOperation
-      description: "Copying osdt_cert.jar"
-      runCondition: aah.installer.IS_STANDALONE
-      resource: aahLegWebApp_web_xml
-      operation: upload
-      fileInZip: "'WEB-INF/lib/osdt_cert.jar'"
-      pathInSys: "'./' + aah.installer.AAH_LIB_DIR + 'osdt_cert.jar'"
-      onNotFoundAction: fail   
-    
-    # upload osdt_core.jar file into GUI.war (WEB-INF/lib/)
-    - step: zipFileOperation
-      description: "Copying osdt_core.jar"
-      runCondition: aah.installer.IS_STANDALONE
-      resource: aahLegWebApp_web_xml
-      operation: upload
-      fileInZip: "'WEB-INF/lib/osdt_core.jar'"
-      pathInSys: "'./' + aah.installer.AAH_LIB_DIR + 'osdt_core.jar'"
+      fileInZip: "'WEB-INF/lib/ojdbc8-' + installer.ORACLE_VERSION + '.jar'"
+      pathInSys: "'../../drivers/ojdbc8-' + installer.ORACLE_VERSION + '.jar'"
       onNotFoundAction: fail
+
+    # Upload orai18n.jar
+    - step: zipFileOperation
+      description: "Copy orai18n.jar"
+      runCondition: aah.installer.IS_STANDALONE
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/orai18n-' + installer.ORACLE_VERSION + '.jar'"
+      pathInSys: "'../../drivers/orai18n-' + installer.ORACLE_VERSION + '.jar'"
+      onNotFoundAction: fail
+
+    # Upload oraclepki.jar
+    - step: zipFileOperation
+      description: "Copy oraclepki.jar"
+      runCondition: aah.installer.IS_STANDALONE
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/oraclepki-' + installer.ORACLE_VERSION + '.jar'"
+      pathInSys: "'../../drivers/oraclepki-' + installer.ORACLE_VERSION + '.jar'"
+      onNotFoundAction: skip
+
+    # Upload osdt_cert.jar
+    - step: zipFileOperation
+      description: "Copy osdt_cert.jar"
+      runCondition: aah.installer.IS_STANDALONE
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/osdt_cert-' + installer.ORACLE_VERSION + '.jar'"
+      pathInSys: "'../../drivers/osdt_cert-' + installer.ORACLE_VERSION + '.jar'"
+      onNotFoundAction: skip
+
+    # Upload osdt_core.jar
+    - step: zipFileOperation
+      description: "Copy osdt_core.jar"
+      runCondition: aah.installer.IS_STANDALONE
+      resource: aahLegWebApp_web_xml
+      operation: upload
+      fileInZip: "'WEB-INF/lib/osdt_core-' + installer.ORACLE_VERSION + '.jar'"
+      pathInSys: "'../../drivers/osdt_core-' + installer.ORACLE_VERSION + '.jar'"
+      onNotFoundAction: skip
 
     # Journal Line Enricher START ------------------------------------------------------------------------------------------
     # upload aptitude-aah-journal-line-enricher-1.0.jar file into GUI.war (WEB-INF/lib/)
@@ -166,25 +176,6 @@ options:
       targetPath: "'../webapps/legacy/WEB-INF/lib/aptitude-aah-journal-line-enricher-1.0.jar'"
       description: "Copying aptitude-aah-journal-line-enricher-1.0.jar"
     # Journal Line Enricher END ------------------------------------------------------------------------------------------
-
-    # MADJ Upload Template START ------------------------------------------------------------------------------------------
-    # upload MADJ template CSV file into GUI.war (client_specific/)
-    - step: zipFileOperation
-      description: "Copying MADJ Upload Template CSV"
-      runCondition: aah.installer.IS_STANDALONE && !isNullOrWhitespace(aah.web.prepare.files.MadjUploadTemplate)
-      resource: aahLegWebApp_web_xml
-      operation: upload
-      fileInZip: "'client_specific/' + new java.io.File(aah.web.prepare.files.MadjUploadTemplate).getName()"
-      pathInSys: "aah.web.prepare.files.MadjUploadTemplate"
-      onNotFoundAction: skip
-
-    - step: fsOperation
-      operation: copy
-      runCondition: "!aah.installer.IS_STANDALONE && !isNullOrWhitespace(aah.web.prepare.files.MadjUploadTemplate)"
-      path: aah.web.prepare.files.MadjUploadTemplate
-      targetPath: "'../webapps/legacy/client_specific/' + new java.io.File(aah.web.prepare.files.MadjUploadTemplate).getName()"
-      description: "Copying MADJ Upload Template CSV"
-    # MADJ Upload Template END ------------------------------------------------------------------------------------------
 
     # Upload ApplicationResources.properties START ------------------------------------------------------------------------------------------
     # copy ApplicationResources.properties template into GUI.war (WEB-INF/classes/resources/)
@@ -234,24 +225,24 @@ options:
     # save configuration to META-INF/context.xml
     - step: resourceWrite
       description: "Writing configuration to context.xml"
-      runCondition: aah.db.oracle.wallet.securityType.equals('CLASSIC')
+      runCondition: "!db.wallet.enabled"
       resource: aahLegWebApp_META-INF-context_xml
       onResourceNotFoundAction: fail
       properties:
         "//Resource[@name='jdbc/fdr']/@url": aah.internal.jdbc
+        "/@xmlValidation": "false"
         "//Resource[@name='jdbc/fdr']/@username": aah.web.legacy.tmp.fdrUserEncryptedDes
         "//Resource[@name='jdbc/fdr']/@password": aah.web.legacy.tmp.fdrPassEncryptedDes
-        "/@xmlValidation": "false"
         "/@docBase": web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX
         "/@path": "'/'+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX"
 
     - step: resourceWrite
       description: "Writing configuration to context.xml"
-      runCondition: aah.db.oracle.wallet.securityType.equals('OW')
+      runCondition: "db.wallet.enabled"
       resource: aahLegWebApp_META-INF-context_xml
       onResourceNotFoundAction: fail
       properties:
-        "//Resource[@name='jdbc/fdr']/@url": "'jdbc:oracle:thin:@' + aah.db.oracle.wallet.fdrConn"
+        "//Resource[@name='jdbc/fdr']/@url": "'jdbc:oracle:thin:@' + db.aahUsers.fdrCredential + '?oracle.net.tns_admin=' + db.wallet.tnsadmin + '&oracle.net.wallet_location=' + db.wallet.location"
         "//Resource[@name='jdbc/fdr']/@password": "''"
         "//Resource[@name='jdbc/fdr']/@username": "''"
         "/@docBase": web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX
@@ -315,7 +306,7 @@ options:
       host: web.deployment.hostname
       port: web.deployment.port
       user: web.deployment.username
-      pass: web.deployment.password
+      pass: decryptIfNeeded(web.deployment.password)
       # name of deplayment folder on Tomcat server, for. ex. localhost:8080/SAMPLE_ACC_APP
       deploymentPath: web.deployment.aahWebAppFolder  + aah.installer.OLD_APP_FOLDER_SUFIX
       # undeploy older app before new deployment
@@ -337,7 +328,7 @@ options:
       name: web.deployment.aahWebAppFolder  + aah.installer.OLD_APP_FOLDER_SUFIX
       adminUrl: "web.deployment.webLogic.adminProtocol + '://' + web.deployment.hostname +':' + web.deployment.webLogic.adminPort"
       user: web.deployment.username
-      pass: web.deployment.password
+      pass: decryptIfNeeded(web.deployment.password)
       ignoreError: true
       ignoreHostnameVerification: true
       skipModuleScanning: true
@@ -360,7 +351,7 @@ options:
       action: redeploy
       adminUrl: "web.deployment.webLogic.adminProtocol + '://' + web.deployment.hostname +':' + web.deployment.webLogic.adminPort"
       user: web.deployment.username
-      pass: web.deployment.password
+      pass: decryptIfNeeded(web.deployment.password)
       ignoreHostnameVerification: true
       skipModuleScanning: true
       keyStore: "'DemoTrust'"
@@ -403,7 +394,7 @@ options:
       contextRoot: web.deployment.aahWebAppFolder  + aah.installer.OLD_APP_FOLDER_SUFIX
       adminUrl: "web.deployment.webLogic.adminProtocol + '://' + web.deployment.hostname +':' + web.deployment.webLogic.adminPort"
       user: web.deployment.username
-      pass: web.deployment.password
+      pass: decryptIfNeeded(web.deployment.password)
       ignoreHostnameVerification: true
       skipModuleScanning: true
       keyStore: "'DemoTrust'"
@@ -444,7 +435,7 @@ options:
       host: web.deployment.hostname
       port: web.deployment.jboss.mngmPort
       user: web.deployment.username
-      pass: web.deployment.password
+      pass: decryptIfNeeded(web.deployment.password)
       resourceName: aahLegWebApp_WEB-INF_ApplicationResources.properties  # deploy WAR file defined as resource
       deploymentPath: web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX
       serverGroup: "web.deployment.jboss.serverType.equals('DOMAIN') ? web.deployment.jboss.groupName : ''"

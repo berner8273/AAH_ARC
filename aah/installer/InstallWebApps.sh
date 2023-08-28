@@ -27,8 +27,7 @@ unzip -o ./security-external-api/zip/security-api-service.zip -d ${SecurityApiDi
 cp ./drivers/*.jar ${SecurityApiDirectory}/drivers || ERR_EXIT "ERROR copy driver Jar files\n"
 cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR copying application.properties file\n"
 
-
-printf "***** running security api ******\n"
+printf "***** running security api ****** **\n"
 chmod +x ${SecurityApiDirectory}/bin/security-external.sh
 nohup ${SecurityApiDirectory}/bin/security-external.sh service&
 

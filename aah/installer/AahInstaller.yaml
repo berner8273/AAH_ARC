@@ -89,11 +89,11 @@ variablesValues:
     # @type(bool)
     initAAH: false
     # @type(bool)
-    migrateSecurity: false
+    migrateSecurity: true
     # @type(bool)
     migrateScheduler: false
     # @type(bool)
-    migrateAAH: false
+    migrateAAH: true
     securityUsers:
       uiUser: "SECURITY_UI"
       uiPass: "#{security_uiPassword}"
@@ -257,7 +257,7 @@ variablesValues:
       version: "6.10"
       osAuth: "true"
       user: "admin"
-      pass: "m1cRogene"
+      pass: "m1crOgene"
       hostname: "127.0.0.1"
       port: "2500"
       executionFolder: "core"
@@ -348,6 +348,8 @@ variablesValues:
         files:
           # Path (absolute) to ApplicationResource.properties file to use
           ApplicationResources: "../assets/ApplicationResources.properties"
+          # Path (absolute) to webproperties tu use (WEB-INF/classes/webproperties/)
+          WebProperties: "../assets/webproperties"
           # Path (absolute) to i18n Assets directory
           i18nAssets: "../assets/i18n"
           # Path (absolute) to aptitude-aah-journal-line-enricher-1.0.jar file to use
@@ -358,6 +360,12 @@ variablesValues:
           Log4j2Xml:
           # Path (absolute) to logback.xml file to use
           LogbackXml:
+        propertiesMigration:
+          # @type(bool)
+          run: "false"
+          locale: "en"
+          # Path (absolute) to ApplicationResource.properties file to use during migration to new GUI
+          sourceProperties: "/aah/installer/aah-web-setup/assets/ApplicationResources.properties"
       security:
         # Authentication type. Possible values: db, saml, preauthenticated, token.
         authenticationType: "saml"
@@ -366,10 +374,10 @@ variablesValues:
           # web application session configuration
           signature-algorithm: "sha256"
           default-configuration:
-            path: "/opt/tomcat/conf/FederationMetadata.xml"
-            entity-id: "http://adfs.agltd.com/adfs/services/trust"
-            group-attribute: "http://schemas.xmlsoap.org/claims/Group"
-          service-provider-entity-id: "#{aptitudeHost}"
+            entity-id: ""
+            group-attribute: ""
+          service-provider-entity-id: "#{serviceProvider}_aah"
+          path: "/opt/tomcat/conf/FederationMetadata_aah.xml"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
           key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
@@ -434,10 +442,10 @@ variablesValues:
         # @type(map)
         saml:
           default-configuration:
-            path: "/opt/tomcat/conf/FederationMetadata.xml"
-            entity-id: "http://adfs.agltd.com/adfs/services/trust"
-            group-attribute: "http://schemas.xmlsoap.org/claims/Group"
-          service-provider-entity-id: "#{aptitudeHost}_security"
+            entity-id: ""
+            group-attribute: ""
+            path: "/opt/tomcat/conf/FederationMetadata_security.xml"
+          service-provider-entity-id: "#{serviceProvider}_security"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
           key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"
@@ -513,10 +521,10 @@ variablesValues:
         # @type(map)
         saml:
           default-configuration:
-            path: "/opt/tomcat/conf/FederationMetadata.xml"
-            entity-id: "http://adfs.agltd.com/adfs/services/trust"
-            group-attribute: "http://schemas.xmlsoap.org/claims/Group"
-          service-provider-entity-id: "#{aptitudeHost}_scheduler-web" 
+            entity-id: ""
+            group-attribute: ""
+            path: "/opt/tomcat/conf/FederationMetadata_scheduler.xml"
+          service-provider-entity-id: "#{serviceProvider}_scheduler"
           key-store-path: "/opt/tomcat/conf/saml.jks"
           key-store-alias: "aah"
           key-store-password: "ENC(4IW7maKW+g+Osx6B7wnJdD+IqAFWHekaxX3Sp35L6WDhznTwOlMIGjZSr4N0aFoH)"

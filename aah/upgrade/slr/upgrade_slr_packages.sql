@@ -1,8 +1,8 @@
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.hdr;
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_balance_movement_pkg.bdy;
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_post_journals_pkg.hdr;
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_post_journals_pkg.bdy;
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_validate_journals_pkg.hdr;
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_validate_journals_pkg.bdy;
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_utilities_pkg.hdr;
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_utilities_pkg.bdy;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_UTILITIES_PKG.hdr;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_UTILITIES_PKG.bdy;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_VALIDATE_JOURNALS_PKG.hdr;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_VALIDATE_JOURNALS_PKG.bdy;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_POST_JOURNALS_PKG.hdr;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_POST_JOURNALS_PKG.bdy;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_BALANCE_MOVEMENT_PKG.hdr;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_BALANCE_MOVEMENT_PKG.bdy;
