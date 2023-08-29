@@ -24,30 +24,23 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~sys_logon as sysdba
-grant execute on dbms_alert to SLR;
-GRANT SELECT ON SYS.GV_$SESSION TO AAH_UI;
-GRANT SELECT ON SYS.GV_$SQL TO AAH_UI;
-GRANT CREATE ANY DIRECTORY TO AAH_UI;
--- create or replace synonym scheduler_app.process_group for scheduler_core.process_group;
--- create or replace synonym aah_ui.frv_static_data_auth for fdr.frv_static_data_auth;
-
-conn ~slr_logon
-@@slr/upgrade_slr_packages.sql
-
-conn ~gui_logon
-@@gui/upgrade_gui_objects.sql
-@@gui/upgrade_gui_objects2.sql
-
-conn ~rdr_logon
-@@rdr/upgrade_rdr_objects.sql
-
 conn ~fdr_logon
-@@fdr/upgrade_fdr_procedures.sql
-
-conn ~sys_logon as sysdba
-@@sys/upgrade_security_core_app.sql
-
+INSERT INTO FDR.FR_GENERAL_CODES (
+   GC_GENERAL_CODE_ID, GC_GCT_CODE_TYPE_ID, GC_CLIENT_CODE, 
+   GC_CLIENT_TEXT1, GC_CLIENT_TEXT2, GC_CLIENT_TEXT3, 
+   GC_CLIENT_TEXT4, GC_CLIENT_TEXT5, GC_CLIENT_TEXT6, 
+   GC_CLIENT_TEXT7, GC_CLIENT_TEXT8, GC_CLIENT_TEXT9, 
+   GC_CLIENT_TEXT10, GC_DESCRIPTION,GC_ACTIVE)
+VALUES ( 'NVS', 'GL_CHARTFIELD', 'NVS', 'CHARTFIELD_1', 'NVS', null,null,null,null,null,null,null, null, null,'A')
+INSERT INTO FDR.FR_GENERAL_CODES (
+   GC_GENERAL_CODE_ID, GC_GCT_CODE_TYPE_ID, GC_CLIENT_CODE, 
+   GC_CLIENT_TEXT1, GC_CLIENT_TEXT2, GC_CLIENT_TEXT3, 
+   GC_CLIENT_TEXT4, GC_CLIENT_TEXT5, GC_CLIENT_TEXT6, 
+   GC_CLIENT_TEXT7, GC_CLIENT_TEXT8, GC_CLIENT_TEXT9, 
+   GC_CLIENT_TEXT10, GC_DESCRIPTION,GC_ACTIVE)
+VALUES ( 'DNP', 'GL_CHARTFIELD', 'DNP', 'CHARTFIELD_1', 'DO NOT PROCESS', null,null,null,null,null,null,null, null, null,'A')
+COMMIT;
+ 
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
