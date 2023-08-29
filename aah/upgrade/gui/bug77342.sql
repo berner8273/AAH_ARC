@@ -1,1 +1,1 @@
-@@../aahCustom/aahGUI/src/main/db/views/gui/vw_ui_segment_5.sql
+@@../aahCustom/aahGui/src/main/db/views/gui/vw_ui_segment_5.sql
