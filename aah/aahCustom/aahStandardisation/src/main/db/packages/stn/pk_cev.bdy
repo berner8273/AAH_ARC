@@ -526,7 +526,7 @@ and not exists (
         execute immediate 'truncate table STN.cev_premium_typ_override';
         
 --        Using reference data from stn.posting_method_derivation_gfa, the correlation_uuid and event_typ_id are identified 
---        where a record should be processed according to the “mixed” rule rather than “upfront”.  
+--        where a record should be processed according to the â€œmixedâ€ rule rather than â€œupfrontâ€.  
 --        This is to accomplish rule 7D in the Posting Driver Rules document.  
 --        This step was separated due to its added complexity causing the execution of stn.cev_data to run inefficiently.
         
@@ -656,7 +656,7 @@ and not exists (
         execute immediate 'truncate table STN.cev_gaap_fut_accts_data';
         
         --    ***************************  C E V   G A A P  F U T  A C C T S   D A T A   ****************************************
-        -- Processes events that qualify for “GAAP future accounts” processing.  The majority of this step is done in the gfa_1 sub-query.  
+        -- Processes events that qualify for â€œGAAP future accountsâ€ processing.  The majority of this step is done in the gfa_1 sub-query.  
         --  The final select statement sums amounts to combine amounts when premium types of U and I exist for the future to current events.  
         --  The rule only applies for premium types M and I, not for U only policies (where clause).
         --  
@@ -896,7 +896,7 @@ and not exists (
         execute immediate 'truncate table STN.cev_non_intercompany_data';
         
         --    ***************************  C E V   N O N  I N T E R C O M P A N Y   D A T A   ****************************************  
-        --  Processes final transformations and exceptions for “original” non-intercompany, non-VIE events, 
+        --  Processes final transformations and exceptions for â€œoriginalâ€ non-intercompany, non-VIE events, 
         --      unioning datasets from stn.cev_mtm_data and stn.cev_gaap_fut_accts_data.
         --  SUB QUERYS
         --      AMOUNT_DERIVATION based on UNION of CEV_MTM_DATA and CEV_GAAP_FUT_ACCTS_DATA with new datapoints:
@@ -3163,7 +3163,7 @@ and exists (
         EXCEPTION
                 WHEN pub_val_mismatch THEN
                     pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
-                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
+                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => s_exception_name );
                     gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
                     RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg||' '||s_exception_name);                                        
                 WHEN OTHERS THEN
