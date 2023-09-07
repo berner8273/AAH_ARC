@@ -9,3 +9,4 @@
 @@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_ledg.bdy
 @@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_lel.bdy
 @@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_tj.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_pol.bdy
