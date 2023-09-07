@@ -247,20 +247,14 @@ and not exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
             IF v_no_processed_records <> (v_no_identified_records + v_no_si_identified_records) THEN
                 s_exception_name:='v_no_processed_records <> v_no_identified_records';
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
                 raise pub_val_mismatch;
             END IF;
             IF v_no_processed_records <> v_total_no_published THEN
                 s_exception_name:='v_no_processed_records <> v_total_no_published';
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
                 raise pub_val_mismatch;
             END IF;
             IF v_total_no_published <> v_total_no_sub_acct_published THEN
                 s_exception_name:='v_total_no_published <> v_total_no_sub_acct_published';
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
