@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_LEL AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_LEL AS
     PROCEDURE pr_legal_ent_link_idf
         (
             p_step_run_sid IN NUMBER,
@@ -48,7 +48,7 @@ and not exists (
        );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated legal_entity_link.step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_legal_ent_link_chr
         (
             p_step_run_sid IN NUMBER,
@@ -65,7 +65,7 @@ and not exists (
                 fsrohs.EVENT_STATUS <> 'P' AND fsrohs.LPG_ID = p_lpg_id;
         p_no_updated_hopper_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_legal_ent_link_rval
     AS
     BEGIN
@@ -233,7 +233,7 @@ and exists (
                   and fpt.pt_party_type_name         = 'Ledger Entity'
            );
     END;
-    
+
     PROCEDURE pr_legal_ent_link_svs
         (
             p_no_validated_records OUT NUMBER
@@ -274,7 +274,7 @@ and     exists (
                );
         p_no_validated_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_legal_ent_link_pub
         (
             p_step_run_sid IN NUMBER,
@@ -326,9 +326,9 @@ and     exists (
                     lel.EVENT_STATUS = 'V'
 and not exists
            (
-             select 
+             select
                     null
-               from 
+               from
                     stn.legal_entity_link lelc
               where
                     le.LE_ID = lelc.child_le_id
@@ -336,9 +336,9 @@ and not exists
                 and lel.FEED_UUID             = lelc.feed_uuid
            )
 and exists (
-             select 
+             select
                     null
-               from 
+               from
                     stn.legal_entity_link lelp
               where
                     le.LE_ID = lelp.parent_le_id
@@ -469,7 +469,7 @@ and exists (
         ;
         --p_no_cancel_records_published := sql%rowcount;
     END;
-    
+
     PROCEDURE pr_legal_ent_link_sps
         (
             p_no_processed_records OUT NUMBER
@@ -491,7 +491,7 @@ and exists (
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_legal_ent_link_prc
         (
             p_step_run_sid IN NUMBER,
@@ -507,6 +507,11 @@ and exists (
         v_no_updated_hopper_records NUMBER(38, 9) DEFAULT 0;
         v_no_cancel_records_published NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
+        s_proc_name VARCHAR2(80) := 'stn.pk_lel.pr_legal_ent_link_prc';
+        gv_ecode     NUMBER := -20001;        
+        gv_emsg VARCHAR(10000);
+        s_exception_name VARCHAR2(80);
+        
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify legal entity link records' );
         pr_legal_ent_link_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
@@ -526,13 +531,12 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing org struc hopper records', 'v_total_no_published', NULL, v_total_no_published, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing org struc cancel hopper records', 'v_no_cancel_records_published', NULL, v_no_cancel_records_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish legal entity link log records' );
-            pr_publish_log('STANDARDISATION_LOG');
+            pr_publish_log;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set legal entity link status = "P"' );
             pr_legal_ent_link_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
             IF v_no_processed_records <> v_no_validated_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_no_validated_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
+                s_exception_name:='v_no_processed_records <> v_no_validated_records';
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
@@ -541,6 +545,18 @@ and exists (
             p_no_processed_records := 0;
             p_no_failed_records    := 0;
         END IF;
+        
+        EXCEPTION
+                WHEN pub_val_mismatch THEN
+                    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
+                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => s_exception_name );
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg||' '||s_exception_name);                                        
+                WHEN OTHERS THEN
+                    ROLLBACK;
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);                                                
+        
     END;
 END PK_LEL;
 /
