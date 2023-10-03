@@ -1,3 +1,5 @@
+@@../aahCustom/aahSubLedger/src/main/db/views/slr/vbm_ag_retainedearningseba04.sql;
+
 Insert into SLR.SLR_PROCESS_CONFIG
    (PC_CONFIG, PC_P_PROCESS, PC_JT_TYPE, PC_FAK_EBA_FLAG, PC_AGGREGATION, 
     PC_METHOD)
@@ -36,64 +38,5 @@ Insert into SLR.SLR_PROCESS_SOURCE
  Values
    ('BMRETAINEDEARNINGSEBA04', 'E', 'vBM_AG_RetainedEarningsEBA04', 'vBMRetainedEarnings', 'A', 
     'SLR', TO_DATE('03/20/2018 00:00:00', 'MM/DD/YYYY HH24:MI:SS'));
-
-commit;
-
-CREATE OR REPLACE FORCE VIEW SLR.VBM_AG_RETAINEDEARNINGSEBA04
-(
-   KEY_ID,
-   FAK_ID,
-   BALANCE_TYPE,
-   ENTITY,
-   BALANCE_DATE,
-   EPG_ID,
-   TRAN_LTD_BALANCE,
-   BASE_LTD_BALANCE,
-   LOCAL_LTD_BALANCE,
-   TRAN_YTD_BALANCE,
-   BASE_YTD_BALANCE,
-   LOCAL_YTD_BALANCE,
-   TRAN_MTD_BALANCE,
-   BASE_MTD_BALANCE,
-   LOCAL_MTD_BALANCE,
-   PERIOD_MONTH,
-   PERIOD_YEAR,
-   PERIOD_LTD
-)
-   BEQUEATH DEFINER
-AS
-   SELECT /*+ parallel(slr_eba_daily_balances )*/
-         edb_eba_id AS key_id,
-          edb_fak_id AS fak_id,
-          edb_balance_type AS balance_type,
-          edb_entity AS entity,
-          edb_balance_date AS balance_date,
-          edb_epg_id AS epg_id,
-          edb_tran_ltd_balance AS tran_ltd_balance,
-          edb_base_ltd_balance AS base_ltd_balance,
-          edb_local_ltd_balance AS local_ltd_balance,
-          edb_tran_ytd_balance AS tran_ytd_balance,
-          edb_base_ytd_balance AS base_ytd_balance,
-          edb_local_ytd_balance AS local_ytd_balance,
-          edb_tran_mtd_balance AS tran_mtd_balance,
-          edb_base_mtd_balance AS base_mtd_balance,
-          edb_local_mtd_balance AS local_mtd_balance,
-          edb_period_month AS period_month,
-          edb_period_year AS period_year,
-          edb_period_ltd AS period_ltd
-     FROM slr_eba_daily_balances edb
-          INNER JOIN slr_fak_combinations fc
-             ON (    edb.edb_epg_id = fc.fc_epg_id
-                 AND edb.edb_fak_id = fc.fc_fak_id)
-          INNER JOIN slr_entities ent ON (edb.edb_entity = ent.ent_entity)
-          INNER JOIN slr_entity_accounts ea
-             ON (    ea.ea_entity_set = ent.ent_accounts_set
-                 AND ea.ea_account = fc.fc_account)
-    WHERE     ea.ea_account_type_flag = 'P'
-          AND edb.edb_balance_type = 50
-          AND ea_account LIKE '31580017%';
-
-
-GRANT SELECT ON SLR.VBM_AG_RETAINEDEARNINGSEBA04 TO AAH_READ_ONLY;
 
 commit;
