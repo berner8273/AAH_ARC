@@ -48,6 +48,6 @@ as
           inner join slr_entity_accounts ea
              on (    ea.ea_entity_set = ent.ent_accounts_set
                  and ea.ea_account = fc.fc_account)
-    where     ea.ea_account_type_flag = 'p'
+    where     ea.ea_account_type_flag = 'P'
           and edb.edb_balance_type = 50
           and ea_account like '31580017%';
