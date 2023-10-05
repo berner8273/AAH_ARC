@@ -1,4 +1,6 @@
-@@../aahCustom/aahSubLedger/src/main/db/views/slr/vbm_ag_retainedearningseba04.sql;
+delete from SLR.SLR_PROCESS_SOURCE where SPS_SOURCE_NAME ='BMRETAINEDEARNINGSEBA04';
+delete from SLR.SLR_PROCESS_CONFIG_DETAIL where pcd_pc_config='PLRETEARNINGS04';
+delete from SLR.SLR_PROCESS_CONFIG where pc_config='PLRETEARNINGS04';
 
 Insert into SLR.SLR_PROCESS_CONFIG
    (PC_CONFIG, PC_P_PROCESS, PC_JT_TYPE, PC_FAK_EBA_FLAG, PC_AGGREGATION, 
@@ -39,4 +41,4 @@ Insert into SLR.SLR_PROCESS_SOURCE
    ('BMRETAINEDEARNINGSEBA04', 'E', 'vBM_AG_RetainedEarningsEBA04', 'vBMRetainedEarnings', 'A', 
     'SLR', TO_DATE('03/20/2018 00:00:00', 'MM/DD/YYYY HH24:MI:SS'));
 
-commit;
+COMMIT;
