@@ -24,8 +24,12 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~gui_logon
- @@gui/bug77342.sql
+conn ~stn_logon
+@@stn/us77795.sql
+
+conn ~fdr_logon
+@@fdr/us77795.sql
+ 
  
 /* End AAH custom upgrades */
 
