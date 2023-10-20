@@ -1,0 +1,1 @@
+@@../aahCustom/aahSubLedger/src/main/db/procedures/slr/pr_delete_slr_partitions.sql;
