@@ -1,4 +1,4 @@
-3delete from stn.step where step_id=56;
+delete from stn.step where step_id=56;
 delete from stn.process where process_id=53;
 
 
