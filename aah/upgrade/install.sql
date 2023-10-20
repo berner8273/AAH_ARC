@@ -30,6 +30,8 @@ conn ~stn_logon
 conn ~fdr_logon
 @@fdr/us77795.sql
  
+conn ~slr_logon
+@@slr/us77795.sql
  
 /* End AAH custom upgrades */
 
