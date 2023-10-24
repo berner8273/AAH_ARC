@@ -7,7 +7,7 @@ CREATE OR REPLACE PROCEDURE SLR.pr_delete_slr_partitions IS
    REVISIONS:
    Ver        Date        Author           Description
    ---------  ----------  ---------------  ------------------------------------
-   1.0        10/18/2023   jberner       1. Created this procedure.
+   1.0        10/18/2023   aheavey       1. Created this procedure.
 
    NOTES:
 
