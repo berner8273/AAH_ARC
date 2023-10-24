@@ -659,7 +659,7 @@ and (
                 s_exception_name:='v_no_ug_validated_records <> v_no_ug_processed_records';
                 raise pub_val_mismatch;
             END IF;
-            FI v_no_lel_validated_records <> v_no_lel_processed_records THEN
+            IF v_no_lel_validated_records <> v_no_lel_processed_records THEN
                 s_exception_name:='v_no_lel_validated_records <> v_no_lel_processed_records';
                 raise pub_val_mismatch;
             END IF;
