@@ -1,16 +1,9 @@
 CREATE OR REPLACE PROCEDURE SLR.pr_override_cash_affiliate
 AS
-   lvUser        VARCHAR2 (50);
-   lvWhen        DATE;
-   s_proc_name   VARCHAR2 (80) := 'SLR_PKH.pOverride_cash_affiliate';
+      s_proc_name   VARCHAR2 (80) := 'SLR_PKH.pOverride_cash_affiliate';
+
 BEGIN
-   -- Initialize local variables
-
-   lvWhen := TRUNC (SYSDATE);
-
-   SELECT USER INTO lvUser FROM DUAL;
-
-
+   
    MERGE INTO SLR.SLR_JRNL_LINES_UNPOSTED JRNL
         USING (SELECT DISTINCT JLU_SOURCE_JRNL_ID, JLU_SEGMENT_4
                  FROM SLR.SLR_JRNL_LINES_UNPOSTED JRNL
