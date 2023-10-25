@@ -22,17 +22,11 @@ define unittest_login=~8
 
 /* Check AAH upgrade versions - do not remove */
 
---comment out for upgrade as this is not repeatable
---conn ~sys_logon
---@@sys/00001_check_upgrade_versions.sql
-
 /* Begin AAH custom upgrades */
 
-conn ~fdr_logon
-@@../aahCustom/aahStandardisation/src/main/db/grants/tables/fdr/fr_general_codes.sql
-
-conn ~stn_logon
-@@../aahCustom/aahStandardisation/src/main/db/views/stn/policy_tax.sql
+conn ~slr_logon
+@@../aahCustom/aahSubLedger/src/main/db/procedures/slr/pr_override_cash_affiliate;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.bdy;
 
 /* End AAH custom upgrades */
 

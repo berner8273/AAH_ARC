@@ -346,6 +346,7 @@ BEGIN
             ----------------------
 			lv_START_TIME:=DBMS_UTILITY.GET_TIME();
 			pCombinationCheck_JLU(p_entity_proc_group, lv_process_id, 'U');
+            slr.pr_override_cash_affiliate();  -- procedure to overide cash offset affiliate
             SLR_VALIDATE_JOURNALS_PKG.pValidateJournals(p_epg_id => p_entity_proc_group, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => p_rate_set);
 			SLR_ADMIN_PKG.PerfInfo( 'Validate function. Validate function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
 			lv_START_TIME:=DBMS_UTILITY.GET_TIME();
@@ -525,7 +526,7 @@ BEGIN
         ''U'' as jlu_jrnl_status,
         null as jlu_jrnl_status_text,
         :process_id___1 as jlu_jrnl_process_id,
-        AE_GL_NARRATIVE AS JLU_DESCRIPTION,
+        nvl(AE_GL_NARRATIVE,AE_CLIENT_SPARE_ID19) AS JLU_DESCRIPTION,
         ae_acc_event_id as jlu_source_jrnl_id,
         COALESCE(AE_CLIENT_DATE1, AE_VALUE_DATE, AE_POSTING_DATE) AS JLU_EFFECTIVE_DATE,  /*Updated per user story 25193*/
         nvl(ae_value_date, ae_posting_date) as jlu_value_date,
