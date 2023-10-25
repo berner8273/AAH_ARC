@@ -5,6 +5,7 @@ function runArchive()
     runStep parchiveFDR1
     runStep parchiveSTN2
     runStep parchiveFDR2
+    runStep parchiveSLR1
     runStep pDeleteSLRPartitions
 }
 ERR_EXIT () {
