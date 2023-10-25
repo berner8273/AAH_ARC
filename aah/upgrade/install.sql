@@ -24,7 +24,7 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~slr_login
+conn ~slr_logon
 @@../aahCustom/aahSubLedger/src/main/db/procedures/slr/pr_override_cash_affiliate;
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.bdy;
 
