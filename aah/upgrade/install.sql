@@ -26,6 +26,7 @@ define unittest_login=~8
 
 conn ~slr_login
 @@../aahCustom/aahSubLedger/src/main/db/procedures/slr/poverride_cash_affiliate;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.bdy;
 
 /* End AAH custom upgrades */
 
