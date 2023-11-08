@@ -24,6 +24,10 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
+
+conn ~stn_logon
+grant select on stn.elimination_legal_entity to slr;
+
 conn ~fdr_logon
 grant select on fdr.fr_account_lookup to slr;
 
