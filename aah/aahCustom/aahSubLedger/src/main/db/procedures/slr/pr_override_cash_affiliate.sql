@@ -27,7 +27,7 @@ EXCEPTION
                 s_proc_name,
                 'SLR_JRNL_LINES_UNPOSTED',
                 NULL,
-                'Entity',
+                'SLR',
                 NULL,
                 'PL/SQL',
                 SQLCODE);
