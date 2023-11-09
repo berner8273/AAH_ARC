@@ -367,6 +367,7 @@ and exists (
         )
     AS
     BEGIN
+    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Before Update of Hopper Insurance Policy for cancels',NULL, NULL,NULL, NULL);    
         UPDATE HOPPER_INSURANCE_POLICY hpol
             SET
                 EVENT_STATUS = 'X',
@@ -389,6 +390,7 @@ and exists (
                   and cs.event_status = 'U'
            );
         p_no_updated_hpol_records := SQL%ROWCOUNT;
+    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'After Update of Hopper Insurance Policy for cancels', 'sql%rowcount', NULL, sql%rowcount, NULL);        
         UPDATE fdr.FR_STAN_RAW_FX_RATE fsrfr
             SET
                 EVENT_STATUS = 'X',
@@ -422,6 +424,7 @@ and exists (
                   and p.process_name  = 'insurance_policy-standardise'
            );
         p_no_updated_fsrfr_records := SQL%ROWCOUNT;
+    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'After Update of fr_stan_raw_fx_rate for cancels', 'sql%rowcount', NULL, sql%rowcount, NULL);        
         UPDATE HOPPER_INSURANCE_POLICY_TJ hpoltj
             SET
                 EVENT_STATUS = 'X',
@@ -1745,9 +1748,6 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed generating cession hiearchy', 'stn.pk_cession_hier.pr_gen_cession_hierarchy', NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
             pr_policy_chr(p_step_run_sid, p_lpg_id, v_no_updated_hpol_records, v_no_updated_fsrfr_records, v_no_updated_hpoltj_records);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed policy hopper records', 'v_no_updated_hpol_records', NULL, v_no_updated_hpol_records, NULL);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed FX rate hopper records', 'v_no_updated_fsrfr_records', NULL, v_no_updated_fsrfr_records, NULL);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed tax jurisdiction hopper records', 'v_no_updated_hpoltj_records', NULL, v_no_updated_hpoltj_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate policy records' );
             pr_policy_rval(p_step_run_sid);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations', NULL, NULL, NULL, NULL);
