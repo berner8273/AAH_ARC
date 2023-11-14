@@ -345,9 +345,13 @@ BEGIN
             -- Validate and Post
             ----------------------
 			lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+
+      -- ----------------- CUSTOM CODE --------------------------------------------------------------------------
+      slr.pr_override_cash_affiliate();  -- procedure to overide affiliate to NVS on cash offsets
+      -- ---------------------------------------------------------------------------------------------------------
+
 			pCombinationCheck_JLU(p_entity_proc_group, lv_process_id, 'U');
-            slr.pr_override_cash_affiliate();  -- procedure to overide cash offset affiliate
-            SLR_VALIDATE_JOURNALS_PKG.pValidateJournals(p_epg_id => p_entity_proc_group, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => p_rate_set);
+      SLR_VALIDATE_JOURNALS_PKG.pValidateJournals(p_epg_id => p_entity_proc_group, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => p_rate_set);
 			SLR_ADMIN_PKG.PerfInfo( 'Validate function. Validate function execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
 			lv_START_TIME:=DBMS_UTILITY.GET_TIME();
             SLR_POST_JOURNALS_PKG.pPostJournals(p_epg_id => p_entity_proc_group, p_process_id => lv_process_id, p_UseHeaders => lv_use_headers, p_rate_set => p_rate_set);
