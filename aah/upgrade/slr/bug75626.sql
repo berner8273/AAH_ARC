@@ -1,4 +1,5 @@
 @@../aahCustom/aahSubLedger/src/main/db/views/slr/vbm_ag_retainedearningseba04.sql;
+@@../aah/upgrade/slr/ye_cleardown_31580017_data_fix.sql;
 
 delete from SLR.SLR_PROCESS_SOURCE where SPS_SOURCE_NAME ='BMRETAINEDEARNINGSEBA04';
 delete from SLR.SLR_PROCESS_CONFIG_DETAIL where pcd_pc_config='PLRETEARNINGS04';
