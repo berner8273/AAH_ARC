@@ -26,6 +26,7 @@ define unittest_login=~8
 
 conn ~slr_logon
 @@slr/bug75626.sql
+@@slr/ye_cleardown_31580017_data_fix.sql;
 
 /* End AAH custom upgrades */
 
