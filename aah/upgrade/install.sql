@@ -26,8 +26,6 @@ define unittest_login=~8
 
 conn ~rdr_logon
 @@rdr/us78579_glint_view.sql
-
-conn ~slr_logon
 @@slr/us78579_glint_pkg.sql
 
  
