@@ -948,7 +948,8 @@ Begin
   /* cleanp PS load flags for DNP madj lines */
   update rdr.rr_glint_journal_line
   set ps_filter = 'N', gl_distrib_status = 'I'
-  where chartfield1 = 'DNP';
+  where chartfield1 = 'DNP' and rgjl_rgj_id in (
+    select rgj_id from rdr.rr_glint_temp_journal_line) ;
 
   /* Update the control record. */
   sys.dbms_application_info.set_action('Update RR_INTERFACE_CONTROL');
