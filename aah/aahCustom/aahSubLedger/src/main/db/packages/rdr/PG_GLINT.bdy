@@ -945,6 +945,11 @@ Begin
 
   End Loop; --Get next mapping structure (if one exists).
 
+  /* cleanp PS load flags for DNP madj lines */
+  update rdr.rr_glint_journal_line
+  set ps_filter = 'N', gl_distrib_status = 'I'
+  where chartfield1 = 'DNP';
+
   /* Update the control record. */
   sys.dbms_application_info.set_action('Update RR_INTERFACE_CONTROL');
   Update rr_interface_control
