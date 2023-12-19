@@ -1,1 +1,1 @@
-@@../aahCustom/aahSubLedger/src/main/db/packages/rdr/pg_glint.bdy;
+@@../aahCustom/aahSubLedger/src/main/db/packages/rdr/PG_GLINT.bdy;
