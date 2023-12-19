@@ -184,7 +184,14 @@ WHERE jh.jh_jrnl_internal_period_flag = 'N'
         WHERE     fgl.lk_lookup_value3 = fgl2.lk_match_key1
                 AND fgl2.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
                 AND jl.jl_effective_date <= (select min(period_end) from stn.period_status)))
-/* US 53039 */
-        AND  NVL( CAST (CASE WHEN jl_segment_5 = 'NVS' THEN ' ' ELSE jl_segment_5 END AS VARCHAR2 (10)),' ') <> 'DNP' 
+/* US 53039 - US 78579 */
+                  AND (   NVL (
+                     CAST (
+                        CASE
+                           WHEN jl_segment_5 = 'NVS' THEN ' '
+                           ELSE jl_segment_5
+                        END AS VARCHAR2 (10)),
+                     ' ') <> 'DNP'
+               OR jh.jh_jrnl_type LIKE 'MADJ%')
         ;
 COMMENT ON TABLE RDR.RCV_GLINT_JOURNAL_LINE IS 'Configurable View on Journal Lines that should be considered for sending to the GL.';
