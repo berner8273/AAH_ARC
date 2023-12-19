@@ -24,8 +24,12 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~gui_logon
- @@gui/bug77342.sql
+conn ~rdr_logon
+@@rdr/us78579_glint_view.sql
+
+conn ~slr_logon
+@@slr/us78579_glint_pkg.sql
+
  
 /* End AAH custom upgrades */
 
