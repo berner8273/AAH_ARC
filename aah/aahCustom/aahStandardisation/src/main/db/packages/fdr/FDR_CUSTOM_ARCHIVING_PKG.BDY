@@ -1813,12 +1813,20 @@ BEGIN
                 fk.R_CONSTRAINT_NAME = pk.CONSTRAINT_NAME and
                 pk.TABLE_NAME = r_stn.t_name) loop
             execute immediate 'ALTER TABLE "'||cur.owner||'"."'||cur.table_name||'" MODIFY CONSTRAINT "'||cur.constraint_name||'" DISABLE';
+            
+            
+            fdr.PG_COMMON.pLogDebug(pinMessage => 'After custom before arc process '||cur.constraint_name);
+            
             end loop;
+            
     END LOOP;
 
 
+            fdr.PG_COMMON.pLogDebug(pinMessage => 'Before pgrant_prics');
+            
     PGRANT_PRIVILIGES;
 
+            fdr.PG_COMMON.pLogDebug(pinMessage => 'After pgrant_prics');
 
     COMMIT;
 
@@ -1997,25 +2005,20 @@ gv_emsg VARCHAR(10000);
 
 BEGIN
 
+fdr.PG_COMMON.pLogDebug(pinMessage => 'Top of ROll BALS FAK');
 
-   SELECT add_months(MIN(TO_DATE (fgl.lk_lookup_value3, 'DD-MON-YYYY')),-1)
-   INTO new_bal_date
-     FROM fdr.fr_general_lookup fgl
-          JOIN
-          (  SELECT MIN (fgl2.lk_match_key2 || LPAD (lk_match_key3, 2, '0'))
-                       min_period,
-                    fgl2.lk_match_key1 event_class
-               FROM fdr.fr_general_lookup fgl2
-              WHERE     fgl2.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
-                    AND fgl2.lk_lookup_value1 = 'O'
-           GROUP BY fgl2.lk_match_key1) open_period
-             ON     fgl.lk_match_key2 || lk_match_key3 =
-                       open_period.min_period
-                AND fgl.lk_match_key1 = open_period.event_class
-    WHERE fgl.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD';
-   
+SELECT (g.gp_todays_bus_date - a.arct_archive_days) + 1
+  INTO new_bal_date
+  FROM fdr.fr_global_parameter g
+       JOIN fdr.fr_archive_ctl a ON a.arct_id = pARCT_ID
+ WHERE g.lpg_id = pLPGId;
+
+
 FOR r_jt IN cJrnTypes
-LOOP 
+LOOP
+
+
+fdr.PG_COMMON.pLogDebug(pinMessage => 'Inserting TEMP ROll BALS FAK');
 
 INSERT INTO SLR.SLR_FAK_DAILY_BALANCES_TMP (
 FDB_FAK_ID, FDB_BALANCE_DATE, FDB_BALANCE_TYPE,
@@ -2033,16 +2036,17 @@ FDB_FAK_ID, new_bal_date, FDB_BALANCE_TYPE,
    FDB_TRAN_LTD_BALANCE, FDB_BASE_DAILY_MOVEMENT, FDB_BASE_MTD_BALANCE,
    FDB_BASE_YTD_BALANCE, FDB_BASE_LTD_BALANCE, FDB_LOCAL_DAILY_MOVEMENT,
    FDB_LOCAL_MTD_BALANCE, FDB_LOCAL_YTD_BALANCE, FDB_LOCAL_LTD_BALANCE,
-   FDB_ENTITY, FDB_EPG_ID, FDB_PERIOD_MONTH,
-   FDB_PERIOD_YEAR, FDB_PERIOD_LTD, FDB_PROCESS_ID,
+   FDB_ENTITY, FDB_EPG_ID, to_number(to_char(new_bal_date,'MM')) AS FDB_PERIOD_MONTH,
+   TO_NUMBER(TO_CHAR(new_bal_date,'YYYY')) AS FDB_PERIOD_YEAR, FDB_PERIOD_LTD, FDB_PROCESS_ID,
    FDB_AMENDED_ON, FDB_TRAN_QTD_BALANCE, FDB_BASE_QTD_BALANCE,
-   FDB_LOCAL_QTD_BALANCE, FDB_PERIOD_QTR
+   FDB_LOCAL_QTD_BALANCE, TO_NUMBER(TO_CHAR(new_bal_date,'Q')) AS FDB_PERIOD_QTR
 FROM SLR.SLR_FAK_DAILY_BALANCES
 WHERE FDB_BALANCE_TYPE = r_jt.BAL_TYPE
     and FDB_BALANCE_TYPE||fdb_fak_id||fdb_balance_date in (
 with maxbal
 as (
     select fdb_fak_id,FDB_BALANCE_TYPE,max(fdb_balance_date) mdate from slr.slr_fak_daily_balances
+    where fdb_balance_date <= new_bal_date
     group by fdb_fak_id,FDB_BALANCE_TYPE)
     select db.FDB_BALANCE_TYPE||db.fdb_fak_id||db.fdb_balance_date
         from slr.slr_fak_daily_balances db
@@ -2051,17 +2055,27 @@ as (
         join fdr.fr_archive_ctl arc on arc.arct_id = pARCT_ID
         where m.mdate <= (gp.gp_todays_bus_date - arc.arct_archive_days )
         and db.fdb_balance_type = m.fdb_balance_type
-        AND db.fdb_balance_type= r_jt.BAL_TYPE);
+        AND db.fdb_balance_type= r_jt.BAL_TYPE
+        );               
+        fdr.PG_COMMON.pLogDebug(pinMessage => 'inserted TEMP FAK balances - '||to_char(sql%rowcount));
 
 END LOOP;
 
-INSERT INTO SLR.SLR_FAK_DAILY_BALANCES SELECT * FROM SLR.SLR_FAK_DAILY_BALANCES_TMP;
+
+fdr.PG_COMMON.pLogDebug(pinMessage => 'Inserting ALL ROll BALS FAK');
+
+
+INSERT /*+ APPEND */ INTO SLR.SLR_FAK_DAILY_BALANCES SELECT * FROM SLR.SLR_FAK_DAILY_BALANCES_TMP;
+
+fdr.PG_COMMON.pLogDebug(pinMessage => 'COMPLETED Inserting ALL ROll BALS FAK - '||to_char(sql%rowcount));
 
 EXCEPTION
     WHEN OTHERS THEN
     ROLLBACK;
-        gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;    
+        gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;
         RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+
+-- END;
 
 END;
 
@@ -2088,24 +2102,19 @@ gv_emsg VARCHAR(10000);
 
 BEGIN
 
-   SELECT add_months(MIN(TO_DATE (fgl.lk_lookup_value3, 'DD-MON-YYYY')),-1)
-   INTO new_bal_date
-     FROM fdr.fr_general_lookup fgl
-          JOIN
-          (  SELECT MIN (fgl2.lk_match_key2 || LPAD (lk_match_key3, 2, '0'))
-                       min_period,
-                    fgl2.lk_match_key1 event_class
-               FROM fdr.fr_general_lookup fgl2
-              WHERE     fgl2.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD'
-                    AND fgl2.lk_lookup_value1 = 'O'
-           GROUP BY fgl2.lk_match_key1) open_period
-             ON     fgl.lk_match_key2 || lk_match_key3 =
-                       open_period.min_period
-                AND fgl.lk_match_key1 = open_period.event_class
-    WHERE fgl.lk_lkt_lookup_type_code = 'EVENT_CLASS_PERIOD';
+fdr.PG_COMMON.pLogDebug(pinMessage => 'Top of ROll BALS EBA');
+
+SELECT (g.gp_todays_bus_date - a.arct_archive_days) + 1
+  INTO new_bal_date
+  FROM fdr.fr_global_parameter g
+       JOIN fdr.fr_archive_ctl a ON a.arct_id = pARCT_ID
+ WHERE g.lpg_id = pLPGId;
+
 
 FOR r_jt IN cJrnTypes
-LOOP 
+LOOP
+
+fdr.PG_COMMON.pLogDebug(pinMessage => 'Inserting TEMP ROll BALS EBA');
 
 INSERT INTO SLR.SLR_EBA_DAILY_BALANCES_TMP (
 EDB_FAK_ID, EDB_EBA_ID, EDB_BALANCE_DATE,
@@ -2124,15 +2133,18 @@ EDB_FAK_ID, EDB_EBA_ID, new_bal_date,
    EDB_BASE_MTD_BALANCE, EDB_BASE_YTD_BALANCE, EDB_BASE_LTD_BALANCE,
    EDB_LOCAL_DAILY_MOVEMENT, EDB_LOCAL_MTD_BALANCE, EDB_LOCAL_YTD_BALANCE,
    EDB_LOCAL_LTD_BALANCE, EDB_ENTITY, EDB_EPG_ID,
-   EDB_PERIOD_MONTH, EDB_PERIOD_YEAR, EDB_PERIOD_LTD,
+   to_number(to_char(new_bal_date,'MM')) AS EDB_PERIOD_MONTH, 
+   to_number(to_char(new_bal_date,'YYYY')) AS EDB_PERIOD_YEAR, EDB_PERIOD_LTD,
    EDB_PROCESS_ID, EDB_AMENDED_ON, EDB_TRAN_QTD_BALANCE,
-   EDB_BASE_QTD_BALANCE, EDB_LOCAL_QTD_BALANCE, EDB_PERIOD_QTR
+   EDB_BASE_QTD_BALANCE, EDB_LOCAL_QTD_BALANCE, 
+   to_number(to_char(new_bal_date,'Q')) AS EDB_PERIOD_QTR
 FROM SLR.SLR_EBA_DAILY_BALANCES
 WHERE EDB_BALANCE_TYPE = r_jt.BAL_TYPE
  AND EDB_BALANCE_TYPE||EDB_FAK_ID||EDB_EBA_ID||EDB_BALANCE_DATE in (
 with maxbal
 as (
     select EDB_FAK_ID,EDB_EBA_ID,EDB_BALANCE_TYPE,max(edb_balance_date) mdate from slr.slr_eba_daily_balances
+    where edb_balance_date <= new_bal_date
     group by EDB_FAK_ID,EDB_EBA_ID,EDB_BALANCE_TYPE)
     select db.EDB_BALANCE_TYPE||db.EDB_FAK_ID||db.EDB_EBA_ID||db.edb_balance_date
         from slr.slr_eba_daily_balances db
@@ -2142,18 +2154,23 @@ as (
         join fdr.fr_archive_ctl arc on arc.arct_id = pARCT_ID
         where m.mdate <= (gp.gp_todays_bus_date - arc.arct_archive_days )
         and db.edb_balance_type = m.edb_balance_type
-        AND db.edb_balance_type= r_jt.BAL_TYPE);
+        AND db.edb_balance_type= r_jt.BAL_TYPE        
+        );
+
+    fdr.PG_COMMON.pLogDebug(pinMessage => 'Inserting ALL TEMP rollups for eba balances - '||to_char(sql%rowcount));
 
 END LOOP;
 
-INSERT INTO SLR.SLR_EBA_DAILY_BALANCES SELECT * FROM SLR.SLR_EBA_DAILY_BALANCES_TMP;
+INSERT /*+ APPEND */ INTO SLR.SLR_EBA_DAILY_BALANCES SELECT * FROM SLR.SLR_EBA_DAILY_BALANCES_TMP;
+
+fdr.PG_COMMON.pLogDebug(pinMessage => 'Completed Inserting ALL EBA balance rollups - '||to_char(sql%rowcount));
 
     EXCEPTION
         WHEN OTHERS THEN
         ROLLBACK;
-            gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;            
+            gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;
             RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
-            
+
 
 END;
 
