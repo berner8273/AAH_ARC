@@ -2045,8 +2045,7 @@ as (
         and db.fdb_balance_type = m.fdb_balance_type
         AND db.fdb_balance_type= r_jt.BAL_TYPE
         );
-        fdr.PG_COMMON.pLogDebug(pinMessage => 'inserted TEMP FAK balances - '||to_char(sql%rowcount));
-
+ 
 END LOOP;
 
 INSERT /*+ APPEND */ INTO SLR.SLR_FAK_DAILY_BALANCES SELECT * FROM SLR.SLR_FAK_DAILY_BALANCES_TMP;
