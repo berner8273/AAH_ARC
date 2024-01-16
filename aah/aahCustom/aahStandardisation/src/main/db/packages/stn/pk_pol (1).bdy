@@ -1742,6 +1742,7 @@ and exists (
             dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_LINK' , cascade => true );
             dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_TAX_JURISD' , cascade => true );
             dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_FX_RATE' , cascade => true );
+            dbms_stats.gather_table_stats ( ownname => 'FDR' , tabname => 'FR_STAN_RAW_INSURANCE_POLICY' , cascade => true );
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed gathering stats on ins policy tables', '', NULL, NULL, NULL);
             stn.pk_cession_hier.pr_gen_cession_hierarchy;
             dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , estimate_percent => 30 , cascade => true );
