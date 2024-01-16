@@ -24,6 +24,9 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
+conn ~fdr_logon
+grant analyze any to stn;
+
 conn ~stn_logon
  @@stn/us78363.sql
  
