@@ -1982,7 +1982,11 @@ PROCEDURE pCUST_RollFAKBalancesCUST     (      pLPGId                    in FR_L
                                             )
 IS
 
+
 new_bal_date FDR.FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE%type;
+new_bal_year SLR.SLR_FAK_DAILY_BALANCES.FDB_PERIOD_YEAR%type;
+new_bal_month SLR.SLR_FAK_DAILY_BALANCES.FDB_PERIOD_MONTH%type;
+new_bal_qtr SLR.SLR_FAK_DAILY_BALANCES.FDB_PERIOD_QTR%type;
 
  CURSOR cJrnTypes is
   SELECT DISTINCT EJT_BALANCE_TYPE_1 BAL_TYPE
@@ -2004,6 +2008,9 @@ SELECT (g.gp_todays_bus_date - a.arct_archive_days) + 1
        JOIN fdr.fr_archive_ctl a ON a.arct_id = pARCT_ID
  WHERE g.lpg_id = pLPGId;
 
+new_bal_year:=to_number(to_char(new_bal_date,'yyyy'));
+new_bal_month:=to_number(to_char(new_bal_date,'MM'));
+new_bal_qtr:=to_number(to_char(new_bal_date,'Q'));
 
 FOR r_jt IN cJrnTypes
 LOOP
@@ -2019,17 +2026,34 @@ FDB_FAK_ID, FDB_BALANCE_DATE, FDB_BALANCE_TYPE,
    FDB_AMENDED_ON, FDB_TRAN_QTD_BALANCE, FDB_BASE_QTD_BALANCE,
    FDB_LOCAL_QTD_BALANCE, FDB_PERIOD_QTR )
 SELECT
-FDB_FAK_ID, new_bal_date, FDB_BALANCE_TYPE,
-   FDB_TRAN_DAILY_MOVEMENT, FDB_TRAN_MTD_BALANCE, FDB_TRAN_YTD_BALANCE,
-   FDB_TRAN_LTD_BALANCE, FDB_BASE_DAILY_MOVEMENT, FDB_BASE_MTD_BALANCE,
-   FDB_BASE_YTD_BALANCE, FDB_BASE_LTD_BALANCE, FDB_LOCAL_DAILY_MOVEMENT,
-   FDB_LOCAL_MTD_BALANCE, FDB_LOCAL_YTD_BALANCE, FDB_LOCAL_LTD_BALANCE,
-   FDB_ENTITY, FDB_EPG_ID, to_number(to_char(new_bal_date,'MM')) AS FDB_PERIOD_MONTH,
-   TO_NUMBER(TO_CHAR(new_bal_date,'YYYY')) AS FDB_PERIOD_YEAR, FDB_PERIOD_LTD, FDB_PROCESS_ID,
-   FDB_AMENDED_ON, FDB_TRAN_QTD_BALANCE, FDB_BASE_QTD_BALANCE,
-   FDB_LOCAL_QTD_BALANCE, TO_NUMBER(TO_CHAR(new_bal_date,'Q')) AS FDB_PERIOD_QTR
+FDB_FAK_ID, 
+    new_bal_date, 
+    FDB_BALANCE_TYPE,
+    0,
+    0, 
+    CASE WHEN FDB_PERIOD_YEAR = new_bal_year THEN FDB_TRAN_YTD_BALANCE ELSE 0 END,
+    FDB_TRAN_LTD_BALANCE, 
+    0, 
+    0,    
+    CASE WHEN FDB_PERIOD_YEAR = new_bal_year THEN FDB_BASE_YTD_BALANCE ELSE 0 END,
+    FDB_BASE_LTD_BALANCE, 
+    FDB_LOCAL_DAILY_MOVEMENT,
+    FDB_LOCAL_MTD_BALANCE, 
+    FDB_LOCAL_YTD_BALANCE, 
+    FDB_LOCAL_LTD_BALANCE,
+    FDB_ENTITY, 
+    FDB_EPG_ID, 
+    new_bal_month AS FDB_PERIOD_MONTH,
+    new_bal_year AS FDB_PERIOD_YEAR, 
+    FDB_PERIOD_LTD, 
+    FDB_PROCESS_ID,
+    current_timestamp, 
+    0, 
+    0,
+    0, 
+    new_bal_qtr AS FDB_PERIOD_QTR
 FROM SLR.SLR_FAK_DAILY_BALANCES
-WHERE FDB_BALANCE_TYPE = r_jt.BAL_TYPE
+WHERE FDB_BALANCE_TYPE = r_jt.BAL_TYPE 
     and FDB_BALANCE_TYPE||fdb_fak_id||fdb_balance_date in (
 with maxbal
 as (
@@ -2045,11 +2069,11 @@ as (
         and db.fdb_balance_type = m.fdb_balance_type
         AND db.fdb_balance_type= r_jt.BAL_TYPE
         );
- 
+
 END LOOP;
 
 INSERT /*+ APPEND */ INTO SLR.SLR_FAK_DAILY_BALANCES SELECT * FROM SLR.SLR_FAK_DAILY_BALANCES_TMP;
-
+--dbms_output.put_line(' - completed FAK inserts '||to_char(SQL%ROWCOUNT));
 
 EXCEPTION
     WHEN OTHERS THEN
