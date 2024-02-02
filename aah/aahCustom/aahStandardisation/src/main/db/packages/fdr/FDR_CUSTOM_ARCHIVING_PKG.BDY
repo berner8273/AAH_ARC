@@ -2067,6 +2067,9 @@ PROCEDURE pCUST_RollEBABalancesCUST     (      pLPGId                    in FR_L
 IS
 
 new_bal_date FDR.FR_GLOBAL_PARAMETER.GP_TODAYS_BUS_DATE%type;
+new_bal_year SLR.SLR_FAK_DAILY_BALANCES.FDB_PERIOD_YEAR%type;
+new_bal_month SLR.SLR_FAK_DAILY_BALANCES.FDB_PERIOD_MONTH%type;
+new_bal_qtr SLR.SLR_FAK_DAILY_BALANCES.FDB_PERIOD_QTR%type;
 
  CURSOR cJrnTypes is
   SELECT DISTINCT EJT_BALANCE_TYPE_1 BAL_TYPE
@@ -2088,61 +2091,117 @@ SELECT (g.gp_todays_bus_date - a.arct_archive_days) + 1
        JOIN fdr.fr_archive_ctl a ON a.arct_id = pARCT_ID
  WHERE g.lpg_id = pLPGId;
 
+new_bal_year:=to_number(to_char(new_bal_date,'yyyy'));
+new_bal_month:=to_number(to_char(new_bal_date,'MM'));
+new_bal_qtr:=to_number(to_char(new_bal_date,'Q'));
 
 FOR r_jt IN cJrnTypes
 LOOP
 
-INSERT INTO SLR.SLR_EBA_DAILY_BALANCES_TMP (
-EDB_FAK_ID, EDB_EBA_ID, EDB_BALANCE_DATE,
-   EDB_BALANCE_TYPE, EDB_TRAN_DAILY_MOVEMENT, EDB_TRAN_MTD_BALANCE,
-   EDB_TRAN_YTD_BALANCE, EDB_TRAN_LTD_BALANCE, EDB_BASE_DAILY_MOVEMENT,
-   EDB_BASE_MTD_BALANCE, EDB_BASE_YTD_BALANCE, EDB_BASE_LTD_BALANCE,
-   EDB_LOCAL_DAILY_MOVEMENT, EDB_LOCAL_MTD_BALANCE, EDB_LOCAL_YTD_BALANCE,
-   EDB_LOCAL_LTD_BALANCE, EDB_ENTITY, EDB_EPG_ID,
-   EDB_PERIOD_MONTH, EDB_PERIOD_YEAR, EDB_PERIOD_LTD,
-   EDB_PROCESS_ID, EDB_AMENDED_ON, EDB_TRAN_QTD_BALANCE,
-   EDB_BASE_QTD_BALANCE, EDB_LOCAL_QTD_BALANCE, EDB_PERIOD_QTR )
-SELECT
-EDB_FAK_ID, EDB_EBA_ID, new_bal_date,
-   EDB_BALANCE_TYPE, EDB_TRAN_DAILY_MOVEMENT, EDB_TRAN_MTD_BALANCE,
-   EDB_TRAN_YTD_BALANCE, EDB_TRAN_LTD_BALANCE, EDB_BASE_DAILY_MOVEMENT,
-   EDB_BASE_MTD_BALANCE, EDB_BASE_YTD_BALANCE, EDB_BASE_LTD_BALANCE,
-   EDB_LOCAL_DAILY_MOVEMENT, EDB_LOCAL_MTD_BALANCE, EDB_LOCAL_YTD_BALANCE,
-   EDB_LOCAL_LTD_BALANCE, EDB_ENTITY, EDB_EPG_ID,
-   to_number(to_char(new_bal_date,'MM')) AS EDB_PERIOD_MONTH,
-   to_number(to_char(new_bal_date,'YYYY')) AS EDB_PERIOD_YEAR, EDB_PERIOD_LTD,
-   EDB_PROCESS_ID, EDB_AMENDED_ON, EDB_TRAN_QTD_BALANCE,
-   EDB_BASE_QTD_BALANCE, EDB_LOCAL_QTD_BALANCE,
-   to_number(to_char(new_bal_date,'Q')) AS EDB_PERIOD_QTR
-FROM SLR.SLR_EBA_DAILY_BALANCES
-WHERE EDB_BALANCE_TYPE = r_jt.BAL_TYPE
- AND EDB_BALANCE_TYPE||EDB_FAK_ID||EDB_EBA_ID||EDB_BALANCE_DATE in (
-with maxbal
-as (
-    select EDB_FAK_ID,EDB_EBA_ID,EDB_BALANCE_TYPE,max(edb_balance_date) mdate from slr.slr_eba_daily_balances
-    where edb_balance_date <= new_bal_date
-    group by EDB_FAK_ID,EDB_EBA_ID,EDB_BALANCE_TYPE)
-    select db.EDB_BALANCE_TYPE||db.EDB_FAK_ID||db.EDB_EBA_ID||db.edb_balance_date
-        from slr.slr_eba_daily_balances db
-        join maxbal m on db.EDB_FAK_ID = m.EDB_FAK_ID and db.edb_balance_date = m.mdate
-                and db.EDB_EBA_ID = m.EDB_EBA_ID
-        join fdr.fr_global_parameter gp on gp.lpg_id = pLPGId
-        join fdr.fr_archive_ctl arc on arc.arct_id = pARCT_ID
-        where m.mdate <= (gp.gp_todays_bus_date - arc.arct_archive_days )
-        and db.edb_balance_type = m.edb_balance_type
-        AND db.edb_balance_type= r_jt.BAL_TYPE
-        );
-
+INSERT INTO SLR.SLR_EBA_DAILY_BALANCES_TMP (EDB_FAK_ID,
+                                            EDB_EBA_ID,
+                                            EDB_BALANCE_DATE,
+                                            EDB_BALANCE_TYPE,
+                                            EDB_TRAN_DAILY_MOVEMENT,
+                                            EDB_TRAN_MTD_BALANCE,
+                                            EDB_TRAN_YTD_BALANCE,
+                                            EDB_TRAN_LTD_BALANCE,
+                                            EDB_BASE_DAILY_MOVEMENT,
+                                            EDB_BASE_MTD_BALANCE,
+                                            EDB_BASE_YTD_BALANCE,
+                                            EDB_BASE_LTD_BALANCE,
+                                            EDB_LOCAL_DAILY_MOVEMENT,
+                                            EDB_LOCAL_MTD_BALANCE,
+                                            EDB_LOCAL_YTD_BALANCE,
+                                            EDB_LOCAL_LTD_BALANCE,
+                                            EDB_ENTITY,
+                                            EDB_EPG_ID,
+                                            EDB_PERIOD_MONTH,
+                                            EDB_PERIOD_YEAR,
+                                            EDB_PERIOD_LTD,
+                                            EDB_PROCESS_ID,
+                                            EDB_AMENDED_ON,
+                                            EDB_TRAN_QTD_BALANCE,
+                                            EDB_BASE_QTD_BALANCE,
+                                            EDB_LOCAL_QTD_BALANCE,
+                                            EDB_PERIOD_QTR)
+   SELECT EDB_FAK_ID,
+          EDB_EBA_ID,
+          new_bal_date,
+          EDB_BALANCE_TYPE,
+          0,
+          0,
+          CASE WHEN EDB_PERIOD_YEAR = new_bal_year THEN EDB_TRAN_YTD_BALANCE ELSE 0 END,
+          EDB_TRAN_LTD_BALANCE,
+          0,
+          0,
+          CASE WHEN EDB_PERIOD_YEAR = new_bal_year THEN EDB_BASE_YTD_BALANCE ELSE 0 END,
+          EDB_BASE_LTD_BALANCE,
+          0,
+          0,
+          EDB_LOCAL_YTD_BALANCE,
+          CASE WHEN EDB_PERIOD_YEAR = new_bal_year THEN EDB_LOCAL_LTD_BALANCE ELSE 0 END,
+          EDB_ENTITY,
+          EDB_EPG_ID,
+          new_bal_month AS EDB_PERIOD_MONTH,
+          new_bal_year AS EDB_PERIOD_YEAR,
+          EDB_PERIOD_LTD,
+          EDB_PROCESS_ID,
+          current_timestamp,
+          0,
+          0,
+          0,
+          new_bal_qtr AS EDB_PERIOD_QTR
+     FROM SLR.SLR_EBA_DAILY_BALANCES
+    WHERE     EDB_BALANCE_TYPE = r_jt.BAL_TYPE
+          AND    EDB_BALANCE_TYPE
+              || EDB_FAK_ID
+              || EDB_EBA_ID
+              || EDB_BALANCE_DATE IN (WITH maxbal
+                                           AS (  SELECT EDB_FAK_ID,
+                                                        EDB_EBA_ID,
+                                                        EDB_BALANCE_TYPE,
+                                                        MAX (edb_balance_date)
+                                                           mdate
+                                                   FROM slr.slr_eba_daily_balances
+                                                  WHERE edb_balance_date <=
+                                                           new_bal_date
+                                               GROUP BY EDB_FAK_ID,
+                                                        EDB_EBA_ID,
+                                                        EDB_BALANCE_TYPE)
+                                      SELECT    db.EDB_BALANCE_TYPE
+                                             || db.EDB_FAK_ID
+                                             || db.EDB_EBA_ID
+                                             || db.edb_balance_date
+                                        FROM slr.slr_eba_daily_balances db
+                                             JOIN maxbal m
+                                                ON     db.EDB_FAK_ID =
+                                                          m.EDB_FAK_ID
+                                                   AND db.edb_balance_date =
+                                                          m.mdate
+                                                   AND db.EDB_EBA_ID =
+                                                          m.EDB_EBA_ID
+                                             JOIN fdr.fr_global_parameter gp
+                                                ON gp.lpg_id = pLPGId
+                                             JOIN fdr.fr_archive_ctl arc
+                                                ON arc.arct_id = pARCT_ID
+                                       WHERE     m.mdate <=
+                                                    (  gp.gp_todays_bus_date
+                                                     - arc.arct_archive_days)
+                                             AND db.edb_balance_type =
+                                                    m.edb_balance_type
+                                             AND db.edb_balance_type =
+                                                    r_jt.BAL_TYPE);
 END LOOP;
 
 INSERT /*+ APPEND */ INTO SLR.SLR_EBA_DAILY_BALANCES SELECT * FROM SLR.SLR_EBA_DAILY_BALANCES_TMP;
+--dbms_output.put_line(' - completed EBA inserts '||to_char(SQL%ROWCOUNT));
 
     EXCEPTION
         WHEN OTHERS THEN
         ROLLBACK;
             gv_emsg := 'Failure in ' || s_proc_name || ': '|| sqlerrm;
             RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
-
 
 END;
 
