@@ -3642,8 +3642,12 @@ lvPeriodStartDate := NULL;
 
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
-                 prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'Reversing Date cannot be Jan 1');                                  
-                 lvSuccess := FALSE;
+                IF to_char(gJournalHeader.jhu_jrnl_rev_date,'mmdd') = '0101' THEN
+                 prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'Reversing Date cannot be Jan 1');
+                ELSE
+                 prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'Reversing Date is not a valid business date');
+                END IF;  
+                lvSuccess := FALSE;
             WHEN OTHERS THEN
                  RETURN FALSE;
         END;
