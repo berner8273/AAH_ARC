@@ -383,7 +383,7 @@ and exists (
     WHEN MATCHED
     THEN
     UPDATE SET a.event_status = 'X', PROCESS_ID = TO_CHAR (p_step_run_sid)
-               WHERE A.EVENT_STATUS <> 'P' and a.LPG_ID = p_lpg_id;    
+               WHERE A.EVENT_STATUS not in ('X','P') and a.LPG_ID = p_lpg_id;    
           
         p_no_updated_hpol_records := SQL%ROWCOUNT;
     pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'After Update of Hopper Insurance Policy for cancels', 'sql%rowcount', NULL, sql%rowcount, NULL);
