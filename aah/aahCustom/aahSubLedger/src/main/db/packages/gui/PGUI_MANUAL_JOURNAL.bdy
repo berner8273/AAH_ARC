@@ -8720,10 +8720,10 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         WHERE gjf.jf_jrnl_hdr_id = gjhu.jhu_jrnl_id
         AND gjhu.jhu_jrnl_id IN ('||journal_id_list||')
         and gjhu.jhu_jrnl_status = ''Q''';
-        
+
      OPEN jrnl_file_cursor FOR vsql;
      loop
-     
+
         fetch jrnl_file_cursor INTO jrnl_file_rec;
         EXIT WHEN jrnl_file_cursor%NOTFOUND;
 
@@ -8761,7 +8761,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         FROM DUAL;
 
      END loop;
-             
+
      close jrnl_file_cursor;
 
     exception
@@ -8811,7 +8811,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
           pProcessEliminations(journal_id_list,status, lv_header_id_list);
 
           IF LENGTH(lv_header_id_list) > 1 THEN
-            lv_journal_id_list := journal_id_list || ',' ||lv_header_id_list;            
+            lv_journal_id_list := journal_id_list || ',' ||lv_header_id_list;
           ELSE
             lv_journal_id_list := journal_id_list;
           END IF;
@@ -8843,10 +8843,10 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       END;
 
       begin
-        prui_create_reversing_journal(epg_id,journal_id_list,lv_process_id,gSTATUS_VALIDATED);
+        prui_create_reversing_journal(epg_id,lv_journal_id_list,lv_process_id,gSTATUS_VALIDATED);
         commit;
         --mark future dated journals (set 'W' status)--
-        prui_mark_future_dated_jrnls(epg_id,journal_id_list,gSTATUS_VALIDATED);
+        prui_mark_future_dated_jrnls(epg_id,lv_journal_id_list,gSTATUS_VALIDATED);
         commit;
       exception
         WHEN others THEN
@@ -10040,8 +10040,8 @@ return;
             EXIT;
         END IF;
 
-        vHeaderId := fnui_get_next_journal_id;        
-        
+        vHeaderId := fnui_get_next_journal_id;
+
         IF LENGTH(lv_header_id_list) > 1 THEN
                lv_header_id_list := lv_header_id_list || ',' ||''''||vHeaderId||'''';
         ELSE
