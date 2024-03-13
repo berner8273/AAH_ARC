@@ -26,14 +26,14 @@ define unittest_login=~8
 
 
 conn ~stn_logon
-grant select on stn.elimination_legal_entity to slr;
+-- grant select on stn.elimination_legal_entity to slr;
 
 conn ~fdr_logon
-grant select on fdr.fr_account_lookup to slr;
+-- grant select on fdr.fr_account_lookup to slr;
 
 conn ~slr_logon
 @@../aahCustom/aahSubLedger/src/main/db/procedures/slr/pr_override_cash_affiliate;
-@@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.bdy;
+-- @@../aahCustom/aahSubLedger/src/main/db/packages/slr/slr_pkg.bdy;
 
 /* End AAH custom upgrades */
 
