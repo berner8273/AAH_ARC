@@ -8891,10 +8891,10 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       END;
 
       begin
-        prui_create_reversing_journal(epg_id,journal_id_list,lv_process_id,gSTATUS_VALIDATED);
+        prui_create_reversing_journal(epg_id,lv_journal_id_list,lv_process_id,gSTATUS_VALIDATED);
         commit;
         --mark future dated journals (set 'W' status)--
-        prui_mark_future_dated_jrnls(epg_id,journal_id_list,gSTATUS_VALIDATED);
+        prui_mark_future_dated_jrnls(epg_id,lv_journal_id_list,gSTATUS_VALIDATED);
         commit;
       exception
         WHEN others THEN
