@@ -44,7 +44,7 @@ BEGIN
                 || jlu_attribute_5,
                 'MD5')
     WHERE     jlu_entity NOT IN (select distinct elimination_le_cd from stn.elimination_legal_entity)
-          AND SUBSTR (JLU_ACCOUNT, 1, 8) IN (SELECT DISTINCT al_lookup_5
+          AND jlu_type is not null AND SUBSTR (JLU_ACCOUNT, 1, 8) IN (SELECT DISTINCT al_lookup_5
                                                FROM fdr.fr_account_lookup
                                               WHERE al_lookup_5 NOT IN ('ND~','18250255',                                                                   
                                                                         'NVS'));
