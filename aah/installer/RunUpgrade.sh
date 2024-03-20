@@ -3,6 +3,11 @@ PROGRAM="${0##*/}"
 OracleConnString=$1
 RemoveInstallYaml=$2
 AahInstallerYaml="AahInstaller.yaml"
+
+export PATH=/opt/aptitude/libexec:$PATH
+export LD_LIBRARY_PATH=/opt/aptitude/lib
+export APTITUDE_SERVERS=/opt/aptitude
+
 # echo OracleConn: ${OracleConnString}
 # Set Oracle environment
 
