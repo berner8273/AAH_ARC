@@ -59,6 +59,11 @@ export APTITUDE_SERVERS=/opt/aptitude
 printf "Running installer for configureEngines\n"
 ./run.sh unattended -rf ${AahInstallerYaml} -op configureEngines || ERR_EXIT "Error Running installer for configureEngines\n"
 
+# only needed when installing new aptitude server
+printf "Running installer for configureServers\n"
+./run.sh unattended -rf ${AahInstallerYaml} -op configureServers || ERR_EXIT "Error Running installer for configureServers\n"
+
+
 if [ -f $RemoveInstallYaml ]; then
     printf "removing yaml installation file\n"
     rm ${AahInstallerYaml} || "Error removing yaml file\n"
