@@ -4,10 +4,6 @@ OracleConnString=$1
 RemoveInstallYaml=$2
 AahInstallerYaml="AahInstaller.yaml"
 
-export PATH=/opt/aptitude/libexec:$PATH
-export LD_LIBRARY_PATH=/opt/aptitude/lib
-export APTITUDE_SERVERS=/opt/aptitude
-
 # echo OracleConn: ${OracleConnString}
 # Set Oracle environment
 
@@ -55,6 +51,10 @@ printf "Running installer for setupDatabaseSchemas\n"
 
 # printf "Run Update Security entries\n"
 # runUpdateSecurityEntries || ERR_EXIT "ERROR updating security entries\n"
+
+export PATH=/opt/aptitude/libexec:$PATH
+export LD_LIBRARY_PATH=/opt/aptitude/lib
+export APTITUDE_SERVERS=/opt/aptitude
 
 printf "Running installer for configureEngines\n"
 ./run.sh unattended -rf ${AahInstallerYaml} -op configureEngines || ERR_EXIT "Error Running installer for configureEngines\n"
