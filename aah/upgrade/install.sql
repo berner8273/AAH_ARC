@@ -25,9 +25,10 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~gui_logon
- @@gui/upgrade_gui_packages.sql
- 
+conn ~
+ fdr_logon
+@@fdr/upgrade_fdr_procedures.sql
+
 conn ~slr_logon
 @@slr/upgrade_slr_packages.sql
 
