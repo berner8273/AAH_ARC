@@ -1,3 +1,5 @@
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_PKG.hdr;
+@@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_PKG.bdy;
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_UTILITIES_PKG.hdr;
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_UTILITIES_PKG.bdy;
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_VALIDATE_JOURNALS_PKG.hdr;
