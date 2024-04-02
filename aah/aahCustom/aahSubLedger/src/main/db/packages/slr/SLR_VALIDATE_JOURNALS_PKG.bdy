@@ -80,18 +80,6 @@ CREATE OR REPLACE PACKAGE BODY "SLR_VALIDATE_JOURNALS_PKG" AS
         p_UseHeaders IN BOOLEAN := FALSE
     );
 
-    PROCEDURE pWriteLineErrorEventClass
-    (
-         p_fdr_event_class IN FDR.FR_GENERAL_LOOKUP.LK_LOOKUP_VALUE3%TYPE,
-        p_process_id in NUMBER,
-        p_status_text in VARCHAR2,
-        p_msg in VARCHAR2,
-        p_sql in VARCHAR2,
-        p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
-        p_status IN CHAR := 'U',
-        p_UseHeaders IN BOOLEAN := FALSE
-    );
-
 PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_process_id in NUMBER, p_status IN CHAR);
 
     /**************************************************************************
