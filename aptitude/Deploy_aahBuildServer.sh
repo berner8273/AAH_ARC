@@ -6,7 +6,8 @@
 # Author  : Elli Wang
 # Version : 2024040201
 # Note    :
-#   2024-04-01	Elli	Remove deploying aptsrv
+#   2024-04-02 	Elli	GA 21.4.1.1741
+#   2024-04-02	Elli	Remove deploying aptsrv
 #   2024-04-01	Elli	Remove copying srv_exp.xml
 #   2018-10-25	Elli	Remove deploying aah.war, which moved to aahGUI
 #   2018-10-02	Elli	GA 1.8.0. Add ojdbc7-12.1.0.2.jar to aah.war
@@ -35,10 +36,10 @@ APT_BUS_PORT=2503
 APTCMD_OPTS="-host $APT_HOST -port $APT_SRV_PORT -login admin"
 APTCMD="$APT_BASE/bin/aptcmd"
 APTSRV="$APT_BASE/bin/aptsrv"
-AWK="/usr/bin/awk"
 FIND="/usr/bin/find"
 INSTALL="/usr/bin/install"
 MV="/usr/bin/mv"
+PERL="/usr/bin/perl"
 STARTAPT="/aah/scripts/startApt.sh"
 STARTPROJECTS="/aah/scripts/startProjects.sh"
 STOPAPT="/aah/scripts/stopApt.sh"
@@ -144,38 +145,32 @@ RUN $APTCMD -add_bus_server -bus_server_name $APT_BUS_NAME \
 	|| ERR_EXIT "Cannot add bus server!"
 
 # Load configuration definitions
-ls $PWD/config_definitions/*.config | \
-	while read file; do
-		printf "* Load configuration definition: $file ...\n"
-		
-		# Find user name
-		printf "Find user name\n"
-		USER=${file##*/}
-		USER=${USER%%.config}
-		
-		# Get user's password
-		printf "Get user's password from Octopus variable\n"
-		TEXT=$(get_octopusvariable "${USER,,}Password")
+$file = $PWD/config_definitions/template.config_def
+for user in FDR GUI RDR SLR STN; do
+	printf "* Load configuration definition: $user ...\n"
+
+	# Get user's password
+	printf "Get user's password from Octopus variable\n"
+	TEXT=$(get_octopusvariable "${user,,}Password")
 		[[ -n $TEXT ]] \
-			|| ERR_EXIT "Octopus variable ${USER,,}Password is not defined!"
+			|| ERR_EXIT "Octopus variable ${user,,}Password is not defined!"
 		
 		# Encoding user's password
 		printf "Perform PKCS7 encoding\n"
-		PKCS7=$(RUN $APTCMD -pkcs7_encode -text $TEXT -$APTCMD_OPTS)
+		export PKCS7=$(RUN $APTCMD -pkcs7_encode -text $TEXT -$APTCMD_OPTS)
 		[[ -n $PKCS7 ]] \
 			|| ERR_EXIT "Cannot perform PKCS7 encoding!"
 		
 		# Update cofiguration file
-		RUN $AWK -v r="$PKCS7" '{gsub(/@pkcs7Envelope@/,r)}1' $file \
-			> $$.config
-		RUN $MV $$.config $file \
-			|| ERR_EXIT "Cannot rename $$.config to $file!"
+		RUN $PERL -pe 's/\@pkcs7Envelope\@/$ENV{PKCS7}/' $file \
+			> $PWD/config_definitions/${user}.config
 		
 		# Run aptcmd
-		RUN $APTCMD -load_config_definition -config_file_path $file \
+		RUN $APTCMD -load_config_definition \
+			-config_file_path $PWD/config_definitions/${user}.config \
 			-overwrite true $APTCMD_OPTS \
-			|| ERR_EXIT "Cannot load configuration definition $file!"
-	done
+			|| ERR_EXIT "Cannot load configuration definition ${user}.config!"
+Done
 
 # Deploy Aptitude execution folders -------------------------------------------
 printf "* Deploy Aptitude execution folders ...\n"
@@ -184,27 +179,6 @@ for f in trigger core custom; do
 	RUN $APTCMD -add_folder -folder $f $APTCMD_OPTS \
 		|| ERR_EXIT "Cannot add Aptitude execution folder $f!"
 done
-
-# End =========================================================================
-printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
-exit $RC
-
-# Deploy Aptitude projects ----------------------------------------------------
-printf "* Deploy Aptitude projects ...\n"
-for f in trigger core custom; do
-	find $AAH_CUSTOM_BASE -name "*.brd" | grep "/$f/" | \
-		while read file; do
-			printf "* Deploy project: $file.config to folder: $f ...\n"
-			RUN $APTCMD -deploy -project_file_path $file \
-				-config_file_path $file.config -redeployment_type full \
-				-folder $f $APTCMD_OPTS \
-				|| ERR_EXIT "Cannot deploy project $f: $file!"
-		done
-done
-
-# Start all Aptitude projects -------------------------------------------------
-printf "* Start Aptitude projects ...\n"
-RUN $STARTPROJECTS || ERR_EXIT "Cannot start Aptitude projects!"
 
 # End =========================================================================
 printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
