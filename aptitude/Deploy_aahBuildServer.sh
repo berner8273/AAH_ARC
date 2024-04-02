@@ -4,8 +4,10 @@
 # Info    : Octopus Deploy.sh script for aahBuildServer package
 # Date    : 2018-01-23
 # Author  : Elli Wang
-# Version : 2020120101
+# Version : 2024040201
 # Note    :
+#   2024-04-01	Elli	Remove deploying aptsrv
+#   2024-04-01	Elli	Remove copying srv_exp.xml
 #   2018-10-25	Elli	Remove deploying aah.war, which moved to aahGUI
 #   2018-10-02	Elli	GA 1.8.0. Add ojdbc7-12.1.0.2.jar to aah.war
 #   2018-07-11	Elli	Remove context.xml in aah.war
@@ -30,7 +32,7 @@ APT_SRV_PORT=2500
 APT_BUS_PORT=2503
 
 # Command variables
-APTCMD_OPTS="-host $APT_HOST -port $APT_SRV_PORT -os_auth yes"
+APTCMD_OPTS="-host $APT_HOST -port $APT_SRV_PORT -login admin"
 APTCMD="$APT_BASE/bin/aptcmd"
 APTSRV="$APT_BASE/bin/aptsrv"
 AWK="/usr/bin/awk"
@@ -117,12 +119,6 @@ printf "* Copy ini files ...\n"
 			|| ERR_EXIT "Cannot copy $file!"
 	done
 
-# Copy server xml file
-printf "* Copy server xml file ...\n"
-RUN $INSTALL -m 640 -pv libexec/srv_exp.xml \
-	$APT_BASE/libexec/ \
-	|| ERR_EXIT "Cannot copy server xml file!"
-
 # Copy license file
 LICENSE=/aah/src/aptitude.apl
 printf "* Copy license file ...\n"
@@ -130,12 +126,6 @@ printf "* Copy license file ...\n"
 	|| ERR_EXIT "Octopus variable 'LicenseFile' is not defined!"
 RUN $INSTALL -m 640 -pv $LICENSE $APT_BASE/ini/ \
 	|| ERR_EXIT "Cannot copy license file - $LICENSE!"
-
-# Deploy aptsrv
-printf "* Deploy aptsrv ...\n"
-RUN $APTSRV --import_skip_table_defs --import_export_mode bin \
-	--import_tables tables.xml --import $APT_BASE/libexec/srv_exp.xml \
-	|| ERR_EXIT "Cannot deploy aptsrv!"
 
 # Start Aptitude server
 printf "* Start Aptitude server ...\n"
