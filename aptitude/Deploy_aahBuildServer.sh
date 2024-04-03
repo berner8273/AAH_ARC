@@ -146,6 +146,8 @@ RUN $APTCMD -add_bus_server -bus_server_name $APT_BUS_NAME \
 
 # Load configuration definitions
 template="$PWD/config_definitions/template.config_def"
+export user
+export PKCS7
 for user in FDR GUI RDR SLR STN; do
 	printf "* Load configuration definition: $user ...\n"
 	config=$PWD/config_definitions/${user}.config
@@ -158,11 +160,12 @@ for user in FDR GUI RDR SLR STN; do
 		
 	# Encoding user's password
 	printf "Perform PKCS7 encoding\n"
-	export PKCS7=$(RUN $APTCMD -pkcs7_encode -text $TEXT -$APTCMD_OPTS)
+	PKCS7=$(RUN $APTCMD -pkcs7_encode -text $TEXT -$APTCMD_OPTS)
 	[[ -n $PKCS7 ]] || ERR_EXIT "Cannot perform PKCS7 encoding!"
 		
 	# Update cofiguration file
-	RUN $PERL -pe 's/\@pkcs7Envelope\@/$ENV{PKCS7}/' $template > $config
+	RUN $PERL -pe 's/\@pkcs7Envelope\@/$ENV{PKCS7}/;s/\@userName\@/$ENV{user}/' \
+		$template > $config
 		
 	# Run aptcmd
 	RUN $APTCMD -load_config_definition -config_file_path $config \
