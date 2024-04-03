@@ -145,32 +145,30 @@ RUN $APTCMD -add_bus_server -bus_server_name $APT_BUS_NAME \
 	|| ERR_EXIT "Cannot add bus server!"
 
 # Load configuration definitions
-$file="$PWD/config_definitions/template.config_def"
+template="$PWD/config_definitions/template.config_def"
 for user in FDR GUI RDR SLR STN; do
 	printf "* Load configuration definition: $user ...\n"
+	config=$PWD/config_definitions/${user}.config
 
 	# Get user's password
 	printf "Get user's password from Octopus variable\n"
 	TEXT=$(get_octopusvariable "${user,,}Password")
-		[[ -n $TEXT ]] \
-			|| ERR_EXIT "Octopus variable ${user,,}Password is not defined!"
+	[[ -n $TEXT ]] \
+		|| ERR_EXIT "Octopus variable ${user,,}Password is not defined!"
 		
-		# Encoding user's password
-		printf "Perform PKCS7 encoding\n"
-		export PKCS7=$(RUN $APTCMD -pkcs7_encode -text $TEXT -$APTCMD_OPTS)
-		[[ -n $PKCS7 ]] \
-			|| ERR_EXIT "Cannot perform PKCS7 encoding!"
+	# Encoding user's password
+	printf "Perform PKCS7 encoding\n"
+	export PKCS7=$(RUN $APTCMD -pkcs7_encode -text $TEXT -$APTCMD_OPTS)
+	[[ -n $PKCS7 ]] || ERR_EXIT "Cannot perform PKCS7 encoding!"
 		
-		# Update cofiguration file
-		RUN $PERL -pe 's/\@pkcs7Envelope\@/$ENV{PKCS7}/' $file \
-			> $PWD/config_definitions/${user}.config
+	# Update cofiguration file
+	RUN $PERL -pe 's/\@pkcs7Envelope\@/$ENV{PKCS7}/' $template > $config
 		
-		# Run aptcmd
-		RUN $APTCMD -load_config_definition \
-			-config_file_path $PWD/config_definitions/${user}.config \
-			-overwrite true $APTCMD_OPTS \
-			|| ERR_EXIT "Cannot load configuration definition ${user}.config!"
-Done
+	# Run aptcmd
+	RUN $APTCMD -load_config_definition -config_file_path $config \
+		-overwrite true $APTCMD_OPTS \
+		|| ERR_EXIT "Cannot load configuration definition $config!"
+done
 
 # Deploy Aptitude execution folders -------------------------------------------
 printf "* Deploy Aptitude execution folders ...\n"
