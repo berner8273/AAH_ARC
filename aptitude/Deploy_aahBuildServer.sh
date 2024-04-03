@@ -145,7 +145,7 @@ RUN $APTCMD -add_bus_server -bus_server_name $APT_BUS_NAME \
 	|| ERR_EXIT "Cannot add bus server!"
 
 # Load configuration definitions
-$file = $PWD/config_definitions/template.config_def
+$file="$PWD/config_definitions/template.config_def"
 for user in FDR GUI RDR SLR STN; do
 	printf "* Load configuration definition: $user ...\n"
 
