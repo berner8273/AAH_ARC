@@ -19,6 +19,7 @@ CREATE OR REPLACE PACKAGE SLR."SLR_PKG" AS
 ---------------------------------------------------------------------------------
  gp_rate_set slr_entities.ent_rate_set%TYPE;
 
+PROCEDURE pPROCESS_SLR;
 PROCEDURE pPROCESS_SLR
 (
     p_entity_proc_group IN SLR_ENTITY_PROC_GROUP.epg_id%TYPE,
