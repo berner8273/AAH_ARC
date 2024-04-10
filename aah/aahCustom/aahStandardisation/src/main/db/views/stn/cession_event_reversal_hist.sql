@@ -104,7 +104,7 @@ AS
                        ELSE cep.premium_typ
                     END,
                     'NVS')
-          AND TRUNC (fsrae.srae_accevent_date, 'MONTH') =
+          AND TRUNC (fsrae.srae_value_date, 'MONTH') =
                  TRUNC (cep.accounting_dt, 'MONTH')
           AND fsrae.srae_client_spare_id16 <> 'VIE_HISTORICAL'
           AND fsrae.event_status = 'P'
