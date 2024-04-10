@@ -40,7 +40,7 @@ select
      , fsrae.srae_client_amount1         transaction_amt
      , fsrae.srae_pos_neg_flag           transaction_pos_neg
      , fsrae.srae_sub_event_id           sub_event
-     , fsrae.srae_accevent_date          accounting_dt
+     , fsrae.srae_value_date          accounting_dt
      , fsrae.srae_gl_party_business_code party_business_le_cd
      , fsrae.srae_party_sys_inst_code    party_business_system_cd
      , fsrae.srae_instr_super_class      srae_instr_super_class
