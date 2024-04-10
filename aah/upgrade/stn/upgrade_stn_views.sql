@@ -1,1 +1,1 @@
-@@../aahCustom/aahStandardisation/src/main/db/views/stn/cession_event_hopper.sql
+@@../aahCustom/aahStandardisation/src/main/db/views/stn/hopper_cession_event.sql
