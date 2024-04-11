@@ -1,4 +1,6 @@
-/* Formatted on 10/8/2019 3:59:25 PM (QP5 v5.252.13127.32847) */
+DROP VIEW STN.CESSION_EVENT_REVERSAL_HIST;
+
+/* Formatted on 04/11/2024 12:52:55 PM (QP5 v5.252.13127.32847) */
 CREATE OR REPLACE FORCE VIEW STN.CESSION_EVENT_REVERSAL_HIST
 (
    POSTING_TYPE,
@@ -41,16 +43,18 @@ CREATE OR REPLACE FORCE VIEW STN.CESSION_EVENT_REVERSAL_HIST
    ORIGINAL_POSTING_DT,
    BU_LOOKUP,
    VIE_BU_LOOKUP,
+   JL_DESCRIPTION,
    ACCOUNT_CD
 )
    BEQUEATH DEFINER
 AS
-   SELECT /*+ PARALLEL (4) */ DISTINCT 'REVERSE_REPOST' posting_type,
+   SELECT /*+ PARALLEL (4) */
+          DISTINCT 'REVERSE_REPOST' posting_type,
                    fsrae.srae_client_spare_id14 correlation_uuid,
                    fsrae.srae_client_spare_id12 event_seq_id,
                    fsrae.srae_acc_event_id || '.01' row_sid,
                    fsrae.srae_sub_event_id sub_event,
-                   MAX (cep.accounting_dt) OVER () AS accounting_dt,
+                   cep.accounting_dt AS accounting_dt,
                    fsrae.srae_dimension_7 policy_id,
                    fsrae.srae_dimension_15 journal_descr,
                    fsrae.srae_dimension_8 stream_id,
@@ -85,6 +89,7 @@ AS
                    fsrae.srae_posting_date original_posting_dt,
                    fsrae.srae_client_spare_id17 bu_lookup,
                    fsrae.srae_client_spare_id18 vie_bu_lookup,
+                   fsrae.srae_client_spare_id19 jl_description,
                    fsrae.srae_client_spare_id2 account_cd
      FROM fdr.fr_stan_raw_acc_event fsrae
           INNER JOIN slr.slr_jrnl_lines sjl
@@ -108,8 +113,15 @@ AS
                  TRUNC (cep.accounting_dt, 'MONTH')
           AND fsrae.srae_client_spare_id16 <> 'VIE_HISTORICAL'
           AND fsrae.event_status = 'P'
-          AND fsrae.srae_acc_event_type not in (select event_typ from stn.event_hierarchy_reference where event_class = 'CASH_TXN')
-          AND fsrae.srae_client_spare_id14 NOT IN ( SELECT DISTINCT faei2.srae_client_spare_id14
-                                                     FROM fdr.fr_stan_raw_acc_event faei2                                                         
+          AND fsrae.srae_acc_event_type NOT IN (SELECT event_typ
+                                                  FROM stn.event_hierarchy_reference
+                                                 WHERE event_class =
+                                                          'CASH_TXN')
+          AND fsrae.srae_client_spare_id14 NOT IN (SELECT DISTINCT
+                                                          faei2.srae_client_spare_id14
+                                                     FROM fdr.fr_stan_raw_acc_event faei2
                                                     WHERE faei2.srae_client_spare_id16 =
-                                                             'REVERSE_REPOST' );
+                                                             'REVERSE_REPOST');
+
+
+GRANT SELECT ON STN.CESSION_EVENT_REVERSAL_HIST TO AAH_READ_ONLY;
