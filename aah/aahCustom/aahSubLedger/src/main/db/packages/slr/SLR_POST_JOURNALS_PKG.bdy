@@ -1995,7 +1995,7 @@ BEGIN
                                     AND JLU_JRNL_STATUS = :p_status
                             )
                         )
-                        GROUP BY EDB_BALANCE_DATE, EDB_EBA_ID, EDB_FAK_ID, EDB_BALANCE_TYPE, EDB_ENTITY, EDB_EPG_ID, EDB_PERIOD_MONTH, EDB_PERIOD_YEAR
+                        GROUP BY EDB_BALANCE_DATE, EDB_EBA_ID, EDB_FAK_ID, EDB_BALANCE_TYPE, EDB_ENTITY, EDB_EPG_ID, EDB_PERIOD_MONTH, EDB_PERIOD_QTR, EDB_PERIOD_YEAR
                         UNION ALL
                         SELECT
                             LB_FAK_ID EDB_FAK_ID, LB_EBA_ID EDB_EBA_ID,
