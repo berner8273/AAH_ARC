@@ -54,7 +54,7 @@ function runIntraDay()
     runStep SLRpUpdateJLU
     runStep SLRpProcess
 
-    # runStep GLINTExtract
+    runStep GLINTExtract
 
     runStep AutoResubmitTransactions
     runStep CheckResubmittedErrors
