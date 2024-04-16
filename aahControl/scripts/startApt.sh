@@ -14,6 +14,10 @@ SRV_PORT=2500
 ENG_PORT=2504
 BUS_PORT=2503
 
+# Sleep
+printf "Sleep 60 seconds ...$p\n"
+sleep 61
+
 # Start aptsrv
 echo "$(date +'%F %T') Starting aptsrv ..."
 nohup ${APT_BASE}/bin/aptsrv > ${LOG_BASE}/aptsrv.out 2> ${LOG_BASE}/aptsrv.err &
