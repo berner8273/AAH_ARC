@@ -134,6 +134,9 @@ variablesValues:
       email:
       password:
     connectionTimeout: "60000"
+  aah:
+    installer:
+      ENABLE_LEGACY_GUI: true
   web:
     security:
       server:
