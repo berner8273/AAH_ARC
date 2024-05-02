@@ -6,6 +6,9 @@ aptitude-console-version: 1
 appName: "Aptitude Software Solution Installer"
 createDate: "2022.04.05 07:03:01"
 variablesValues:
+  aah:
+    installer:
+      ENABLE_LEGACY_GUI: true
   db:
     # Database type (Oracle is the only supported)
     type: "Oracle"
