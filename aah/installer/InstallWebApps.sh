@@ -17,6 +17,7 @@ printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 printf "Running installer for setupDatabaseSchemas\n"
 cp ./ApplicationResources.properties ./aah-web-setup/assets || ERR_EXIT "ERROR coping application resources property file\n"
 cp ./AAH.web.legacy.prepare.acc.yaml ./aah-web-setup/.acc  || ERR_EXIT "ERROR coping acc legacy YAML file\n"
+./run.sh unattended -rf ${AahInstallerYaml} -op installWebApps || ERR_EXIT "ERROR running aah insaller for web apps\n"
 
 printf "setup security-external-api\n"
 
@@ -29,8 +30,6 @@ cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR co
 printf "***** running security api ****** **\n"
 chmod +x ${SecurityApiDirectory}/bin/security-external.sh
 nohup ${SecurityApiDirectory}/bin/security-external.sh service&
-
-./run.sh unattended -rf ${AahInstallerYaml} -op installWebApps || ERR_EXIT "ERROR running aah insaller for web apps\n"
 
 
 if [ -f $RemoveInstallYaml ]; then
