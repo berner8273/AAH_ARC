@@ -27,11 +27,11 @@ chmod +x ${SecurityApiDirectory}/bin/security-external.sh
 nohup ${SecurityApiDirectory}/bin/security-external.sh service
 printf "***** completed security api ****** **\n"
 
-printf "Running installer for setupDatabaseSchemas\n"
+printf "Running installer for installWebApps\n"
 cp ./ApplicationResources.properties ./aah-web-setup/assets || ERR_EXIT "ERROR coping application resources property file\n"
 cp ./AAH.web.legacy.prepare.acc.yaml ./aah-web-setup/.acc  || ERR_EXIT "ERROR coping acc legacy YAML file\n"
 ./run.sh unattended -rf ${AahInstallerYaml} -op installWebApps || ERR_EXIT "ERROR running aah insaller for web apps\n"
-printf "completed installer for setupDatabaseSchemas\n"
+printf "completed installer for installWebApps\n"
 
 
 if [ -f $RemoveInstallYaml ]; then
