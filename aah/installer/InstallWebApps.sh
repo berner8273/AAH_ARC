@@ -24,7 +24,7 @@ cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR co
 
 printf "***** running security api ****** **\n"
 chmod +x ${SecurityApiDirectory}/bin/security-external.sh
-nohup ${SecurityApiDirectory}/bin/security-external.sh
+nohup ${SecurityApiDirectory}/bin/security-external.sh service
 printf "***** completed security api ****** **\n"
 
 printf "Running installer for setupDatabaseSchemas\n"
