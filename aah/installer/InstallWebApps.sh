@@ -14,18 +14,18 @@ ERR_EXIT () {
 # Main ========================================================================
 printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 
-#printf "setup security-external-api\n"
+printf "setup security-external-api\n"
 
-#mkdir -p ${SecurityApiDirectory} || ERR_EXIT "ERROR creating security api directory"
+mkdir -p ${SecurityApiDirectory} || ERR_EXIT "ERROR creating security api directory"
 
-#unzip -o ./security-external-api/zip/security-api-service.zip -d ${SecurityApiDirectory} || ERR_EXIT "ERROR unzipping security api\n"
-#cp ./drivers/*.jar ${SecurityApiDirectory}/drivers || ERR_EXIT "ERROR copy driver Jar files\n"
-#cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR copying application.properties file\n"
+unzip -o ./security-external-api/zip/security-api-service.zip -d ${SecurityApiDirectory} || ERR_EXIT "ERROR unzipping security api\n"
+cp ./drivers/*.jar ${SecurityApiDirectory}/drivers || ERR_EXIT "ERROR copy driver Jar files\n"
+cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR copying application.properties file\n"
 
-#printf "***** running security api ****** **\n"
-#chmod +x ${SecurityApiDirectory}/bin/security-external.sh
-#nohup ${SecurityApiDirectory}/bin/security-external.sh service
-#printf "***** completed security api ****** **\n"
+printf "***** running security api ****** **\n"
+chmod +x ${SecurityApiDirectory}/bin/security-external.sh
+nohup ${SecurityApiDirectory}/bin/security-external.sh service
+printf "***** completed security api ****** **\n"
 
 printf "Running installer for installWebApps\n"
 cp ./ApplicationResources.properties ./aah-web-setup/assets || ERR_EXIT "ERROR coping application resources property file\n"
