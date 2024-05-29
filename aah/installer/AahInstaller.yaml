@@ -374,7 +374,7 @@ variablesValues:
           sourceProperties: "/aah/installer/aah-web-setup/assets/ApplicationResources.properties"
       security:
         # Authentication type. Possible values: db, saml, preauthenticated, token.
-        authenticationType: "db"
+        authenticationType: "saml"
         # @type(map)
         saml:
           # web application session configuration
@@ -435,7 +435,7 @@ variablesValues:
       connectionPoolSize: "32"
       security:
         # Authentication type. Possible values: db, saml, preauthenticated, token.
-        authenticationType: "db"
+        authenticationType: "saml"
         allowUserOwnDetailEdit: "false"
         # @type(map)
         # Custom scope for security property types:
@@ -515,7 +515,7 @@ variablesValues:
       connectionPoolSize: "32"
       security:
         # Authentication type. Possible values: db, saml, preauthenticated, token.
-        authenticationType: "db"
+        authenticationType: "saml"
         # @type(map)
         # Custom scope for security property types:
         # USER (available only on user screen),
