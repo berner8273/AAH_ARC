@@ -15,6 +15,7 @@ ERR_EXIT () {
 printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 
 printf "Pre webapps installation script for installer file setup\n"
+chmod +x /aah/installer/pre-webapps_install.sh
 ./pre-webapps_install.sh || ERR_EXIT "ERROR creating aah/installer directory"
 
 printf "setup security-external-api\n"
