@@ -4,6 +4,12 @@ OracleConnString=$1
 RemoveInstallYaml=$2
 AahInstallerYaml="AahInstaller.yaml"
 
+keepfile="/aah/installer/aah-web-setup/resources/GUI.war"
+delfiles="/aah/installer/aah-web-setup/resources/*_*.war"
+dir="/aah/installer/aah-web-setup/resources/"
+zipfile="/aah/src/installer.zip"
+now=$(date)
+
 # echo OracleConn: ${OracleConnString}
 # Set Oracle environment
 
