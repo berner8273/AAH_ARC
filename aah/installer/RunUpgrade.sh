@@ -96,6 +96,7 @@ echo "War file update script completed"
 cd -
 
 printf "Running installer for setupDatabaseSchemas\n"
+chmod +x ./run.sh
 ./run.sh unattended -rf ${AahInstallerYaml} -op migrateDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
 
 # printf "Run Update Security entries\n"
