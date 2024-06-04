@@ -93,6 +93,7 @@ case $HOSTNAME in
 esac
 echo "War file update script completed"				
 
+cd -
 
 #printf "Pre webapps installation script for installer file setup\n"
 #chmod +x /aah/installer/pre-webapps_install.sh
