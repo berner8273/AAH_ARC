@@ -51,8 +51,7 @@ chmod +x /aah/installer/pre-webapps_install.sh
 ./pre-webapps_install.sh || ERR_EXIT "ERROR creating aah/installer directory"
 
 printf "Running installer for setupDatabaseSchemas\n"
-chmod +x /aah/installer/migrateDatabaseSchemas.sh
-chmod +x /aah/installer/run.sh
+chmod +x ./run.sh
 
 ./run.sh unattended -rf ${AahInstallerYaml} -op migrateDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
 
