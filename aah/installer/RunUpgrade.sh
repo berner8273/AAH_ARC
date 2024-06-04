@@ -46,6 +46,10 @@ function runUpdateSecurityEntries()
 # Main ========================================================================
 printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 
+printf "Pre webapps installation script for installer file setup\n"
+chmod +x /aah/installer/pre-webapps_install.sh
+./pre-webapps_install.sh || ERR_EXIT "ERROR creating aah/installer directory"
+
 printf "Running installer for setupDatabaseSchemas\n"
 ./run.sh unattended -rf ${AahInstallerYaml} -op migrateDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
 
