@@ -96,10 +96,12 @@ echo "War file update script completed"
 cd -
 
 printf "Running installer for setupDatabaseSchemas\n"
-chmod +x ./run.sh
+chmod +rwx ./run.sh
 chmod +rwx /aah/installer/scheduler-db/scheduler-db/migration.sh
 chmod +rwx /aah/installer/security-db/security-db/migration.sh
 chmod +rwx /aah/installer/aah-database-setup/database/DatabaseInstaller/create_update_db.sh
+chmod +rwx /aah/installer/aah-database-setup/database/DatabaseInstaller/Compile/compile_objects.sh
+
 ./run.sh unattended -rf ${AahInstallerYaml} -op migrateDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
 
 # printf "Run Update Security entries\n"
