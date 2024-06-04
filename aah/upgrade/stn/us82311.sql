@@ -6,6 +6,8 @@ DECLARE
 hFeedUUID raw(16);
 hCorrelationId varchar2(40);
 dEffDate date;
+dCurrentDate date;
+dOpenPeriod date;
 nExists number; 
 
 BEGIN
@@ -18,7 +20,6 @@ from dual;
 select standard_hash('fix 620320-C' ,'MD5')
 into hCorrelationId 
 from dual;
-
 
 select count(*) into nExists from stn.feed where feed_uuid = hFeedUUID;  
 
@@ -42,18 +43,23 @@ IF nExists = 1 THEN
  
 END IF;                
 
--- use the open cash period.  Expected to be march but this allows testing inenvironments that may have different open dates
+-- use the open cash period
 select period_end 
-into dEffDate
+into dOpenPeriod
 from stn.period_status ps 
 where event_class = 'CASH_TXN';
+
+select gp_todays_bus_date 
+into dCurrentDate
+from fdr.fr_global_parameter 
+where gp_one_id = '1';
+
+dEffDate := least(dOpenPeriod, dCurrentDate);
 
 IF dEffDate is null THEN
     rollback;
     raise_application_error(-20999,'Bad effDate');
 END IF;
-
-
 
 
 INSERT INTO stn.feed(
@@ -142,7 +148,7 @@ VALUES
     'PERC', --journal_type,
     'PRE_ACCOUNTED_FEED', --jrnl_source,
     '13200100-01', --acct_cd,  direct AR
-    'US_STAT', --basis_cd,
+    'NVS', --basis_cd,
     'CORE', -- ledger
     '620320-C', -- policy
     20368836, --stream_id,
@@ -226,7 +232,7 @@ VALUES
     'PERC', --journal_type,
     'PRE_ACCOUNTED_FEED', --jrnl_source,
     '46300145-01', --acct_cd,  other income
-    'US_STAT', --basis_cd,
+    'NVS', --basis_cd,
     'CORE', -- ledger
     '620320-C', -- policy
     20368836, --stream_id,
