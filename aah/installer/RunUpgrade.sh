@@ -71,8 +71,8 @@ fi
 if [ -f $keepfile ]; then rm -f $keepfile; fi
 
 case $HOSTNAME in
-	"aptitudeci.agl.com")
-		mv ${dir}C_GUI.war $keepfile
+	"aptitude.agl.com")
+		mv ${dir}P_GUI.war $keepfile
 		rm -f $delfiles
 		;;
 	"aptitudedev.agl.com")
@@ -81,10 +81,12 @@ case $HOSTNAME in
 		rm -f $delfiles
 		;;
 	"aptitudeqa.agl.com")
+	echo "rename "${dir}Q_GUI.war $keepfile
 		mv ${dir}Q_GUI.war $keepfile
 		rm -f $delfiles
 		;;
 	"aptitudeuat.agl.com")
+	echo "rename "${dir}U_GUI.war $keepfile
 		mv ${dir}U_GUI.war $keepfile
 		rm -f $delfiles
 		;;
