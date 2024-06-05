@@ -109,8 +109,8 @@ chmod +rwx /aah/installer/scheduler-db/scheduler-cli/scheduler.sh
 
 ./run.sh unattended -rf ${AahInstallerYaml} -op migrateDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
 
-printf "Run Update Security entries\n"
-runUpdateSecurityEntries || ERR_EXIT "ERROR updating security entries\n"
+printf "Run Update Security application URL entries\n"
+runUpdateSecurityEntries || ERR_EXIT "ERROR updating security application URL entries\n"
 
 export PATH=/opt/aptitude/libexec:$PATH
 export LD_LIBRARY_PATH=/opt/aptitude/lib
