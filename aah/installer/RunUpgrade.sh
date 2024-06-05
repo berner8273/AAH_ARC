@@ -52,6 +52,9 @@ function runUpdateSecurityEntries()
 # Main ========================================================================
 printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 
+
+printf "*** DEPLOY INSTALLER.ZIP ***\n"
+
 if [ -f /usr/bin/unzip ]
 then
 	if ! [ -d /aah/installer ]; then mkdir -p /aah/installer; fi
@@ -68,6 +71,8 @@ else
 	exit 1
 fi
 
+
+printf "*** FIX aah_OLD.war issue ***\n"
 if [ -f $keepfile ]; then rm -f $keepfile; fi
 
 case $HOSTNAME in
