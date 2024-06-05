@@ -103,13 +103,21 @@ echo "War file update script completed"
 cd -
 
 printf "Running installer for setupDatabaseSchemas\n"
-chmod +rwx ./run.sh
-chmod +rwx /aah/installer/scheduler-db/scheduler-db/migration.sh
-chmod +rwx /aah/installer/security-db/security-db/migration.sh
-chmod +rwx /aah/installer/aah-database-setup/database/DatabaseInstaller/create_update_db.sh
+
+
+chmod +x RunUpgrade.sh
+chmod +x run.sh
+chmod +x /aah/installer/security-db/security-db/migration.sh
+chmod +x /aah/installer/scheduler-db/scheduler-db/migration.sh
+chmod +x /aah/installer/security-db/security-cli/security.sh
+chmod +x /aah/installer/scheduler-db/scheduler-cli/scheduler.sh
 chmod +rwx /aah/installer/aah-database-setup/database/DatabaseInstaller/Compile/compile_objects.sh
-chmod +rwx /aah/installer/security-db/security-cli/security.sh
-chmod +rwx /aah/installer/scheduler-db/scheduler-cli/scheduler.sh
+chmod +x /aah/installer/aah-database-setup/database/DatabaseInit/create_database.sh
+chmod +x /aah/installer/aah-database-setup/database/DatabaseInit/create_schemas.sh
+chmod +x /aah/installer/aah-database-setup/database/DatabaseInit/create_tablespaces.sh
+chmod +x /aah/installer/aah-database-setup/database/DatabaseInstaller/create_update_db.sh
+chmod -R 755 /aah/installer
+
 
 ./run.sh unattended -rf ${AahInstallerYaml} -op migrateDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
 
