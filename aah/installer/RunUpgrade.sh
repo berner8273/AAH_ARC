@@ -43,7 +43,6 @@ function runUpdateSecurityEntries()
         update SECURITY_CORE.APPLICATION set BASE_URL = 'https://#{aptitudeHost}/SECURITY' WHERE APPLICATION_NAME = 'ASEC';
         update SECURITY_CORE.APPLICATION set BASE_URL = 'https://#{aptitudeHost}/aah' WHERE APPLICATION_NAME = 'AAH';
         update SECURITY_CORE.APPLICATION set BASE_URL = 'https://#{aptitudeHost}/scheduler-web' WHERE APPLICATION_NAME = 'ASCHED';
-        end;
         /
         commit;
     "
