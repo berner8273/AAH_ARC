@@ -70,7 +70,7 @@ chmod +x /aah/installer/aah-database-setup/database/DatabaseInstaller/create_upd
 chmod -R 755 /aah/installer
 
 
-./run.sh unattended -rf ${AahInstallerYaml} -op migrateDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
+./run.sh unattended -rf ${AahInstallerYaml} -op setupDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
 
 export PATH=/opt/aptitude/libexec:$PATH
 export LD_LIBRARY_PATH=/opt/aptitude/lib
