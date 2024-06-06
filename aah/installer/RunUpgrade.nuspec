@@ -12,6 +12,5 @@
   <files>
     <file src="AahInstaller.yaml"/>
     <file src="RunUpgrade.sh"/>
-    <file src="pre-webapps_install.sh"/>
   </files>
 </package>
