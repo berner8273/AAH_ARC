@@ -69,39 +69,6 @@ else
 	exit 1
 fi
 
-
-printf "*** FIX aah_OLD.war issue ***\n"
-if [ -f $keepfile ]; then rm -f $keepfile; fi
-
-case $HOSTNAME in
-	"aptitude.agl.com")
-	  echo "rename "${dir}P_GUI.war $keepfile	
-		mv ${dir}P_GUI.war $keepfile
-		rm -f $delfiles
-		;;
-	"aptitudedev.agl.com")
-	  echo "rename "${dir}D_GUI.war $keepfile
-		mv ${dir}D_GUI.war $keepfile
-		rm -f $delfiles
-		;;
-	"aptitudeqa.agl.com")
-	echo "rename "${dir}Q_GUI.war $keepfile
-		mv ${dir}Q_GUI.war $keepfile
-		rm -f $delfiles
-		;;
-	"aptitudeuat.agl.com")
-	echo "rename "${dir}U_GUI.war $keepfile
-		mv ${dir}U_GUI.war $keepfile
-		rm -f $delfiles
-		;;
-		*) echo "unknown server $HOSTNAME"
-			exit 1 ;;	
-esac
-echo "War file update script completed"				
-
-cd -
-
-
 printf "Running installer for setupDatabaseSchemas\n"
 
 
