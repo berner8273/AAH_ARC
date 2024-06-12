@@ -124,6 +124,8 @@ printf "Running installer for configureEngines\n"
 printf "Running installer for configureServers\n"
 ./run.sh unattended -rf ${AahInstallerYaml} -op configureServers || ERR_EXIT "Error Running installer for configureServers\n"
 
+printf "Run Update Security entries\n"
+runUpdateSecurityEntries || ERR_EXIT "ERROR updating security entries\n"
 
 if [ -f $RemoveInstallYaml ]; then
     printf "removing yaml installation file\n"
