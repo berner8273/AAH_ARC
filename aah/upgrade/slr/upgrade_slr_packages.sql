@@ -9,6 +9,7 @@
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_BALANCE_MOVEMENT_PKG.hdr;
 @@../aahCustom/aahSubLedger/src/main/db/packages/slr/SLR_BALANCE_MOVEMENT_PKG.bdy;
 
+delete from SLR_HINTS_SETS where HS_STATEMENT = 'MERGE_EBA_EXISTS' ;
 Insert into SLR_HINTS_SETS
    (HS_SET, HS_STATEMENT, HS_HINT, HS_DESCRIPTION)
  Values
