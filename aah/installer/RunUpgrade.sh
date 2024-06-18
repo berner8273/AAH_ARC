@@ -54,6 +54,7 @@ printf "*** $PROGRAM starts ... $(date +'%F %T')\n"
 printf "*** DEPLOY INSTALLER.ZIP ***\n"
 if [ -f /usr/bin/unzip ]
 then
+	chmod +rwx /aah/src/installer.zip
 	if ! [ -d /aah/installer ]; then mkdir -p /aah/installer; fi
 	if [ -f $zipfile ]
 	then
