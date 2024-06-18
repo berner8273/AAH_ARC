@@ -72,8 +72,8 @@ fi
 if [ -f $keepfile ]; then rm -f $keepfile; fi
 
 case $HOSTNAME in
-	"aptitudeci.agl.com")
-		mv ${dir}C_GUI.war $keepfile
+	"aptitude.agl.com")
+		mv ${dir}P_GUI.war $keepfile
 		rm -f $delfiles
 		;;
 	"aptitudedev.agl.com")
