@@ -39,6 +39,9 @@ conn ~gui_logon
 conn ~slr_logon
 @@slr/upgrade_slr_packages.sql
 
+conn ~sys_logon
+grant create job to public;
+
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
