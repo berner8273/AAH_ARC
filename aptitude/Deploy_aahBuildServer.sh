@@ -6,7 +6,8 @@
 # Author  : Elli Wang
 # Version : 2024040201
 # Note    :
-#   2024-04-02 	Elli	GA 21.4.1.1741
+#   2024-06-24	Elli	Add import security_os.xml
+#   2024-04-02	Elli	GA 21.4.1.1741
 #   2024-04-02	Elli	Remove deploying aptsrv
 #   2024-04-01	Elli	Remove copying srv_exp.xml
 #   2018-10-25	Elli	Remove deploying aah.war, which moved to aahGUI
@@ -180,6 +181,12 @@ for f in trigger core custom; do
 	RUN $APTCMD -add_folder -folder $f $APTCMD_OPTS \
 		|| ERR_EXIT "Cannot add Aptitude execution folder $f!"
 done
+
+# Import OS user --------------------------------------------------------------
+printf "* Import OS user ...\n"
+RUN $APTCMD -import_security -file_path "$PWD/xml/security_os.xml" \
+	$APTCMD_OPTS \
+	|| ERR_EXIT "Cannot import OS user!"
 
 # End =========================================================================
 printf "*** $PROGRAM ends ... $(date +'%F %T')\n"
