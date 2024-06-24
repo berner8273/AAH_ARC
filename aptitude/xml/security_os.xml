@@ -1,1 +1,526 @@
-aaa
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Security>
+  <Version>2</Version>
+  <Users>
+    <User>
+      <Name>os$aptitude</Name>
+      <Description />
+      <MultiLoginAllowed>1</MultiLoginAllowed>
+      <PasswordMustBeChanged>0</PasswordMustBeChanged>
+      <PasswordNeverExpires>1</PasswordNeverExpires>
+      <PasswordChangeAfter />
+      <AccountIsBlocked>0</AccountIsBlocked>
+      <AccountNeverExpires>1</AccountNeverExpires>
+      <AccountExpirationDate />
+      <SystemPrivileges>
+        <SystemPrivilege>
+          <Name>Security</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Security Administration</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Global Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>OS Authentication</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Projects Repository</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>Lock the Repository</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Solutions</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>List Solutions</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Add Solution</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Solution</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Modify Solution</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Solution</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Set Solution Label</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>List Solution Labels</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Solution Label</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Promote Solution Label To Authorised</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Promote Solution Label To Decommissioned</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Revert Solution Label To Authorised</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>List Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Add Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Modify Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Add</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Delete</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Modify</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Force Upload</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Force Lock</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Reference Add</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Reference Delete</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Add</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Read</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Delete</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Project List</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Folders</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>List Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Add Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Modify Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Add</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Delete</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Modify</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Force Upload</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Force Lock</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Reference Add</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Reference Delete</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Add</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Read</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Delete</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Project List</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Projects</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>Project Element Add</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Delete</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Modify</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Force Upload</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Force Lock</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Restore</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Set Shared Revision of Project Element</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Reference Add</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Element Reference Delete</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Set Project Label</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Promote Project Label To Authorised</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Promote Project Label To Decommissioned</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Revert Project Label To Authorised</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Project Label</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Project Label</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>List Project Labels</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Add</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Read</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Project Delete</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Project List</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Execution Folders</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>Add Execution folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Execution folder</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Deploy project</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Configure deployed project</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete deployed project</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Start processing</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Stop processing</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Internal Data</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Write Internal Data</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>View Project Source</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Modify Project Item</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Add Configuration Definition</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Amend Configuration Definition</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Configuration Definition</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Business Calendars</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Add Business Calendar</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Business Calendar</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Modify Business Calendar</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Business Calendar</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Configuration Definitions</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Add Configuration Definition</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Amend Configuration Definition</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Configuration Definition</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Audit</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Audit</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Archive Audit</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Truncate Audit</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Bus Servers</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Add Bus Server Definition</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Amend Bus Server Definition</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Bus Server Definition</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Get List of Current Sessions on Bus Server</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Force Logout a Bus Server Session</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Force End a Bus Server Session</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Start and Stop Security Service on the Bus Server</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Get list of Bus Server Definitions</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+        <SystemPrivilege>
+          <Name>Sequences</Name>
+          <SystemPrivileges>
+            <SystemPrivilege>
+              <Name>Grant Object</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Add Sequence</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Read Sequence</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Modify Sequence</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+            <SystemPrivilege>
+              <Name>Delete Sequence</Name>
+              <Status>Granted</Status>
+            </SystemPrivilege>
+          </SystemPrivileges>
+        </SystemPrivilege>
+      </SystemPrivileges>
+    </User>
+  </Users>
+</Security>
