@@ -113,7 +113,7 @@ chmod -R 755 /aah/installer
 
 
 # ./run.sh unattended -rf ${AahInstallerYaml} -op migrateDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
-./run.sh unattended -op setupDatabaseSchemas -rf ${AahInstallerYaml} 
+./run.sh unattended -rf ${AahInstallerYaml} -op setupDatabaseSchemas 
 
 export PATH=/opt/aptitude/libexec:$PATH
 export LD_LIBRARY_PATH=/opt/aptitude/lib
