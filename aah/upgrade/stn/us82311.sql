@@ -13,11 +13,11 @@ nExists number;
 BEGIN
 
 
-select standard_hash('202403 fix 620320-C', 'MD5')
+select standard_hash('fix 620320-C', 'MD5')
 into hFeedUUID 
 from dual;
 
-select standard_hash('fix 620320-C' ,'MD5')
+select standard_hash('cid fix 620320-C' ,'MD5')
 into hCorrelationId 
 from dual;
 
@@ -33,9 +33,9 @@ IF nExists = 1 THEN
         feed_uuid = hFeedUUID and
         event_status  = 'P';
 
-    IF nExists > 0 THEN
-        raise_application_error(-20999,'Entries already exist and have been processed.  This deployment can not be rerun.');
-    END IF;
+--    IF nExists > 0 THEN
+--        raise_application_error(-20999,'Entries already exist and have been processed.  This deployment can not be rerun.');
+--    END IF;
 
     delete from stn.journal_line where feed_uuid = hFeedUUID;
     delete from stn.feed_record_count where feed_uuid  = hFeedUUID;
@@ -153,7 +153,7 @@ VALUES
     '620320-C', -- policy
     20368836, --stream_id,
     null, --affiliate_le_id,
-    null, --counterparty_le_id,
+    6, --counterparty_le_id,
     null, -- dept_cd,
     'CASH_OFFSET', --business_event_typ,
     'Fix Trans Amt', --journal_line_desc,
@@ -165,8 +165,8 @@ VALUES
     null, --event_seq_id,
     'D', --business_typ,
     'U', --premium_typ,
-    null ,-- owner_le_id,  
-    null, --ultimate_parent_le_id,
+    6 ,-- owner_le_id,  
+    6, --ultimate_parent_le_id,
     'WP_CASH_OFFSET', --event_typ,
     'USD', --transaction_ccy,
     -13.77, --transaction_amt,
@@ -237,7 +237,7 @@ VALUES
     '620320-C', -- policy
     20368836, --stream_id,
     null, --affiliate_le_id,
-    null, --counterparty_le_id,
+    6, --counterparty_le_id,
     null, -- dept_cd,
     'CASH_OFFSET', --business_event_typ,
     'Fix Trans Amt', --journal_line_desc,
@@ -249,8 +249,8 @@ VALUES
     null, --event_seq_id,
     'D', --business_typ,
     'U', --premium_typ,
-    null ,-- owner_le_id,  
-    null, --ultimate_parent_le_id,
+    6 ,-- owner_le_id,  
+    6, --ultimate_parent_le_id,
     'WP_CASH_OFFSET', --event_typ,
     'USD', --transaction_ccy,
     13.77, --transaction_amt,
@@ -265,7 +265,6 @@ VALUES
     0, --no_retries,
     0); --step_run_sid,
         
-commit;
-
+--commit;
 end;    
 /    
