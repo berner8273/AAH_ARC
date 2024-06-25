@@ -1,9 +1,12 @@
 -- script for user story 82311.  Clear transaction amount for policy 620320-C
 -- it creates a journal line feed that will be processed during intra day or overnight
+-- Reverses original enties in UAT which were not correct
 
 DECLARE
 
-hFeedUUID raw(16);
+--hFeedUUID raw(16);
+hOldFeedUUID raw(16);
+hRevFeedUUID raw(16);
 hCorrelationId varchar2(40);
 dEffDate date;
 dCurrentDate date;
@@ -13,36 +16,24 @@ nExists number;
 BEGIN
 
 
-select standard_hash('fix 620320-C', 'MD5')
-into hFeedUUID 
+-- feed uuid
+select standard_hash('202403 fix 620320-C', 'MD5')
+into hOLDFeedUUID 
 from dual;
 
-select standard_hash('cid fix 620320-C' ,'MD5')
+
+
+select standard_hash('rev fix 620320-C', 'MD5')
+into hRevFeedUUID 
+from dual;
+
+
+select standard_hash('cid rev fix 620320-C' ,'MD5')
 into hCorrelationId 
 from dual;
 
-select count(*) into nExists from stn.feed where feed_uuid = hFeedUUID;  
 
-IF nExists = 1 THEN
-
-    -- records exist.  This is being rerun
-    select count(*) 
-    into nExists 
-    from stn.journal_line 
-    where
-        feed_uuid = hFeedUUID and
-        event_status  = 'P';
-
---    IF nExists > 0 THEN
---        raise_application_error(-20999,'Entries already exist and have been processed.  This deployment can not be rerun.');
---    END IF;
-
-    delete from stn.journal_line where feed_uuid = hFeedUUID;
-    delete from stn.feed_record_count where feed_uuid  = hFeedUUID;
-    delete from stn.feed where feed_uuid = hFeedUUID;
- 
-END IF;                
-
+-- open periods
 -- use the open cash period
 select period_end 
 into dOpenPeriod
@@ -62,6 +53,40 @@ IF dEffDate is null THEN
 END IF;
 
 
+-- make sure old feed exists
+select count(*) into nExists from stn.feed where feed_uuid = hOldFeedUUID;
+IF nExists <> 1 THEN
+    raise_application_Error(-20102,'Old feed doesnt exist.  Dont run reverse entries');
+END IF;    
+
+
+
+------------------------------------------------------------------------
+
+-- see if new feed exists
+select count(*) into nExists from stn.feed where feed_uuid = hRevFeedUUID;  
+
+IF nExists = 1 THEN
+
+    -- records exist.  This is being rerun
+    select count(*) 
+    into nExists 
+    from stn.journal_line 
+    where
+        feed_uuid = hRevFeedUUID and
+        event_status  = 'P';
+
+    IF nExists > 0 THEN
+        raise_application_error(-20999,'Entries already exist and have been processed.  This deployment can not be rerun.');
+    END IF;
+
+    delete from stn.journal_line where feed_uuid = hRevFeedUUID;
+    delete from stn.feed_record_count where feed_uuid  = hRevFeedUUID;
+    delete from stn.feed where feed_uuid = hRevFeedUUID;
+END IF;                
+
+
+
 INSERT INTO stn.feed(
     --feed_sid,
     feed_uuid,
@@ -72,10 +97,10 @@ INSERT INTO stn.feed(
     loaded_ts)
 VALUES
     (--feed_sid,is identity column
-    hFeedUUID, --feed_uuid,
+    hRevFeedUUID, --feed_uuid,
     'JOURNAL_LINE', --feed_typ,
     dEffDate, --effective_date,
-    '202403 fix 620320-C', --system_cd,
+    'rev fix 620320-C', --system_cd,
     'NONE', --stated_checksum,
     sysdate); --loaded_ts)        
 
@@ -89,12 +114,11 @@ INSERT INTO stn.feed_record_count(
     stated_record_cnt,
     actual_record_cnt)
 VALUES
-    (hFeedUUID, --feed_uuid,
+    (hRevFeedUUID, --feed_uuid,
     'STN', -- db_mn
     'JOURNAL_LINE', --table_nm
     2, -- stated_reord_cnt
     null); --actual_record_cnt
-
 
 
 -- AR Entry
@@ -153,7 +177,7 @@ VALUES
     '620320-C', -- policy
     20368836, --stream_id,
     null, --affiliate_le_id,
-    6, --counterparty_le_id,
+    null, --counterparty_le_id,
     null, -- dept_cd,
     'CASH_OFFSET', --business_event_typ,
     'Fix Trans Amt', --journal_line_desc,
@@ -165,11 +189,11 @@ VALUES
     null, --event_seq_id,
     'D', --business_typ,
     'U', --premium_typ,
-    6 ,-- owner_le_id,  
-    6, --ultimate_parent_le_id,
+    null ,-- owner_le_id,  
+    null, --ultimate_parent_le_id,
     'WP_CASH_OFFSET', --event_typ,
     'USD', --transaction_ccy,
-    -13.77, --transaction_amt,
+    -1 * -13.77, --transaction_amt,
     'USD', --functional_ccy,
     0, --functional_amt,
     'USD', --reporting_ccy,
@@ -177,7 +201,7 @@ VALUES
     'NON_MTM', --execution_typ,
     2, --lpg_id,
     'U', --event_status,
-    hFeedUUID,
+    hRevFeedUUID,
     0, --no_retries,
     0); --step_run_sid,
         
@@ -237,7 +261,7 @@ VALUES
     '620320-C', -- policy
     20368836, --stream_id,
     null, --affiliate_le_id,
-    6, --counterparty_le_id,
+    null, --counterparty_le_id,
     null, -- dept_cd,
     'CASH_OFFSET', --business_event_typ,
     'Fix Trans Amt', --journal_line_desc,
@@ -249,11 +273,11 @@ VALUES
     null, --event_seq_id,
     'D', --business_typ,
     'U', --premium_typ,
-    6 ,-- owner_le_id,  
-    6, --ultimate_parent_le_id,
+    null ,-- owner_le_id,  
+    null, --ultimate_parent_le_id,
     'WP_CASH_OFFSET', --event_typ,
     'USD', --transaction_ccy,
-    13.77, --transaction_amt,
+    -1 * 13.77, --transaction_amt,
     'USD', --functional_ccy,
     0, --functional_amt,
     'USD', --reporting_ccy,
@@ -261,10 +285,10 @@ VALUES
     'NON_MTM', --execution_typ,
     2, --lpg_id,
     'U', --event_status,
-    hFeedUUID,
+    hRevFeedUUID,
     0, --no_retries,
     0); --step_run_sid,
         
---commit;
-end;    
+commit;
+end;           
 /    
