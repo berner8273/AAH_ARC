@@ -33,9 +33,9 @@ IF nExists = 1 THEN
         feed_uuid = hFeedUUID and
         event_status  = 'P';
 
---    IF nExists > 0 THEN
---        raise_application_error(-20999,'Entries already exist and have been processed.  This deployment can not be rerun.');
---    END IF;
+    IF nExists > 0 THEN
+        raise_application_error(-20999,'Entries already exist and have been processed.  This deployment can not be rerun.');
+    END IF;
 
     delete from stn.journal_line where feed_uuid = hFeedUUID;
     delete from stn.feed_record_count where feed_uuid  = hFeedUUID;
@@ -265,6 +265,6 @@ VALUES
     0, --no_retries,
     0); --step_run_sid,
         
---commit;
+commit;
 end;    
 /    
