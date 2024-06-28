@@ -24,7 +24,8 @@ cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR co
 
 printf "***** running security api ****** **\n"
 chmod +x ${SecurityApiDirectory}/bin/security-external.sh
-nohup ${SecurityApiDirectory}/bin/security-external.sh service
+sudo systemctl start aah-security
+#nohup ${SecurityApiDirectory}/bin/security-external.sh service
 printf "***** completed security api ****** **\n"
 
 printf "Running installer for installWebApps\n"
@@ -34,6 +35,7 @@ chmod +x /aah/installer/InstallWebApps.sh
 chmod +x /aah/installer/run.sh
 ./run.sh unattended -rf ${AahInstallerYaml} -op installWebApps || ERR_EXIT "ERROR running aah insaller for web apps\n"
 printf "completed installer for installWebApps\n"
+
 
 
 if [ -f $RemoveInstallYaml ]; then

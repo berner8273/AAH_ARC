@@ -73,7 +73,13 @@ if [ -f $keepfile ]; then rm -f $keepfile; fi
 
 case $HOSTNAME in
 	"aptitude.agl.com")
+		echo "rename "${dir}P_GUI.war $keepfile
 		mv ${dir}P_GUI.war $keepfile
+		rm -f $delfiles
+		;;
+	"aptitudeci.agl.com")
+		echo "rename "${dir}C_GUI.war $keepfile
+		mv ${dir}C_GUI.war $keepfile
 		rm -f $delfiles
 		;;
 	"aptitudedev.agl.com")
@@ -82,10 +88,12 @@ case $HOSTNAME in
 		rm -f $delfiles
 		;;
 	"aptitudeqa.agl.com")
+		echo "rename "${dir}Q_GUI.war $keepfile
 		mv ${dir}Q_GUI.war $keepfile
 		rm -f $delfiles
 		;;
 	"aptitudeuat.agl.com")
+		echo "rename "${dir}U_GUI.war $keepfile
 		mv ${dir}U_GUI.war $keepfile
 		rm -f $delfiles
 		;;
@@ -111,12 +119,14 @@ chmod +x /aah/installer/aah-database-setup/database/DatabaseInit/create_tablespa
 chmod +x /aah/installer/aah-database-setup/database/DatabaseInstaller/create_update_db.sh
 chmod -R 755 /aah/installer
 
-
 ./run.sh unattended -rf ${AahInstallerYaml} -op migrateDatabaseSchemas || ERR_EXIT "ERROR running installer for migrateDatabaseSchemas\n"
 
 export PATH=/opt/aptitude/libexec:$PATH
 export LD_LIBRARY_PATH=/opt/aptitude/lib
 export APTITUDE_SERVERS=/opt/aptitude
+
+printf "Run Update Security entries\n"
+runUpdateSecurityEntries || ERR_EXIT "ERROR updating security entries\n"
 
 printf "Running installer for configureEngines\n"
 ./run.sh unattended -rf ${AahInstallerYaml} -op configureEngines || ERR_EXIT "Error Running installer for configureEngines\n"
@@ -125,8 +135,6 @@ printf "Running installer for configureEngines\n"
 printf "Running installer for configureServers\n"
 ./run.sh unattended -rf ${AahInstallerYaml} -op configureServers || ERR_EXIT "Error Running installer for configureServers\n"
 
-printf "Run Update Security entries\n"
-runUpdateSecurityEntries || ERR_EXIT "ERROR updating security entries\n"
 
 if [ -f $RemoveInstallYaml ]; then
     printf "removing yaml installation file\n"
