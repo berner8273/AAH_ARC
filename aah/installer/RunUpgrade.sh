@@ -77,6 +77,11 @@ case $HOSTNAME in
 		mv ${dir}P_GUI.war $keepfile
 		rm -f $delfiles
 		;;
+	"aptitude.agl.com")
+		echo "rename "${dir}C_GUI.war $keepfile
+		mv ${dir}C_GUI.war $keepfile
+		rm -f $delfiles
+		;;
 	"aptitudedev.agl.com")
 	  echo "rename "${dir}D_GUI.war $keepfile
 		mv ${dir}D_GUI.war $keepfile
