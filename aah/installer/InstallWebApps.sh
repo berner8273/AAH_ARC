@@ -22,6 +22,12 @@ unzip -o ./security-external-api/zip/security-api-service.zip -d ${SecurityApiDi
 cp ./drivers/*.jar ${SecurityApiDirectory}/drivers || ERR_EXIT "ERROR copy driver Jar files\n"
 cp ./application.properties ${SecurityApiDirectory}/config || ERR_EXIT "ERROR copying application.properties file\n"
 
+printf "***** running security api ****** **\n"
+chmod +x ${SecurityApiDirectory}/bin/security-external.sh
+sudo systemctl start aah-security
+#nohup ${SecurityApiDirectory}/bin/security-external.sh service
+printf "***** completed security api ****** **\n"
+
 printf "Running installer for installWebApps\n"
 cp ./ApplicationResources.properties ./aah-web-setup/assets || ERR_EXIT "ERROR coping application resources property file\n"
 cp ./AAH.web.legacy.prepare.acc.yaml ./aah-web-setup/.acc  || ERR_EXIT "ERROR coping acc legacy YAML file\n"
@@ -30,10 +36,6 @@ chmod +x /aah/installer/run.sh
 ./run.sh unattended -rf ${AahInstallerYaml} -op installWebApps || ERR_EXIT "ERROR running aah insaller for web apps\n"
 printf "completed installer for installWebApps\n"
 
-printf "***** running security api ****** **\n"
-chmod +x ${SecurityApiDirectory}/bin/security-external.sh
-nohup ${SecurityApiDirectory}/bin/security-external.sh service
-printf "***** completed security api ****** **\n"
 
 
 if [ -f $RemoveInstallYaml ]; then
