@@ -24,9 +24,6 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
-@@stn/bug73176_packages.sql
-
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
