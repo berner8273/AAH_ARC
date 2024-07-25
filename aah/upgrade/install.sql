@@ -26,6 +26,7 @@ define unittest_login=~8
 
 conn ~stn_logon
  @@stn/us84390.sql
+ @@stn/us85183.sql
  
 /* End AAH custom upgrades */
 
