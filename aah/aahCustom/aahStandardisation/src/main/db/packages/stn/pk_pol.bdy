@@ -367,28 +367,26 @@ and exists (
         )
     AS
     BEGIN
-        UPDATE HOPPER_INSURANCE_POLICY hpol
-            SET
-                EVENT_STATUS = 'X',
-                PROCESS_ID = TO_CHAR(p_step_run_sid)
-            WHERE
-                    hpol.EVENT_STATUS != 'P'
-and hpol.LPG_ID        = p_lpg_id
-and exists (
-               select
-                      null
-                 from
-                           stn.insurance_policy  pol
-                      join stn.cession           cs  on (
-                                                                pol.policy_id = cs.policy_id
-                                                            and pol.feed_uuid = cs.feed_uuid
-                                                        )
-                      join stn.identified_record_pol idr on pol.row_sid   = idr.row_sid
-                where
-                      cs.stream_id    = hpol.stream_id
-                  and cs.event_status = 'U'
-           );
+    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Before Update of Hopper Insurance Policy for cancels',NULL, NULL,NULL, NULL);
+    
+    MERGE /*+ parallel */
+         INTO  hopper_insurance_policy a
+        USING (SELECT cs.stream_id
+                  FROM stn.insurance_policy pol
+                       JOIN stn.cession cs
+                          ON (    pol.policy_id = cs.policy_id
+                              AND pol.feed_uuid = cs.feed_uuid)
+                       JOIN stn.identified_record_pol idr
+                          ON pol.row_sid = idr.row_sid
+                 WHERE cs.event_status = 'U') b
+            ON (TO_CHAR (b.stream_id) = a.stream_id)
+    WHEN MATCHED
+    THEN
+    UPDATE SET a.event_status = 'X', PROCESS_ID = TO_CHAR (p_step_run_sid)
+               WHERE A.EVENT_STATUS not in ('X','P') and a.LPG_ID = p_lpg_id;    
+          
         p_no_updated_hpol_records := SQL%ROWCOUNT;
+    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'After Update of Hopper Insurance Policy for cancels', 'sql%rowcount', NULL, sql%rowcount, NULL);
         UPDATE fdr.FR_STAN_RAW_FX_RATE fsrfr
             SET
                 EVENT_STATUS = 'X',
@@ -422,6 +420,7 @@ and exists (
                   and p.process_name  = 'insurance_policy-standardise'
            );
         p_no_updated_fsrfr_records := SQL%ROWCOUNT;
+    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'After Update of fr_stan_raw_fx_rate for cancels', 'sql%rowcount', NULL, sql%rowcount, NULL);
         UPDATE HOPPER_INSURANCE_POLICY_TJ hpoltj
             SET
                 EVENT_STATUS = 'X',
@@ -455,6 +454,8 @@ and exists (
                   and p.process_name  = 'insurance_policy-standardise'
            );
         p_no_updated_hpoltj_records := SQL%ROWCOUNT;
+    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'After Update of hopper insurance policy tax jurisd for cancels', 'sql%rowcount', NULL, sql%rowcount, NULL);
+        
     END;
 
     PROCEDURE pr_policy_rval
@@ -854,7 +855,7 @@ and (
 
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation :  cl-stream_policies', 'sql%rowcount', NULL, sql%rowcount, NULL);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : cs-le_id-slr_link', NULL, NULL, NULL, NULL);
-        
+
         INSERT INTO STANDARDISATION_LOG_POL
             (TABLE_IN_ERROR_NAME, ROW_IN_ERROR_KEY_ID, ERROR_VALUE, LPG_ID, FIELD_IN_ERROR_NAME, EVENT_TYPE, ERROR_STATUS, CATEGORY_ID, ERROR_TECHNOLOGY, PROCESSING_STAGE, RULE_IDENTITY, TODAYS_BUSINESS_DT, CODE_MODULE_NM, STEP_RUN_SID, EVENT_TEXT, FEED_SID)
             SELECT
@@ -1724,25 +1725,31 @@ and exists (
         v_no_ip_processed_records NUMBER(38, 9) DEFAULT 0;
         v_no_cl_processed_records NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
+        s_proc_name VARCHAR2(80) := 'stn.pk_pol.pr_policy_prc';
+        gv_ecode     NUMBER := -20001;
+        gv_emsg VARCHAR(10000);
+        s_exception_name VARCHAR2(80);
+
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify policy records' );
         pr_policy_idf(p_step_run_sid, p_lpg_id, v_no_identified_records_pol);
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Identified records', 'v_no_identified_records_pol', NULL, v_no_identified_records_pol, NULL);
         IF v_no_identified_records_pol > 0 THEN
             dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY' , cascade => true );
-            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION' , cascade => true );
-            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_LINK' , cascade => true );
-            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_TAX_JURISD' , cascade => true );
-            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_FX_RATE' , cascade => true );            
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed gathering stats on ins policy tables', '', NULL, NULL, NULL);
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION' , cascade => true );
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed gathering stats on ins CESSION tables', '', NULL, NULL, NULL);
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_LINK' , cascade => true );
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed gathering stats on ins CESSION LINK tables', '', NULL, NULL, NULL);
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_TAX_JURISD' , cascade => true );
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed gathering stats on ins POLICY TAX tables', '', NULL, NULL, NULL);
+            dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'INSURANCE_POLICY_FX_RATE' , cascade => true );
+            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed gathering stats on ins policy hopper', '', NULL, NULL, NULL);
             stn.pk_cession_hier.pr_gen_cession_hierarchy;
             dbms_stats.gather_table_stats ( ownname => 'STN' , tabname => 'CESSION_HIERARCHY' , estimate_percent => 30 , cascade => true );
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed generating cession hiearchy', 'stn.pk_cession_hier.pr_gen_cession_hierarchy', NULL, NULL, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Cancel unprocessed hopper records' );
             pr_policy_chr(p_step_run_sid, p_lpg_id, v_no_updated_hpol_records, v_no_updated_fsrfr_records, v_no_updated_hpoltj_records);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed policy hopper records', 'v_no_updated_hpol_records', NULL, v_no_updated_hpol_records, NULL);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed FX rate hopper records', 'v_no_updated_fsrfr_records', NULL, v_no_updated_fsrfr_records, NULL);
-            pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed cancellation of unprocessed tax jurisdiction hopper records', 'v_no_updated_hpoltj_records', NULL, v_no_updated_hpoltj_records, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Row level validate policy records' );
             pr_policy_rval(p_step_run_sid);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed row level validations', NULL, NULL, NULL, NULL);
@@ -1769,28 +1776,23 @@ and exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_ip_processed_records', NULL, v_no_ip_processed_records, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_cl_processed_records', NULL, v_no_cl_processed_records, NULL);
             IF v_no_validated_cession_records <> v_total_no_fsrip_published THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_validated_cession_records != v_total_no_fsrip_published', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
+                s_exception_name:='pub_val_mismatch - 1';
                 raise pub_val_mismatch;
             END IF;
             IF v_no_validated_fx_records <> v_total_no_fsrfr_published THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_validated_fx_records != v_total_no_fsrfr_published', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+                s_exception_name:='pub_val_mismatch - 2';
                 raise pub_val_mismatch;
             END IF;
             IF v_total_no_fsrfr_published <> v_no_fsrfr_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsrfr_published != v_no_fsrfr_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
+                s_exception_name:='pub_val_mismatch - 3';
                 raise pub_val_mismatch;
             END IF;
             IF v_total_no_fsrip_published <> v_no_fsrip_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsrip_published != v_no_fsrip_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 4' );
+                s_exception_name:='pub_val_mismatch - 4';
                 raise pub_val_mismatch;
             END IF;
             IF v_total_no_fsriptj_published <> v_no_fsriptj_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsriptj_published != v_no_fsriptj_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 5' );
+                s_exception_name:='pub_val_mismatch - 5';
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_total_no_fsrip_published;
@@ -1799,6 +1801,18 @@ and exists (
             p_no_processed_records := 0;
             p_no_failed_records    := 0;
         END IF;
+
+        EXCEPTION
+                WHEN pub_val_mismatch THEN
+                    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
+                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => s_exception_name );
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg||' '||s_exception_name);
+                WHEN OTHERS THEN
+                    ROLLBACK;
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+
     END;
 END PK_POL;
 /
