@@ -4,48 +4,48 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     Declare private processes
     ******************************************************************************************/
 
-    FUNCTION fnui_validate_journal_header													    RETURN CHAR;
+    FUNCTION fnui_validate_journal_header                             RETURN CHAR;
     FUNCTION fnui_validate_journal_line(clear_errors BOOLEAN DEFAULT TRUE)					    RETURN CHAR;
-    FUNCTION fnui_resync_journal_lines														    RETURN BOOLEAN;
+    FUNCTION fnui_resync_journal_lines(sync_temp BOOLEAN DEFAULT TRUE)					    	RETURN BOOLEAN;
     FUNCTION fnui_validate_header_dates														    RETURN BOOLEAN;
-    FUNCTION fnui_validate_line_dates														    RETURN BOOLEAN;
-    FUNCTION fnui_validate_balances															    RETURN BOOLEAN;
-    FUNCTION fnui_validate_account															    RETURN BOOLEAN;
-    FUNCTION fnui_validate_chartfield1                                                          RETURN BOOLEAN;
-    FUNCTION fnui_validate_periods													   		    RETURN BOOLEAN;
-    FUNCTION fnui_check_currencies													   		    RETURN BOOLEAN;
-    FUNCTION fnui_get_journal_type															    RETURN BOOLEAN;
-    FUNCTION fnui_get_entity																    RETURN BOOLEAN;
-    FUNCTION fnui_get_fak_definitions														    RETURN BOOLEAN;
-    FUNCTION fnui_get_eba_definitions														    RETURN BOOLEAN;
-    FUNCTION fnui_check_month_end_limits											   		    RETURN BOOLEAN;
-    FUNCTION fnui_validate_segment_n( segment_no IN NUMBER )						   		    RETURN BOOLEAN;
-    FUNCTION fnui_validate_attribute_n( attribute_no IN NUMBER )					   		    RETURN BOOLEAN;
-    FUNCTION fnui_requires_authorisation			 								   		    RETURN BOOLEAN;
-    FUNCTION fnui_check_copy_journal												   		    RETURN BOOLEAN;
-    FUNCTION fnui_check_quick_reversal												   		    RETURN BOOLEAN;
-    FUNCTION fnui_check_deletion(journal_id VARCHAR2)									   		    RETURN BOOLEAN;
-    FUNCTION fnui_check_copy_line(journal_id VARCHAR2, line_number NUMBER)			   		    RETURN BOOLEAN;
-    FUNCTION fnui_check_delete_line(journal_id VARCHAR2, line_number NUMBER)			   		    RETURN BOOLEAN;
-    FUNCTION fnui_check_header_definitions											   		    RETURN BOOLEAN;
-    FUNCTION fnui_check_line_definitions											   		    RETURN BOOLEAN;
-    FUNCTION fnui_journal_edit_permission(owner VARCHAR2, editor VARCHAR2)			   		    RETURN BOOLEAN;
-    FUNCTION fnui_does_journal_exist(journal_id VARCHAR2) 							   		    RETURN BOOLEAN;
-    FUNCTION fnui_does_line_exist(journal_id VARCHAR2, line_no NUMBER) 				   		    RETURN BOOLEAN;
-    FUNCTION fnui_merge_header														   		    RETURN BOOLEAN;
-    FUNCTION fnui_merge_lines														   		    RETURN BOOLEAN;
-    FUNCTION fnui_decode_journal_lines												   		    RETURN BOOLEAN;
-    FUNCTION fnui_any_errors(journal_id VARCHAR2)										   		    RETURN BOOLEAN;
-    FUNCTION fnui_create_copy_journal(original_jrnl_id VARCHAR2)						   		    RETURN BOOLEAN;
-    FUNCTION fnui_create_reversing_journal(orignal_jrnl_id VARCHAR2, reversing_date DATE, entity_proc_group VARCHAR2, status CHAR) RETURN BOOLEAN;
+    FUNCTION fnui_validate_line_dates                               RETURN BOOLEAN;
+    FUNCTION fnui_validate_balances                                 RETURN BOOLEAN;
+    FUNCTION fnui_validate_account                                  RETURN BOOLEAN;
+    FUNCTION fnui_validate_chartfield1                         RETURN BOOLEAN; -- AG Custom
+    FUNCTION fnui_validate_periods                                    RETURN BOOLEAN;
+    FUNCTION fnui_check_currencies                                    RETURN BOOLEAN;
+    FUNCTION fnui_get_journal_type                                  RETURN BOOLEAN;
+    FUNCTION fnui_get_entity                                    RETURN BOOLEAN;
+    FUNCTION fnui_get_fak_definitions                               RETURN BOOLEAN;
+    FUNCTION fnui_get_eba_definitions                               RETURN BOOLEAN;
+    FUNCTION fnui_check_month_end_limits                                RETURN BOOLEAN;
+    FUNCTION fnui_validate_segment_n( segment_no IN NUMBER )                      RETURN BOOLEAN;
+    FUNCTION fnui_validate_attribute_n( attribute_no IN NUMBER )                    RETURN BOOLEAN;
+    FUNCTION fnui_requires_authorisation                                RETURN BOOLEAN;
+    FUNCTION fnui_check_copy_journal                                  RETURN BOOLEAN;
+    FUNCTION fnui_check_quick_reversal                                  RETURN BOOLEAN;
+    FUNCTION fnui_check_deletion(journal_id VARCHAR2)                           RETURN BOOLEAN;
+    FUNCTION fnui_check_copy_line(journal_id VARCHAR2, line_number NUMBER)                RETURN BOOLEAN;
+    FUNCTION fnui_check_delete_line(journal_id VARCHAR2, line_number NUMBER)                RETURN BOOLEAN;
+    FUNCTION fnui_check_header_definitions                                RETURN BOOLEAN;
+    FUNCTION fnui_check_line_definitions                                RETURN BOOLEAN;
+    FUNCTION fnui_journal_edit_permission(owner VARCHAR2, editor VARCHAR2)                RETURN BOOLEAN;
+    FUNCTION fnui_does_journal_exist(journal_id VARCHAR2)                         RETURN BOOLEAN;
+    FUNCTION fnui_does_line_exist(journal_id VARCHAR2, line_no NUMBER)                  RETURN BOOLEAN;
+    FUNCTION fnui_merge_header                                      RETURN BOOLEAN;
+    FUNCTION fnui_merge_lines                                     RETURN BOOLEAN;
+    FUNCTION fnui_decode_journal_lines                                  RETURN BOOLEAN;
+    FUNCTION fnui_any_errors(journal_id VARCHAR2)                             RETURN BOOLEAN;
+    FUNCTION fnui_create_copy_journal(original_jrnl_id VARCHAR2)                      RETURN BOOLEAN;
+    FUNCTION fnui_create_reversing_journal(orignal_jrnl_id SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE, reversing_date DATE, entity_proc_group VARCHAR2, status CHAR) RETURN BOOLEAN;
     FUNCTION fnui_check_calendar                                                                RETURN BOOLEAN;
-    FUNCTION fnui_get_reversing_journal( journal_id IN VARCHAR2)					  			    RETURN VARCHAR2;
-    FUNCTION fnui_get_adjustment_journal( journal_id IN VARCHAR2)								    RETURN VARCHAR2;
+    FUNCTION fnui_get_reversing_journal( journal_id IN VARCHAR2)                      RETURN VARCHAR2;
+    FUNCTION fnui_get_adjustment_journal( journal_id IN VARCHAR2)                   RETURN VARCHAR2;
     FUNCTION fnui_check_ent_proc_group_conf                                                     RETURN BOOLEAN;
---    FUNCTION fnui_get_standard_hash_sql (journal_id_list in VARCHAR2) RETURN VARCHAR2;
 
     -- AG custom functions
 	FUNCTION fnui_validate_madj_source    RETURN BOOLEAN;
+    FUNCTION fnui_validate_madj_effective_date RETURN BOOLEAN;
     FUNCTION fnui_validate_acc_event_type RETURN BOOLEAN;
     FUNCTION fnui_validate_ledger         RETURN BOOLEAN;
     PROCEDURE prui_process_param_list(list_string IN VARCHAR2, return_array OUT array_list, array_count OUT NUMBER);
@@ -61,62 +61,63 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     PROCEDURE prui_write_errors_to_database(journal_id VARCHAR2 DEFAULT NULL);
     PROCEDURE prui_update_header_stats(journal_id IN VARCHAR2);
     PROCEDURE prui_reorder_journal_lines(journal_id VARCHAR2);
-    PROCEDURE prui_populate_header( session_id			IN		VARCHAR2,
-                                    journal_id 		 	IN 	   	SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-                                    journal_type		IN 		SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE 			 				DEFAULT NULL,
-                                    entity				IN 		SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE 		 				DEFAULT NULL,
-                                    source_system		IN 		SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE 		 				DEFAULT NULL,
-                                    effective_date		IN 		SLR_JRNL_HEADERS.JH_JRNL_DATE%TYPE 			 				DEFAULT NULL,
-                                    reversing_date 		IN 		DATE DEFAULT NULL, --SLR_JRNL_HEADERS.JH_JRNL_REV_DATE%TYPE 		 			DEFAULT NULL,
-                                    description			IN 		VARCHAR2 	 	   											DEFAULT NULL,
-                                    coding_convention 	IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE 	DEFAULT NULL,
-                                    updated_by			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE							DEFAULT 'SYSTEM',
-                                    overwrite_details	IN		CHAR														DEFAULT 'Y'
-									);
-    PROCEDURE prui_populate_line( session_id		IN VARCHAR2,
-                                  journal_id 		IN SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
-                                  line_number 		IN SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
-                                  account			IN SLR_JRNL_LINES.JL_ACCOUNT%TYPE 			   		 DEFAULT NULL,
-                                  entity			IN SLR_JRNL_LINES.JL_ENTITY%TYPE 			   		 DEFAULT NULL,
-                                  effective_date 	IN SLR_JRNL_LINES.JL_EFFECTIVE_DATE%TYPE 	   		 DEFAULT NULL,
-                                  value_date		IN SLR_JRNL_LINES.JL_VALUE_DATE%TYPE 		   		 DEFAULT NULL,
-                                  segment_1			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_1%TYPE	 DEFAULT NULL,
-                                  segment_2			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_2%TYPE	 DEFAULT NULL,
-                                  segment_3			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_3%TYPE	 DEFAULT NULL,
-                                  segment_4			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_4%TYPE	 DEFAULT NULL,
-                                  segment_5			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_5%TYPE	 DEFAULT NULL,
-                                  segment_6			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_6%TYPE	 DEFAULT NULL,
-                                  segment_7			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_7%TYPE	 DEFAULT NULL,
-                                  segment_8			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_8%TYPE	 DEFAULT NULL,
-                                  segment_9			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_9%TYPE	 DEFAULT NULL,
-                                  segment_10		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_10%TYPE	 DEFAULT NULL,
-                                  attribute_1		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE DEFAULT NULL,
-                                  attribute_2		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE DEFAULT NULL,
-                                  attribute_3		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE DEFAULT NULL,
-                                  attribute_4		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE DEFAULT 'MANUAL_ADJ',
-                                  attribute_5		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE DEFAULT NULL,
-                                  reference_1		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE DEFAULT NULL,
-                                  reference_2		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE DEFAULT NULL,
-                                  reference_3		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_3%TYPE DEFAULT NULL,
-                                  reference_4		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_4%TYPE DEFAULT NULL,
-                                  reference_5		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_5%TYPE DEFAULT NULL,
-                                  reference_6		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_6%TYPE DEFAULT NULL,
-                                  reference_7		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_7%TYPE DEFAULT NULL,
-                                  reference_8		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_8%TYPE DEFAULT NULL,
-                                  reference_9		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_9%TYPE DEFAULT NULL,
-                                  reference_10		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_10%TYPE DEFAULT NULL,
-                                  description		IN VARCHAR2 										 DEFAULT NULL,
-                                  tran_currency		IN SLR_JRNL_LINES.JL_TRAN_CCY%TYPE 			   		 DEFAULT NULL,
-                                  tran_amount		IN SLR_JRNL_LINES.JL_TRAN_AMOUNT%TYPE 		   		 DEFAULT NULL,
-                                  base_currency		IN SLR_JRNL_LINES.JL_BASE_CCY%TYPE 			   		 DEFAULT NULL,
-                                  base_rate			IN SLR_JRNL_LINES.JL_BASE_RATE%TYPE 		   		 DEFAULT NULL,
-                                  base_amount		IN SLR_JRNL_LINES.JL_BASE_AMOUNT%TYPE 		   		 DEFAULT NULL,
-                                  local_currency	IN SLR_JRNL_LINES.JL_LOCAL_CCY%TYPE 		   		 DEFAULT NULL,
-                                  local_rate		IN SLR_JRNL_LINES.JL_LOCAL_RATE%TYPE 		   		 DEFAULT NULL,
-                                  local_amount		IN SLR_JRNL_LINES.JL_LOCAL_AMOUNT%TYPE 		   		 DEFAULT NULL,
-								 -- entity_proc_group IN SLR_JRNL_LINES.JL_EPG_ID%TYPE  	 DEFAULT NULL,
-                                  updated_by		IN SLR_JRNL_LINES.JL_CREATED_BY%TYPE		   		 DEFAULT 'SYSTEM',
-                                  overwrite_details	IN CHAR									   	   		 DEFAULT 'Y'
+    PROCEDURE prui_populate_header( session_id      IN    VARCHAR2,
+                                    journal_id      IN      SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+                                    journal_type    IN    SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE              DEFAULT NULL,
+                                    entity        IN    SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE            DEFAULT NULL,
+                                    source_system   IN    SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE            DEFAULT NULL,
+                                    effective_date    IN    SLR_JRNL_HEADERS.JH_JRNL_DATE%TYPE              DEFAULT NULL,
+                                    reversing_date    IN    DATE DEFAULT NULL, --SLR_JRNL_HEADERS.JH_JRNL_REV_DATE%TYPE           DEFAULT NULL,
+                                    description     IN    VARCHAR2                            DEFAULT NULL,
+                                    coding_convention   IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE   DEFAULT NULL,
+                                    updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE             DEFAULT 'SYSTEM',
+                                    overwrite_details IN    CHAR                            DEFAULT 'Y',
+                                    department_id   IN SLR_JRNL_HEADERS_UNPOSTED.JHU_DEPARTMENT_ID%TYPE DEFAULT 'DEFAULT'
+                  );
+    PROCEDURE prui_populate_line( session_id    IN VARCHAR2,
+                                  journal_id    IN SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+                                  line_number     IN SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+                                  account     IN SLR_JRNL_LINES.JL_ACCOUNT%TYPE              DEFAULT NULL,
+                                  entity      IN SLR_JRNL_LINES.JL_ENTITY%TYPE             DEFAULT NULL,
+                                  effective_date  IN SLR_JRNL_LINES.JL_EFFECTIVE_DATE%TYPE         DEFAULT NULL,
+                                  value_date    IN SLR_JRNL_LINES.JL_VALUE_DATE%TYPE           DEFAULT NULL,
+                                  segment_1     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_1%TYPE   DEFAULT NULL,
+                                  segment_2     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_2%TYPE   DEFAULT NULL,
+                                  segment_3     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_3%TYPE   DEFAULT NULL,
+                                  segment_4     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_4%TYPE   DEFAULT NULL,
+                                  segment_5     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_5%TYPE   DEFAULT NULL,
+                                  segment_6     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_6%TYPE   DEFAULT NULL,
+                                  segment_7     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_7%TYPE   DEFAULT NULL,
+                                  segment_8     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_8%TYPE   DEFAULT NULL,
+                                  segment_9     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_9%TYPE   DEFAULT NULL,
+                                  segment_10    IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_10%TYPE  DEFAULT NULL,
+                                  attribute_1   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE DEFAULT NULL,
+                                  attribute_2   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE DEFAULT NULL,
+                                  attribute_3   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE DEFAULT NULL,
+                                  attribute_4   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE DEFAULT 'MANUAL_ADJ', -- AG Custom
+                                  attribute_5   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE DEFAULT NULL,
+                                  reference_1   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE DEFAULT NULL,
+                                  reference_2   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE DEFAULT NULL,
+                                  reference_3   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_3%TYPE DEFAULT NULL,
+                                  reference_4   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_4%TYPE DEFAULT NULL,
+                                  reference_5   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_5%TYPE DEFAULT NULL,
+                                  reference_6   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_6%TYPE DEFAULT NULL,
+                                  reference_7   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_7%TYPE DEFAULT NULL,
+                                  reference_8   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_8%TYPE DEFAULT NULL,
+                                  reference_9   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_9%TYPE DEFAULT NULL,
+                                  reference_10    IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_10%TYPE DEFAULT NULL,
+                                  description   IN VARCHAR2                      DEFAULT NULL,
+                                  tran_currency   IN SLR_JRNL_LINES.JL_TRAN_CCY%TYPE             DEFAULT NULL,
+                                  tran_amount   IN SLR_JRNL_LINES.JL_TRAN_AMOUNT%TYPE            DEFAULT NULL,
+                                  base_currency   IN SLR_JRNL_LINES.JL_BASE_CCY%TYPE             DEFAULT NULL,
+                                  base_rate     IN SLR_JRNL_LINES.JL_BASE_RATE%TYPE            DEFAULT NULL,
+                                  base_amount   IN SLR_JRNL_LINES.JL_BASE_AMOUNT%TYPE            DEFAULT NULL,
+                                  local_currency  IN SLR_JRNL_LINES.JL_LOCAL_CCY%TYPE            DEFAULT NULL,
+                                  local_rate    IN SLR_JRNL_LINES.JL_LOCAL_RATE%TYPE           DEFAULT NULL,
+                                  local_amount    IN SLR_JRNL_LINES.JL_LOCAL_AMOUNT%TYPE           DEFAULT NULL,
+                 -- entity_proc_group IN SLR_JRNL_LINES.JL_EPG_ID%TYPE     DEFAULT NULL,
+                                  updated_by    IN SLR_JRNL_LINES.JL_CREATED_BY%TYPE           DEFAULT 'SYSTEM',
+                                  overwrite_details IN CHAR                            DEFAULT 'Y'
                                   );
 
     PROCEDURE prui_clear_errors( journal_id  IN SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
@@ -124,10 +125,10 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     FUNCTION fGetEntityProcGroup( pJrnlHdrID          in SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
                                   session_id          in VARCHAR2
-                                 ) 	RETURN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
+                                 )  RETURN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
                                  FUNCTION fnui_validate_jrnl_type                                                  RETURN BOOLEAN;
 
-    PROCEDURE prui_increment_journal_version(journal_id IN VARCHAR2, updated_by IN SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE	);
+    PROCEDURE prui_increment_journal_version(journal_id IN VARCHAR2, updated_by IN SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE  );
     PROCEDURE prui_calculate_journal_rates(journal_id IN VARCHAR2);
     PROCEDURE prui_add_jrnl_to_posting_queue(journal_id IN VARCHAR2, epg_id IN VARCHAR2,jrnl_num_of_lines IN NUMBER);
     PROCEDURE prui_create_reversing_journal(epg_id IN VARCHAR2,journal_id_list IN VARCHAR2,process_id NUMBER, status in char);
@@ -139,10 +140,12 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     PROCEDURE prui_check_journal_version(journal_id IN VARCHAR2, journal_version IN NUMBER);
     PROCEDURE prui_log_posting_error(epg_id IN VARCHAR2,journal_id_list IN VARCHAR2, error_message IN VARCHAR2);
 
+    -- AG custom procedure
     PROCEDURE pCombinationCheck_GJLU (
       pinEPGID       IN slr.slr_entity_proc_group.epg_id%TYPE,
       pinProcessID   IN slr.slr_job_statistics.js_process_id%TYPE,
       pinStatus      IN CHAR);
+    -- AG custom procedure
     PROCEDURE pProcessEliminations (journal_id_list   IN     VARCHAR2,
                                     success              OUT CHAR,
                                     lv_header_id_list IN OUT VARCHAR2 );
@@ -155,64 +158,64 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     Declare private global variables
     ******************************************************************************************/
 
-    gJournalHeader 		SLR_JRNL_HEADERS_UNPOSTED%ROWTYPE;
-    gSessionId	   		TEMP_GUI_JRNL_LINES_UNPOSTED.USER_SESSION_ID%TYPE := NULL;
-    gJournalLineNumber	NUMBER(12) := -1;
+    gJournalHeader    SLR_JRNL_HEADERS_UNPOSTED%ROWTYPE;
+    gSessionId        TEMP_GUI_JRNL_LINES_UNPOSTED.USER_SESSION_ID%TYPE := NULL;
+    gJournalLineNumber  NUMBER(12) := -1;
 
     gBulkSubmission boolean := false;
 
-    gFAKDefinitions 				SLR_FAK_DEFINITIONS%ROWTYPE;
-    gEBADefinitions 				SLR_EBA_DEFINITIONS%ROWTYPE;
-    gEntityConfiguration 			SLR_ENTITIES%ROWTYPE;
-    gJournalType   					UIV_JOURNAL_TYPES%ROWTYPE;
+    gFAKDefinitions         SLR_FAK_DEFINITIONS%ROWTYPE;
+    gEBADefinitions         SLR_EBA_DEFINITIONS%ROWTYPE;
+    gEntityConfiguration      SLR_ENTITIES%ROWTYPE;
+    gJournalType            UIV_JOURNAL_TYPES%ROWTYPE;
 
     -- Sub Ledger setting
     gvSubLedgerGenLastBalForBD       BOOLEAN := FALSE;
 
     -- Journal Status Constants
-    gSTATUS_MANUAL 			   		CHAR(1)   	 		 := 'M';
-    gSTATUS_ERROR			   		CHAR(1)   	 		 := 'I';
-    gSTATUS_AUTHORISE				CHAR(1)   	 		 := 'R';
-    gSTATUS_REJECT					CHAR(1)				 := 'F';
-    gSTATUS_POSTED					CHAR(1)   	 		 := 'P';
-    gSTATUS_UNPOSTED				CHAR(1)   	 		 := 'U';
-    gSTATUS_WAITING					CHAR(1)   	 		 := 'W'; -- waiting status mark MADJ journals which are unposted and are waiting for the date when should be posted in batch
-    gSTATUS_VALIDATED				CHAR(1)	  	 		 := 'V'; -- Validated in the new Sub Leder version means journals from MADJ to be posted from GUI
-    gSTATUS_VALIDATING				CHAR(1)	  	 		 := 'v';
+    gSTATUS_MANUAL            CHAR(1)          := 'M';
+    gSTATUS_ERROR           CHAR(1)          := 'I';
+    gSTATUS_AUTHORISE       CHAR(1)          := 'R';
+    gSTATUS_REJECT          CHAR(1)        := 'F';
+    gSTATUS_POSTED          CHAR(1)          := 'P';
+    gSTATUS_UNPOSTED        CHAR(1)          := 'U';
+    gSTATUS_WAITING         CHAR(1)          := 'W'; -- waiting status mark MADJ journals which are unposted and are waiting for the date when should be posted in batch
+    gSTATUS_VALIDATED       CHAR(1)          := 'V'; -- Validated in the new Sub Leder version means journals from MADJ to be posted from GUI
+    gSTATUS_VALIDATING        CHAR(1)          := 'v';
     gSTATUS_CRITICAL                CHAR(1)              := 'X';
     gSTATUS_QUEUED_FOR_POSTING  CHAR(1) := 'Q';
 
-    gSTATE_CRITICAL					CHAR(1)				 := 'C';
-    gSTATE_ERRORED					CHAR(1)				 := 'I';
-    gSTATE_OK						CHAR(1)				 :=	'P';
+    gSTATE_CRITICAL         CHAR(1)        := 'C';
+    gSTATE_ERRORED          CHAR(1)        := 'I';
+    gSTATE_OK           CHAR(1)        := 'P';
 
-    gCLIENT_STATIC					VARCHAR2(20)		 := 'CLIENT STATIC';
+    gCLIENT_STATIC          VARCHAR2(20)     := 'CLIENT STATIC';
 
     -- Journal Type Constants
-    gJOURNAL_TYPE_PERC		 		VARCHAR2(10) 		 := 'PERC'; --'PERC';
-    gJOURNAL_TYPE_PERB		 		VARCHAR2(10) 		 := 'PERB'; --'PERB';
-    gJOURNAL_TYPE_PERF		 		VARCHAR2(10) 		 := 'PERM'; --'PERF';
-    gJOURNAL_TYPE_DREV		 		VARCHAR2(10) 		 := 'DREV'; --'DREV';
-    gJOURNAL_TYPE_MPERC		 		VARCHAR2(10) 		 := 'MADJPERC'; --'MPREC';
-    gJOURNAL_TYPE_MPERB		 		VARCHAR2(10) 		 := 'MADJPERB'; --'MPERB';
-    gJOURNAL_TYPE_MPERF		 		VARCHAR2(10) 		 := 'MADJPERM'; --'MPERF';
-    gJOURNAL_TYPE_MPERL		 		VARCHAR2(10) 		 := 'MADJPERL'; --'MPERL';
-    gJOURNAL_TYPE_MDREV		 		VARCHAR2(10) 		 := 'MADJDREV'; --'MDREV';
-    gJOURNAL_TYPE_MMREV		 		VARCHAR2(10) 		 := 'MADJMREV'; --'MMREV';
-    gJOURNAL_TYPE_MDAYR				VARCHAR2(10)		 := 'MADJDAYR'; --'MDAYR';
-    gJOURNAL_TYPE_BDAT				VARCHAR2(10)		 := 'MADJBDAT';
+    gJOURNAL_TYPE_PERC        VARCHAR2(10)     := 'PERC'; --'PERC';
+    gJOURNAL_TYPE_PERB        VARCHAR2(10)     := 'PERB'; --'PERB';
+    gJOURNAL_TYPE_PERF        VARCHAR2(10)     := 'PERM'; --'PERF';
+    gJOURNAL_TYPE_DREV        VARCHAR2(10)     := 'DREV'; --'DREV';
+    gJOURNAL_TYPE_MPERC       VARCHAR2(10)     := 'MADJPERC'; --'MPREC';
+    gJOURNAL_TYPE_MPERB       VARCHAR2(10)     := 'MADJPERB'; --'MPERB';
+    gJOURNAL_TYPE_MPERF       VARCHAR2(10)     := 'MADJPERM'; --'MPERF';
+    gJOURNAL_TYPE_MPERL       VARCHAR2(10)     := 'MADJPERL'; --'MPERL';
+    gJOURNAL_TYPE_MDREV       VARCHAR2(10)     := 'MADJDREV'; --'MDREV';
+    gJOURNAL_TYPE_MMREV       VARCHAR2(10)     := 'MADJMREV'; --'MMREV';
+    gJOURNAL_TYPE_MDAYR       VARCHAR2(10)     := 'MADJDAYR'; --'MDAYR';
+    gJOURNAL_TYPE_BDAT        VARCHAR2(10)     := 'MADJBDAT';
     gJOURNAL_TYPE_BDME              VARCHAR2(10)         := 'MADJBDME'; -- Perm Back Dated Prev Month End
     gJOURNAL_TYPE_BDPD              VARCHAR2(10)         := 'MADJBDPD'; -- Perm Back Dated Prev Day
     gJOURNAL_TYPE_BREV              VARCHAR2(10)         := 'MADJBREV'; -- Reversing Back Dated Prev Day
 
-	-- TTP 775
+  -- TTP 775
     gJOURNAL_TYPE_BDBD              VARCHAR2(10)         := 'MADJBDBD'; -- Perm Back Dated prior to (SLR) next business day (by Effective date)
     gJOURNAL_TYPE_BDBR              VARCHAR2(10)         := 'MADJBDBR'; -- Reversing Back Dated prior to (SLR) next business day (by Effective date)
     gJOURNAL_TYPE_MDRV              VARCHAR2(10)         := 'MADJMDRV'; -- Reversing Daily Reversing (by Effective date)
 
-    gPackageName					VARCHAR2(32)		 := 'pgui_manual_journal';
+    gPackageName          VARCHAR2(32)     := 'pgui_manual_journal';
 
-    gJrnlEntityProcGroup			VARCHAR2(60)		 := NULL;
+    gJrnlEntityProcGroup      VARCHAR2(60)     := NULL;
     gJournalVersion number(5,0) := null;
 
     journal_locked_exeption exception;
@@ -226,30 +229,30 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     -- For use with R2 code base
     PROCEDURE prui_search_headers(
-        journal_id			IN		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        journal_type		IN		SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE,
-        entity				IN		SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE,
-        source_system		IN		SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE,
-        effective_date		IN		VARCHAR2,
-        reversing_date		IN		VARCHAR2,
-        description			IN		SLR_JRNL_HEADERS.JH_JRNL_DESCRIPTION%TYPE,
-        created_by			IN		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
-        created_on			IN		VARCHAR2,
-        updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
-        updated_on			IN		VARCHAR2,
-        posted_by			IN		SLR_JRNL_HEADERS.JH_JRNL_POSTED_BY%TYPE,
-        posted_on			IN		VARCHAR2,
-        authorised_by		IN		SLR_JRNL_HEADERS.JH_JRNL_AUTHORISED_BY%TYPE,
-        authorised_on		IN		VARCHAR2,
-        entity_list			IN		VARCHAR2,
-        user_id				IN		VARCHAR2,
-        resultset			OUT		global_ref_cursor)
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        journal_type    IN    SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE,
+        entity        IN    SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE,
+        source_system   IN    SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE,
+        effective_date    IN    VARCHAR2,
+        reversing_date    IN    VARCHAR2,
+        description     IN    SLR_JRNL_HEADERS.JH_JRNL_DESCRIPTION%TYPE,
+        created_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        created_on      IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        updated_on      IN    VARCHAR2,
+        posted_by     IN    SLR_JRNL_HEADERS.JH_JRNL_POSTED_BY%TYPE,
+        posted_on     IN    VARCHAR2,
+        authorised_by   IN    SLR_JRNL_HEADERS.JH_JRNL_AUTHORISED_BY%TYPE,
+        authorised_on   IN    VARCHAR2,
+        entity_list     IN    VARCHAR2,
+        user_id       IN    VARCHAR2,
+        resultset     OUT   global_ref_cursor)
     IS
 
-        lv_sql_statement 	VARCHAR2(32000);
-        lv_head_prefix 		VARCHAR2(10);
-        lv_line_prefix		VARCHAR2(10);
-        lv_max_no_rows		NUMBER;
+        lv_sql_statement  VARCHAR2(32000);
+        lv_head_prefix    VARCHAR2(10);
+        lv_line_prefix    VARCHAR2(10);
+        lv_max_no_rows    NUMBER;
 
     BEGIN
 
@@ -277,6 +280,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 ||lv_head_prefix||'_jrnl_date,'
                 ||lv_head_prefix||'_jrnl_rev_date, '
                 ||lv_head_prefix||'_created_by,'
+                ||lv_head_prefix||'_department_id,'
                 ||lv_head_prefix||'_created_on,'
                 ||lv_head_prefix||'_amended_by,'
                 ||lv_head_prefix||'_amended_on,'
@@ -319,21 +323,21 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 ||lv_head_prefix||'_jrnl_id = '||lv_line_prefix||'_jrnl_hdr_id(+) '
                 ||'AND '||lv_head_prefix||'_jrnl_entity IN ('''||REPLACE(entity_list, ',', ''',''')||''') '
                 ||'AND '||lv_head_prefix||'_created_by IN ' -- Restrict user to view journals in their groups or sub-groups
-                ||'(	SELECT child.mmg_user_id '
-                ||'		FROM   ui_meta_user_groups child '
-                ||'			   		INNER JOIN ui_meta_user_groups parent '
-                ||'						  ON child.mmg_group_id = parent.mmg_group_id '
-                ||'		WHERE  child.mmg_user_id = sjhu.jhu_created_by '
-                ||'		AND	   parent.mmg_user_id = '''||user_id||''' '
-                ||'		UNION '
-                ||'		SELECT child.mmg_user_id '
-                ||'		FROM   ui_meta_group_hierarchy '
-                ||'					INNER JOIN ui_meta_user_groups parent '
-                ||'						  ON mgh_parent_id = parent.mmg_group_id '
-                ||'					INNER JOIN ui_meta_user_groups child '
-                ||'						  ON mgh_child_id = child.mmg_group_id '
-                ||'		WHERE  child.mmg_user_id = sjhu.jhu_created_by '
-                ||'		AND	   parent.mmg_user_id = '''||user_id||''' ) ';
+                ||'(  SELECT child.mmg_user_id '
+                ||'   FROM   ui_meta_user_groups child '
+                ||'           INNER JOIN ui_meta_user_groups parent '
+                ||'             ON child.mmg_group_id = parent.mmg_group_id '
+                ||'   WHERE  child.mmg_user_id = sjhu.jhu_created_by '
+                ||'   AND    parent.mmg_user_id = '''||user_id||''' '
+                ||'   UNION '
+                ||'   SELECT child.mmg_user_id '
+                ||'   FROM   ui_meta_group_hierarchy '
+                ||'         INNER JOIN ui_meta_user_groups parent '
+                ||'             ON mgh_parent_id = parent.mmg_group_id '
+                ||'         INNER JOIN ui_meta_user_groups child '
+                ||'             ON mgh_child_id = child.mmg_group_id '
+                ||'   WHERE  child.mmg_user_id = sjhu.jhu_created_by '
+                ||'   AND    parent.mmg_user_id = '''||user_id||''' ) ';
 
         -- build dynamic list
         IF journal_id IS NOT NULL THEN
@@ -435,8 +439,8 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     -- For use with R2 code base
     PROCEDURE prui_get_header(
-        journal_id 			IN OUT 	SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        resultset 			OUT 	global_ref_cursor )
+        journal_id      IN OUT  SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        resultset       OUT   global_ref_cursor )
     IS
       jrnl_id SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE;
     BEGIN
@@ -547,9 +551,9 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     -- For use with R2 code base
     PROCEDURE prui_get_lines (
-        journal_id 			IN OUT 	SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        coding_convention	IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
-        resultset			OUT 	global_ref_cursor )
+        journal_id      IN OUT  SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        coding_convention IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
+        resultset     OUT   global_ref_cursor )
     IS
     BEGIN
 
@@ -626,10 +630,10 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     -- For use with R2 code base
     PROCEDURE prui_get_line(
-        journal_id			IN OUT 	SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
-        line_no				IN OUT 	SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
-        coding_convention	IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
-        resultset			OUT 	global_ref_cursor )
+        journal_id      IN OUT  SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        line_no       IN OUT  SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+        coding_convention IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
+        resultset     OUT   global_ref_cursor )
     IS
     BEGIN
 
@@ -736,22 +740,23 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     --********************************************************************************
 
     PROCEDURE prui_upsert_header(
-        session_id			IN		VARCHAR2,
-        journal_id 			IN  	SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        journal_type		IN 		SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE,
-        entity				IN 		SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE,
-        source_system		IN 		SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE,
-        effective_date		IN 		VARCHAR2,
-        reversing_date 		IN 		VARCHAR2,
-        description			IN 		VARCHAR2,
-        coding_convention 	IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
-        updated_by			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
-        no_validate			IN		CHAR DEFAULT 'N', -- use 'Y' for bulk upload
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        journal_type    IN    SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE,
+        entity        IN    SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE,
+        source_system   IN    SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE,
+        effective_date    IN    VARCHAR2,
+        reversing_date    IN    VARCHAR2,
+        description     IN    VARCHAR2,
+        coding_convention   IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        no_validate     IN    CHAR DEFAULT 'N', -- use 'Y' for bulk upload
         status              IN      CHAR DEFAULT NULL,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        journal_id_out		OUT		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        department_id in SLR_JRNL_HEADERS_UNPOSTED.JHU_DEPARTMENT_ID%TYPE,
+        journal_id_out    OUT   SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         journal_version_out out gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT VARCHAR2)
+        success       OUT VARCHAR2)
     IS
        lvValidateState CHAR(1);
 
@@ -795,14 +800,14 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
          END IF;
 
 
-         prui_populate_header( session_id, journal_id, journal_type, entity, source_system,
+         prui_populate_header( session_id, journal_id,  journal_type, entity, source_system,
                                TO_DATE(effective_date, 'dd-mm-yyyy hh24:mi:ss'), TO_DATE(reversing_date, 'dd-mm-yyyy hh24:mi:ss'),
-                               description, coding_convention, updated_by );
+                               description, coding_convention, updated_by, 'Y', department_id );
 
          journal_id_out := gJournalHeader.jhu_jrnl_id;
 
-         IF NOT fnui_resync_journal_lines THEN
-            prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1090, 'Failed to synchronise Journal reference data in lines');
+         IF NOT fnui_resync_journal_lines(TRUE) THEN
+            prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1090, 'Failed to synchronise Journal reference data in temp lines');
             success := 'F';
             journal_version_out := gJournalVersion;
             RETURN;
@@ -820,6 +825,13 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
              IF lvValidateState IN (gSTATE_OK, gSTATE_ERRORED) THEN
                  IF NOT fnui_merge_header THEN
                     success := 'F';
+				 ELSE
+					 IF NOT fnui_resync_journal_lines(FALSE) THEN
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1090, 'Failed to synchronise Journal reference data in lines');
+						success := 'F';
+						journal_version_out := gJournalVersion;
+						RETURN;
+					 END IF;
                  END IF;
                  journal_id_out := gJournalHeader.jhu_jrnl_id;
              END IF;
@@ -850,55 +862,55 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     --********************************************************************************
 
     PROCEDURE prui_upsert_line(
-        session_id			IN		VARCHAR2,
-        journal_id			IN 		SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
-        line_number			IN 		SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
-        description			IN 		VARCHAR2,
-        account				IN 		SLR_JRNL_LINES.JL_ACCOUNT%TYPE,
-        entity				IN 		SLR_JRNL_LINES.JL_ENTITY%TYPE,
-        effective_date		IN 		VARCHAR2,
-        value_date			IN 		VARCHAR2,
-        segment_1			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_1%TYPE,
-        segment_2			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_2%TYPE,
-        segment_3			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_3%TYPE,
-        segment_4			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_4%TYPE,
-        segment_5			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_5%TYPE,
-        segment_6			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_6%TYPE,
-        segment_7			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_7%TYPE,
-        segment_8			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_8%TYPE,
-        segment_9			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_9%TYPE,
-        segment_10			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_10%TYPE,
-        attribute_1			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE,
-        attribute_2			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE,
-        attribute_3			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE,
-        attribute_4			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE,
-        attribute_5			IN 		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE,
-        reference_1			IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE,
-        reference_2			IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE,
-        reference_3			IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_3%TYPE,
-        reference_4			IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_4%TYPE,
-        reference_5			IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_5%TYPE,
-        reference_6			IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_6%TYPE,
-        reference_7			IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_7%TYPE,
-        reference_8			IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_8%TYPE,
-        reference_9			IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_9%TYPE,
-        reference_10		IN		TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_10%TYPE,
-        tran_currency		IN 		SLR_JRNL_LINES.JL_TRAN_CCY%TYPE,
-        tran_amount			IN 		SLR_JRNL_LINES.JL_TRAN_AMOUNT%TYPE,
-        base_currency		IN 		SLR_JRNL_LINES.JL_BASE_CCY%TYPE,
-        base_rate			IN 		SLR_JRNL_LINES.JL_BASE_RATE%TYPE,
-        base_amount			IN 		SLR_JRNL_LINES.JL_BASE_AMOUNT%TYPE,
-        local_currency		IN 		SLR_JRNL_LINES.JL_LOCAL_CCY%TYPE,
-        local_rate			IN 		SLR_JRNL_LINES.JL_LOCAL_RATE%TYPE,
-        local_amount		IN 		SLR_JRNL_LINES.JL_LOCAL_AMOUNT%TYPE,
-        updated_by			IN 		SLR_JRNL_LINES.JL_CREATED_BY%TYPE,
-        no_validate			IN		CHAR DEFAULT 'N', -- use 'Y' for bulk upload
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        line_number     IN    SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+        description     IN    VARCHAR2,
+        account       IN    SLR_JRNL_LINES.JL_ACCOUNT%TYPE,
+        entity        IN    SLR_JRNL_LINES.JL_ENTITY%TYPE,
+        effective_date    IN    VARCHAR2,
+        value_date      IN    VARCHAR2,
+        segment_1     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_1%TYPE,
+        segment_2     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_2%TYPE,
+        segment_3     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_3%TYPE,
+        segment_4     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_4%TYPE,
+        segment_5     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_5%TYPE,
+        segment_6     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_6%TYPE,
+        segment_7     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_7%TYPE,
+        segment_8     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_8%TYPE,
+        segment_9     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_9%TYPE,
+        segment_10      IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_10%TYPE,
+        attribute_1     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE,
+        attribute_2     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE,
+        attribute_3     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE,
+        attribute_4     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE,
+        attribute_5     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE,
+        reference_1     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE,
+        reference_2     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE,
+        reference_3     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_3%TYPE,
+        reference_4     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_4%TYPE,
+        reference_5     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_5%TYPE,
+        reference_6     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_6%TYPE,
+        reference_7     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_7%TYPE,
+        reference_8     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_8%TYPE,
+        reference_9     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_9%TYPE,
+        reference_10    IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_10%TYPE,
+        tran_currency   IN    SLR_JRNL_LINES.JL_TRAN_CCY%TYPE,
+        tran_amount     IN    SLR_JRNL_LINES.JL_TRAN_AMOUNT%TYPE,
+        base_currency   IN    SLR_JRNL_LINES.JL_BASE_CCY%TYPE,
+        base_rate     IN    SLR_JRNL_LINES.JL_BASE_RATE%TYPE,
+        base_amount     IN    SLR_JRNL_LINES.JL_BASE_AMOUNT%TYPE,
+        local_currency    IN    SLR_JRNL_LINES.JL_LOCAL_CCY%TYPE,
+        local_rate      IN    SLR_JRNL_LINES.JL_LOCAL_RATE%TYPE,
+        local_amount    IN    SLR_JRNL_LINES.JL_LOCAL_AMOUNT%TYPE,
+        updated_by      IN    SLR_JRNL_LINES.JL_CREATED_BY%TYPE,
+        no_validate     IN    CHAR DEFAULT 'N', -- use 'Y' for bulk upload
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        journal_line_out	OUT		NUMBER,
+        journal_line_out  OUT   NUMBER,
         journal_version_out out gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT VARCHAR2 )
+        success       OUT VARCHAR2 )
     IS
-       lvValidateState 	CHAR(1);
+       lvValidateState  CHAR(1);
     BEGIN
 
          success := 'S';
@@ -986,6 +998,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
              -- Update header balances, etc.
              prui_update_header_stats(journal_id);
 
+
              COMMIT;
 
          END IF;
@@ -1008,11 +1021,11 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     -- Need to use prui_upsert_header / prui_upsert_line
     PROCEDURE prui_bulk_submission(
-        session_id			IN		VARCHAR2,
-        journal_id			IN		SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
-        updated_by			IN		SLR_JRNL_LINES.JL_AMENDED_BY%TYPE,
-        journal_id_out		OUT		VARCHAR2,
-        success				OUT VARCHAR2 )
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        updated_by      IN    SLR_JRNL_LINES.JL_AMENDED_BY%TYPE,
+        journal_id_out    OUT   VARCHAR2,
+        success       OUT VARCHAR2 )
     IS
         lvValidateState CHAR(1);
     BEGIN
@@ -1051,11 +1064,12 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                   jhu_jrnl_pref_static_src,
                   jhu_jrnl_ref_id,
                   jhu_jrnl_rev_date,
-                  'Y'
+                  'Y',
+                  jhu_department_id
            INTO   gJournalHeader
            FROM   temp_gui_jrnl_headers_unposted
            WHERE  jhu_jrnl_id = NVL(journal_id, '-1')
-           AND	  user_session_id = session_id;
+           AND    user_session_id = session_id;
          EXCEPTION
             WHEN OTHERS THEN
                 pr_error(1, SQLERRM, 0, 'prui_bulk_submission', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -1117,14 +1131,28 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     --********************************************************************************
 
-    PROCEDURE prui_delete_journal(
-        session_id			IN		VARCHAR2,
-        journal_id			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        updated_by 			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
-        journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
-        success				  OUT VARCHAR2)
+    PROCEDURE prui_delete_all_attachments(
+        journal_id      IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE
+    )
     IS
+    BEGIN
 
+      DELETE FROM GUI_JRNL_FILE WHERE JF_JRNL_HDR_ID = journal_id;
+
+      EXCEPTION
+        WHEN others THEN
+          pr_error(1, 'Unable to delete Journal Attachments of journal '||journal_id, 0, 'prui_delete_all_attachments', 'gui_jrnl_file', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    end prui_delete_all_attachments;
+
+    --********************************************************************************
+
+    PROCEDURE prui_delete_journal(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
+        success         OUT VARCHAR2)
+    IS
     BEGIN
 
          success := 'S';
@@ -1162,12 +1190,10 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
             raise;
          end;
 
-
           -- Delete journal (if action valid)
          IF fnui_check_deletion(journal_id) THEN
 
             BEGIN
-
                  SAVEPOINT prui_delete_journal;
 
                  -- Delete all lines
@@ -1184,6 +1210,9 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                  -- Execute any custom processes
                  pgui_jrnl_custom.prui_delete_journal(journal_id);
 
+                 --delete attachments/journal files first
+                 prui_delete_all_attachments(journal_id);
+
             EXCEPTION
                 WHEN OTHERS THEN
                     ROLLBACK TO SAVEPOINT prui_delete_journal;
@@ -1191,11 +1220,8 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     pr_error(1, SQLERRM, 0, 'prui_delete_journal', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                     success := 'F';
             END;
-
          ELSE
-
              success := 'F';
-
          END IF;
 
          -- Persist errors in database
@@ -1218,15 +1244,15 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     --********************************************************************************
 
     PROCEDURE prui_delete_journals(
-    session_id			IN		VARCHAR2,
-    journal_id_list		IN 		VARCHAR2,
-    updated_by 			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+    session_id      IN    VARCHAR2,
+    journal_id_list   IN    VARCHAR2,
+    updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
     success             OUT VARCHAR2,
     failed_jrnl_list    OUT     VARCHAR2 )
     IS
-       journal_list  			array_list := array_list();
-       list_count 	 			NUMBER(12);
-       loop_count 	 			NUMBER(12);
+       journal_list       array_list := array_list();
+       list_count         NUMBER(12);
+       loop_count         NUMBER(12);
        journal_list_in_error    VARCHAR2(32700) := null;
        lv_success CHAR(1);
        lv_failed_count NUMBER(5) := 0;
@@ -1279,18 +1305,18 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     --********************************************************************************
 
     PROCEDURE prui_delete_lines(
-        session_id			IN		VARCHAR2,
-        journal_id 			IN		SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
-        line_number_list 	IN 		VARCHAR2,
-        updated_by			IN 		SLR_JRNL_LINES.JL_CREATED_BY%TYPE,
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        line_number_list  IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_LINES.JL_CREATED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT VARCHAR2 )
+        success       OUT VARCHAR2 )
     IS
-       line_no 	   	   NUMBER;
-       line_list   	   array_list := array_list();
-       line_count  	   NUMBER(12);
-       loop_count  	   NUMBER(12);
-       lvSavePoint 	   VARCHAR2(20);
+       line_no         NUMBER;
+       line_list       array_list := array_list();
+       line_count      NUMBER(12);
+       loop_count      NUMBER(12);
+       lvSavePoint     VARCHAR2(20);
        lvValidateState CHAR(1);
     BEGIN
 
@@ -1350,11 +1376,11 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     -- Delete line
                     DELETE FROM gui_jrnl_lines_unposted
                     WHERE jlu_jrnl_hdr_id = journal_id
-                    AND	  jlu_jrnl_line_number = line_list(loop_count);
+                    AND   jlu_jrnl_line_number = line_list(loop_count);
 
                     DELETE FROM temp_gui_jrnl_lines_unposted
                     WHERE jlu_jrnl_hdr_id = journal_id
-                    AND	  jlu_jrnl_line_number = line_list(loop_count)
+                    AND   jlu_jrnl_line_number = line_list(loop_count)
                     and   user_session_id = gSessionId;
 
                 EXCEPTION
@@ -1415,12 +1441,12 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     --********************************************************************************
 
     PROCEDURE prui_reverse_journal(
-        session_id			IN		VARCHAR2,
-        journal_id 			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        reversing_date		IN 		VARCHAR2,
-        updated_by			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
-        new_jrnl_id			OUT 	SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        success				OUT VARCHAR2 )
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        reversing_date    IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        new_jrnl_id     OUT   SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        success       OUT VARCHAR2 )
     IS
     BEGIN
 
@@ -1501,10 +1527,10 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     --********************************************************************************
 
     PROCEDURE prui_post_journals(
-        session_id			IN		VARCHAR2,
-        journal_id_list		IN 		VARCHAR2,
-        updated_by 			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
-        success				OUT VARCHAR2,
+        session_id      IN    VARCHAR2,
+        journal_id_list   IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        success       OUT VARCHAR2,
         failed_jrnl_list    OUT     VARCHAR2)
     IS
        journal_list             array_list := array_list();
@@ -1564,13 +1590,13 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     --********************************************************************************
 
     PROCEDURE prui_post_journal(
-        session_id			IN		VARCHAR2,
-        journal_id			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT VARCHAR2)
+        success       OUT VARCHAR2)
     IS
-        vEntityProcGroupName	VARCHAR2(20);
+        vEntityProcGroupName  VARCHAR2(20);
         lvValidateState CHAR(1);
         lvReversingDate DATE;
         v_jrnl_num_of_lines number(10,0);
@@ -1591,7 +1617,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
        gJournalVersion := journal_version;
 
 		  begin
-		  -- Combo Edit Check
+		  -- Combo Edit Check  AG Custom
           pCombinationCheck_GJLU ('AG',1, 'M');
 
           /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
@@ -1619,9 +1645,9 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
 
       SELECT JHU_EPG_ID, jhu_jrnl_total_lines
-	  INTO vEntityProcGroupName, v_jrnl_num_of_lines
-	  FROM gui_JRNL_HEADERS_UNPOSTED
-	  WHERE JHU_JRNL_ID = journal_id;
+    INTO vEntityProcGroupName, v_jrnl_num_of_lines
+    FROM gui_JRNL_HEADERS_UNPOSTED
+    WHERE JHU_JRNL_ID = journal_id;
 
 
       prui_populate_header( session_id => session_id, journal_id => journal_id, overwrite_details => 'N' );
@@ -1630,7 +1656,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
          -- Validate journal use gui core validation
       /* do not validate as it's redundant with upsert header
-	  BEGIN
+    BEGIN
 
         lvValidateState := fnui_validate_journal_header;
         IF lvValidateState not IN (gSTATE_OK) THEN
@@ -1644,13 +1670,13 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
               success := 'F';
       END; */
 
-		 if not fnui_get_journal_type then
-			success := 'F';
-		 end IF;
+     if not fnui_get_journal_type then
+      success := 'F';
+     end IF;
 
-		 IF NOT fnui_get_entity	 THEN
-			success := 'F';
-		 END IF;
+     IF NOT fnui_get_entity  THEN
+      success := 'F';
+     END IF;
 
           -- Exit if errors
          IF (success = 'F' or fnui_any_errors(journal_id )) THEN
@@ -1672,12 +1698,12 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
          prui_calculate_journal_rates(journal_id);
 
            -- Update audit section
-	         UPDATE gui_jrnl_headers_unposted
-	         SET	jhu_jrnl_validated_by = updated_by,
+           UPDATE gui_jrnl_headers_unposted
+           SET  jhu_jrnl_validated_by = updated_by,
                 jhu_jrnl_validated_on = SYSDATE,
                 jhu_jrnl_posted_by = updated_by,
-	              jhu_jrnl_posted_on = SYSDATE
-	         WHERE	jhu_jrnl_id = journal_id;
+                jhu_jrnl_posted_on = SYSDATE
+           WHERE  jhu_jrnl_id = journal_id;
 
 
 
@@ -1741,14 +1767,14 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     --********************************************************************************
 
     PROCEDURE prui_copy_lines(
-        session_id			IN		VARCHAR2,
-        journal_id			IN		SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
-        line_number_list	IN		VARCHAR2,
-        updated_by			IN		SLR_JRNL_LINES_UNPOSTED.JLU_CREATED_BY%TYPE,
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        line_number_list  IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_LINES_UNPOSTED.JLU_CREATED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT VARCHAR2 )
+        success       OUT VARCHAR2 )
     IS
-       line_no 	  NUMBER;
+       line_no    NUMBER;
        line_list  array_list := array_list();
        line_count NUMBER(12);
        loop_count NUMBER(12);
@@ -1807,10 +1833,10 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 BEGIN
 
                     -- Get next available line in journal
-                    SELECT 	NVL(MAX(jlu_jrnl_line_number)+1,1)
-                    INTO	new_line
-                    FROM	temp_gui_jrnl_lines_unposted
-                    WHERE	jlu_jrnl_hdr_id = journal_id;
+                    SELECT  NVL(MAX(jlu_jrnl_line_number)+1,1)
+                    INTO  new_line
+                    FROM  temp_gui_jrnl_lines_unposted
+                    WHERE jlu_jrnl_hdr_id = journal_id;
 
                     -- Copy line
                     INSERT INTO temp_gui_jrnl_lines_unposted (
@@ -1884,7 +1910,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                               /* jlu_period_ltd */              jlu_period_ltd
                      FROM   gui_jrnl_lines_unposted
                      WHERE  jlu_jrnl_hdr_id = journal_id
-                     AND	jlu_jrnl_line_number = line_list(loop_count);
+                     AND  jlu_jrnl_line_number = line_list(loop_count);
 
                 EXCEPTION
                     WHEN OTHERS THEN
@@ -1939,16 +1965,16 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     --********************************************************************************
 
     PROCEDURE prui_authorise_journals(
-        session_id			IN		VARCHAR2,
-        journal_id_list		IN 		VARCHAR2,
-        updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
-        success				OUT VARCHAR2,
+        session_id      IN    VARCHAR2,
+        journal_id_list   IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        success       OUT VARCHAR2,
         failed_jrnl_list    OUT     VARCHAR2
  )
     IS
-       loop_count 		    NUMBER;
+       loop_count         NUMBER;
        journal_list         array_list := array_list();
-       list_count		    NUMBER;
+       list_count       NUMBER;
        journal_list_in_error    VARCHAR2(32700) := null;
 
        lv_success CHAR(1);
@@ -2018,24 +2044,24 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
 
 
-	        UPDATE slr_jrnl_lines_unposted
-			SET	 jlu_base_rate =
-				CASE
-					WHEN jlu_tran_amount = 0
-					THEN 0
-					WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
-					THEN 0
-					ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)
-					END
-				, jlu_local_rate =
-				CASE
-					WHEN jlu_tran_amount = 0
-					THEN 0
-					WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
-					THEN 0
-					ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
-					END
-			WHERE jlu_jrnl_hdr_id = journal_id;
+          UPDATE slr_jrnl_lines_unposted
+      SET  jlu_base_rate =
+        CASE
+          WHEN jlu_tran_amount = 0
+          THEN 0
+          WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
+          THEN 0
+          ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)
+          END
+        , jlu_local_rate =
+        CASE
+          WHEN jlu_tran_amount = 0
+          THEN 0
+          WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
+          THEN 0
+          ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
+          END
+      WHERE jlu_jrnl_hdr_id = journal_id;
 
         EXCEPTION
            WHEN OTHERS THEN
@@ -2051,18 +2077,18 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
          pgui_jrnl_custom.prui_post_journal(journal_id);
 
          -- Before posting create any reversal journals
-		 -- TTP 775 -New journal types BDBR and MDRV included in condition
+     -- TTP 775 -New journal types BDBR and MDRV included in condition
          IF gJournalHeader.jhu_jrnl_type IN (gJOURNAL_TYPE_MDREV, gJOURNAL_TYPE_MMREV, gJOURNAL_TYPE_MDAYR, gJOURNAL_TYPE_BREV, gJOURNAL_TYPE_BDBR, gJOURNAL_TYPE_MDRV)THEN
 
             IF gJournalHeader.jhu_jrnl_type IN (gJOURNAL_TYPE_MDREV, gJOURNAL_TYPE_MMREV, gJOURNAL_TYPE_MDAYR, gJOURNAL_TYPE_BREV) THEN
 
                BEGIN
                      SELECT MIN(ed_date)
-                     INTO	lvReversingDate
-                     FROM	SLR_ENTITY_DAYS
-                     WHERE	ed_date      > gJournalHeader.jhu_jrnl_date
-                     AND	ed_entity_set = gEntityConfiguration.ent_periods_and_days_set
-                     AND	ed_status	  = 'O';
+                     INTO lvReversingDate
+                     FROM SLR_ENTITY_DAYS
+                     WHERE  ed_date      > gJournalHeader.jhu_jrnl_date
+                     AND  ed_entity_set = gEntityConfiguration.ent_periods_and_days_set
+                     AND  ed_status   = 'O';
                EXCEPTION
                  WHEN NO_DATA_FOUND THEN
                     prui_log_error(journal_id, 0, 9999, 'Unable to reversing date for journal');
@@ -2074,7 +2100,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
             END IF;
 
-			   -- TTP 775 - New reversing date lookup to fit new journal types BDBR and MDRV
+         -- TTP 775 - New reversing date lookup to fit new journal types BDBR and MDRV
              IF gJournalHeader.jhu_jrnl_type IN (gJOURNAL_TYPE_MDRV, gJOURNAL_TYPE_BDBR) THEN
 
                BEGIN
@@ -2109,7 +2135,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
             syn_ui_post_journals_pkg.pStatusGenLastBalForBD(gvSubLedgerGenLastBalForBD);
 
 
-			syn_ui_post_journals_pkg.pPostJournals(ent_proc_group, pProcessId, status, TRUE);
+      syn_ui_post_journals_pkg.pPostJournals(ent_proc_group, pProcessId, status, TRUE);
          ELSE
 
             -- Set journal to U (will wait for effective date to be reached
@@ -2119,21 +2145,21 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     END prui_post_to_sub_ledger; */
 
-	 --********************************************************************************
+   --********************************************************************************
 
 
 
     PROCEDURE prui_reject_journals(
-        session_id			IN		VARCHAR2,
-        journal_id_list		IN 		VARCHAR2,
-        reason_description	IN		VARCHAR2,
-        updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
-        success				OUT VARCHAR2 ,
+        session_id      IN    VARCHAR2,
+        journal_id_list   IN    VARCHAR2,
+        reason_description  IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        success       OUT VARCHAR2 ,
         failed_jrnl_list    OUT     VARCHAR2)
     IS
-       loop_count 	NUMBER;
+       loop_count   NUMBER;
        journal_list array_list := array_list();
-       list_count	NUMBER;
+       list_count NUMBER;
        journal_list_in_error    VARCHAR2(32700) := null;
        lv_success CHAR(1);
        lv_failed_count NUMBER(5) := 0;
@@ -2182,12 +2208,12 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
              success := 'F';
     END prui_reject_journals;
 
-    procedure prui_reject_journal(session_id			IN		VARCHAR2,
-        journal_id		IN 		VARCHAR2,
-        reason_description	IN		VARCHAR2,
-        updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+    procedure prui_reject_journal(session_id      IN    VARCHAR2,
+        journal_id    IN    VARCHAR2,
+        reason_description  IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT VARCHAR2)
+        success       OUT VARCHAR2)
     is
 
     begin
@@ -2228,7 +2254,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
        end;
 
        UPDATE gui_jrnl_headers_unposted
-       SET	jhu_amended_by = updated_by,
+       SET  jhu_amended_by = updated_by,
               jhu_amended_on = SYSDATE
        WHERE  jhu_jrnl_id = journal_id;
 
@@ -2259,21 +2285,21 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     -- For use with R2 code base
     PROCEDURE prui_get_journal_errors(
-        session_id			IN		VARCHAR2,
-        journal_id			IN		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        line_number			IN		SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
-        errorList			OUT		global_ref_cursor )
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        line_number     IN    SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+        errorList     OUT   global_ref_cursor )
     IS
     BEGIN
 
         gSessionId := session_id;
 
         OPEN errorList FOR
-            SELECT 	*
-            FROM	temp_gui_jrnl_line_errors
-            WHERE	jle_jrnl_hdr_id = journal_id
-            AND		user_session_id = gSessionId
-            AND		jle_jrnl_line_number = line_number;
+            SELECT  *
+            FROM  temp_gui_jrnl_line_errors
+            WHERE jle_jrnl_hdr_id = journal_id
+            AND   user_session_id = gSessionId
+            AND   jle_jrnl_line_number = line_number;
 
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
@@ -2284,14 +2310,14 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
     --********************************************************************************
 
-    PROCEDURE prui_validate_journal ( session_id	 IN VARCHAR2,
-                                      journal_id  	 IN VARCHAR2,
-                                      user_id 		 IN VARCHAR2,
-                                      success 		 OUT VARCHAR2)
-                                      --errorList		 OUT gJournalLineErrors )
+    PROCEDURE prui_validate_journal ( session_id   IN VARCHAR2,
+                                      journal_id     IN VARCHAR2,
+                                      user_id      IN VARCHAR2,
+                                      success      OUT VARCHAR2)
+                                      --errorList    OUT gJournalLineErrors )
     IS
-        no_lines 		NUMBER := 0;
-        lvValidateState	CHAR(1);
+        no_lines    NUMBER := 0;
+        lvValidateState CHAR(1);
     BEGIN
 
         success := 'Y';
@@ -2328,7 +2354,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     FUNCTION fnui_validate_journal_header RETURN CHAR
     IS
         lvSuccess CHAR;
-        lvCount	  NUMBER;
+        lvCount   NUMBER;
     BEGIN
 
         lvSuccess := gSTATE_OK;
@@ -2347,7 +2373,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
         -- Remove previous errors from the error table
         prui_clear_errors(gJournalHeader.jhu_jrnl_id);
 
-		IF NOT fnui_get_entity THEN
+    IF NOT fnui_get_entity THEN
             lvSuccess := gSTATE_CRITICAL;
         END IF;
 
@@ -2389,19 +2415,19 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
         END IF;
 
         begin
-			 SELECT count(*)
-			 INTO   gJournalHeader.jhu_jrnl_total_lines
-			 FROM   temp_gui_jrnl_lines_unposted
-			 WHERE	jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-			 AND	user_session_id = gSessionId;
+       SELECT count(*)
+       INTO   gJournalHeader.jhu_jrnl_total_lines
+       FROM   temp_gui_jrnl_lines_unposted
+       WHERE  jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+       AND  user_session_id = gSessionId;
 
-		exception
-			WHEN NO_DATA_FOUND THEN
-				null;
-		end;
+    exception
+      WHEN NO_DATA_FOUND THEN
+        null;
+    end;
 
 
-		IF NOT fnui_validate_header_dates THEN
+    IF NOT fnui_validate_header_dates THEN
             lvSuccess := gSTATE_ERRORED;
         END IF;
 
@@ -2418,14 +2444,14 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 --            lvSuccess := gSTATE_ERRORED;
 --        END IF;
 
-		IF NOT fnui_validate_jrnl_type THEN
+    IF NOT fnui_validate_jrnl_type THEN
             lvSuccess := gSTATE_ERRORED;
         END IF;
-		--check if all journal lines (if any) belong to the same entity group
-		--and whether entity group has been defined properly
-		/*IF NOT fnui_check_ent_proc_group_conf THEN
-			lvSuccess  := gSTATE_CRITICAL;
-		END IF;*/
+    --check if all journal lines (if any) belong to the same entity group
+    --and whether entity group has been defined properly
+    /*IF NOT fnui_check_ent_proc_group_conf THEN
+      lvSuccess  := gSTATE_CRITICAL;
+    END IF;*/
 
         -- Execute any custom validation
         IF NOT pgui_jrnl_custom.fnui_validate_header(gJournalHeader.jhu_jrnl_id, gSessionId) THEN
@@ -2438,10 +2464,10 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
              /* SELECT count(*)
              INTO   lvCount
              FROM   temp_gui_jrnl_lines_unposted
-             WHERE	jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-             AND	user_session_id = gSessionId; */
+             WHERE  jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+             AND  user_session_id = gSessionId; */
 
-			 lvCount := gJournalHeader.jhu_jrnl_total_lines;
+       lvCount := gJournalHeader.jhu_jrnl_total_lines;
 
              IF lvCount > 0 THEN
 
@@ -2556,12 +2582,13 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
         END IF;
 
             -- Validate Processing Entity Group
-		 IF NOT fnui_check_ent_proc_group_conf THEN
+     IF NOT fnui_check_ent_proc_group_conf THEN
             prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1001, 'Failed to validate entity processing group settings. Please check configuration.');
             lvSuccess := gSTATE_ERRORED;
         END IF;
 
         IF NOT fnui_validate_line_dates THEN
+            prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1001, 'Failed to complete validation of journal line dates'); -- AG custom
             lvSuccess := gSTATE_ERRORED;
         END IF;
 
@@ -2573,14 +2600,17 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
             lvSuccess := gSTATE_ERRORED;
         END IF;
 
+        -- AG Custom
         IF NOT fnui_validate_chartfield1 THEN
             lvSuccess := gSTATE_ERRORED;
         END IF;
 
+        -- AG Custom
         IF NOT fnui_validate_acc_event_type THEN
             lvSuccess := gSTATE_ERRORED;
         END IF;
 
+        -- AG Custom
         IF NOT fnui_validate_ledger THEN
             lvSuccess := gSTATE_ERRORED;
         END IF;
@@ -2696,7 +2726,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
       IF status = gSTATUS_VALIDATING THEN
          STATUS_TEXT := 'Validating';
       END IF;
-	  IF status = gSTATUS_WAITING THEN
+    IF status = gSTATUS_WAITING THEN
          STATUS_TEXT := 'Unposted';
       END IF;
 
@@ -2721,7 +2751,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
             pr_error(1, SQLERRM, 0, 'prui_set_status', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     END prui_set_status;
 
-	 --********************************************************************************
+   --********************************************************************************
 
 
     FUNCTION fnui_any_errors(journal_id VARCHAR2) RETURN BOOLEAN
@@ -2731,20 +2761,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
         -- See if there are any errors
 
-        SELECT 	1
-        INTO	lvFound
-        FROM	gui_jrnl_line_errors a,
+        SELECT  1
+        INTO  lvFound
+        FROM  gui_jrnl_line_errors a,
                 temp_gui_jrnl_line_errors b
-        WHERE	(a.jle_jrnl_hdr_id = journal_id
-        OR		 (b.jle_jrnl_hdr_id = journal_id AND user_session_id = gSessionId))
-        AND		rownum < 2;
+        WHERE (a.jle_jrnl_hdr_id = journal_id
+        OR     (b.jle_jrnl_hdr_id = journal_id AND user_session_id = gSessionId))
+        AND   rownum < 2;
 
 
-        /*SELECT 	1
-        INTO	lvFound
-        FROM	gui_jrnl_line_errors
-        WHERE	jle_jrnl_hdr_id = journal_id
-        AND		rownum < 2;*/
+        /*SELECT  1
+        INTO  lvFound
+        FROM  gui_jrnl_line_errors
+        WHERE jle_jrnl_hdr_id = journal_id
+        AND   rownum < 2;*/
 
         -- Errors exist
         RETURN TRUE;
@@ -2811,7 +2841,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
     FUNCTION fnui_check_line_definitions RETURN BOOLEAN
     IS
         lvSuccess BOOLEAN;
-        lvFound	  NUMBER := NULL;
+        lvFound   NUMBER := NULL;
     BEGIN
 
         lvSuccess := TRUE;
@@ -2822,20 +2852,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                 jle_amended_by, jle_amended_on
         )
-        SELECT /* jle_jrnl_process_id */	 	0,
-                  /* user_session_id */			gSessionId,
-                  /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                  /* jle_error_code */	  		'MADJ-1051',
-                  /* jle_error_string */		'Entity is required.',
-                  /* jle_created_by */			'SYSTEM',
-                  /* jle_created_on */			SYSDATE,
-                  /* jle_amended_by */			'SYSTEM',
-                  /* jle_amended_on */	 		SYSDATE
+        SELECT /* jle_jrnl_process_id */    0,
+                  /* user_session_id */     gSessionId,
+                  /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                  /* jle_error_code */        'MADJ-1051',
+                  /* jle_error_string */    'Entity is required.',
+                  /* jle_created_by */      'SYSTEM',
+                  /* jle_created_on */      SYSDATE,
+                  /* jle_amended_by */      'SYSTEM',
+                  /* jle_amended_on */      SYSDATE
         FROM temp_gui_jrnl_lines_unposted
         WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
         AND   user_session_id = gSessionId
-        AND	  jlu_entity IS NULL;
+        AND   jlu_entity IS NULL;
 
         -- Check Account
         INSERT INTO temp_gui_jrnl_line_errors (
@@ -2843,20 +2873,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                 jle_amended_by, jle_amended_on
         )
-        SELECT /* jle_jrnl_process_id */	 	0,
-                  /* user_session_id */			gSessionId,
-                  /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                  /* jle_error_code */	  		'MADJ-1051',
-                  /* jle_error_string */		'Account is required.',
-                  /* jle_created_by */			'SYSTEM',
-                  /* jle_created_on */			SYSDATE,
-                  /* jle_amended_by */			'SYSTEM',
-                  /* jle_amended_on */	 		SYSDATE
+        SELECT /* jle_jrnl_process_id */    0,
+                  /* user_session_id */     gSessionId,
+                  /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                  /* jle_error_code */        'MADJ-1051',
+                  /* jle_error_string */    'Account is required.',
+                  /* jle_created_by */      'SYSTEM',
+                  /* jle_created_on */      SYSDATE,
+                  /* jle_amended_by */      'SYSTEM',
+                  /* jle_amended_on */      SYSDATE
         FROM temp_gui_jrnl_lines_unposted
         WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
         AND   user_session_id = gSessionId
-        AND	  jlu_account IS NULL;
+        AND   jlu_account IS NULL;
 
         -- Check Effective Date
         INSERT INTO temp_gui_jrnl_line_errors (
@@ -2864,20 +2894,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                 jle_amended_by, jle_amended_on
         )
-        SELECT /* jle_jrnl_process_id */	 	0,
-                  /* user_session_id */			gSessionId,
-                  /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                  /* jle_error_code */	  		'MADJ-1051',
-                  /* jle_error_string */		'Effective Date is required.',
-                  /* jle_created_by */			'SYSTEM',
-                  /* jle_created_on */			SYSDATE,
-                  /* jle_amended_by */			'SYSTEM',
-                  /* jle_amended_on */	 		SYSDATE
+        SELECT /* jle_jrnl_process_id */    0,
+                  /* user_session_id */     gSessionId,
+                  /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                  /* jle_error_code */        'MADJ-1051',
+                  /* jle_error_string */    'Effective Date is required.',
+                  /* jle_created_by */      'SYSTEM',
+                  /* jle_created_on */      SYSDATE,
+                  /* jle_amended_by */      'SYSTEM',
+                  /* jle_amended_on */      SYSDATE
         FROM temp_gui_jrnl_lines_unposted
         WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
         AND   user_session_id = gSessionId
-        AND	  jlu_effective_date IS NULL;
+        AND   jlu_effective_date IS NULL;
 
         -- Check Value Date
         INSERT INTO temp_gui_jrnl_line_errors (
@@ -2885,20 +2915,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                 jle_amended_by, jle_amended_on
         )
-        SELECT /* jle_jrnl_process_id */	 	0,
-                  /* user_session_id */			gSessionId,
-                  /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                  /* jle_error_code */	  		'MADJ-1051',
-                  /* jle_error_string */		'Value Date is required.',
-                  /* jle_created_by */			'SYSTEM',
-                  /* jle_created_on */			SYSDATE,
-                  /* jle_amended_by */			'SYSTEM',
-                  /* jle_amended_on */	 		SYSDATE
+        SELECT /* jle_jrnl_process_id */    0,
+                  /* user_session_id */     gSessionId,
+                  /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                  /* jle_error_code */        'MADJ-1051',
+                  /* jle_error_string */    'Value Date is required.',
+                  /* jle_created_by */      'SYSTEM',
+                  /* jle_created_on */      SYSDATE,
+                  /* jle_amended_by */      'SYSTEM',
+                  /* jle_amended_on */      SYSDATE
         FROM temp_gui_jrnl_lines_unposted
         WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
         AND   user_session_id = gSessionId
-        AND	  jlu_value_date IS NULL;
+        AND   jlu_value_date IS NULL;
 
         -- Check Tran Currency
         INSERT INTO temp_gui_jrnl_line_errors (
@@ -2906,23 +2936,24 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                 jle_amended_by, jle_amended_on
         )
-        SELECT /* jle_jrnl_process_id */	 	0,
-                  /* user_session_id */			gSessionId,
-                  /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                  /* jle_error_code */	  		'MADJ-1051',
-                  /* jle_error_string */		'Transaction Currency is required.',
-                  /* jle_created_by */			'SYSTEM',
-                  /* jle_created_on */			SYSDATE,
-                  /* jle_amended_by */			'SYSTEM',
-                  /* jle_amended_on */	 		SYSDATE
+        SELECT /* jle_jrnl_process_id */    0,
+                  /* user_session_id */     gSessionId,
+                  /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                  /* jle_error_code */        'MADJ-1051',
+                  /* jle_error_string */    'Transaction Currency is required.',
+                  /* jle_created_by */      'SYSTEM',
+                  /* jle_created_on */      SYSDATE,
+                  /* jle_amended_by */      'SYSTEM',
+                  /* jle_amended_on */      SYSDATE
         FROM temp_gui_jrnl_lines_unposted
         WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
         AND   user_session_id = gSessionId
-        AND	  jlu_tran_ccy IS NULL;
+        AND   jlu_tran_ccy IS NULL;
 
 
         -- Check Currency/ ledger combinations
+        --AG Custom
         INSERT INTO temp_gui_jrnl_line_errors (
 		        jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
@@ -2961,6 +2992,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
               );
 
         -- Check Currency/ amount combinations
+        -- AG Custom
         INSERT INTO temp_gui_jrnl_line_errors (
 		        jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
@@ -2990,6 +3022,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                );
 
         -- Check base Currency
+        -- AG Custom
         INSERT INTO temp_gui_jrnl_line_errors (
 		        jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
@@ -3011,6 +3044,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
            OR  ((jlu_segment_1 <> 'UKGAAP_ADJ' AND jlu_segment_1 <> 'EURGAAPADJ') and jlu_base_ccy IS NULL));
 
         -- Check local Currency
+        -- AG Custom
         INSERT INTO temp_gui_jrnl_line_errors (
 		        jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
@@ -3033,7 +3067,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
         -- Check Tran Amount
 
-       	/* external ttp 796 - allow jlu_tran_amount = 0 do not check!*/
+        /* external ttp 796 - allow jlu_tran_amount = 0 do not check!*/
 
         -- Check Base Amount
         --- removed
@@ -3048,20 +3082,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_1_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_1_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_1 IS NULL;
+            AND   jlu_segment_1 IS NULL;
         END IF;
 
         IF gFAKDefinitions.fd_segment_2_type = 'M' THEN
@@ -3070,20 +3104,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_2_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_2_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_2 IS NULL;
+            AND   jlu_segment_2 IS NULL;
         END IF;
 
         IF gFAKDefinitions.fd_segment_3_type = 'M' THEN
@@ -3092,20 +3126,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_3_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_3_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_3 IS NULL;
+            AND   jlu_segment_3 IS NULL;
         END IF;
 
         IF gFAKDefinitions.fd_segment_4_type = 'M' THEN
@@ -3114,20 +3148,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_4_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_4_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_4 IS NULL;
+            AND   jlu_segment_4 IS NULL;
         END IF;
 
         IF gFAKDefinitions.fd_segment_5_type = 'M' THEN
@@ -3136,20 +3170,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_5_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_5_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_5 IS NULL;
+            AND   jlu_segment_5 IS NULL;
         END IF;
 
         IF gFAKDefinitions.fd_segment_6_type = 'M' THEN
@@ -3158,20 +3192,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_6_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_6_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_6 IS NULL;
+            AND   jlu_segment_6 IS NULL;
         END IF;
 
         IF gFAKDefinitions.fd_segment_7_type = 'M' THEN
@@ -3180,20 +3214,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_7_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_7_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_7 IS NULL;
+            AND   jlu_segment_7 IS NULL;
         END IF;
 
         IF gFAKDefinitions.fd_segment_8_type = 'M' THEN
@@ -3202,20 +3236,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_8_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_8_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_8 IS NULL;
+            AND   jlu_segment_8 IS NULL;
         END IF;
 
         IF gFAKDefinitions.fd_segment_9_type = 'M' THEN
@@ -3224,20 +3258,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_9_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_9_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_9 IS NULL;
+            AND   jlu_segment_9 IS NULL;
         END IF;
 
         IF gFAKDefinitions.fd_segment_10_type = 'M' THEN
@@ -3246,20 +3280,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1051',
-                      /* jle_error_string */		gFAKDefinitions.fd_segment_10_name||' is required.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1051',
+                      /* jle_error_string */    gFAKDefinitions.fd_segment_10_name||' is required.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  jlu_segment_10 IS NULL;
+            AND   jlu_segment_10 IS NULL;
         END IF;
 
         /*
@@ -3273,20 +3307,20 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                 jle_amended_by, jle_amended_on
         )
-        SELECT /* jle_jrnl_process_id */	 	0,
-                  /* user_session_id */			gSessionId,
-                  /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                  /* jle_error_code */	  		'MADJ-1061',
-                  /* jle_error_string */		'Description is required',
-                  /* jle_created_by */			'SYSTEM',
-                  /* jle_created_on */			SYSDATE,
-                  /* jle_amended_by */			'SYSTEM',
-                  /* jle_amended_on */	 		SYSDATE
+        SELECT /* jle_jrnl_process_id */    0,
+                  /* user_session_id */     gSessionId,
+                  /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                  /* jle_error_code */        'MADJ-1061',
+                  /* jle_error_string */    'Description is required',
+                  /* jle_created_by */      'SYSTEM',
+                  /* jle_created_on */      SYSDATE,
+                  /* jle_amended_by */      'SYSTEM',
+                  /* jle_amended_on */      SYSDATE
         FROM temp_gui_jrnl_lines_unposted
         WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
         AND   user_session_id = gSessionId
-        AND	  jlu_description IS NULL OR LENGTH(jlu_description) = 0;
+        AND   jlu_description IS NULL OR LENGTH(jlu_description) = 0;
 
         -- Size checks
         INSERT INTO temp_gui_jrnl_line_errors (
@@ -3294,29 +3328,29 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                 jle_amended_by, jle_amended_on
         )
-        SELECT /* jle_jrnl_process_id */	 	0,
-                  /* user_session_id */			gSessionId,
-                  /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                  /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                  /* jle_error_code */	  		'MADJ-1061',
-                  /* jle_error_string */		'Description is too long',
-                  /* jle_created_by */			'SYSTEM',
-                  /* jle_created_on */			SYSDATE,
-                  /* jle_amended_by */			'SYSTEM',
-                  /* jle_amended_on */	 		SYSDATE
+        SELECT /* jle_jrnl_process_id */    0,
+                  /* user_session_id */     gSessionId,
+                  /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                  /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                  /* jle_error_code */        'MADJ-1061',
+                  /* jle_error_string */    'Description is too long',
+                  /* jle_created_by */      'SYSTEM',
+                  /* jle_created_on */      SYSDATE,
+                  /* jle_amended_by */      'SYSTEM',
+                  /* jle_amended_on */      SYSDATE
         FROM temp_gui_jrnl_lines_unposted
         WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
         AND   user_session_id = gSessionId
-        AND	  LENGTH(jlu_description) > 100;
+        AND   LENGTH(jlu_description) > 100;
 
         --How many errors were found
         BEGIN
               SELECT COUNT(*)
-              INTO	 lvFound
-              FROM	 temp_gui_jrnl_line_errors
-              WHERE	 jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              INTO   lvFound
+              FROM   temp_gui_jrnl_line_errors
+              WHERE  jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND    user_session_id = gSessionId
-              AND	 jle_error_code IN ('MADJ-1051', 'MADJ-1061');
+              AND  jle_error_code IN ('MADJ-1051', 'MADJ-1061');
         EXCEPTION
               WHEN NO_DATA_FOUND THEN
                    NULL; -- do nothing
@@ -3345,7 +3379,7 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
        lvSuccess                        BOOLEAN;
        vCounter                         NUMBER;
 
-	   lvPeriodStartDate                 DATE;
+     lvPeriodStartDate                 DATE;
        lvPeriodEndDate                DATE;
        lvPrevBusDate                        DATE;
        lvNextBusDate                        DATE;
@@ -3387,12 +3421,12 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
         BEGIN
 
              SELECT 1
-             INTO	lvFound
-             FROM	slr_entity_days
-             WHERE	ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
-             AND	ed_date		   = gJournalHeader.jhu_jrnl_date
+             INTO lvFound
+             FROM slr_entity_days
+             WHERE  ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
+             AND  ed_date      = gJournalHeader.jhu_jrnl_date
              --and  ed_balance_type = 50
-             AND	ed_status	   = 'O';
+             AND  ed_status    = 'O';
 
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
@@ -3404,18 +3438,18 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
         BEGIN
              SELECT count(GP_TODAYS_BUS_DATE)
-             INTO	vCounter
-             FROM	FDR.FR_LPG_CONFIG
+             INTO vCounter
+             FROM FDR.FR_LPG_CONFIG
                 LEFT JOIN FDR.FR_GLOBAL_PARAMETER ON LC_LPG_ID=LPG_ID
-             WHERE	LC_GRP_CODE = gJournalHeader.jhu_jrnl_entity;
+             WHERE  LC_GRP_CODE = gJournalHeader.jhu_jrnl_entity;
 
              IF vCounter > 0 THEN
 
                 SELECT GP_TODAYS_BUS_DATE
-                INTO	vFDRBusinessDate
-                FROM	FDR.FR_LPG_CONFIG
+                INTO  vFDRBusinessDate
+                FROM  FDR.FR_LPG_CONFIG
                     LEFT JOIN FDR.FR_GLOBAL_PARAMETER ON LC_LPG_ID=LPG_ID
-                 WHERE	LC_GRP_CODE = gJournalHeader.jhu_jrnl_entity;
+                 WHERE  LC_GRP_CODE = gJournalHeader.jhu_jrnl_entity;
 
              END IF;
 
@@ -3471,32 +3505,40 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                                   lvNextPeriodEndDate,
                                   lvNextPeriodStartDate);
 
-        -- Check that calendar details are present
-        IF lvPeriodStartDate IS NULL OR lvPeriodEndDate IS NULL
-           OR lvPrevBusDate IS NULL OR lvNextBusDate IS NULL
-           OR lvNextPeriodEndDate IS NULL OR lvPrevPeriodEndDate IS NULL OR lvNextPeriodStartDate IS NULL
-        THEN
-            prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Effective Date');
-            RETURN FALSE;
-        END IF;
-
         -- Check rules for effective date and journal type
 
-
        v_err_msg := REPLACE(v_err_msg, '%1', 'Effective date');
-        v_err_msg :=  REPLACE(v_err_msg, '%2', 'current business day');
+       v_err_msg :=  REPLACE(v_err_msg, '%2', 'current business day');
 
 
       IF v_prior_next_both IS NOT NULL AND v_period_day IS NOT NULL THEN
 
          IF v_prior_next_both = 'P' THEN
+			-- Check that calendar details are present
+			IF lvPrevPeriodStartDate IS NULL OR lvPrevPeriodEndDate IS NULL
+			THEN
+				prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Effective Date');
+				RETURN FALSE;
+			END IF;
             v_compare_start_date := lvPrevPeriodStartDate;
-             v_compare_end_date := lvPrevPeriodEndDate;
+            v_compare_end_date := lvPrevPeriodEndDate;
          ELSIF v_prior_next_both = 'C' THEN
-             v_compare_start_date := lvPeriodStartDate;
-             v_compare_end_date := lvPeriodEndDate;
+			-- Check that calendar details are present
+			IF lvPeriodStartDate IS NULL OR lvPeriodEndDate IS NULL
+			THEN
+				prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Effective Date');
+				RETURN FALSE;
+			END IF;
+            v_compare_start_date := lvPeriodStartDate;
+            v_compare_end_date := lvPeriodEndDate;
          ELSIF v_prior_next_both = 'N' THEN
-             v_compare_end_date := lvNextPeriodEndDate;
+			-- Check that calendar details are present
+			IF lvNextPeriodEndDate IS NULL
+			THEN
+				prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Effective Date');
+				RETURN FALSE;
+			END IF;
+            v_compare_end_date := lvNextPeriodEndDate;
          END IF;
 
          IF v_period_day = 'S' THEN
@@ -3504,6 +3546,9 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
                 prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
             ELSIF v_rul_typ = '>' AND gJournalHeader.jhu_jrnl_date <= v_compare_start_date THEN
+                   prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
+                lvSuccess := FALSE;
+            ELSIF v_rul_typ = '>=' AND gJournalHeader.jhu_jrnl_date < v_compare_start_date THEN
                    prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
                 lvSuccess := FALSE;
             ELSIF v_rul_typ = '<' AND gJournalHeader.jhu_jrnl_date >= v_compare_start_date THEN
@@ -3532,6 +3577,12 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
       ELSIF v_prior_next_both IS NOT NULL AND v_period_day IS NULL THEN
 
          IF v_prior_next_both = 'P' THEN
+				-- Check that calendar details are present
+				IF lvPrevBusDate IS NULL
+				THEN
+					prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Effective Date');
+					RETURN FALSE;
+				END IF;
                 v_compare_date := lvPrevBusDate;
 
             IF v_rul_typ = '=' AND gJournalHeader.jhu_jrnl_date <> v_compare_date THEN
@@ -3561,7 +3612,13 @@ CREATE OR REPLACE PACKAGE BODY GUI.PGUI_MANUAL_JOURNAL AS
 
          ELSIF v_prior_next_both = 'N' THEN
 
-               v_compare_date := lvNextBusDate;
+				-- Check that calendar details are present
+				IF lvNextBusDate IS NULL
+				THEN
+					prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Effective Date');
+					RETURN FALSE;
+				END IF;
+                v_compare_date := lvNextBusDate;
 
             IF v_rul_typ = '=' AND gJournalHeader.jhu_jrnl_date <> v_compare_date THEN
                    prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_err_msg );
@@ -3634,12 +3691,18 @@ lvPeriodStartDate := NULL;
              FROM   slr_entity_days
              WHERE  ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
              AND    ed_date        = gJournalHeader.jhu_jrnl_rev_date
+             AND to_char(gJournalHeader.jhu_jrnl_rev_date,'mmdd') <> '0101'  -- ag customization
              AND    ed_status      = 'O';
 
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
+                --AG Custom
+               IF to_char(gJournalHeader.jhu_jrnl_rev_date,'mmdd') = '0101' THEN
+                 prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'Reversing Date cannot be Jan 1');
+                ELSE
                  prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'Reversing Date is not a valid business date');
-                 lvSuccess := FALSE;
+                END IF;
+                lvSuccess := FALSE;
             WHEN OTHERS THEN
                  RETURN FALSE;
         END;
@@ -3653,17 +3716,32 @@ lvPeriodStartDate := NULL;
 
 
                 IF v_rev_prior_next_both = 'P' THEN
-
-                   v_rev_compare_start_date := lvPrevPeriodStartDate;
-                   v_rev_compare_end_date := lvPrevPeriodEndDate;
+					-- Check that calendar details are present
+					IF lvPrevPeriodStartDate IS NULL OR lvPrevPeriodEndDate IS NULL
+					THEN
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Reversing Date');
+						RETURN FALSE;
+					END IF;
+					v_rev_compare_start_date := lvPrevPeriodStartDate;
+					v_rev_compare_end_date := lvPrevPeriodEndDate;
                 ELSIF v_rev_prior_next_both = 'C' THEN
-
-                   v_rev_compare_start_date := lvPeriodStartDate;
-                   v_rev_compare_end_date := lvPeriodEndDate;
+					-- Check that calendar details are present
+					IF lvPeriodStartDate IS NULL OR lvPeriodEndDate IS NULL
+					THEN
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Reversing Date');
+						RETURN FALSE;
+					END IF;
+					v_rev_compare_start_date := lvPeriodStartDate;
+					v_rev_compare_end_date := lvPeriodEndDate;
                 ELSIF v_rev_prior_next_both = 'N' THEN
-
-                   v_rev_compare_start_date := lvNextPeriodStartDate;
-                   v_rev_compare_end_date := lvNextPeriodEndDate;
+					-- Check that calendar details are present
+					IF lvNextPeriodStartDate IS NULL OR lvNextPeriodEndDate IS NULL
+					THEN
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Reversing Date');
+						RETURN FALSE;
+					END IF;
+					v_rev_compare_start_date := lvNextPeriodStartDate;
+					v_rev_compare_end_date := lvNextPeriodEndDate;
                 END IF;
 
                 IF v_rev_period_day = 'S' THEN
@@ -3671,59 +3749,64 @@ lvPeriodStartDate := NULL;
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_start_date THEN
 
                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+					  lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '>' AND gJournalHeader.jhu_jrnl_rev_date <= v_rev_compare_start_date THEN
 
-                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                      prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+                      lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '<' AND gJournalHeader.jhu_jrnl_rev_date >= v_rev_compare_start_date THEN
 
-                     prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                      prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+                      lvSuccess := FALSE;
                    END IF;
 
                 ELSIF v_rev_period_day = 'E' THEN
 
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_end_date THEN
 
-                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                      prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+                      lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '>' AND gJournalHeader.jhu_jrnl_rev_date <= v_rev_compare_end_date THEN
 
-                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                      prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+                      lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '<' AND gJournalHeader.jhu_jrnl_rev_date >= v_rev_compare_end_date THEN
 
                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                      lvSuccess := FALSE;
                    END IF;
                 ELSIF v_rev_period_day = 'B' THEN
 
                    IF v_rev_rul_typ = 'BETWEEN' AND NOT gJournalHeader.jhu_jrnl_rev_date BETWEEN v_rev_compare_start_date AND v_rev_compare_end_date THEN
 
                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                      lvSuccess := FALSE;
                    END IF;
                 END IF;
 
              ELSIF v_rev_prior_next_both IS NOT NULL AND v_rev_period_day IS NULL THEN
 
                 IF v_rev_prior_next_both = 'P' THEN
-
-                     v_rev_compare_date := lvPrevBusDate;
+					-- Check that calendar details are present
+					IF lvPrevBusDate IS NULL
+					THEN
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Reversing Date');
+						RETURN FALSE;
+					END IF;
+                    v_rev_compare_date := lvPrevBusDate;
 
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_date THEN
 
-                         prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                        prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '>' AND gJournalHeader.jhu_jrnl_rev_date <= v_rev_compare_date THEN
 
-                         prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                        prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '<' AND gJournalHeader.jhu_jrnl_rev_date >= v_rev_compare_date THEN
 
-                         prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                        prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    END IF;
 
                 ELSIF v_rev_prior_next_both = 'C' THEN
@@ -3732,55 +3815,59 @@ lvPeriodStartDate := NULL;
 
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_date THEN
 
-                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '>' AND gJournalHeader.jhu_jrnl_rev_date <= v_rev_compare_date THEN
 
-                      prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '<' AND gJournalHeader.jhu_jrnl_rev_date >= v_rev_compare_date THEN
 
-                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    END IF;
 
                 ELSIF v_rev_prior_next_both = 'N' THEN
+					-- Check that calendar details are present
+					IF lvNextBusDate IS NULL
+					THEN
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'No Entity Period data for current business date. Cannot check Reversing Date');
+						RETURN FALSE;
+					END IF;
 
-
-                   v_rev_compare_date := lvNextBusDate;
+                    v_rev_compare_date := lvNextBusDate;
 
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_date THEN
 
-                     prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '>' AND gJournalHeader.jhu_jrnl_rev_date <= v_rev_compare_date THEN
 
-                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    ELSIF v_rev_rul_typ = '<' AND gJournalHeader.jhu_jrnl_rev_date >= v_rev_compare_date THEN
 
-                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    END IF;
                 END IF;
 
-                ELSE
+             ELSE
 
                     v_rev_compare_date := gEntityConfiguration.ent_business_date;
                    IF v_rev_rul_typ = '=' AND gJournalHeader.jhu_jrnl_rev_date <> v_rev_compare_date THEN
 
-                         prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                        prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                       ELSIF v_rev_rul_typ = '>' AND gJournalHeader.jhu_jrnl_rev_date <= v_rev_compare_date THEN
 
-                          prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+                        prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                       ELSIF v_rev_rul_typ = '<' AND gJournalHeader.jhu_jrnl_rev_date >= v_rev_compare_date THEN
 
-                       prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
-                    lvSuccess := FALSE;
+						prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, v_rev_err_msg );
+						lvSuccess := FALSE;
                    END IF;
-
 
              END IF;
           END IF;
@@ -3802,16 +3889,16 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_validate_line_dates RETURN BOOLEAN
     IS
 
-       lvFound 			 			NUMBER := NULL;
-       lvSuccess		 			BOOLEAN;
-       lvPeriodStartDate 		 	DATE;
-       lvPeriodEndDate	 			DATE;
-       lvPrevBusDate	 			DATE;
-       lvNextBusDate	 			DATE;
-       lvNextPeriodEndDate			DATE;
-       lvPrevPeriodEndDate			DATE;
-       lvPrevPeriodStartDate		DATE;
-       lvPostValueDateFlag			CHAR;
+       lvFound            NUMBER := NULL;
+       lvSuccess          BOOLEAN;
+       lvPeriodStartDate      DATE;
+       lvPeriodEndDate        DATE;
+       lvPrevBusDate        DATE;
+       lvNextBusDate        DATE;
+       lvNextPeriodEndDate      DATE;
+       lvPrevPeriodEndDate      DATE;
+       lvPrevPeriodStartDate    DATE;
+       lvPostValueDateFlag      CHAR;
 
     BEGIN
 
@@ -3830,20 +3917,64 @@ lvPeriodStartDate := NULL;
                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
                      /* jle_jrnl_line_number */		jlu_jrnl_line_number,
                      /* jle_error_code */	  		'MADJ-1014',
-                     /* jle_error_string */			'Effective Date is invalid, earlier than 1/1/2017 or is not open',
+                     -- AG Custom
+                     /* jle_error_string */            CASE to_char(jlu_effective_date,'MMDD') --AG CUSTOM
+                                                        WHEN '0101' THEN ' Effective date cannot be January 1st'
+                                                        ELSE 'Effective Date is invalid, earlier than 1/1/2017 or is not open'
+                                                        END,
                      /* jle_created_by */			'SYSTEM',
                      /* jle_created_on */			SYSDATE,
                      /* jle_amended_by */			'SYSTEM',
                      /* jle_amended_on */	 		SYSDATE
               FROM temp_gui_jrnl_lines_unposted
+              WHERE
+                jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                AND   user_session_id = gSessionId
+                AND (NOT EXISTS (SELECT 1
+                                FROM  slr_entity_days
+                                WHERE
+                                    ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
+                                    AND   ed_date      = jlu_effective_date
+                                    AND   ed_status    = 'O'))
+                        OR jlu_effective_date < to_date('01/01/2017','mm/dd/yyyy')    -- AG Custom.  Or statement put in for performance
+                        OR to_char(jlu_effective_date,'MMDD')='0101';
+
+        -- AG Custom
+        EXCEPTION
+            WHEN OTHERS THEN
+                 pr_error(1, SQLERRM, 0, 'fnui_validate_line_dates.1', 'temp_gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                 RETURN FALSE;
+        END;
+
+        -- Check effective date is valid and open
+        BEGIN
+
+              INSERT INTO temp_gui_jrnl_line_errors (
+                     jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                     jle_amended_by, jle_amended_on
+              )
+              SELECT /* jle_jrnl_process_id */         0,
+                     /* user_session_id */            gSessionId,
+                     /* jle_jrnl_hdr_id */              jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */        jlu_jrnl_line_number,
+                     /* jle_error_code */              'MADJ-1014',
+                     /* jle_error_string */            CASE to_char(jlu_value_date,'MMDD')
+                                                        WHEN '0101' THEN ' Value date cannot be January 1st'
+                                                        END,
+                     /* jle_created_by */            'SYSTEM',
+                     /* jle_created_on */            SYSDATE,
+                     /* jle_amended_by */            'SYSTEM',
+                     /* jle_amended_on */             SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
               WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND   user_session_id = gSessionId
               AND   (NOT EXISTS (SELECT 1
-                                 FROM	slr_entity_days
-                                 WHERE	ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
-                                 AND	ed_date		   = jlu_effective_date
-                                 AND	ed_status	   = 'O')
-                 OR jlu_effective_date < to_date('01/01/2017','mm/dd/yyyy'));
+                                 FROM    slr_entity_days
+                                 WHERE    ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
+                                 AND    ed_date           = jlu_effective_date
+                                 AND    ed_status       = 'O'))
+                 OR to_char(jlu_value_date,'MMDD')='0101';
 
         EXCEPTION
             WHEN OTHERS THEN
@@ -3859,16 +3990,16 @@ lvPeriodStartDate := NULL;
                      jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                      jle_amended_by, jle_amended_on
               )
-              SELECT /* jle_jrnl_process_id */	 	0,
-                     /* user_session_id */			gSessionId,
-                     /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                     /* jle_jrnl_line_number */		jlu_jrnl_line_number,
-                     /* jle_error_code */	  		'MADJ-1016',
-                     /* jle_error_string */			'Effective Date on header is not equal to the Effective Date on the line',
-                     /* jle_created_by */			'SYSTEM',
-                     /* jle_created_on */			SYSDATE,
-                     /* jle_amended_by */			'SYSTEM',
-                     /* jle_amended_on */	 		SYSDATE
+              SELECT /* jle_jrnl_process_id */    0,
+                     /* user_session_id */      gSessionId,
+                     /* jle_jrnl_hdr_id */      jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */   jlu_jrnl_line_number,
+                     /* jle_error_code */       'MADJ-1016',
+                     /* jle_error_string */     'Effective Date on header is not equal to the Effective Date on the line',
+                     /* jle_created_by */     'SYSTEM',
+                     /* jle_created_on */     SYSDATE,
+                     /* jle_amended_by */     'SYSTEM',
+                     /* jle_amended_on */     SYSDATE
               FROM temp_gui_jrnl_lines_unposted
               WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND   user_session_id = gSessionId
@@ -3884,7 +4015,7 @@ lvPeriodStartDate := NULL;
         BEGIN
 
               SELECT ent_post_val_date
-              INTO	 lvPostValueDateFlag
+              INTO   lvPostValueDateFlag
               FROM   slr_entities
               WHERE  ent_entity = gJournalHeader.jhu_jrnl_entity;
 
@@ -3894,24 +4025,24 @@ lvPeriodStartDate := NULL;
                          jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                          jle_amended_by, jle_amended_on
                   )
-                  SELECT /* jle_jrnl_process_id */	 	0,
-                         /* user_session_id */			gSessionId,
-                         /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                         /* jle_jrnl_line_number */		jlu_jrnl_line_number,
-                         /* jle_error_code */	  		'MADJ-1015',
-                         /* jle_error_string */			'Value Date is invalid or is not open',
-                         /* jle_created_by */			'SYSTEM',
-                         /* jle_created_on */			SYSDATE,
-                         /* jle_amended_by */			'SYSTEM',
-                         /* jle_amended_on */	 		SYSDATE
+                  SELECT /* jle_jrnl_process_id */    0,
+                         /* user_session_id */      gSessionId,
+                         /* jle_jrnl_hdr_id */      jlu_jrnl_hdr_id,
+                         /* jle_jrnl_line_number */   jlu_jrnl_line_number,
+                         /* jle_error_code */       'MADJ-1015',
+                         /* jle_error_string */     'Value Date is invalid or is not open',
+                         /* jle_created_by */     'SYSTEM',
+                         /* jle_created_on */     SYSDATE,
+                         /* jle_amended_by */     'SYSTEM',
+                         /* jle_amended_on */     SYSDATE
                   FROM temp_gui_jrnl_lines_unposted
                   WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                   AND   user_session_id = gSessionId
-                  AND	NOT EXISTS (SELECT 1
-                                    FROM	slr_entity_days
-                                    WHERE	ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
-                                    AND		ed_date		   = jlu_value_date
-                                    AND		ed_status	   = 'O');
+                  AND NOT EXISTS (SELECT 1
+                                    FROM  slr_entity_days
+                                    WHERE ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
+                                    AND   ed_date      = jlu_value_date
+                                    AND   ed_status    = 'O');
             END IF;
 
         EXCEPTION
@@ -3921,14 +4052,14 @@ lvPeriodStartDate := NULL;
         END;
 
         --How many errors were found
-		-- TTP 775 - MADJ-1025 error code added to condition so that errors for new journal type validation will be caught
+    -- TTP 775 - MADJ-1025 error code added to condition so that errors for new journal type validation will be caught
         BEGIN
               SELECT COUNT(*)
-              INTO	 lvFound
-              FROM	 temp_gui_jrnl_line_errors
-              WHERE	 jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              INTO   lvFound
+              FROM   temp_gui_jrnl_line_errors
+              WHERE  jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND    user_session_id = gSessionId
-              AND	 jle_error_code IN ('MADJ-1014','MADJ-1015','MADJ-1016',
+              AND  jle_error_code IN ('MADJ-1014','MADJ-1015','MADJ-1016',
                                         'MADJ-1021','MADJ-1022','MADJ-1025');
         EXCEPTION
               WHEN NO_DATA_FOUND THEN
@@ -3999,6 +4130,7 @@ lvPeriodStartDate := NULL;
           lv_sql_template   VARCHAR2(32000);
           lv_sql_statement  VARCHAR2(32000);
 
+          -- AG custom variables
           lvD_sql_template   VARCHAR2(32000);
           lv_orig_sql_template  VARCHAR2(32000);
           lvD_sql_statement  VARCHAR2(32000);
@@ -4022,11 +4154,11 @@ lvPeriodStartDate := NULL;
               lv_sql_template :=
            'SELECT COUNT(*) '
                ||' FROM (SELECT SUM(##NAME##) '
-               ||'         FROM temp_gui_jrnl_lines_unposted '
-               ||'        WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id|| ''''
+               ||'      FROM temp_gui_jrnl_lines_unposted '
+               ||'        WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id || ''''
                ||'          AND user_session_id = '''||gSessionId||''''
-               ||'           GROUP BY jlu_jrnl_hdr_id, jlu_effective_date, '
-               ||'                  jlu_value_date, jlu_tran_ccy ';
+               ||'       GROUP BY jlu_jrnl_hdr_id, jlu_effective_date, '
+               ||'                jlu_value_date, jlu_tran_ccy ';
 
              lvTemplateMessage :=
                     'The journal doesn''t balance by ##NAME## ';
@@ -4048,10 +4180,10 @@ lvPeriodStartDate := NULL;
          END LOOP;
 
          lv_sql_template := lv_sql_template || ' HAVING SUM(##NAME##) != 0) ';
-         lvTemplateMessage := lvTemplateMessage||' ccy, effective and value dates';
+             lvTemplateMessage := lvTemplateMessage||' ccy, effective and value dates';
 
 
-         lvDTemplateMessage := lv_orig_TemplateMessage;
+         lvDTemplateMessage := lv_orig_TemplateMessage; -- AG custom
 
 
            EXCEPTION
@@ -4063,8 +4195,8 @@ lvPeriodStartDate := NULL;
            -- Simple balance check (transaction) only
            BEGIN
              lv_sql_statement := REPLACE(lv_sql_template,'##NAME##','jlu_tran_amount');
-             lvD_sql_template := REPLACE(lvD_sql_template,'##NAME##','jlu_tran_amount');
-             lvDTemplateMessage := REPLACE(lvDTemplateMessage,'##NAME##','jlu_tran_amount');
+             lvD_sql_template := REPLACE(lvD_sql_template,'##NAME##','jlu_tran_amount');  -- AG Custom
+             lvDTemplateMessage := REPLACE(lvDTemplateMessage,'##NAME##','jlu_tran_amount'); -- AG Custom
 
              -- Execute the statement and return the count into lvFound
              EXECUTE IMMEDIATE lv_sql_statement INTO lvCount;
@@ -4072,6 +4204,7 @@ lvPeriodStartDate := NULL;
              -- If it does not balance
              IF lvCount > 0 THEN
 
+                --For Loop is AG Custom
                 FOR rec IN cur_meta_data
                     LOOP
                     -- Only add the field if its COLUMN_USED_IN_BALANCE is set to Y
@@ -4094,7 +4227,6 @@ lvPeriodStartDate := NULL;
                  lvMessage := lvDTemplateMessage;
                  prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1013, SUBSTR(lvMessage,1,1000));
                  lvSuccess := FALSE;
-
              END IF;
 
            EXCEPTION
@@ -4103,9 +4235,6 @@ lvPeriodStartDate := NULL;
                prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999, 'Failed journal balance check');
                lvSuccess := FALSE;
            END;
-
-
-
 
            -- More complex balance check of local and base currencies
            OPEN cur_complex_balance_check;
@@ -4116,8 +4245,8 @@ lvPeriodStartDate := NULL;
 
              BEGIN
              lv_sql_statement := REPLACE(lv_sql_template,'##NAME##','jlu_base_amount');
-             lvD_sql_template := REPLACE(lvD_sql_template,'##NAME##','jlu_base_amount');
-             lvDTemplateMessage := REPLACE(lv_orig_TemplateMessage,'##NAME##','jlu_base_amount');
+             lvD_sql_template := REPLACE(lvD_sql_template,'##NAME##','jlu_base_amount'); -- AG Custom
+             lvDTemplateMessage := REPLACE(lv_orig_TemplateMessage,'##NAME##','jlu_base_amount'); -- AG Custom
 
                -- Execute the statement and return the count into lvFound
                EXECUTE IMMEDIATE lv_sql_statement INTO lvCount;
@@ -4126,6 +4255,7 @@ lvPeriodStartDate := NULL;
                IF lvCount > 0 THEN
 
 
+                -- AG Custom for loop
                 FOR rec IN cur_meta_data
                     LOOP
                     -- Only add the field if its COLUMN_USED_IN_BALANCE is set to Y
@@ -4142,10 +4272,9 @@ lvPeriodStartDate := NULL;
 
                 END LOOP;
 
-                   lvMessage := lvDTemplateMessage;
+                   lvMessage := lvDTemplateMessage; -- AG custom
                    prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1013, SUBSTR(lvMessage,1,1000));
                    lvSuccess := FALSE;
-
                END IF;
 
              EXCEPTION
@@ -4173,6 +4302,7 @@ lvPeriodStartDate := NULL;
                IF lvCount > 0 THEN
 
 
+                -- for loop AG Custom
                 FOR rec IN cur_meta_data
                     LOOP
                     -- Only add the field if its COLUMN_USED_IN_BALANCE is set to Y
@@ -4190,10 +4320,9 @@ lvPeriodStartDate := NULL;
                 END LOOP;
 
 
-                   lvMessage := lvDTemplateMessage;
+                   lvMessage := lvDTemplateMessage; -- AG custom
                    prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1013, SUBSTR(lvMessage,1,1000));
                    lvSuccess := FALSE;
-
                END IF;
 
              EXCEPTION
@@ -4204,7 +4333,6 @@ lvPeriodStartDate := NULL;
              END;
 
 
-
            RETURN lvSuccess;
 
     EXCEPTION
@@ -4213,19 +4341,19 @@ lvPeriodStartDate := NULL;
             RETURN FALSE;
     END fnui_validate_balances;
 
-	--********************************************************************************
+  --********************************************************************************
 
     FUNCTION fnui_check_ent_proc_group_conf RETURN BOOLEAN
     IS
-          lvSqlText 		VARCHAR2(32000);
+          lvSqlText     VARCHAR2(32000);
           lvSuccess         BOOLEAN;
 
-		  vEPG_DIMENSION_column_name    SLR_ENTITY_PROC_GROUP_CONFIG.EPGC_JLU_COLUMN_NAME%TYPE;
-		  v_entity_proc_group     		SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
-		  v_not_configured_entity       int;
-          --v_jrnl_entity_proc_group     	SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
+      vEPG_DIMENSION_column_name    SLR_ENTITY_PROC_GROUP_CONFIG.EPGC_JLU_COLUMN_NAME%TYPE;
+      v_entity_proc_group         SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
+      v_not_configured_entity       int;
+          --v_jrnl_entity_proc_group      SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
 
-		  vJrnlLinesDimention	VARCHAR2(1000);
+      vJrnlLinesDimention VARCHAR2(1000);
           vJrnlHdrId            SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE;
 
           NoEntGroupFound Exception;
@@ -4234,15 +4362,15 @@ lvPeriodStartDate := NULL;
 
             vJrnlHdrId := gJournalHeader.jhu_jrnl_id;
             lvSuccess := TRUE;
-			v_not_configured_entity := 0;
+      v_not_configured_entity := 0;
 
-	        BEGIN
-			-- check if proper entity processing group configuration exists
+          BEGIN
+      -- check if proper entity processing group configuration exists
 
-			--------------------------------------------------------------------------------------------------
-			-- Use vEPG_DIMENSION_column_name to retrieve Entity Processing Group from TEMP_GUI_JRNL_LINES_UNPOSTED.
-			-- If vEPG_DIMENSION_column_name is null then skip condition against EPG_DIMENSION.
-			--------------------------------------------------------------------------------------------------
+      --------------------------------------------------------------------------------------------------
+      -- Use vEPG_DIMENSION_column_name to retrieve Entity Processing Group from TEMP_GUI_JRNL_LINES_UNPOSTED.
+      -- If vEPG_DIMENSION_column_name is null then skip condition against EPG_DIMENSION.
+      --------------------------------------------------------------------------------------------------
 
             BEGIN
                 SELECT max(EPGC_JLU_COLUMN_NAME)
@@ -4254,72 +4382,72 @@ lvPeriodStartDate := NULL;
                     NULL;
             END;
 
-			lvSqltext :=
-			  ' SELECT  DISTINCT EPG_ID
-				FROM    TEMP_GUI_JRNL_LINES_UNPOSTED, SLR_ENTITY_PROC_GROUP
-				WHERE
-					JLU_JRNL_HDR_ID = :vJrnlHdrId
-			     AND USER_SESSION_ID = :gSessionId
-				 AND JLU_ENTITY = EPG_ENTITY';
+      lvSqltext :=
+        ' SELECT  DISTINCT EPG_ID
+        FROM    TEMP_GUI_JRNL_LINES_UNPOSTED, SLR_ENTITY_PROC_GROUP
+        WHERE
+          JLU_JRNL_HDR_ID = :vJrnlHdrId
+           AND USER_SESSION_ID = :gSessionId
+         AND JLU_ENTITY = EPG_ENTITY';
 
-			if vEPG_DIMENSION_column_name is not null then
-				lvSqltext := lvSqltext || ' AND (EPG_DIMENSION IS NULL OR EPG_DIMENSION = '||vEPG_DIMENSION_column_name||') ';
-			end if;
+      if vEPG_DIMENSION_column_name is not null then
+        lvSqltext := lvSqltext || ' AND (EPG_DIMENSION IS NULL OR EPG_DIMENSION = '||vEPG_DIMENSION_column_name||') ';
+      end if;
 
-			EXECUTE IMMEDIATE lvSqltext
-			INTO v_entity_proc_group
+      EXECUTE IMMEDIATE lvSqltext
+      INTO v_entity_proc_group
             USING vJrnlHdrId, gSessionId;
 
 
-			-- check if configuration exists for all
-			-- lines with group configuration and without in one header
-			lvSqltext :=
-			  ' SELECT  COUNT(*)
-				FROM    TEMP_GUI_JRNL_LINES_UNPOSTED LEFT JOIN SLR_ENTITY_PROC_GROUP
-						ON JLU_ENTITY = EPG_ENTITY ';
+      -- check if configuration exists for all
+      -- lines with group configuration and without in one header
+      lvSqltext :=
+        ' SELECT  COUNT(*)
+        FROM    TEMP_GUI_JRNL_LINES_UNPOSTED LEFT JOIN SLR_ENTITY_PROC_GROUP
+            ON JLU_ENTITY = EPG_ENTITY ';
 
-			if vEPG_DIMENSION_column_name is not null then
-				lvSqltext := lvSqltext || ' AND (EPG_DIMENSION IS NULL OR EPG_DIMENSION = '||vEPG_DIMENSION_column_name||')';
-			end if;
+      if vEPG_DIMENSION_column_name is not null then
+        lvSqltext := lvSqltext || ' AND (EPG_DIMENSION IS NULL OR EPG_DIMENSION = '||vEPG_DIMENSION_column_name||')';
+      end if;
 
-			lvSqltext := lvSqltext || ' WHERE
-					JLU_JRNL_HDR_ID = :vJrnlHdrId
-			     AND USER_SESSION_ID = :gSessionId
-				 AND EPG_ID IS NULL';
+      lvSqltext := lvSqltext || ' WHERE
+          JLU_JRNL_HDR_ID = :vJrnlHdrId
+           AND USER_SESSION_ID = :gSessionId
+         AND EPG_ID IS NULL';
 
 
-			EXECUTE IMMEDIATE lvSqltext
-			INTO v_not_configured_entity
+      EXECUTE IMMEDIATE lvSqltext
+      INTO v_not_configured_entity
             USING vJrnlHdrId, gSessionId;
 
-			if(v_not_configured_entity>0)then
-				raise NoEntGroupFound;
-			end if;
+      if(v_not_configured_entity>0)then
+        raise NoEntGroupFound;
+      end if;
 
            EXCEPTION
-			 WHEN TOO_MANY_ROWS THEN
-				pr_error(1, SQLERRM ||
+       WHEN TOO_MANY_ROWS THEN
+        pr_error(1, SQLERRM ||
                  ': Too many matching entity processing groups found. Please check your configuration'
                     || case when vEPG_DIMENSION_column_name is not null then
                   ' and/or make sure all lines within header have the same value in ' || vEPG_DIMENSION_column_name || ' column.'
                     else '.' end, 0, 'fnui_check_ent_proc_group_conf.1', 'gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-				   RETURN FALSE;
-		     WHEN NO_DATA_FOUND OR NoEntGroupFound THEN
-				pr_error(1, SQLERRM ||': No matching entity processing group found. Please check your configuration.', 0, 'fnui_check_ent_proc_group_conf.2', 'gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-				   RETURN FALSE;
-			 WHEN OTHERS THEN
-			   pr_error(1, SQLERRM, 0, 'fnui_check_ent_proc_group_conf.3', 'gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-				   RETURN FALSE;
+           RETURN FALSE;
+         WHEN NO_DATA_FOUND OR NoEntGroupFound THEN
+        pr_error(1, SQLERRM ||': No matching entity processing group found. Please check your configuration.', 0, 'fnui_check_ent_proc_group_conf.2', 'gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+           RETURN FALSE;
+       WHEN OTHERS THEN
+         pr_error(1, SQLERRM, 0, 'fnui_check_ent_proc_group_conf.3', 'gui_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+           RETURN FALSE;
            END;
 
-		   gJrnlEntityProcGroup := v_entity_proc_group;
+       gJrnlEntityProcGroup := v_entity_proc_group;
 
            --set entity processing group for all lines
 
             UPDATE temp_gui_jrnl_lines_unposted
             SET jlu_epg_id              = gJrnlEntityProcGroup
             WHERE jlu_jrnl_hdr_id       = vJrnlHdrId
-                AND	user_session_id     = gSessionId
+                AND user_session_id     = gSessionId
             ;
 
            RETURN lvSuccess;
@@ -4335,8 +4463,8 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_validate_account RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER := NULL;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER := NULL;
+       lvSuccess     BOOLEAN;
 
     BEGIN
 
@@ -4350,23 +4478,23 @@ lvPeriodStartDate := NULL;
                      jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                      jle_amended_by, jle_amended_on
               )
-              SELECT /* jle_jrnl_process_id */	 	0,
-                     /* user_session_id */			gSessionId,
-                     /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                     /* jle_jrnl_line_number */		jlu_jrnl_line_number,
-                     /* jle_error_code */	  		'MADJ-1010',
-                     /* jle_error_string */			'Account is invalid',
-                     /* jle_created_by */			'SYSTEM',
-                     /* jle_created_on */			SYSDATE,
-                     /* jle_amended_by */			'SYSTEM',
-                     /* jle_amended_on */	 		SYSDATE
+              SELECT /* jle_jrnl_process_id */    0,
+                     /* user_session_id */      gSessionId,
+                     /* jle_jrnl_hdr_id */      jlu_jrnl_hdr_id,
+                     /* jle_jrnl_line_number */   jlu_jrnl_line_number,
+                     /* jle_error_code */       'MADJ-1010',
+                     /* jle_error_string */     'Account is invalid',
+                     /* jle_created_by */     'SYSTEM',
+                     /* jle_created_on */     SYSDATE,
+                     /* jle_amended_by */     'SYSTEM',
+                     /* jle_amended_on */     SYSDATE
               FROM temp_gui_jrnl_lines_unposted
               WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND   user_session_id = gSessionId
-              AND	jlu_account NOT IN (SELECT ea_account
+              AND jlu_account NOT IN (SELECT ea_account
                                              FROM   SLR_ENTITY_ACCOUNTS
                                              WHERE  ea_entity_set = gEntityConfiguration.ent_accounts_set
-                                             AND	ea_status = 'A');
+                                             AND  ea_status = 'A');
 
          EXCEPTION
             WHEN OTHERS THEN
@@ -4377,11 +4505,11 @@ lvPeriodStartDate := NULL;
          --How many errors were found
          BEGIN
               SELECT COUNT(*)
-              INTO	 lvFound
-              FROM	 temp_gui_jrnl_line_errors
-              WHERE	 jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              INTO   lvFound
+              FROM   temp_gui_jrnl_line_errors
+              WHERE  jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND    user_session_id = gSessionId
-              AND	 jle_error_code = 'MADJ-1010';
+              AND  jle_error_code = 'MADJ-1010';
          EXCEPTION
               WHEN NO_DATA_FOUND THEN
                    NULL; -- do nothing
@@ -4402,6 +4530,7 @@ lvPeriodStartDate := NULL;
     END fnui_validate_account;
 
     --********************************************************************************
+    -- AG custom  function
     FUNCTION fnui_validate_chartfield1 RETURN BOOLEAN
     IS
 
@@ -4478,8 +4607,9 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_validate_periods RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER;
-       lvSuccess		 BOOLEAN;
+       lvFound       			NUMBER;
+       lvSuccess     			BOOLEAN;
+       lvPostValueDateFlag      CHAR;
 
     BEGIN
 
@@ -4487,15 +4617,15 @@ lvPeriodStartDate := NULL;
 
         -- Check effective date on header and lines
         BEGIN
-            SELECT	DISTINCT 1
-            INTO	lvFound
-            FROM	slr_entity_periods
-            --WHERE	gJournalHeader.jhu_jrnl_date BETWEEN ep_bus_period_start AND ep_bus_period_end
+            SELECT  DISTINCT 1
+            INTO  lvFound
+            FROM  slr_entity_periods
+            --WHERE gJournalHeader.jhu_jrnl_date BETWEEN ep_bus_period_start AND ep_bus_period_end
             --WHERE gJournalHeader.jhu_jrnl_date BETWEEN TO_DATE('01/'||ep_month||'/'||ep_year, 'DD/MM/YYYY') AND ep_month_end
-            WHERE 	gJournalHeader.jhu_jrnl_date >= ep_cal_period_start --TO_DATE('01/'||ep_month||'/'||ep_year, 'DD/MM/YYYY')
-            AND 	gJournalHeader.jhu_jrnl_date <= ep_cal_period_end --ep_month_end
-            AND		ep_entity = gJournalHeader.jhu_jrnl_entity -- gEntityConfiguration.ent_periods_and_days_set
-            AND		ep_status = 'O'; -- period open
+            WHERE   gJournalHeader.jhu_jrnl_date >= ep_cal_period_start --TO_DATE('01/'||ep_month||'/'||ep_year, 'DD/MM/YYYY')
+            AND   gJournalHeader.jhu_jrnl_date <= ep_cal_period_end --ep_month_end
+            AND   ep_entity = gJournalHeader.jhu_jrnl_entity -- gEntityConfiguration.ent_periods_and_days_set
+            AND   ep_status = 'O'; -- period open
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
                  prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1023,
@@ -4509,23 +4639,29 @@ lvPeriodStartDate := NULL;
         -- Check value date on line (if exists)
         IF gJournalHeader.jhu_jrnl_total_lines > 0 THEN
 
-            BEGIN
+		  SELECT ent_post_val_date
+		  INTO   lvPostValueDateFlag
+		  FROM   slr_entities
+		  WHERE  ent_entity = gJournalHeader.jhu_jrnl_entity;
+
+		  IF lvPostValueDateFlag = 'Y' THEN
+              BEGIN
 
                   INSERT INTO temp_gui_jrnl_line_errors (
                          jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
                          jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                          jle_amended_by, jle_amended_on
                   )
-                  SELECT /* jle_jrnl_process_id */	 	0,
-                         /* user_session_id */			gSessionId,
-                         /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                         /* jle_jrnl_line_number */		jlu_jrnl_line_number,
-                         /* jle_error_code */	  		'MADJ-1024',
-                         /* jle_error_string */			'Period containing Value Date '||TO_CHAR(jlu_value_date, 'dd-mon-yyyy')||' is invalid or is closed',
-                         /* jle_created_by */			'SYSTEM',
-                         /* jle_created_on */			SYSDATE,
-                         /* jle_amended_by */			'SYSTEM',
-                         /* jle_amended_on */	 		SYSDATE
+                  SELECT /* jle_jrnl_process_id */    0,
+                         /* user_session_id */      gSessionId,
+                         /* jle_jrnl_hdr_id */      jlu_jrnl_hdr_id,
+                         /* jle_jrnl_line_number */   jlu_jrnl_line_number,
+                         /* jle_error_code */       'MADJ-1024',
+                         /* jle_error_string */     'Period containing Value Date '||TO_CHAR(jlu_value_date, 'dd-mon-yyyy')||' is invalid or is closed',
+                         /* jle_created_by */     'SYSTEM',
+                         /* jle_created_on */     SYSDATE,
+                         /* jle_amended_by */     'SYSTEM',
+                         /* jle_amended_on */     SYSDATE
                   FROM temp_gui_jrnl_lines_unposted
                   WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
                   AND   user_session_id = gSessionId
@@ -4535,24 +4671,25 @@ lvPeriodStartDate := NULL;
                                     WHERE  jlu_value_date >= ep_bus_period_start --TO_DATE('01/'||ep_month||'/'||ep_year, 'DD/MM/YYYY')
                                     AND    jlu_value_date <= ep_bus_period_end --ep_month_end
                                     AND    ep_entity = gJournalHeader.jhu_jrnl_entity -- gEntityConfiguration.ent_periods_and_days_set
-                                    AND	   ep_status = 'O');
+                                    AND    ep_status = 'O');
 
-            EXCEPTION
+              EXCEPTION
                 WHEN OTHERS THEN
                      pr_error(1, SQLERRM, 0, 'fnui_validate_periods.2', 'slr_entity_periods', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                      lvSuccess := FALSE;
-            END;
+              END;
+		  END IF;
 
         END IF;
 
          --How many errors were found
          BEGIN
               SELECT COUNT(*)
-              INTO	 lvFound
-              FROM	 temp_gui_jrnl_line_errors
-              WHERE	 jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              INTO   lvFound
+              FROM   temp_gui_jrnl_line_errors
+              WHERE  jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND    user_session_id = gSessionId
-              AND	 jle_error_code = 'MADJ-1024';
+              AND  jle_error_code = 'MADJ-1024';
          EXCEPTION
               WHEN NO_DATA_FOUND THEN
                    NULL; -- do nothing
@@ -4577,8 +4714,9 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_check_currencies RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER := NULL;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER := NULL;
+       lvSuccess     BOOLEAN;
+	   lvValRuleCode VARCHAR2(40);
 
     BEGIN
 
@@ -4592,23 +4730,23 @@ lvPeriodStartDate := NULL;
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1011',
-                      /* jle_error_string */		'Transaction currency does not exist or is not active.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1011',
+                      /* jle_error_string */    'Transaction currency does not exist or is not active.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-            AND	  TRIM(jlu_tran_ccy) NOT IN (SELECT TRIM(ec_ccy)
-                                       FROM	  slr_entity_currencies
+            AND   TRIM(jlu_tran_ccy) NOT IN (SELECT TRIM(ec_ccy)
+                                       FROM   slr_entity_currencies
                                        WHERE  ec_entity_set = gEntityConfiguration.ent_currency_set
-                                       AND	  ec_status	 = 'A');
+                                       AND    ec_status  = 'A');
 
          EXCEPTION
             WHEN OTHERS THEN
@@ -4623,16 +4761,16 @@ lvPeriodStartDate := NULL;
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
              )
-             SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1061',
-                      /* jle_error_string */		'Currency '||jlu_tran_ccy||' contains too many decimal places',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+             SELECT /* jle_jrnl_process_id */   0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1061',
+                      /* jle_error_string */    'Currency '||jlu_tran_ccy||' contains too many decimal places',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
              FROM temp_gui_jrnl_lines_unposted
              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
              AND   user_session_id = gSessionId
@@ -4657,22 +4795,22 @@ lvPeriodStartDate := NULL;
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1011',
-                      /* jle_error_string */		'Base currency does not exist or is not active.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */    0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1011',
+                      /* jle_error_string */    'Base currency does not exist or is not active.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-                        AND   NVL(jlu_base_amount,0) != 0
+            AND   jlu_base_amount IS NOT NULL
             AND   TRIM(jlu_base_ccy) NOT IN (SELECT TRIM(ec_ccy)
-                                                   FROM	  slr_entity_currencies
+                                                   FROM   slr_entity_currencies
                            WHERE  ec_entity_set = gEntityConfiguration.ent_currency_set
                                                    AND    ec_status = 'A');
 
@@ -4689,20 +4827,20 @@ lvPeriodStartDate := NULL;
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
              )
-             SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1061',
-                      /* jle_error_string */		'Currency '||jlu_base_ccy||' contains too many decimal places',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+             SELECT /* jle_jrnl_process_id */   0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1061',
+                      /* jle_error_string */    'Currency '||jlu_base_ccy||' contains too many decimal places',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
              FROM temp_gui_jrnl_lines_unposted
              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
              AND   user_session_id = gSessionId
-                         AND   NVL(jlu_base_amount,0) != 0
+             AND   jlu_base_amount IS NOT NULL
              AND   EXISTS(SELECT 1
                             FROM fr_currency
                             WHERE cu_currency_id  = jlu_base_ccy
@@ -4724,24 +4862,24 @@ lvPeriodStartDate := NULL;
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-            SELECT /* jle_jrnl_process_id */	 	        0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	        jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1011',
-                      /* jle_error_string */		'Local currency does not exist or is not active.',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */            0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */          jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1011',
+                      /* jle_error_string */    'Local currency does not exist or is not active.',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId
-                        AND   NVL(jlu_local_amount,0) != 0
+            AND   jlu_base_amount IS NOT NULL
             AND   TRIM(jlu_local_ccy) NOT IN (SELECT TRIM(ec_ccy)
                                                     FROM   slr_entity_currencies
                                                     WHERE  ec_entity_set = gEntityConfiguration.ent_currency_set
-                                                    AND	   ec_status	 = 'A');
+                                                    AND    ec_status   = 'A');
 
          EXCEPTION
             WHEN OTHERS THEN
@@ -4756,20 +4894,20 @@ lvPeriodStartDate := NULL;
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
              )
-             SELECT /* jle_jrnl_process_id */	 	0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1061',
-                      /* jle_error_string */		'Currency '||jlu_local_ccy||' contains too many decimal places',
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+             SELECT /* jle_jrnl_process_id */   0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1061',
+                      /* jle_error_string */    'Currency '||jlu_local_ccy||' contains too many decimal places',
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
              FROM temp_gui_jrnl_lines_unposted
              WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
              AND   user_session_id = gSessionId
-                         AND   NVL(jlu_local_amount,0) != 0
+             AND   jlu_base_amount IS NOT NULL
              AND   EXISTS(SELECT 1
                                       FROM fr_currency
                                       WHERE cu_currency_id  = jlu_local_ccy
@@ -4783,7 +4921,7 @@ lvPeriodStartDate := NULL;
                  lvSuccess := FALSE;
          END;
 
-
+                --AG CUSTOM - this created false positives and was commented out
                 -- Check that local and base currency is used consistently across all journal lines
 --                BEGIN
 --             INSERT INTO temp_gui_jrnl_line_errors (
@@ -4791,45 +4929,40 @@ lvPeriodStartDate := NULL;
 --                    jle_error_code, jle_error_string, jle_created_by, jle_created_on,
 --                    jle_amended_by, jle_amended_on
 --             )
---             SELECT /* jle_jrnl_process_id */	 	        0,
---                      /* user_session_id */			gSessionId,
---                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
---                      /* jle_jrnl_line_number */	        jlu_jrnl_line_number,
---                      /* jle_error_code */	  		'MADJ-1062',
---                      /* jle_error_string */		'Journal uses local and base amounts but values missing for line '||jlu_jrnl_line_number,
---                      /* jle_created_by */			'SYSTEM',
---                      /* jle_created_on */			SYSDATE,
---                      /* jle_amended_by */			'SYSTEM',
---                      /* jle_amended_on */	 		SYSDATE
+--             SELECT /* jle_jrnl_process_id */           0,
+--                      /* user_session_id */     gSessionId,
+--                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+--                      /* jle_jrnl_line_number */          jlu_jrnl_line_number,
+--                      /* jle_error_code */        'MADJ-1062',
+--                      /* jle_error_string */    'Journal uses local and base amounts but values missing for line '||jlu_jrnl_line_number,
+--                      /* jle_created_by */      'SYSTEM',
+--                      /* jle_created_on */      SYSDATE,
+--                      /* jle_amended_by */      'SYSTEM',
+--                      /* jle_amended_on */      SYSDATE
 --             FROM temp_gui_jrnl_lines_unposted tsjlu
 --             WHERE tsjlu.jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
 --             AND   tsjlu.user_session_id = gSessionId
 --                         AND   (tsjlu.jlu_base_amount IS NULL OR tsjlu.jlu_local_amount IS NULL)
---
---/*-----------UPGRADE 20.1.1 MERGE START-----------*/
---
-----             AND   EXISTS(SELECT 1
-----                                      FROM   gui_jrnl_lines_unposted sjlu
-----                                      WHERE  sjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
-----                                      AND    NVL(sjlu.jlu_base_amount,0) != 0
-----                                      AND    NVL(sjlu.jlu_local_amount,0) != 0);
---
 --             AND   EXISTS(SELECT 1
---							  FROM   temp_gui_jrnl_lines_unposted tgjlu
---							  WHERE  tgjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
---							  AND    tgjlu.user_session_id = tsjlu.user_session_id
---							  AND  ( NVL(tgjlu.jlu_base_amount,0) != 0
---                              OR     NVL(tgjlu.jlu_local_amount,0) != 0) );
+--                FROM   temp_gui_jrnl_lines_unposted tgjlu
+--                WHERE  tgjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
+--                AND    tgjlu.user_session_id = tsjlu.user_session_id
+--                AND  ( tgjlu.jlu_base_amount IS NOT NULL
+--                     OR     tgjlu.jlu_local_amount IS NOT NULL) );
 --
 --         EXCEPTION
 --            WHEN OTHERS THEN
 --                 pr_error(1, SQLERRM, 0, 'fnui_check_currencies.6', 'slr_entity_currencies', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 --                 lvSuccess := FALSE;
 --         END;
-/*-----------UPGRADE 20.1.1 MERGE END-----------*/
+
+		SELECT EJT_EFF_EJTR_CODE INTO lvValRuleCode
+		FROM slr.SLR_EXT_JRNL_TYPES WHERE ejt_type = gJournalHeader.jhu_jrnl_type;
 
         --check fx rates for local and base ccy only if apply fx translation flag equals 'Y' and journal date is <= entity business date
-        if  (gEntityConfiguration.ENT_APPLY_FX_TRANSLATION = 'Y' and gJournalHeader.jhu_jrnl_date <= gEntityConfiguration.ENT_BUSINESS_DATE) then
+        if ( gEntityConfiguration.ENT_APPLY_FX_TRANSLATION = 'Y' and (
+			 ( lvValRuleCode <> 'EQUALNEXT' and gJournalHeader.jhu_jrnl_date <= gEntityConfiguration.ENT_BUSINESS_DATE ) or
+			 ( lvValRuleCode = 'EQUALNEXT' and gJournalHeader.jhu_jrnl_date -1 <= gEntityConfiguration.ENT_BUSINESS_DATE))) then
           begin
 
             --local ccy
@@ -4856,19 +4989,19 @@ lvPeriodStartDate := NULL;
                       /* jle_amended_by */			'SYSTEM',
                       /* jle_amended_on */	 		SYSDATE
             FROM temp_gui_jrnl_lines_unposted tjlu
-			LEFT JOIN slr.SLR_FX_TRANSLATION_CONFIG SFTC_local
+      LEFT JOIN slr.SLR_FX_TRANSLATION_CONFIG SFTC_local
                        on SFTC_local.FTC_ENTITY = tjlu.JLU_ENTITY
                            and SFTC_local.FTC_GAAP = tjlu.JLU_SEGMENT_2
                            and SFTC_local.FTC_PROCESS_TYPE = 'FX_TRANSLATION'
-						   and SFTC_local.FTC_TARGET_AMOUNT_TYPE = 'Local'
+               and SFTC_local.FTC_TARGET_AMOUNT_TYPE = 'Local'
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-			AND   JLU_ENTITY = gEntityConfiguration.ENT_ENTITY
-			AND   NVL(tjlu.jlu_local_amount,0) = 0
+      AND   JLU_ENTITY = gEntityConfiguration.ENT_ENTITY
+      AND   tjlu.jlu_local_amount IS NULL
             AND   user_session_id = gSessionId
             AND NOT EXISTS (SELECT 1 FROM SLR_ENTITY_RATES
-					WHERE tjlu.JLU_TRAN_CCY = gEntityConfiguration.ENT_LOCAL_CCY
+          WHERE tjlu.JLU_TRAN_CCY = gEntityConfiguration.ENT_LOCAL_CCY
                     OR ( ER_ENTITY_SET = SFTC_local.FTC_FX_RATE_SET
-					AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY
+                    AND ER_CCY_FROM = tjlu.JLU_TRAN_CCY
                     AND ER_CCY_TO = gEntityConfiguration.ENT_LOCAL_CCY
                     AND ER_DATE = gJournalHeader.jhu_jrnl_date
 					AND ER_RATE_TYPE = SFTC_local.FTC_RATE_TYPE
@@ -4891,34 +5024,32 @@ lvPeriodStartDate := NULL;
                     jle_error_code, jle_error_string, jle_created_by, jle_created_on,
                     jle_amended_by, jle_amended_on
             )
-
-
-            SELECT /* jle_jrnl_process_id */	 	        0,
-                      /* user_session_id */			gSessionId,
-                      /* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id,
-                      /* jle_jrnl_line_number */	jlu_jrnl_line_number,
-                      /* jle_error_code */	  		'MADJ-1066',
-                      /* jle_error_string */		case when SFTC_base.FTC_ENTITY IS NOT NULL then
-														'No base FX Rate for Source Currency ['||case when SFTC_base.FTC_FX_MODE = 'Step-by-Step' then gEntityConfiguration.ENT_LOCAL_CCY
-																									  when SFTC_base.FTC_FX_MODE = 'Direct' then tjlu.JLU_TRAN_CCY
-																									  else tjlu.JLU_TRAN_CCY end
-																							   ||'], Target Currency ['||gEntityConfiguration.ENT_BASE_CCY||'], Gaap ['||tjlu.JLU_SEGMENT_2||'] and Entity ['||gEntityConfiguration.ent_entity||']'
-													else
-														'Missing configuration for Target Amount Type [Base], Process Type [FX_TRANSLATION], Entity ['||gEntityConfiguration.ent_entity||'] and Gaap ['||tjlu.JLU_SEGMENT_2||']'
-													end ,
-                      /* jle_created_by */			'SYSTEM',
-                      /* jle_created_on */			SYSDATE,
-                      /* jle_amended_by */			'SYSTEM',
-                      /* jle_amended_on */	 		SYSDATE
+            SELECT /* jle_jrnl_process_id */            0,
+                      /* user_session_id */     gSessionId,
+                      /* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id,
+                      /* jle_jrnl_line_number */  jlu_jrnl_line_number,
+                      /* jle_error_code */        'MADJ-1066',
+                      /* jle_error_string */    case when SFTC_base.FTC_ENTITY IS NOT NULL then
+                            'No base FX Rate for Source Currency ['||case when SFTC_base.FTC_FX_MODE = 'Step-by-Step' then gEntityConfiguration.ENT_LOCAL_CCY
+                                                    when SFTC_base.FTC_FX_MODE = 'Direct' then tjlu.JLU_TRAN_CCY
+                                                    else tjlu.JLU_TRAN_CCY end
+                                                 ||'], Target Currency ['||gEntityConfiguration.ENT_BASE_CCY||'], Gaap ['||tjlu.JLU_SEGMENT_2||'] and Entity ['||gEntityConfiguration.ent_entity||']'
+                          else
+                            'Missing configuration for Target Amount Type [Base], Process Type [FX_TRANSLATION], Entity ['||gEntityConfiguration.ent_entity||'] and Gaap ['||tjlu.JLU_SEGMENT_2||']'
+                          end ,
+                      /* jle_created_by */      'SYSTEM',
+                      /* jle_created_on */      SYSDATE,
+                      /* jle_amended_by */      'SYSTEM',
+                      /* jle_amended_on */      SYSDATE
             FROM temp_gui_jrnl_lines_unposted tjlu
-			LEFT JOIN slr.SLR_FX_TRANSLATION_CONFIG SFTC_base
-			   on SFTC_base.FTC_ENTITY = tjlu.JLU_ENTITY
-				   and SFTC_base.FTC_GAAP = tjlu.JLU_SEGMENT_2
-				   and SFTC_base.FTC_PROCESS_TYPE = 'FX_TRANSLATION'
-				   and SFTC_base.FTC_TARGET_AMOUNT_TYPE = 'Base'
+      LEFT JOIN slr.SLR_FX_TRANSLATION_CONFIG SFTC_base
+         on SFTC_base.FTC_ENTITY = tjlu.JLU_ENTITY
+           and SFTC_base.FTC_GAAP = tjlu.JLU_SEGMENT_2
+           and SFTC_base.FTC_PROCESS_TYPE = 'FX_TRANSLATION'
+           and SFTC_base.FTC_TARGET_AMOUNT_TYPE = 'Base'
             WHERE jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-			AND   JLU_ENTITY = gEntityConfiguration.ENT_ENTITY
-			AND   NVL(tjlu.jlu_base_amount,0) = 0
+      AND   JLU_ENTITY = gEntityConfiguration.ENT_ENTITY
+      AND   tjlu.jlu_base_amount IS NULL
             AND   user_session_id = gSessionId
             AND NOT EXISTS (SELECT 1 FROM SLR_ENTITY_RATES
                     WHERE (SFTC_base.FTC_FX_RATE_SET IS NULL
@@ -4947,9 +5078,9 @@ lvPeriodStartDate := NULL;
          --How many errors were found
          BEGIN
               SELECT COUNT(*)
-              INTO	 lvFound
-              FROM	 temp_gui_jrnl_line_errors
-              WHERE	 jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              INTO   lvFound
+              FROM   temp_gui_jrnl_line_errors
+              WHERE  jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND    user_session_id = gSessionId
 /*-----------UPGRADE 20.1.1 MERGE START-----------*/
 --              AND	 jle_error_code IN ('MADJ-1011','MADJ-1061','MADJ-1066');
@@ -4979,8 +5110,8 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_get_journal_type RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER;
+       lvSuccess     BOOLEAN;
 
     BEGIN
 
@@ -4994,13 +5125,13 @@ lvPeriodStartDate := NULL;
             INTO   gJournalType
             FROM   SLR_EXT_JRNL_TYPES
             WHERE  ejt_journal_type = gJournalHeader.jhu_jrnl_type
-            AND	   ejt_status = 'A';*/
+            AND    ejt_status = 'A';*/
 
             SELECT *
             INTO   gJournalType
             FROM   uiv_journal_types
             WHERE  jt_type = TRIM(gJournalHeader.jhu_jrnl_type)
-            AND	   jt_status = 'A';
+            AND    jt_status = 'A';
 
          EXCEPTION
             WHEN NO_DATA_FOUND THEN
@@ -5017,13 +5148,13 @@ lvPeriodStartDate := NULL;
          BEGIN
 
               SELECT 1
-              INTO	 lvFound
-              FROM	 uiv_journal_types,
+              INTO   lvFound
+              FROM   uiv_journal_types,
                      temp_gui_jrnl_headers_unposted
-              WHERE	 jt_type = jhu_jrnl_type
-              AND	 user_session_id = gSessionId
-              AND	 jt_madj_ind != 'Y'
-              AND	 db_state != 'U';
+              WHERE  jt_type = jhu_jrnl_type
+              AND  user_session_id = gSessionId
+              AND  jt_madj_ind != 'Y'
+              AND  db_state != 'U';
 
          EXCEPTION
             WHEN NO_DATA_FOUND THEN
@@ -5042,15 +5173,17 @@ lvPeriodStartDate := NULL;
          -- Check if journal type is accessable by user
         /* Removed 1.2 functionality for 1.2
          BEGIN
-            SELECT 	1
-            INTO	lvFound
-            FROM	SLR_EXT_JRNL_TYPES sljt
+            SELECT  1
+            INTO  lvFound
+            FROM  SLR_EXT_JRNL_TYPES sljt
                         INNER JOIN UI_META_GROUP_JOURNAL_TYPES mgjt
                             ON sljt.ejt_journal_type = mgjt.gjt_journal_type
                         INNER JOIN UI_META_USER_GROUPS umug
                             ON mgjt.gjt_group_id = umug.mmg_group_id
-            WHERE	sljt.ejt_journal_type = gJournalHeader.jhu_jrnl_type
-            AND		umug.mmg_user_id = gJournalHeader.jhu_amended_by;
+            WHERE sljt.ejt_journal_type = gJournalHeader.jhu_jrnl_type
+         --How many errors were found
+         BEGIN
+            AND   umug.mmg_user_id = gJournalHeader.jhu_amended_by;
          EXCEPTION
             WHEN NO_DATA_FOUND THEN
                  prui_log_error(gJournalLine.jlu_jrnl_hdr_id, 0, 9999,
@@ -5073,7 +5206,7 @@ lvPeriodStartDate := NULL;
 
     FUNCTION fnui_get_fak_definitions RETURN BOOLEAN
     IS
-      lvSuccess		 BOOLEAN;
+      lvSuccess    BOOLEAN;
     BEGIN
 
          lvSuccess := TRUE;
@@ -5105,7 +5238,7 @@ lvPeriodStartDate := NULL;
 
     FUNCTION fnui_get_eba_definitions RETURN BOOLEAN
     IS
-      lvSuccess		 BOOLEAN;
+      lvSuccess    BOOLEAN;
     BEGIN
 
          lvSuccess := TRUE;
@@ -5137,7 +5270,7 @@ lvPeriodStartDate := NULL;
 
     FUNCTION fnui_get_entity RETURN BOOLEAN
     IS
-       lvSuccess		 BOOLEAN;
+       lvSuccess     BOOLEAN;
 
     BEGIN
 
@@ -5149,6 +5282,7 @@ lvPeriodStartDate := NULL;
             FROM   SLR_ENTITIES
             WHERE  ent_entity = gJournalHeader.jhu_jrnl_entity
             AND    ent_status = 'A'
+            -- following AND is AG Custom.  Gets only real insurance companies, elim companies, and consolidation companies
             AND    EXISTS (SELECT NULL
                            FROM FDR.FR_PARTY_LEGAL pl
                            WHERE PL.PL_PARTY_LEGAL_ID = ENT_ENTITY
@@ -5156,7 +5290,7 @@ lvPeriodStartDate := NULL;
          EXCEPTION
             WHEN NO_DATA_FOUND THEN
                  prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999,
-                                        'Entity '||gJournalHeader.jhu_jrnl_entity||' does not exist or is not activated or is not a standalone insurance co');
+                                        'Entity '||gJournalHeader.jhu_jrnl_entity||' does not exist or is not activated or is not a standalone insurance co');  --AG custom message after activated is custom
                  lvSuccess := FALSE;
             WHEN OTHERS THEN
                  pr_error(1, SQLERRM, 0, 'fnui_get_entity', 'slr_entities', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -5178,19 +5312,17 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_validate_segment_n( segment_no IN NUMBER ) RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER := NULL;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER := NULL;
+       lvSuccess     BOOLEAN;
 
-       lv_sql_statement	 VARCHAR2(8000);
+       lv_sql_statement  VARCHAR2(8000);
 
-       fak_type			 CHAR(1);
-       fak_table		 VARCHAR2(40);
-       fak_field		 VARCHAR2(40);
-       fak_name			 SLR_FAK_DEFINITIONS.FD_SEGMENT_1_NAME%TYPE;
-       fak_set_name		 SLR_ENTITIES.ENT_SEGMENT_1_SET%TYPE;
-
-	   v_screen_segment_name T_UI_JRNL_LINE_META.COLUMN_SCREEN_LABEL%TYPE;
-	   v_column_screen_label T_UI_JRNL_LINE_META.COLUMN_NAME%TYPE;
+       fak_type      CHAR(1);
+       fak_table     VARCHAR2(40);
+       fak_field     VARCHAR2(40);
+       fak_set_name    SLR_ENTITIES.ENT_SEGMENT_1_SET%TYPE;
+       v_screen_segment_name T_UI_JRNL_LINE_META.COLUMN_NAME%TYPE;
+       v_column_screen_label T_UI_JRNL_LINE_META.COLUMN_SCREEN_LABEL%TYPE;
 
     BEGIN
 
@@ -5199,12 +5331,12 @@ lvPeriodStartDate := NULL;
 
         BEGIN
 
-		 --get screen label for given segment
-		v_screen_segment_name := 'SEGMENT_'||segment_no;
-		select column_screen_label into v_column_screen_label
-		from gui.T_UI_JRNL_LINE_META
-		where column_name = v_screen_segment_name
-		and column_type = 'L';
+     --get screen label for given segment
+    v_screen_segment_name := 'SEGMENT_'||segment_no;
+    select column_screen_label into v_column_screen_label
+    from gui.T_UI_JRNL_LINE_META
+    where column_name = v_screen_segment_name
+    and column_type = 'L';
 
             EXCEPTION
                 WHEN NO_DATA_FOUND THEN
@@ -5213,44 +5345,34 @@ lvPeriodStartDate := NULL;
         END;
 
          IF segment_no = 1 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_1_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_1_type;
             fak_set_name := gEntityConfiguration.ent_segment_1_set;
          ELSIF segment_no = 2 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_2_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_2_type;
             fak_set_name := gEntityConfiguration.ent_segment_2_set;
          ELSIF segment_no = 3 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_3_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_3_type;
             fak_set_name := gEntityConfiguration.ent_segment_3_set;
          ELSIF segment_no = 4 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_4_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_4_type;
             fak_set_name := gEntityConfiguration.ent_segment_4_set;
          ELSIF segment_no = 5 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_5_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_5_type;
             fak_set_name := gEntityConfiguration.ent_segment_5_set;
          ELSIF segment_no = 6 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_6_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_6_type;
             fak_set_name := gEntityConfiguration.ent_segment_6_set;
          ELSIF segment_no = 7 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_7_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_7_type;
             fak_set_name := gEntityConfiguration.ent_segment_7_set;
          ELSIF segment_no = 8 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_8_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_8_type;
             fak_set_name := gEntityConfiguration.ent_segment_8_set;
          ELSIF segment_no = 9 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_9_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_9_type;
             fak_set_name := gEntityConfiguration.ent_segment_9_set;
          ELSIF segment_no = 10 THEN
-            fak_type   	 := gFAKDefinitions.fd_segment_10_type;
-            fak_name   	 := v_column_screen_label;
+            fak_type     := gFAKDefinitions.fd_segment_10_type;
             fak_set_name := gEntityConfiguration.ent_segment_10_set;
          ELSE
             prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999,
@@ -5262,22 +5384,22 @@ lvPeriodStartDate := NULL;
          -- TTP: 1804 all segments sizes extended to 100 characters
          BEGIN
             lv_sql_statement := 'INSERT INTO temp_gui_jrnl_line_errors ( '
-                                ||'	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                                ||'	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                                ||'	jle_amended_by, jle_amended_on '
+                                ||' jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                                ||' jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                                ||' jle_amended_by, jle_amended_on '
                                 ||' ) '
-                                ||' SELECT /* jle_jrnl_process_id */	 	0, '
-                                           ||'/* user_session_id */			'''||gSessionId||''', '
-                                           ||'/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                                           ||'/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                                           ||'/* jle_error_code */	  		''MADJ-1013'', '
-                                           ||'/* jle_error_string */		'''||fak_name||' is greater than 100 characters.'', '
-                                           ||'/* jle_created_by */			''SYSTEM'', '
-                                           ||'/* jle_created_on */			SYSDATE, '
-                                           ||'/* jle_amended_by */			''SYSTEM'', '
-                                           ||'/* jle_amended_on */	 		SYSDATE '
+                                ||' SELECT /* jle_jrnl_process_id */    0, '
+                                           ||'/* user_session_id */     '''||gSessionId||''', '
+                                           ||'/* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id, '
+                                           ||'/* jle_jrnl_line_number */  jlu_jrnl_line_number, '
+                                           ||'/* jle_error_code */        ''MADJ-1013'', '
+                                           ||'/* jle_error_string */    '''||v_column_screen_label||' is greater than 100 characters.'', '
+                                           ||'/* jle_created_by */      ''SYSTEM'', '
+                                           ||'/* jle_created_on */      SYSDATE, '
+                                           ||'/* jle_amended_by */      ''SYSTEM'', '
+                                           ||'/* jle_amended_on */      SYSDATE '
                                 ||' FROM temp_gui_jrnl_lines_unposted '
-                                ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id|| ''' '
+                                ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id || ''''
                                 ||' AND user_session_id = '''||gSessionId||''' '
                                 ||' AND LENGTH(jlu_segment_'||TO_CHAR(segment_no)||') > 100 ';
 
@@ -5298,22 +5420,22 @@ lvPeriodStartDate := NULL;
                 IF fak_type = 'C' THEN
 
                     lv_sql_statement := 'INSERT INTO temp_gui_jrnl_line_errors ( '
-                                        ||'	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                                        ||'	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                                        ||'	jle_amended_by, jle_amended_on '
+                                        ||' jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                                        ||' jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                                        ||' jle_amended_by, jle_amended_on '
                                         ||' ) '
-                                        ||' SELECT /* jle_jrnl_process_id */	 	0, '
-                                                   ||'/* user_session_id */			'''||gSessionId||''', '
-                                                   ||'/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                                                   ||'/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                                                   ||'/* jle_error_code */	  		''MADJ-1012'', '
-                                                   ||'/* jle_error_string */		''Value for '||fak_name||' is invalid.'', '
-                                                   ||'/* jle_created_by */			''SYSTEM'', '
-                                                   ||'/* jle_created_on */			SYSDATE, '
-                                                   ||'/* jle_amended_by */			''SYSTEM'', '
-                                                   ||'/* jle_amended_on */	 		SYSDATE '
+                                        ||' SELECT /* jle_jrnl_process_id */    0, '
+                                                   ||'/* user_session_id */     '''||gSessionId||''', '
+                                                   ||'/* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id, '
+                                                   ||'/* jle_jrnl_line_number */  jlu_jrnl_line_number, '
+                                                   ||'/* jle_error_code */        ''MADJ-1012'', '
+                                                   ||'/* jle_error_string */    ''Value for '||v_column_screen_label||' is invalid.'', '
+                                                   ||'/* jle_created_by */      ''SYSTEM'', '
+                                                   ||'/* jle_created_on */      SYSDATE, '
+                                                   ||'/* jle_amended_by */      ''SYSTEM'', '
+                                                   ||'/* jle_amended_on */      SYSDATE '
                                         ||' FROM temp_gui_jrnl_lines_unposted '
-                                        ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id|| ''' '
+                                        ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id || ''''
                                         ||' AND user_session_id = '''||gSessionId||''' '
                                         ||' AND NVL(jlu_segment_'||TO_CHAR(segment_no)||',''NVS'') != ''NVS'' '
                                         ||' AND jlu_segment_'||TO_CHAR(segment_no)||' NOT IN '
@@ -5325,22 +5447,22 @@ lvPeriodStartDate := NULL;
                 ELSE
 
                     lv_sql_statement := 'INSERT INTO temp_gui_jrnl_line_errors ( '
-                                        ||'	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                                        ||'	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                                        ||'	jle_amended_by, jle_amended_on '
+                                        ||' jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                                        ||' jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                                        ||' jle_amended_by, jle_amended_on '
                                         ||' ) '
-                                        ||' SELECT /* jle_jrnl_process_id */	 	0, '
-                                                   ||'/* user_session_id */			'''||gSessionId||''', '
-                                                   ||'/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                                                   ||'/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                                                   ||'/* jle_error_code */	  		''MADJ-1012'', '
-                                                   ||'/* jle_error_string */		''Value for '||fak_name||' is invalid.'', '
-                                                   ||'/* jle_created_by */			''SYSTEM'', '
-                                                   ||'/* jle_created_on */			SYSDATE, '
-                                                   ||'/* jle_amended_by */			''SYSTEM'', '
-                                                   ||'/* jle_amended_on */	 		SYSDATE '
+                                        ||' SELECT /* jle_jrnl_process_id */    0, '
+                                                   ||'/* user_session_id */     '''||gSessionId||''', '
+                                                   ||'/* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id, '
+                                                   ||'/* jle_jrnl_line_number */  jlu_jrnl_line_number, '
+                                                   ||'/* jle_error_code */        ''MADJ-1012'', '
+                                                   ||'/* jle_error_string */    ''Value for '||v_column_screen_label||' is invalid.'', '
+                                                   ||'/* jle_created_by */      ''SYSTEM'', '
+                                                   ||'/* jle_created_on */      SYSDATE, '
+                                                   ||'/* jle_amended_by */      ''SYSTEM'', '
+                                                   ||'/* jle_amended_on */      SYSDATE '
                                         ||' FROM temp_gui_jrnl_lines_unposted '
-                                        ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id|| ''' '
+                                        ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id || ''''
                                         ||' AND   user_session_id = '''||gSessionId||''' '
                                         ||' AND jlu_segment_'||TO_CHAR(segment_no)||' NOT IN '
                                         ||' (SELECT fs'||TO_CHAR(segment_no)||'_segment_value '
@@ -5364,11 +5486,11 @@ lvPeriodStartDate := NULL;
          --How many errors were found
          BEGIN
               SELECT COUNT(*)
-              INTO	 lvFound
-              FROM	 temp_gui_jrnl_line_errors
-              WHERE	 jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              INTO   lvFound
+              FROM   temp_gui_jrnl_line_errors
+              WHERE  jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND    user_session_id = gSessionId
-              AND	 jle_error_code IN ('MADJ-1012','MADJ-1013');
+              AND  jle_error_code IN ('MADJ-1012','MADJ-1013');
          EXCEPTION
               WHEN NO_DATA_FOUND THEN
                    NULL; -- do nothing
@@ -5389,18 +5511,18 @@ lvPeriodStartDate := NULL;
     END fnui_validate_segment_n;
     --********************************************************************************
 
-    FUNCTION fnui_validate_attribute_n( attribute_no IN NUMBER )	RETURN BOOLEAN
+    FUNCTION fnui_validate_attribute_n( attribute_no IN NUMBER )  RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER;
+       lvSuccess     BOOLEAN;
 
-       lv_sql_statement	 VARCHAR2(32000);
+       lv_sql_statement  VARCHAR2(32000);
 
-       eba_type			 CHAR(1);
-       eba_table		 VARCHAR2(40);
-       eba_name			 SLR_EBA_DEFINITIONS.ED_ATTRIBUTE_1_NAME%TYPE;
-       eba_set_name		 SLR_ENTITIES.ENT_SEGMENT_1_SET%TYPE;
+       eba_type      CHAR(1);
+       eba_table     VARCHAR2(40);
+       eba_name      SLR_EBA_DEFINITIONS.ED_ATTRIBUTE_1_NAME%TYPE;
+       eba_set_name    SLR_ENTITIES.ENT_SEGMENT_1_SET%TYPE;
 
     BEGIN
 
@@ -5409,24 +5531,24 @@ lvPeriodStartDate := NULL;
          eba_table := 'SLR_EBA_ATTRIBUTE_'||TO_CHAR(attribute_no);
 
          IF attribute_no = 1 THEN
-            eba_type   	 := gEBADefinitions.ed_attribute_1_type;
-            eba_name   	 := gEBADefinitions.ed_attribute_1_name;
+            eba_type     := gEBADefinitions.ed_attribute_1_type;
+            eba_name     := gEBADefinitions.ed_attribute_1_name;
             eba_set_name := gEntityConfiguration.ent_segment_1_set;
          ELSIF attribute_no = 2 THEN
-            eba_type   	 := gEBADefinitions.ed_attribute_2_type;
-            eba_name   	 := gEBADefinitions.ed_attribute_2_name;
+            eba_type     := gEBADefinitions.ed_attribute_2_type;
+            eba_name     := gEBADefinitions.ed_attribute_2_name;
             eba_set_name := gEntityConfiguration.ent_segment_2_set;
          ELSIF attribute_no = 3 THEN
-            eba_type   	 := gEBADefinitions.ed_attribute_3_type;
-            eba_name   	 := gEBADefinitions.ed_attribute_3_name;
+            eba_type     := gEBADefinitions.ed_attribute_3_type;
+            eba_name     := gEBADefinitions.ed_attribute_3_name;
             eba_set_name := gEntityConfiguration.ent_segment_3_set;
          ELSIF attribute_no = 4 THEN
-            eba_type   	 := gEBADefinitions.ed_attribute_4_type;
-            eba_name   	 := gEBADefinitions.ed_attribute_4_name;
+            eba_type     := gEBADefinitions.ed_attribute_4_type;
+            eba_name     := gEBADefinitions.ed_attribute_4_name;
             eba_set_name := gEntityConfiguration.ent_segment_4_set;
          ELSIF attribute_no = 5 THEN
-            eba_type   	 := gEBADefinitions.ed_attribute_5_type;
-            eba_name   	 := gEBADefinitions.ed_attribute_5_name;
+            eba_type     := gEBADefinitions.ed_attribute_5_type;
+            eba_name     := gEBADefinitions.ed_attribute_5_name;
             eba_set_name := gEntityConfiguration.ent_segment_5_set;
          ELSE
             prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 9999,
@@ -5439,22 +5561,22 @@ lvPeriodStartDate := NULL;
          -- TTP: 1804 all attributes sizes extended to 100 characters
          BEGIN
             lv_sql_statement := 'INSERT INTO temp_gui_jrnl_line_errors ( '
-                                ||'	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                                ||'	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                                ||'	jle_amended_by, jle_amended_on '
+                                ||' jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                                ||' jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                                ||' jle_amended_by, jle_amended_on '
                                 ||' ) '
-                                ||' SELECT /* jle_jrnl_process_id */	 	0, '
-                                           ||'/* user_session_id */			'''||gSessionId||''', '
-                                           ||'/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                                           ||'/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                                           ||'/* jle_error_code */	  		''MADJ-1013'', '
-                                           ||'/* jle_error_string */		'''||eba_name||' is greater than 100 characters.'', '
-                                           ||'/* jle_created_by */			''SYSTEM'', '
-                                           ||'/* jle_created_on */			SYSDATE, '
-                                           ||'/* jle_amended_by */			''SYSTEM'', '
-                                           ||'/* jle_amended_on */	 		SYSDATE '
+                                ||' SELECT /* jle_jrnl_process_id */    0, '
+                                           ||'/* user_session_id */     '''||gSessionId||''', '
+                                           ||'/* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id, '
+                                           ||'/* jle_jrnl_line_number */  jlu_jrnl_line_number, '
+                                           ||'/* jle_error_code */        ''MADJ-1013'', '
+                                           ||'/* jle_error_string */    '''||eba_name||' is greater than 100 characters.'', '
+                                           ||'/* jle_created_by */      ''SYSTEM'', '
+                                           ||'/* jle_created_on */      SYSDATE, '
+                                           ||'/* jle_amended_by */      ''SYSTEM'', '
+                                           ||'/* jle_amended_on */      SYSDATE '
                                 ||' FROM temp_gui_jrnl_lines_unposted '
-                                ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id|| ''' '
+                                ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id || ''''
                                 ||' AND user_session_id = '''||gSessionId||''' '
                                 ||' AND LENGTH(jlu_attribute_'||TO_CHAR(attribute_no)||') > 100 ';
 
@@ -5475,22 +5597,22 @@ lvPeriodStartDate := NULL;
                 IF eba_type = 'C' THEN
 
                     lv_sql_statement := 'INSERT INTO temp_gui_jrnl_line_errors ( '
-                                        ||'	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                                        ||'	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                                        ||'	jle_amended_by, jle_amended_on '
+                                        ||' jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                                        ||' jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                                        ||' jle_amended_by, jle_amended_on '
                                         ||' ) '
-                                        ||' SELECT /* jle_jrnl_process_id */	 	0, '
-                                                   ||'/* user_session_id */			'''||gSessionId||''', '
-                                                   ||'/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                                                   ||'/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                                                   ||'/* jle_error_code */	  		''MADJ-1012'', '
-                                                   ||'/* jle_error_string */		''Value for '||eba_name||' is missing.'', '
-                                                   ||'/* jle_created_by */			''SYSTEM'', '
-                                                   ||'/* jle_created_on */			SYSDATE, '
-                                                   ||'/* jle_amended_by */			''SYSTEM'', '
-                                                   ||'/* jle_amended_on */	 		SYSDATE '
+                                        ||' SELECT /* jle_jrnl_process_id */    0, '
+                                                   ||'/* user_session_id */     '''||gSessionId||''', '
+                                                   ||'/* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id, '
+                                                   ||'/* jle_jrnl_line_number */  jlu_jrnl_line_number, '
+                                                   ||'/* jle_error_code */        ''MADJ-1012'', '
+                                                   ||'/* jle_error_string */    ''Value for '||eba_name||' is missing.'', '
+                                                   ||'/* jle_created_by */      ''SYSTEM'', '
+                                                   ||'/* jle_created_on */      SYSDATE, '
+                                                   ||'/* jle_amended_by */      ''SYSTEM'', '
+                                                   ||'/* jle_amended_on */      SYSDATE '
                                         ||' FROM temp_gui_jrnl_lines_unposted '
-                                        ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id ||''' '
+                                        ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id || ''''
                                         ||' AND user_session_id = '''||gSessionId||''' '
                                         ||' AND jlu_attribute_'||TO_CHAR(attribute_no)||' != ''NVS'' '
                                         ||' AND jlu_attribute_'||TO_CHAR(attribute_no)||' IS NULL ';
@@ -5498,22 +5620,22 @@ lvPeriodStartDate := NULL;
                 ELSE
 
                     lv_sql_statement := 'INSERT INTO temp_gui_jrnl_line_errors ( '
-                                        ||'	jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
-                                        ||'	jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
-                                        ||'	jle_amended_by, jle_amended_on '
+                                        ||' jle_jrnl_process_id, user_session_id, jle_jrnl_hdr_id, jle_jrnl_line_number, '
+                                        ||' jle_error_code, jle_error_string, jle_created_by, jle_created_on, '
+                                        ||' jle_amended_by, jle_amended_on '
                                         ||' ) '
-                                        ||' SELECT /* jle_jrnl_process_id */	 	0, '
-                                                   ||'/* user_session_id */			'''||gSessionId||''', '
-                                                   ||'/* jle_jrnl_hdr_id */	 	 	jlu_jrnl_hdr_id, '
-                                                   ||'/* jle_jrnl_line_number */	jlu_jrnl_line_number, '
-                                                   ||'/* jle_error_code */	  		''MADJ-1012'', '
-                                                   ||'/* jle_error_string */		''Value for '||eba_name||' is missing.'', '
-                                                   ||'/* jle_created_by */			''SYSTEM'', '
-                                                   ||'/* jle_created_on */			SYSDATE, '
-                                                   ||'/* jle_amended_by */			''SYSTEM'', '
-                                                   ||'/* jle_amended_on */	 		SYSDATE '
+                                        ||' SELECT /* jle_jrnl_process_id */    0, '
+                                                   ||'/* user_session_id */     '''||gSessionId||''', '
+                                                   ||'/* jle_jrnl_hdr_id */     jlu_jrnl_hdr_id, '
+                                                   ||'/* jle_jrnl_line_number */  jlu_jrnl_line_number, '
+                                                   ||'/* jle_error_code */        ''MADJ-1012'', '
+                                                   ||'/* jle_error_string */    ''Value for '||eba_name||' is missing.'', '
+                                                   ||'/* jle_created_by */      ''SYSTEM'', '
+                                                   ||'/* jle_created_on */      SYSDATE, '
+                                                   ||'/* jle_amended_by */      ''SYSTEM'', '
+                                                   ||'/* jle_amended_on */      SYSDATE '
                                         ||' FROM temp_gui_jrnl_lines_unposted '
-                                        ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id|| ''' '
+                                        ||' WHERE jlu_jrnl_hdr_id = '''||gJournalHeader.jhu_jrnl_id || ''''
                                         ||' AND   user_session_id = '''||gSessionId||''' '
                                         ||' AND   jlu_attribute_'||TO_CHAR(attribute_no)||' = ''NVS'' ';
 
@@ -5533,11 +5655,11 @@ lvPeriodStartDate := NULL;
          --How many errors were found
          BEGIN
               SELECT COUNT(*)
-              INTO	 lvFound
-              FROM	 temp_gui_jrnl_line_errors
-              WHERE	 jle_jRnl_hdr_id = gJournalHeader.jhu_jrnl_id
+              INTO   lvFound
+              FROM   temp_gui_jrnl_line_errors
+              WHERE  jle_jRnl_hdr_id = gJournalHeader.jhu_jrnl_id
               AND    user_session_id = gSessionId
-              AND	 jle_error_code IN ('MADJ-1012','MADJ-1013');
+              AND  jle_error_code IN ('MADJ-1012','MADJ-1013');
          EXCEPTION
               WHEN NO_DATA_FOUND THEN
                    NULL; -- do nothing
@@ -5563,8 +5685,8 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_check_month_end_limits RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER;
+       lvSuccess     BOOLEAN;
 
     BEGIN
 
@@ -5584,7 +5706,7 @@ lvPeriodStartDate := NULL;
     --********************************************************************************
 
     PROCEDURE prui_log_error( journal_id  IN SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
-                              line_no	  IN SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+                              line_no   IN SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
                               error_no    IN NUMBER,
                               message     IN VARCHAR2)
     IS
@@ -5596,16 +5718,16 @@ lvPeriodStartDate := NULL;
               jle_amended_by, jle_amended_on
          )
          VALUES (
-              /* user_session_id */							gSessionId,
-              /* jle_jrnl_process_id */						0,
-              /* jle_jrnl_hdr_id */	 						journal_id,
-              /* jle_jrnl_line_number */					line_no,
-              /* jle_error_code	*/	  						'MADJ-'||error_no,
-              /* jle_error_string */						message,
-              /* jle_created_by	*/							'SYSTEM',
-              /* jle_created_on	*/							SYSDATE,
-              /* jle_amended_by	*/							'SYSTEM',
-              /* jle_amended_on	*/	 						SYSDATE
+              /* user_session_id */             gSessionId,
+              /* jle_jrnl_process_id */           0,
+              /* jle_jrnl_hdr_id */             journal_id,
+              /* jle_jrnl_line_number */          line_no,
+              /* jle_error_code */                'MADJ-'||error_no,
+              /* jle_error_string */            message,
+              /* jle_created_by */              'SYSTEM',
+              /* jle_created_on */              SYSDATE,
+              /* jle_amended_by */              'SYSTEM',
+              /* jle_amended_on */              SYSDATE
          );
 
     END prui_log_error;
@@ -5629,10 +5751,10 @@ lvPeriodStartDate := NULL;
                   jle_amended_by, jle_amended_on
              )
              SELECT jle_jrnl_process_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                    jle_error_code,	jle_error_string, jle_created_by, jle_created_on,
-                    jle_amended_by,	jle_amended_on
-             FROM 	temp_gui_jrnl_line_errors
-             WHERE	user_session_id = gSessionId;
+                    jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                    jle_amended_by, jle_amended_on
+             FROM   temp_gui_jrnl_line_errors
+             WHERE  user_session_id = gSessionId;
 
          ELSE
 
@@ -5642,11 +5764,11 @@ lvPeriodStartDate := NULL;
                   jle_amended_by, jle_amended_on
              )
              SELECT jle_jrnl_process_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-                    jle_error_code,	jle_error_string, jle_created_by, jle_created_on,
-                    jle_amended_by,	jle_amended_on
-             FROM 	temp_gui_jrnl_line_errors
-             WHERE	user_session_id = gSessionId
-             AND	jle_jrnl_hdr_id = journal_id;
+                    jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+                    jle_amended_by, jle_amended_on
+             FROM   temp_gui_jrnl_line_errors
+             WHERE  user_session_id = gSessionId
+             AND  jle_jrnl_hdr_id = journal_id;
 
          END IF;
     exception
@@ -5703,7 +5825,7 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_requires_authorisation RETURN BOOLEAN
     IS
 
-      lvSuccess		 BOOLEAN;
+      lvSuccess    BOOLEAN;
 
     BEGIN
 
@@ -5725,8 +5847,8 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_check_copy_journal RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER;
+       lvSuccess     BOOLEAN;
 
     BEGIN
 
@@ -5743,11 +5865,11 @@ lvPeriodStartDate := NULL;
          BEGIN
 
              SELECT 1
-             INTO	lvFound
-             FROM	slr_entity_days
-             WHERE	ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
-             AND	ed_date		   = gJournalHeader.jhu_jrnl_date
-             AND	ed_status	   = 'O';
+             INTO lvFound
+             FROM slr_entity_days
+             WHERE  ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
+             AND  ed_date      = gJournalHeader.jhu_jrnl_date
+             AND  ed_status    = 'O';
 
          EXCEPTION
             WHEN NO_DATA_FOUND THEN
@@ -5764,11 +5886,11 @@ lvPeriodStartDate := NULL;
             BEGIN
 
                  SELECT 1
-                 INTO	lvFound
-                 FROM	slr_entity_days
-                 WHERE	ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
-                 AND	ed_date		   = gJournalHeader.jhu_jrnl_rev_date
-                 AND	ed_status	   = 'O';
+                 INTO lvFound
+                 FROM slr_entity_days
+                 WHERE  ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
+                 AND  ed_date      = gJournalHeader.jhu_jrnl_rev_date
+                 AND  ed_status    = 'O';
 
             EXCEPTION
                 WHEN NO_DATA_FOUND THEN
@@ -5788,8 +5910,8 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_check_quick_reversal RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER;
+       lvSuccess     BOOLEAN;
 
     BEGIN
 
@@ -5806,11 +5928,11 @@ lvPeriodStartDate := NULL;
          BEGIN
 
              SELECT 1
-             INTO	lvFound
-             FROM	slr_entity_days
-             WHERE	ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
-             AND	ed_date		   = gJournalHeader.jhu_jrnl_date
-             AND	ed_status	   = 'O';
+             INTO lvFound
+             FROM slr_entity_days
+             WHERE  ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
+             AND  ed_date      = gJournalHeader.jhu_jrnl_date
+             AND  ed_status    = 'O';
 
          EXCEPTION
             WHEN NO_DATA_FOUND THEN
@@ -5827,11 +5949,11 @@ lvPeriodStartDate := NULL;
             BEGIN
 
                  SELECT 1
-                 INTO	lvFound
-                 FROM	slr_entity_days
-                 WHERE	ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
-                 AND	ed_date		   = gJournalHeader.jhu_jrnl_rev_date
-                 AND	ed_status	   = 'O';
+                 INTO lvFound
+                 FROM slr_entity_days
+                 WHERE  ed_entity_set  = gEntityConfiguration.ent_periods_and_days_set
+                 AND  ed_date      = gJournalHeader.jhu_jrnl_rev_date
+                 AND  ed_status    = 'O';
 
             EXCEPTION
                 WHEN NO_DATA_FOUND THEN
@@ -5851,9 +5973,9 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_check_deletion(journal_id VARCHAR2) RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER;
-       lvSuccess		 BOOLEAN;
-       lvJrnlStatus 	 CHAR(1);
+       lvFound       NUMBER;
+       lvSuccess     BOOLEAN;
+       lvJrnlStatus    CHAR(1);
 
     BEGIN
 
@@ -5864,20 +5986,20 @@ lvPeriodStartDate := NULL;
             lvSuccess := FALSE;
             prui_log_error(journal_id, 0, 9999, 'Journal '||journal_id||' does not exist');
          ELSE
-         	SELECT JHU_JRNL_STATUS
-         	INTO lvJrnlStatus
-         	FROM GUI_JRNL_HEADERS_UNPOSTED
-         	WHERE jhu_jrnl_id = journal_id;
+          SELECT JHU_JRNL_STATUS
+          INTO lvJrnlStatus
+          FROM GUI_JRNL_HEADERS_UNPOSTED
+          WHERE jhu_jrnl_id = journal_id;
 
-         	IF (lvJrnlStatus = 'V')
-         	THEN
-         		lvSuccess := FALSE;
-            	prui_log_error(journal_id, 0, 9999, 'Journal '||journal_id||' is currently processed. Cannot delete running journal.');
+          IF (lvJrnlStatus = 'V')
+          THEN
+            lvSuccess := FALSE;
+              prui_log_error(journal_id, 0, 9999, 'Journal '||journal_id||' is currently processed. Cannot delete running journal.');
             END IF;
          END IF;
 
          IF gJournalType.jt_madj_ind != 'Y' THEN
-            prui_log_error(journal_id, 0, 9999,	'Only manual journals can be deleted');
+            prui_log_error(journal_id, 0, 9999, 'Only manual journals can be deleted');
             lvSuccess := FALSE;
          END IF;
 
@@ -5889,8 +6011,8 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_check_copy_line(journal_id VARCHAR2, line_number NUMBER) RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER;
+       lvSuccess     BOOLEAN;
 
     BEGIN
 
@@ -5908,11 +6030,11 @@ lvPeriodStartDate := NULL;
 
     --********************************************************************************
 
-    FUNCTION fnui_check_delete_line(journal_id VARCHAR2, line_number NUMBER)	RETURN BOOLEAN
+    FUNCTION fnui_check_delete_line(journal_id VARCHAR2, line_number NUMBER)  RETURN BOOLEAN
     IS
 
-       lvFound 			 NUMBER;
-       lvSuccess		 BOOLEAN;
+       lvFound       NUMBER;
+       lvSuccess     BOOLEAN;
 
     BEGIN
 
@@ -5933,7 +6055,7 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_decode_journal_lines RETURN BOOLEAN
     IS
       lvSuccess    BOOLEAN;
-      lvCount 	   NUMBER;
+      lvCount      NUMBER;
     BEGIN
 
          lvSuccess := TRUE;
@@ -5945,7 +6067,7 @@ lvPeriodStartDate := NULL;
 
          -- Convert source system codes to FDR codes using correlated query
          UPDATE temp_gui_jrnl_lines_unposted tsjlu
-         SET	(jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5,
+         SET  (jlu_segment_1, jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5,
                  jlu_segment_6, jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10,
                  jlu_attribute_1, jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5)
                  = (SELECT MAX(segment_1) AS segment_1,
@@ -6087,19 +6209,20 @@ lvPeriodStartDate := NULL;
 
     --********************************************************************************
 
-    PROCEDURE prui_populate_header( session_id			IN		VARCHAR2,
-                                    journal_id 		 	IN 	   	SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-                                    journal_type		IN 		SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE 			 				DEFAULT NULL,
-                                    entity				IN 		SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE 		 				DEFAULT NULL,
-                                    source_system		IN 		SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE 		 				DEFAULT NULL,
-                                    effective_date		IN 		SLR_JRNL_HEADERS.JH_JRNL_DATE%TYPE 			 				DEFAULT NULL,
-                                    reversing_date 		IN 		DATE DEFAULT NULL, --SLR_JRNL_HEADERS.JH_JRNL_REV_DATE%TYPE 		 			DEFAULT NULL,
-                                    description			IN 		VARCHAR2 	 	   											DEFAULT NULL,
-                                    coding_convention 	IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE 	DEFAULT NULL,
-                                    updated_by			IN 		SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE							DEFAULT 'SYSTEM',
-                                    overwrite_details	IN		CHAR														DEFAULT 'Y'
-									--pEntityProcGroup	IN		VARCHAR2													DEFAULT NULL
-									)
+    PROCEDURE prui_populate_header( session_id      IN    VARCHAR2,
+                                    journal_id      IN      SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+                                    journal_type    IN    SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE              DEFAULT NULL,
+                                    entity        IN    SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE            DEFAULT NULL,
+                                    source_system   IN    SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE            DEFAULT NULL,
+                                    effective_date    IN    SLR_JRNL_HEADERS.JH_JRNL_DATE%TYPE              DEFAULT NULL,
+                                    reversing_date    IN    DATE DEFAULT NULL, --SLR_JRNL_HEADERS.JH_JRNL_REV_DATE%TYPE           DEFAULT NULL,
+                                    description     IN    VARCHAR2                            DEFAULT NULL,
+                                    coding_convention   IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE   DEFAULT NULL,
+                                    updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE             DEFAULT 'SYSTEM',
+                                    overwrite_details IN    CHAR                            DEFAULT 'Y',
+                                    department_id in SLR_JRNL_HEADERS_UNPOSTED.JHU_DEPARTMENT_ID%TYPE DEFAULT 'DEFAULT'
+                  --pEntityProcGroup  IN    VARCHAR2                          DEFAULT NULL
+                  )
     IS
         lvJournalId         VARCHAR2(32) := NULL;
         lvEntityProcGroup   SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
@@ -6129,46 +6252,47 @@ lvPeriodStartDate := NULL;
                   jhu_jrnl_validated_by, jhu_jrnl_validated_on, jhu_jrnl_posted_by, jhu_jrnl_posted_on,
                   jhu_jrnl_total_hash_debit, jhu_jrnl_total_hash_credit, jhu_jrnl_total_lines,
                   jhu_created_by, jhu_created_on, jhu_amended_by, jhu_amended_on, jhu_jrnl_pref_static_src,
-                  db_state, jhu_epg_id, jhu_jrnl_rev_date
+                  db_state, jhu_epg_id, jhu_jrnl_rev_date, jhu_department_id
              )
-             SELECT   /* user_session_id */		  		session_id,
-                      /* jhu_jrnl_id */ 		  		jhu_jrnl_id,
-                      /* jhu_jrnl_type */ 		  		DECODE(overwrite_details,'Y',journal_type,jhu_jrnl_type),
-                      /* jhu_jrnl_date */ 		  		DECODE(overwrite_details,'Y',effective_date,jhu_jrnl_date),
-                      /* jhu_jrnl_entity */ 	  		DECODE(overwrite_details,'Y',entity,jhu_jrnl_entity),
-                      /* jhu_jrnl_status */ 	  		jhu_jrnl_status,
-                      /* jhu_jrnl_status_text */  		jhu_jrnl_status_text,
-                      /* jhu_jrnl_process_id */   		jhu_jrnl_process_id,
-                      /* jhu_jrnl_description */  		DECODE(overwrite_details,'Y',description,jhu_jrnl_description),
-                      /* jhu_jrnl_source */   	  		DECODE(overwrite_details,'Y',source_system,jhu_jrnl_source),
-                      /* jhu_jrnl_source_jrnl_id */ 	jhu_jrnl_source_jrnl_id,
-                      /* jhu_jrnl_authorised_by */ 		jhu_jrnl_authorised_by,
-                      /* jhu_jrnl_authorised_on */ 		jhu_jrnl_authorised_on,
-                      /* jhu_jrnl_validated_by */ 		jhu_jrnl_validated_by,
-                      /* jhu_jrnl_validated_on */ 		jhu_jrnl_validated_on,
-                      /* jhu_jrnl_posted_by */ 			jhu_jrnl_posted_by,
-                      /* jhu_jrnl_posted_on */ 			jhu_jrnl_posted_on,
-                      /* jhu_jrnl_total_hash_debit */ 	jhu_jrnl_total_hash_debit,
-                      /* jhu_jrnl_total_hash_credit */ 	jhu_jrnl_total_hash_credit,
-                      /* jhu_jrnl_total_lines */ 		jhu_jrnl_total_lines,
-                      /* jhu_created_by */ 	  			jhu_created_by,
-                      /* jhu_created_on */ 	  			jhu_created_on,
-                      /* jhu_amended_by */ 				DECODE(overwrite_details,'Y',updated_by,jhu_amended_by),
-                      /* jhu_amended_on */ 				DECODE(overwrite_details,'Y',SYSDATE,jhu_amended_on),
-                      /* jhu_jrnl_pref_static_src */ 	DECODE(overwrite_details,'Y',coding_convention,jhu_jrnl_pref_static_src),
-                      /* db_state */			  		'U',
-					  /* jhu_epg_id */	                jhu_epg_id,
-/* jhu_jrnl_rev_date */           DECODE(overwrite_details,'Y',reversing_date,jhu_jrnl_rev_date)
+             SELECT   /* user_session_id */         session_id,
+                      /* jhu_jrnl_id */           jhu_jrnl_id,
+                      /* jhu_jrnl_type */           DECODE(overwrite_details,'Y',journal_type,jhu_jrnl_type),
+                      /* jhu_jrnl_date */           DECODE(overwrite_details,'Y',effective_date,jhu_jrnl_date),
+                      /* jhu_jrnl_entity */         DECODE(overwrite_details,'Y',entity,jhu_jrnl_entity),
+                      /* jhu_jrnl_status */         jhu_jrnl_status,
+                      /* jhu_jrnl_status_text */      jhu_jrnl_status_text,
+                      /* jhu_jrnl_process_id */       jhu_jrnl_process_id,
+                      /* jhu_jrnl_description */      DECODE(overwrite_details,'Y',description,jhu_jrnl_description),
+                      /* jhu_jrnl_source */           DECODE(overwrite_details,'Y',source_system,jhu_jrnl_source),
+                      /* jhu_jrnl_source_jrnl_id */   jhu_jrnl_source_jrnl_id,
+                      /* jhu_jrnl_authorised_by */    jhu_jrnl_authorised_by,
+                      /* jhu_jrnl_authorised_on */    jhu_jrnl_authorised_on,
+                      /* jhu_jrnl_validated_by */     jhu_jrnl_validated_by,
+                      /* jhu_jrnl_validated_on */     jhu_jrnl_validated_on,
+                      /* jhu_jrnl_posted_by */      jhu_jrnl_posted_by,
+                      /* jhu_jrnl_posted_on */      jhu_jrnl_posted_on,
+                      /* jhu_jrnl_total_hash_debit */   jhu_jrnl_total_hash_debit,
+                      /* jhu_jrnl_total_hash_credit */  jhu_jrnl_total_hash_credit,
+                      /* jhu_jrnl_total_lines */    jhu_jrnl_total_lines,
+                      /* jhu_created_by */          jhu_created_by,
+                      /* jhu_created_on */          jhu_created_on,
+                      /* jhu_amended_by */        DECODE(overwrite_details,'Y',updated_by,jhu_amended_by),
+                      /* jhu_amended_on */        DECODE(overwrite_details,'Y',SYSDATE,jhu_amended_on),
+                      /* jhu_jrnl_pref_static_src */  DECODE(overwrite_details,'Y',coding_convention,jhu_jrnl_pref_static_src),
+                      /* db_state */            'U',
+            /* jhu_epg_id */                  jhu_epg_id,
+/* jhu_jrnl_rev_date */           DECODE(overwrite_details,'Y',reversing_date,jhu_jrnl_rev_date),
+                      /* jhu_department_id */     jhu_department_id
              FROM   gui_jrnl_headers_unposted
              WHERE  jhu_jrnl_id = NVL(journal_id, '-1');
 
              --See if journal inserted
              BEGIN
                  SELECT jhu_jrnl_id
-                 INTO	lvJournalId
-                 FROM	temp_gui_jrnl_headers_unposted
-                 WHERE	jhu_jrnl_id = NVL(journal_id, '-1')
-                 AND	user_session_id = session_id;
+                 INTO lvJournalId
+                 FROM temp_gui_jrnl_headers_unposted
+                 WHERE  jhu_jrnl_id = NVL(journal_id, '-1')
+                 AND  user_session_id = session_id;
              EXCEPTION
                  WHEN OTHERS THEN
                       NULL; -- do nothing
@@ -6184,37 +6308,38 @@ lvPeriodStartDate := NULL;
                           jhu_jrnl_validated_by, jhu_jrnl_validated_on, jhu_jrnl_posted_by, jhu_jrnl_posted_on,
                           jhu_jrnl_total_hash_debit, jhu_jrnl_total_hash_credit, jhu_jrnl_total_lines,
                           jhu_created_by, jhu_created_on, jhu_amended_by, jhu_amended_on, jhu_jrnl_pref_static_src,
-                          db_state, jhu_epg_id, jhu_jrnl_rev_date
+                          db_state, jhu_epg_id, jhu_jrnl_rev_date, jhu_department_id
                      )
                      VALUES (
-                              /* user_session_id */		  		session_id,
-                              /* jhu_jrnl_id */ 		  		NVL(journal_id,'-1'),
-                              /* jhu_jrnl_type */ 		  		journal_type,
-                              /* jhu_jrnl_date */ 		  		effective_date,
-                              /* jhu_jrnl_entity */ 	  		entity,
-                              /* jhu_jrnl_status */ 	  		'M',
-                              /* jhu_jrnl_status_text */  		'MANUAL',
-                              /* jhu_jrnl_process_id */   		0,
-                              /* jhu_jrnl_description */  		description,
-                              /* jhu_jrnl_source */   	  		source_system,
-                              /* jhu_jrnl_source_jrnl_id */ 	NULL,
-                              /* jhu_jrnl_authorised_by */ 		NULL,
-                              /* jhu_jrnl_authorised_on */ 		NULL,
-                              /* jhu_jrnl_validated_by */ 		NULL,
-                              /* jhu_jrnl_validated_on */ 		NULL,
-                              /* jhu_jrnl_posted_by */ 			NULL,
-                              /* jhu_jrnl_posted_on */ 			NULL,
-                              /* jhu_jrnl_total_hash_debit */ 	0,
-                              /* jhu_jrnl_total_hash_credit */ 	0,
-                              /* jhu_jrnl_total_lines */ 		0,
-                              /* jhu_created_by */ 	  			updated_by,
-                              /* jhu_created_on */ 	  			SYSDATE,
-                              /* jhu_amended_by */ 				updated_by,
-                              /* jhu_amended_on */ 				SYSDATE,
-                              /* jhu_jrnl_pref_static_src */ 	coding_convention,
-                              /* db_state */			  		'I',
-							  /* jhu_epg_id */	                'NULL',
-  /* jhu_jrnl_rev_date */           reversing_date
+                              /* user_session_id */         session_id,
+                              /* jhu_jrnl_id */           NVL(journal_id,'-1'),
+                              /* jhu_jrnl_type */           journal_type,
+                              /* jhu_jrnl_date */           effective_date,
+                              /* jhu_jrnl_entity */         entity,
+                              /* jhu_jrnl_status */         'M',
+                              /* jhu_jrnl_status_text */      'MANUAL',
+                              /* jhu_jrnl_process_id */       0,
+                              /* jhu_jrnl_description */      description,
+                              /* jhu_jrnl_source */           source_system,
+                              /* jhu_jrnl_source_jrnl_id */   NULL,
+                              /* jhu_jrnl_authorised_by */    NULL,
+                              /* jhu_jrnl_authorised_on */    NULL,
+                              /* jhu_jrnl_validated_by */     NULL,
+                              /* jhu_jrnl_validated_on */     NULL,
+                              /* jhu_jrnl_posted_by */      NULL,
+                              /* jhu_jrnl_posted_on */      NULL,
+                              /* jhu_jrnl_total_hash_debit */   0,
+                              /* jhu_jrnl_total_hash_credit */  0,
+                              /* jhu_jrnl_total_lines */    0,
+                              /* jhu_created_by */          updated_by,
+                              /* jhu_created_on */          SYSDATE,
+                              /* jhu_amended_by */        updated_by,
+                              /* jhu_amended_on */        SYSDATE,
+                              /* jhu_jrnl_pref_static_src */  coding_convention,
+                              /* db_state */            'I',
+                /* jhu_epg_id */                  'NULL',
+  /* jhu_jrnl_rev_date */           reversing_date,
+                              /* jhu_department_id */      department_id
                         );
                 END IF;
 
@@ -6226,7 +6351,7 @@ lvPeriodStartDate := NULL;
 
         -- Try to retrieve previous journal line details from database
         BEGIN
-			INSERT INTO temp_gui_jrnl_lines_unposted (
+      INSERT INTO temp_gui_jrnl_lines_unposted (
                 user_session_id, jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_fak_id, jlu_eba_id, jlu_jrnl_status,
                 jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id,
                 jlu_effective_date, jlu_value_date, jlu_entity, jlu_account, jlu_segment_1,
@@ -6239,59 +6364,59 @@ lvPeriodStartDate := NULL;
                 jlu_local_ccy, jlu_local_amount, jlu_created_by, jlu_created_on, jlu_amended_by,
                 jlu_amended_on, db_state, jlu_epg_id, jlu_period_month, jlu_period_year, jlu_period_ltd
              )
-             SELECT	  /* user_session_id */		 		session_id,
-                      /* jlu_jrnl_hdr_id */ 	   	 	jlu_jrnl_hdr_id,
-                      /* jlu_jrnl_line_number */		jlu_jrnl_line_number,
-                      /* jlu_fak_id	*/					jlu_fak_id,
-                      /* jlu_eba_id	*/					jlu_eba_id,
-                      /* jlu_jrnl_status */ 			jlu_jrnl_status,
-                      /* jlu_jrnl_status_text */ 		jlu_jrnl_status_text,
-                      /* jlu_jrnl_process_id */ 		jlu_jrnl_process_id,
-                      /* jlu_description */				jlu_description,
-                      /* jlu_source_jrnl_id */			jlu_source_jrnl_id,
-                      /* jlu_effective_date */			jlu_effective_date,
-                      /* jlu_value_date */				jlu_value_date,
-                      /* jlu_entity */					DECODE(overwrite_details,'Y',entity,jlu_entity),
-                      /* jlu_account */					jlu_account,
-                      /* jlu_segment_1 */				jlu_segment_1,
-                      /* jlu_segment_2 */				jlu_segment_2,
-                      /* jlu_segment_3 */				jlu_segment_3,
-                      /* jlu_segment_4 */				jlu_segment_4,
-                      /* jlu_segment_5 */				jlu_segment_5,
-                      /* jlu_segment_6 */				jlu_segment_6,
-                      /* jlu_segment_7 */				jlu_segment_7,
-                      /* jlu_segment_8 */				jlu_segment_8,
-                      /* jlu_segment_9 */				jlu_segment_9,
-                      /* jlu_segment_10 */				jlu_segment_10,
-                      /* jlu_attribute_1 */				jlu_attribute_1,
-                      /* jlu_attribute_2 */				jlu_attribute_2,
-                      /* jlu_attribute_3 */ 			jlu_attribute_3,
-                      /* jlu_attribute_4 */				jlu_attribute_4,
-                      /* jlu_attribute_5 */				jlu_attribute_5,
-                      /* jlu_reference_1 */				jlu_reference_1,
-                      /* jlu_reference_2 */				jlu_reference_2,
-                      /* jlu_reference_3 */				jlu_reference_3,
-                      /* jlu_reference_4 */				jlu_reference_4,
-                      /* jlu_reference_5 */				jlu_reference_5,
-                      /* jlu_reference_6 */				jlu_reference_6,
-                      /* jlu_reference_7 */				jlu_reference_7,
-                      /* jlu_reference_8 */				jlu_reference_8,
-                      /* jlu_reference_9 */				jlu_reference_9,
-                      /* jlu_reference_10 */			jlu_reference_10,
-                      /* jlu_tran_ccy */				jlu_tran_ccy,
-                      /* jlu_tran_amount */				jlu_tran_amount,
-                      /* jlu_base_rate */				jlu_base_rate,
-                      /* jlu_base_ccy */				jlu_base_ccy,
-                      /* jlu_base_amount */				jlu_base_amount,
-                      /* jlu_local_rate */				jlu_local_rate,
-                      /* jlu_local_ccy */				jlu_local_ccy,
-                      /* jlu_local_amount */			jlu_local_amount,
-                      /* jlu_created_by */				jlu_created_by,
-                      /* jlu_created_on */				jlu_created_on,
-                      /* jlu_amended_by */				jlu_amended_by,
-                      /* jlu_amended_on */				jlu_amended_on,
-                      /* db_state */			  		'X',
-					  /* jlu_epg_id */	                jlu_epg_id,
+             SELECT   /* user_session_id */       session_id,
+                      /* jlu_jrnl_hdr_id */         jlu_jrnl_hdr_id,
+                      /* jlu_jrnl_line_number */    jlu_jrnl_line_number,
+                      /* jlu_fak_id */          jlu_fak_id,
+                      /* jlu_eba_id */          jlu_eba_id,
+                      /* jlu_jrnl_status */       jlu_jrnl_status,
+                      /* jlu_jrnl_status_text */    jlu_jrnl_status_text,
+                      /* jlu_jrnl_process_id */     jlu_jrnl_process_id,
+                      /* jlu_description */       jlu_description,
+                      /* jlu_source_jrnl_id */      jlu_source_jrnl_id,
+                      /* jlu_effective_date */      jlu_effective_date,
+                      /* jlu_value_date */        jlu_value_date,
+                      /* jlu_entity */          DECODE(overwrite_details,'Y',entity,jlu_entity),
+                      /* jlu_account */         jlu_account,
+                      /* jlu_segment_1 */       jlu_segment_1,
+                      /* jlu_segment_2 */       jlu_segment_2,
+                      /* jlu_segment_3 */       jlu_segment_3,
+                      /* jlu_segment_4 */       jlu_segment_4,
+                      /* jlu_segment_5 */       jlu_segment_5,
+                      /* jlu_segment_6 */       jlu_segment_6,
+                      /* jlu_segment_7 */       jlu_segment_7,
+                      /* jlu_segment_8 */       jlu_segment_8,
+                      /* jlu_segment_9 */       jlu_segment_9,
+                      /* jlu_segment_10 */        jlu_segment_10,
+                      /* jlu_attribute_1 */       jlu_attribute_1,
+                      /* jlu_attribute_2 */       jlu_attribute_2,
+                      /* jlu_attribute_3 */       jlu_attribute_3,
+                      /* jlu_attribute_4 */       jlu_attribute_4,
+                      /* jlu_attribute_5 */       jlu_attribute_5,
+                      /* jlu_reference_1 */       jlu_reference_1,
+                      /* jlu_reference_2 */       jlu_reference_2,
+                      /* jlu_reference_3 */       jlu_reference_3,
+                      /* jlu_reference_4 */       jlu_reference_4,
+                      /* jlu_reference_5 */       jlu_reference_5,
+                      /* jlu_reference_6 */       jlu_reference_6,
+                      /* jlu_reference_7 */       jlu_reference_7,
+                      /* jlu_reference_8 */       jlu_reference_8,
+                      /* jlu_reference_9 */       jlu_reference_9,
+                      /* jlu_reference_10 */      jlu_reference_10,
+                      /* jlu_tran_ccy */        jlu_tran_ccy,
+                      /* jlu_tran_amount */       jlu_tran_amount,
+                      /* jlu_base_rate */       jlu_base_rate,
+                      /* jlu_base_ccy */        jlu_base_ccy,
+                      /* jlu_base_amount */       jlu_base_amount,
+                      /* jlu_local_rate */        jlu_local_rate,
+                      /* jlu_local_ccy */       jlu_local_ccy,
+                      /* jlu_local_amount */      jlu_local_amount,
+                      /* jlu_created_by */        jlu_created_by,
+                      /* jlu_created_on */        jlu_created_on,
+                      /* jlu_amended_by */        jlu_amended_by,
+                      /* jlu_amended_on */        jlu_amended_on,
+                      /* db_state */            'X',
+            /* jlu_epg_id */                  jlu_epg_id,
                       /*jlu_period_month */             jlu_period_month,
                       /* jlu_period_year */             jlu_period_year,
                       /* jlu_period_ltd */              jlu_period_ltd
@@ -6335,11 +6460,12 @@ lvPeriodStartDate := NULL;
                   jhu_jrnl_pref_static_src,
                   jhu_jrnl_ref_id,
                   jhu_jrnl_rev_date,
-                  'Y'
+                  'Y',
+                  jhu_department_id
            INTO   gJournalHeader
            FROM   temp_gui_jrnl_headers_unposted
            WHERE  jhu_jrnl_id = NVL(journal_id, '-1')
-           AND	  user_session_id = session_id;
+           AND    user_session_id = session_id;
         EXCEPTION
             WHEN OTHERS THEN
                 pr_error(1, SQLERRM, 0, 'prui_populate_header', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -6350,52 +6476,52 @@ lvPeriodStartDate := NULL;
 
     --********************************************************************************
 
-    PROCEDURE prui_populate_line( session_id		IN VARCHAR2,
-                                  journal_id 		IN SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
-                                  line_number 		IN SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
-                                  account			IN SLR_JRNL_LINES.JL_ACCOUNT%TYPE 			   		 DEFAULT NULL,
-                                  entity			IN SLR_JRNL_LINES.JL_ENTITY%TYPE 			   		 DEFAULT NULL,
-                                  effective_date 	IN SLR_JRNL_LINES.JL_EFFECTIVE_DATE%TYPE 	   		 DEFAULT NULL,
-                                  value_date		IN SLR_JRNL_LINES.JL_VALUE_DATE%TYPE 		   		 DEFAULT NULL,
-                                  segment_1			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_1%TYPE	 DEFAULT NULL,
-                                  segment_2			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_2%TYPE	 DEFAULT NULL,
-                                  segment_3			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_3%TYPE	 DEFAULT NULL,
-                                  segment_4			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_4%TYPE	 DEFAULT NULL,
-                                  segment_5			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_5%TYPE	 DEFAULT NULL,
-                                  segment_6			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_6%TYPE	 DEFAULT NULL,
-                                  segment_7			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_7%TYPE	 DEFAULT NULL,
-                                  segment_8			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_8%TYPE	 DEFAULT NULL,
-                                  segment_9			IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_9%TYPE	 DEFAULT NULL,
-                                  segment_10		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_10%TYPE	 DEFAULT NULL,
-                                  attribute_1		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE DEFAULT NULL,
-                                  attribute_2		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE DEFAULT NULL,
-                                  attribute_3		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE DEFAULT NULL,
-                                  attribute_4		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE DEFAULT 'MANUAL_ADJ',
-                                  attribute_5		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE DEFAULT NULL,
-                                  reference_1		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE DEFAULT NULL,
-                                  reference_2		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE DEFAULT NULL,
-                                  reference_3		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_3%TYPE DEFAULT NULL,
-                                  reference_4		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_4%TYPE DEFAULT NULL,
-                                  reference_5		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_5%TYPE DEFAULT NULL,
-                                  reference_6		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_6%TYPE DEFAULT NULL,
-                                  reference_7		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_7%TYPE DEFAULT NULL,
-                                  reference_8		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_8%TYPE DEFAULT NULL,
-                                  reference_9		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_9%TYPE DEFAULT NULL,
-                                  reference_10		IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_10%TYPE DEFAULT NULL,
-                                  description		IN VARCHAR2 										 DEFAULT NULL,
-                                  tran_currency		IN SLR_JRNL_LINES.JL_TRAN_CCY%TYPE 			   		 DEFAULT NULL,
-                                  tran_amount		IN SLR_JRNL_LINES.JL_TRAN_AMOUNT%TYPE 		   		 DEFAULT NULL,
-                                  base_currency		IN SLR_JRNL_LINES.JL_BASE_CCY%TYPE 			   		 DEFAULT NULL,
-                                  base_rate			IN SLR_JRNL_LINES.JL_BASE_RATE%TYPE 		   		 DEFAULT NULL,
-                                  base_amount		IN SLR_JRNL_LINES.JL_BASE_AMOUNT%TYPE 		   		 DEFAULT NULL,
-                                  local_currency	IN SLR_JRNL_LINES.JL_LOCAL_CCY%TYPE 		   		 DEFAULT NULL,
-                                  local_rate		IN SLR_JRNL_LINES.JL_LOCAL_RATE%TYPE 		   		 DEFAULT NULL,
-                                  local_amount		IN SLR_JRNL_LINES.JL_LOCAL_AMOUNT%TYPE 		   		 DEFAULT NULL,
-								  --entity_proc_group IN SLR_JRNL_LINES.JL_EPG_ID%TYPE  	 DEFAULT NULL,
-                                  updated_by		IN SLR_JRNL_LINES.JL_CREATED_BY%TYPE		   		 DEFAULT 'SYSTEM',
-                                  overwrite_details	IN CHAR									   	   		 DEFAULT 'Y' )
+    PROCEDURE prui_populate_line( session_id    IN VARCHAR2,
+                                  journal_id    IN SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+                                  line_number     IN SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+                                  account     IN SLR_JRNL_LINES.JL_ACCOUNT%TYPE              DEFAULT NULL,
+                                  entity      IN SLR_JRNL_LINES.JL_ENTITY%TYPE             DEFAULT NULL,
+                                  effective_date  IN SLR_JRNL_LINES.JL_EFFECTIVE_DATE%TYPE         DEFAULT NULL,
+                                  value_date    IN SLR_JRNL_LINES.JL_VALUE_DATE%TYPE           DEFAULT NULL,
+                                  segment_1     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_1%TYPE   DEFAULT NULL,
+                                  segment_2     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_2%TYPE   DEFAULT NULL,
+                                  segment_3     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_3%TYPE   DEFAULT NULL,
+                                  segment_4     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_4%TYPE   DEFAULT NULL,
+                                  segment_5     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_5%TYPE   DEFAULT NULL,
+                                  segment_6     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_6%TYPE   DEFAULT NULL,
+                                  segment_7     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_7%TYPE   DEFAULT NULL,
+                                  segment_8     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_8%TYPE   DEFAULT NULL,
+                                  segment_9     IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_9%TYPE   DEFAULT NULL,
+                                  segment_10    IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_10%TYPE  DEFAULT NULL,
+                                  attribute_1   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE DEFAULT NULL,
+                                  attribute_2   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE DEFAULT NULL,
+                                  attribute_3   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE DEFAULT NULL,
+                                  attribute_4   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE DEFAULT 'MANUAL_ADJ', -- AG Custom
+                                  attribute_5   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE DEFAULT NULL,
+                                  reference_1   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE DEFAULT NULL,
+                                  reference_2   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE DEFAULT NULL,
+                                  reference_3   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_3%TYPE DEFAULT NULL,
+                                  reference_4   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_4%TYPE DEFAULT NULL,
+                                  reference_5   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_5%TYPE DEFAULT NULL,
+                                  reference_6   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_6%TYPE DEFAULT NULL,
+                                  reference_7   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_7%TYPE DEFAULT NULL,
+                                  reference_8   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_8%TYPE DEFAULT NULL,
+                                  reference_9   IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_9%TYPE DEFAULT NULL,
+                                  reference_10    IN TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_10%TYPE DEFAULT NULL,
+                                  description   IN VARCHAR2                      DEFAULT NULL,
+                                  tran_currency   IN SLR_JRNL_LINES.JL_TRAN_CCY%TYPE             DEFAULT NULL,
+                                  tran_amount   IN SLR_JRNL_LINES.JL_TRAN_AMOUNT%TYPE            DEFAULT NULL,
+                                  base_currency   IN SLR_JRNL_LINES.JL_BASE_CCY%TYPE             DEFAULT NULL,
+                                  base_rate     IN SLR_JRNL_LINES.JL_BASE_RATE%TYPE            DEFAULT NULL,
+                                  base_amount   IN SLR_JRNL_LINES.JL_BASE_AMOUNT%TYPE            DEFAULT NULL,
+                                  local_currency  IN SLR_JRNL_LINES.JL_LOCAL_CCY%TYPE            DEFAULT NULL,
+                                  local_rate    IN SLR_JRNL_LINES.JL_LOCAL_RATE%TYPE           DEFAULT NULL,
+                                  local_amount    IN SLR_JRNL_LINES.JL_LOCAL_AMOUNT%TYPE           DEFAULT NULL,
+                  --entity_proc_group IN SLR_JRNL_LINES.JL_EPG_ID%TYPE     DEFAULT NULL,
+                                  updated_by    IN SLR_JRNL_LINES.JL_CREATED_BY%TYPE           DEFAULT 'SYSTEM',
+                                  overwrite_details IN CHAR                            DEFAULT 'Y' )
     IS
-        lvFound 	  BOOLEAN;
+        lvFound     BOOLEAN;
         lvJournalLine NUMBER;
 
     BEGIN
@@ -6413,11 +6539,11 @@ lvPeriodStartDate := NULL;
 
              BEGIN
                  SELECT jlu_jrnl_line_number
-                 INTO	lvJournalLine
-                 FROM	temp_gui_jrnl_lines_unposted
-                 WHERE  jlu_jrnl_hdr_id	= NVL(journal_id,'-1')
-                 AND	jlu_jrnl_line_number = NVL(line_number,-1)
-                 AND	user_session_id = session_id;
+                 INTO lvJournalLine
+                 FROM temp_gui_jrnl_lines_unposted
+                 WHERE  jlu_jrnl_hdr_id = NVL(journal_id,'-1')
+                 AND  jlu_jrnl_line_number = NVL(line_number,-1)
+                 AND  user_session_id = session_id;
              EXCEPTION
                 WHEN NO_DATA_FOUND THEN
                      lvJournalLine := NULL;
@@ -6497,10 +6623,10 @@ lvPeriodStartDate := NULL;
                         jlu_amended_on, db_state, jlu_epg_id, jlu_period_month, jlu_period_year, jlu_period_ltd
                      )
                      VALUES (
-                              /* user_session_id */		 		session_id,
-                              /* jlu_jrnl_hdr_id */ 	   	 	NVL(journal_id,'-1'),
-                              /* jlu_jrnl_line_number */		DECODE(NVL(line_number,-1),
-                                                                            -1,	NVL((SELECT MAX(jlu_jrnl_line_number)+1
+                              /* user_session_id */       session_id,
+                              /* jlu_jrnl_hdr_id */         NVL(journal_id,'-1'),
+                              /* jlu_jrnl_line_number */    DECODE(NVL(line_number,-1),
+                                                                            -1, NVL((SELECT MAX(jlu_jrnl_line_number)+1
                                                                                  FROM temp_gui_jrnl_lines_unposted
                                                                                  WHERE jlu_jrnl_hdr_id = NVL(journal_id,-1)
                                                                                  AND   user_session_id = gSessionId),1),
@@ -6529,7 +6655,7 @@ lvPeriodStartDate := NULL;
                               /* jlu_attribute_1 */				NVL(attribute_1,'NVS'),
                               /* jlu_attribute_2 */				NVL(attribute_2,'NVS'),
                               /* jlu_attribute_3 */ 			NVL(attribute_3,'NVS'),
-                              /* jlu_attribute_4 */				NVL(attribute_4,'MANUAL_ADJ'),
+                              /* jlu_attribute_4 */				NVL(attribute_4,'MANUAL_ADJ'), -- AG Custom
                               /* jlu_attribute_5 */				NVL(attribute_5,'NVS'),
                               /* jlu_reference_1 */				NVL(reference_1,'NVS'),
                               /* jlu_reference_2 */				NVL(reference_2,'NVS'),
@@ -6563,22 +6689,22 @@ lvPeriodStartDate := NULL;
 
             END IF;
 
-			--try to find and set entity processing group base on the line details
-			/*
-			**TODO
-			*/
-			--gJrnlEntityProcGroup := fGetEntityProcGroup( NVL(journal_id,-1),gJournalLineNumber,session_id);
+      --try to find and set entity processing group base on the line details
+      /*
+      **TODO
+      */
+      --gJrnlEntityProcGroup := fGetEntityProcGroup( NVL(journal_id,-1),gJournalLineNumber,session_id);
 
-			/*IF gJrnlEntityProcGroup <> 'NULL'
-			THEN
+      /*IF gJrnlEntityProcGroup <> 'NULL'
+      THEN
 
-				UPDATE TEMP_GUI_JRNL_LINES_UNPOSTED
-				SET jlu_epg_id = gJrnlEntityProcGroup
-				WHERE jlu_jrnl_hdr_id = Nvl(journal_id,-1)
-                 AND	jlu_jrnl_line_number = gJournalLineNumber
-                 AND	user_session_id = session_id;
+        UPDATE TEMP_GUI_JRNL_LINES_UNPOSTED
+        SET jlu_epg_id = gJrnlEntityProcGroup
+        WHERE jlu_jrnl_hdr_id = Nvl(journal_id,-1)
+                 AND  jlu_jrnl_line_number = gJournalLineNumber
+                 AND  user_session_id = session_id;
 
-			END IF;*/
+      END IF;*/
 
         EXCEPTION
             WHEN OTHERS THEN
@@ -6593,7 +6719,7 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_source_to_fdr(field_name VARCHAR2, src_sys_id VARCHAR2, src_code VARCHAR2) RETURN VARCHAR2
 
     IS
-        fdr_code VARCHAR2(40);
+        fdr_code VARCHAR2(100);
         sql_stmnt VARCHAR2(500);
 
     BEGIN
@@ -6628,15 +6754,13 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_fdr_to_source(field_name VARCHAR2, src_sys_id VARCHAR2, fdr_code VARCHAR2) RETURN VARCHAR2
 
     IS
-        src_code VARCHAR2(40);
+        src_code VARCHAR2(100);
         sql_stmnt VARCHAR2(500);
 
     BEGIN
 
-/*-----------UPGRADE 20.1.1 MERGE START-----------*/
---        sql_stmnt := 'SELECT DISTINCT lookup_key FROM vw_ui_' || field_name || ' WHERE source_system_id = '''|| src_sys_id || ''' AND fdr_code ='''|| fdr_code ||''' AND ROWNUM < 2';
+        -- This is probably a customization.  Prod had comment that it was customized but base AAH product was the same.statement
         sql_stmnt := 'SELECT /*+ no_query_transformation */ DISTINCT lookup_key FROM vw_ui_' || field_name || ' WHERE source_system_id = '''|| src_sys_id || ''' AND fdr_code ='''|| fdr_code ||''' AND ROWNUM < 2';
-/*-----------UPGRADE 20.1.1 MERGE END-----------*/
 
         EXECUTE IMMEDIATE sql_stmnt INTO src_code;
 
@@ -6730,7 +6854,8 @@ lvPeriodStartDate := NULL;
 
     --********************************************************************************
 
-    FUNCTION fnui_create_reversing_journal(orignal_jrnl_id VARCHAR2, reversing_date DATE, entity_proc_group VARCHAR2, status CHAR) RETURN BOOLEAN
+
+    FUNCTION fnui_create_reversing_journal(orignal_jrnl_id SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE, reversing_date DATE, entity_proc_group VARCHAR2, status CHAR) RETURN BOOLEAN
     IS
 
     lvID SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE;
@@ -6749,9 +6874,9 @@ lvPeriodStartDate := NULL;
             jhu_jrnl_validated_by, jhu_jrnl_validated_on, jhu_jrnl_posted_by, jhu_jrnl_posted_on,
             jhu_jrnl_total_hash_debit, jhu_jrnl_total_hash_credit, jhu_jrnl_total_lines,
             jhu_created_by, jhu_created_on, jhu_amended_by, jhu_amended_on, jhu_jrnl_pref_static_src,
-            jhu_manual_flag, jhu_epg_id
+            jhu_manual_flag, jhu_epg_id, jhu_department_id
         )
-        SELECT /* jhu_jrnl_id */                 standard_hash(lvId, 'MD5'),
+        SELECT /* jhu_jrnl_id */                 lvId,
                /* jhu_jrnl_type */               jhu_jrnl_type,
                /* jhu_jrnl_date */               reversing_date,
                /* jhu_jrnl_entity */             jhu_jrnl_entity,
@@ -6776,7 +6901,8 @@ lvPeriodStartDate := NULL;
                /* jhu_amended_on */              SYSDATE,
                /* jhu_jrnl_pref_static_src */    jhu_jrnl_pref_static_src,
                /* jhu_manual_flag */             'Y',
-			   /* jhu_epg_id */       jhu_epg_id
+         /* jhu_epg_id */       jhu_epg_id,
+               /* jhu_department_id */           jhu_department_id
         FROM slr_jrnl_headers_unposted
         WHERE jhu_jrnl_source_jrnl_id = to_char(orignal_jrnl_id);
 
@@ -6797,10 +6923,10 @@ lvPeriodStartDate := NULL;
                 jlu_local_ccy, jlu_local_amount, jlu_created_by, jlu_created_on, jlu_amended_by,
                 jlu_amended_on, jlu_epg_id, jlu_period_month, jlu_period_year, jlu_period_ltd
                 )
-            SELECT /* jlu_jrnl_hdr_id */       standard_hash(lvId, 'MD5'),
+            SELECT /* jlu_jrnl_hdr_id */       lvId,
                 /* jlu_jrnl_line_number */  jlu_jrnl_line_number,
-                /* jlu_fak_id	*/         jlu_fak_id,
-                /* jlu_eba_id	*/         jlu_eba_id,
+                /* jlu_fak_id */         jlu_fak_id,
+                /* jlu_eba_id */         jlu_eba_id,
                 /* jlu_jrnl_status */       'W',
                 /* jlu_jrnl_status_text */  'Unposted',
                 /* jlu_jrnl_process_id */   0,
@@ -6823,7 +6949,7 @@ lvPeriodStartDate := NULL;
                 /* jlu_attribute_1 */       NVL(jlu_attribute_1,'NVS'),
                 /* jlu_attribute_2 */       NVL(jlu_attribute_2,'NVS'),
                 /* jlu_attribute_3 */       NVL(jlu_attribute_3,'NVS'),
-                /* jlu_attribute_4 */       NVL(jlu_attribute_4,'MANUAL_ADJ'),
+                /* jlu_attribute_4 */       NVL(jlu_attribute_4,'MANUAL_ADJ'),  -- AG Custom
                 /* jlu_attribute_5 */       NVL(jlu_attribute_5,'NVS'),
                 /* jlu_reference_1 */       jlu_reference_1,
                 /* jlu_reference_2 */       jlu_reference_2,
@@ -6848,9 +6974,9 @@ lvPeriodStartDate := NULL;
                 /* jlu_amended_by */        gJournalHeader.jhu_amended_by,
                 /* jlu_amended_on */        SYSDATE,
                 /* jlu_epg_id */            jlu_epg_id,
-                /* jlu_period_month */				0,
-                /* jlu_period_year */				0,
-                /* jlu_period_ltd	*/			 	0
+                /* jlu_period_month */        0,
+                /* jlu_period_year */       0,
+                /* jlu_period_ltd */        0
                 FROM slr_jrnl_lines_unposted
                 WHERE jlu_jrnl_hdr_id = to_char(orignal_jrnl_id)
                 AND jlu_jrnl_status = status
@@ -6873,10 +6999,10 @@ lvPeriodStartDate := NULL;
                     jlu_local_ccy, jlu_local_amount, jlu_created_by, jlu_created_on, jlu_amended_by,
                     jlu_amended_on, jlu_epg_id, jlu_period_month, jlu_period_year, jlu_period_ltd
                     )
-                SELECT /* jlu_jrnl_hdr_id */       standard_hash(lvId, 'MD5'),
+                SELECT /* jlu_jrnl_hdr_id */       lvId,
                     /* jlu_jrnl_line_number */  jlu_jrnl_line_number,
-                    /* jlu_fak_id	*/         jlu_fak_id,
-                    /* jlu_eba_id	*/         jlu_eba_id,
+                    /* jlu_fak_id */         jlu_fak_id,
+                    /* jlu_eba_id */         jlu_eba_id,
                     /* jlu_jrnl_status */       'U',
                     /* jlu_jrnl_status_text */  'Unposted',
                     /* jlu_jrnl_process_id */   0,
@@ -6899,7 +7025,7 @@ lvPeriodStartDate := NULL;
                     /* jlu_attribute_1 */       NVL(jlu_attribute_1,'NVS'),
                     /* jlu_attribute_2 */       NVL(jlu_attribute_2,'NVS'),
                     /* jlu_attribute_3 */       NVL(jlu_attribute_3,'NVS'),
-                    /* jlu_attribute_4 */       NVL(jlu_attribute_4,'MANUAL_ADJ'),
+                    /* jlu_attribute_4 */       NVL(jlu_attribute_4,'MANUAL_ADJ'), -- AG Custom
                     /* jlu_attribute_5 */       NVL(jlu_attribute_5,'NVS'),
                     /* jlu_reference_1 */       jlu_reference_1,
                     /* jlu_reference_2 */       jlu_reference_2,
@@ -6924,9 +7050,9 @@ lvPeriodStartDate := NULL;
                     /* jlu_amended_by */        gJournalHeader.jhu_amended_by,
                     /* jlu_amended_on */        SYSDATE,
                     /* jlu_epg_id */            jlu_epg_id,
-                    /* jlu_period_month */				0,
-                    /* jlu_period_year */				0,
-                    /* jlu_period_ltd	*/			 	0
+                    /* jlu_period_month */        0,
+                    /* jlu_period_year */       0,
+                    /* jlu_period_ltd */        0
                     FROM slr_jrnl_lines_unposted
                     WHERE jlu_jrnl_source_jrnl_id = orignal_jrnl_id;
             END IF;
@@ -6963,57 +7089,59 @@ lvPeriodStartDate := NULL;
 
     --********************************************************************************
 
-    FUNCTION fnui_resync_journal_lines RETURN BOOLEAN
+    FUNCTION fnui_resync_journal_lines(sync_temp BOOLEAN DEFAULT TRUE) RETURN BOOLEAN
     IS
     BEGIN
         -- Update lines with changes to effective date, entity, etc
 
         gJournalHeader.jhu_epg_id := fGetEntityProcGroup(gJournalHeader.jhu_jrnl_id,gSessionId);
 
-		if gJournalHeader.jhu_jrnl_id <> '-1' then
-          BEGIN
-              savepoint resync_journal_lines;
+        IF sync_temp = TRUE THEN
+			BEGIN
+				UPDATE temp_gui_jrnl_lines_unposted
+				SET jlu_effective_date 	 = gJournalHeader.jhu_jrnl_date,
+					jlu_entity		   	 = gJournalHeader.jhu_jrnl_entity,
+					jlu_fak_id		   	 = 0,
+					jlu_eba_id		   	 = 0,
+					jlu_jrnl_status    	 = 'M',
+					jlu_jrnl_status_text = 'MANUAL',
+					JLU_EPG_ID = gJournalHeader.jhu_epg_id
+				WHERE jlu_jrnl_hdr_id  = gJournalHeader.jhu_jrnl_id
+				AND	  user_session_id  = gSessionId;
+			EXCEPTION
+				WHEN OTHERS THEN
+					 pr_error(1, SQLERRM, 0, 'fnui_resync_journal_lines.2', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+					 RETURN FALSE;
+			END;
+		ELSE
+			if gJournalHeader.jhu_jrnl_id <> '-1' then
+			  BEGIN
+				  savepoint resync_journal_lines;
 
-              UPDATE gui_jrnl_lines_unposted
-              SET jlu_effective_date 	 = gJournalHeader.jhu_jrnl_date,
-                  jlu_entity		   	 = gJournalHeader.jhu_jrnl_entity,
-                  jlu_fak_id		   	 = 0,
-                  jlu_eba_id		   	 = 0,
-                  jlu_jrnl_status    	 = 'M',
-                  jlu_jrnl_status_text = 'MANUAL',
-                  JLU_EPG_ID = gJournalHeader.jhu_epg_id
-              WHERE jlu_jrnl_hdr_id  = gJournalHeader.jhu_jrnl_id;
+				  UPDATE gui_jrnl_lines_unposted
+				  SET jlu_effective_date 	 = gJournalHeader.jhu_jrnl_date,
+					  jlu_entity		   	 = gJournalHeader.jhu_jrnl_entity,
+					  jlu_fak_id		   	 = 0,
+					  jlu_eba_id		   	 = 0,
+					  jlu_jrnl_status    	 = 'M',
+					  jlu_jrnl_status_text = 'MANUAL',
+					  JLU_EPG_ID = gJournalHeader.jhu_epg_id
+				  WHERE jlu_jrnl_hdr_id  = gJournalHeader.jhu_jrnl_id;
 
-              if sql%rowcount > 0 then
+				  if sql%rowcount > 0 then
 
-                /* increment journal version since change on core table has been made */
-                prui_increment_journal_version(gJournalHeader.jhu_jrnl_id,gJournalHeader.jhu_amended_by);
+					/* increment journal version since change on core table has been made */
+					prui_increment_journal_version(gJournalHeader.jhu_jrnl_id,gJournalHeader.jhu_amended_by);
 
-              end if;
-          EXCEPTION
-              WHEN OTHERS THEN
-                  rollback to savepoint resync_journal_lines;
-                  pr_error(1, SQLERRM, 0, 'fnui_resync_journal_lines.1', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-                  RETURN FALSE;
-          END;
-        end if;
-
-        BEGIN
-            UPDATE temp_gui_jrnl_lines_unposted
-            SET jlu_effective_date 	 = gJournalHeader.jhu_jrnl_date,
-                jlu_entity		   	 = gJournalHeader.jhu_jrnl_entity,
-                jlu_fak_id		   	 = 0,
-                jlu_eba_id		   	 = 0,
-                jlu_jrnl_status    	 = 'M',
-                jlu_jrnl_status_text = 'MANUAL',
-				JLU_EPG_ID = gJournalHeader.jhu_epg_id
-            WHERE jlu_jrnl_hdr_id  = gJournalHeader.jhu_jrnl_id
-            AND	  user_session_id  = gSessionId;
-        EXCEPTION
-            WHEN OTHERS THEN
-                 pr_error(1, SQLERRM, 0, 'fnui_resync_journal_lines.2', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-                 RETURN FALSE;
-        END;
+				  end if;
+			  EXCEPTION
+				  WHEN OTHERS THEN
+					  rollback to savepoint resync_journal_lines;
+					  pr_error(1, SQLERRM, 0, 'fnui_resync_journal_lines.1', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+					  RETURN FALSE;
+			  END;
+			end if;
+		END IF;
 
         RETURN TRUE;
     END fnui_resync_journal_lines;
@@ -7022,10 +7150,10 @@ lvPeriodStartDate := NULL;
 
     FUNCTION fnui_merge_header RETURN BOOLEAN
     IS
-       lvDebits 	NUMBER;
+       lvDebits   NUMBER;
        lvCredits    NUMBER;
-       lvLines		NUMBER;
-       lvId			SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE;
+       lvLines    NUMBER;
+       lvId     SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE;
        lvEntityProcGroup VARCHAR2(60);
     BEGIN
 
@@ -7041,7 +7169,7 @@ lvPeriodStartDate := NULL;
                    lvEntityProcGroup
             FROM   temp_gui_jrnl_lines_unposted
             WHERE  jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-            AND	   user_session_id = gSessionId;
+            AND    user_session_id = gSessionId;
         EXCEPTION
             WHEN OTHERS THEN
                  pr_error(1, SQLERRM, 0, 'fnui_merge_header.1', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -7050,11 +7178,11 @@ lvPeriodStartDate := NULL;
 
         BEGIN
             UPDATE temp_gui_jrnl_headers_unposted
-            SET jhu_jrnl_total_hash_debit	  = lvDebits,
-                jhu_jrnl_total_hash_credit	  = lvCredits,
-                jhu_jrnl_total_lines		  = lvLines,
+            SET jhu_jrnl_total_hash_debit   = lvDebits,
+                jhu_jrnl_total_hash_credit    = lvCredits,
+                jhu_jrnl_total_lines      = lvLines,
                 --set entity group for header base on journal lines
-                jhu_epg_id					  = lvEntityProcGroup
+                jhu_epg_id            = lvEntityProcGroup
             WHERE jhu_jrnl_id = gJournalHeader.jhu_jrnl_id
             AND   user_session_id = gSessionId;
         EXCEPTION
@@ -7077,37 +7205,38 @@ lvPeriodStartDate := NULL;
                       jhu_jrnl_validated_by, jhu_jrnl_validated_on, jhu_jrnl_posted_by, jhu_jrnl_posted_on,
                       jhu_jrnl_total_hash_debit, jhu_jrnl_total_hash_credit, jhu_jrnl_total_lines,
                       jhu_created_by, jhu_created_on, jhu_amended_by, jhu_amended_on, jhu_jrnl_pref_static_src,
-                      jhu_manual_flag, jhu_epg_id, jhu_version,jhu_jrnl_rev_date
+                      jhu_manual_flag, jhu_epg_id, jhu_version,jhu_jrnl_rev_date, jhu_department_id
                  )
                  SELECT
-                        /* jhu_jrnl_id */		   	   		lvId,
-                        /* jhu_jrnl_type */ 		  		tsjhu.jhu_jrnl_type,
-                        /* jhu_jrnl_date */ 		  		tsjhu.jhu_jrnl_date,
-                        /* jhu_jrnl_entity */ 	  			tsjhu.jhu_jrnl_entity,
-                        /* jhu_jrnl_status */ 	  			'M',
-                        /* jhu_jrnl_status_text */  		'MANUAL',
-                        /* jhu_jrnl_process_id */   		tsjhu.jhu_jrnl_process_id,
-                        /* jhu_jrnl_description */  		tsjhu.jhu_jrnl_description,
-                        /* jhu_jrnl_source */   	  		tsjhu.jhu_jrnl_source,
-                        /* jhu_jrnl_source_jrnl_id */ 		lvId,
-                        /* jhu_jrnl_authorised_by */ 		tsjhu.jhu_jrnl_authorised_by,
-                        /* jhu_jrnl_authorised_on */ 		tsjhu.jhu_jrnl_authorised_on,
-                        /* jhu_jrnl_validated_by */ 		tsjhu.jhu_jrnl_validated_by,
-                        /* jhu_jrnl_validated_on */ 		tsjhu.jhu_jrnl_validated_on,
-                        /* jhu_jrnl_posted_by */ 			tsjhu.jhu_jrnl_posted_by,
-                        /* jhu_jrnl_posted_on */ 			tsjhu.jhu_jrnl_posted_on,
-                        /* jhu_jrnl_total_hash_debit */ 	NVL(tsjhu.jhu_jrnl_total_hash_debit,0),
-                        /* jhu_jrnl_total_hash_credit */ 	NVL(tsjhu.jhu_jrnl_total_hash_credit,0),
-                        /* jhu_jrnl_total_lines */ 			NVL(tsjhu.jhu_jrnl_total_lines,0),
-                        /* jhu_created_by */ 	  			tsjhu.jhu_created_by,
-                        /* jhu_created_on */ 	  			tsjhu.jhu_created_on,
-                        /* jhu_amended_by */ 				tsjhu.jhu_amended_by,
-                        /* jhu_amended_on */ 				tsjhu.jhu_amended_on,
-                        /* jhu_jrnl_pref_static_src */ 		tsjhu.jhu_jrnl_pref_static_src,
+                        /* jhu_jrnl_id */             lvId,
+                        /* jhu_jrnl_type */           tsjhu.jhu_jrnl_type,
+                        /* jhu_jrnl_date */           tsjhu.jhu_jrnl_date,
+                        /* jhu_jrnl_entity */           tsjhu.jhu_jrnl_entity,
+                        /* jhu_jrnl_status */           'M',
+                        /* jhu_jrnl_status_text */      'MANUAL',
+                        /* jhu_jrnl_process_id */       tsjhu.jhu_jrnl_process_id,
+                        /* jhu_jrnl_description */      tsjhu.jhu_jrnl_description,
+                        /* jhu_jrnl_source */           tsjhu.jhu_jrnl_source,
+                        /* jhu_jrnl_source_jrnl_id */     lvId,
+                        /* jhu_jrnl_authorised_by */    tsjhu.jhu_jrnl_authorised_by,
+                        /* jhu_jrnl_authorised_on */    tsjhu.jhu_jrnl_authorised_on,
+                        /* jhu_jrnl_validated_by */     tsjhu.jhu_jrnl_validated_by,
+                        /* jhu_jrnl_validated_on */     tsjhu.jhu_jrnl_validated_on,
+                        /* jhu_jrnl_posted_by */      tsjhu.jhu_jrnl_posted_by,
+                        /* jhu_jrnl_posted_on */      tsjhu.jhu_jrnl_posted_on,
+                        /* jhu_jrnl_total_hash_debit */   NVL(tsjhu.jhu_jrnl_total_hash_debit,0),
+                        /* jhu_jrnl_total_hash_credit */  NVL(tsjhu.jhu_jrnl_total_hash_credit,0),
+                        /* jhu_jrnl_total_lines */      NVL(tsjhu.jhu_jrnl_total_lines,0),
+                        /* jhu_created_by */          tsjhu.jhu_created_by,
+                        /* jhu_created_on */          tsjhu.jhu_created_on,
+                        /* jhu_amended_by */        tsjhu.jhu_amended_by,
+                        /* jhu_amended_on */        tsjhu.jhu_amended_on,
+                        /* jhu_jrnl_pref_static_src */    tsjhu.jhu_jrnl_pref_static_src,
                         /* jhu_manual_flag */              'Y',
-                        /* jhu_epg_id */			        tsjhu.jhu_epg_id,
-                        /* jhu_version */					    1,
-						/* jhu_jrnl_rev_date */             tsjhu.jhu_jrnl_rev_date
+                        /* jhu_epg_id */              tsjhu.jhu_epg_id,
+                        /* jhu_version */             1,
+            /* jhu_jrnl_rev_date */             tsjhu.jhu_jrnl_rev_date,
+                        /* jhu_department_id */     tsjhu.jhu_department_id
                 FROM temp_gui_jrnl_headers_unposted tsjhu
                 WHERE tsjhu.jhu_jrnl_id = '-1'
                 AND tsjhu.user_session_id = gSessionId;
@@ -7116,24 +7245,24 @@ lvPeriodStartDate := NULL;
                 UPDATE temp_gui_jrnl_headers_unposted
                 SET    jhu_jrnl_id = lvId
                 WHERE  jhu_jrnl_id = '-1'
-                AND	   user_session_id = gSessionId;
+                AND    user_session_id = gSessionId;
 
                 UPDATE temp_gui_jrnl_lines_unposted
-                SET	   jlu_jrnl_hdr_id = lvId
+                SET    jlu_jrnl_hdr_id = lvId
                 WHERE  jlu_jrnl_hdr_id = '-1'
-                AND	   user_session_id = gSessionId;
+                AND    user_session_id = gSessionId;
 
                 UPDATE temp_gui_jrnl_line_errors
                 SET    jle_jrnl_hdr_id = lvId
                 WHERE  jle_jrnl_hdr_id = '-1'
-                AND	   user_session_id = gSessionId;
+                AND    user_session_id = gSessionId;
 
                 gJournalVersion := 1;
 
             ELSE
 
                 UPDATE gui_jrnl_headers_unposted sjhu
-                  SET 	(jhu_jrnl_type, jhu_jrnl_date, jhu_jrnl_entity, jhu_jrnl_status,
+                  SET   (jhu_jrnl_type, jhu_jrnl_date, jhu_jrnl_entity, jhu_jrnl_status,
                          jhu_jrnl_description, jhu_jrnl_source, jhu_jrnl_total_hash_debit,
                          jhu_jrnl_total_hash_credit, jhu_jrnl_total_lines,
                          jhu_amended_by, jhu_amended_on, jhu_epg_id, jhu_version, jhu_jrnl_rev_date) =
@@ -7150,7 +7279,7 @@ lvPeriodStartDate := NULL;
                                 tsjhu.jhu_amended_on,
                                 tsjhu.jhu_epg_id,
                                 gJournalVersion + 1,
-								tsjhu.jhu_jrnl_rev_date
+                tsjhu.jhu_jrnl_rev_date
                         FROM temp_gui_jrnl_headers_unposted tsjhu
                         WHERE tsjhu.jhu_jrnl_id = sjhu.jhu_jrnl_id
                         AND tsjhu.user_session_id = gSessionId)
@@ -7191,7 +7320,7 @@ lvPeriodStartDate := NULL;
                     jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6, jlu_reference_7, jlu_reference_8,
                     jlu_reference_9, jlu_reference_10, jlu_tran_ccy, jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount,
                     jlu_local_rate, jlu_local_ccy, jlu_local_amount, jlu_created_by, jlu_created_on, jlu_amended_by, jlu_amended_on,
-					jlu_epg_id, jlu_period_month, jlu_period_year, jlu_period_ltd) =
+          jlu_epg_id, jlu_period_month, jlu_period_year, jlu_period_ltd) =
                    (SELECT 0, -- ensure FAK_ID are cleared for all lines
                            0, -- ensure EBA_ID are cleared for all lines
                            'M',
@@ -7240,10 +7369,10 @@ lvPeriodStartDate := NULL;
                            tsjlu.jlu_created_on,
                            tsjlu.jlu_amended_by,
                            tsjlu.jlu_amended_on,
-						   tsjlu.jlu_epg_id,
-						   nvl(tsjlu.jlu_period_month,0),
-						   nvl(tsjlu.jlu_period_year,0),
-						   nvl(tsjlu.jlu_period_ltd,0)
+               tsjlu.jlu_epg_id,
+               nvl(tsjlu.jlu_period_month,0),
+               nvl(tsjlu.jlu_period_year,0),
+               nvl(tsjlu.jlu_period_ltd,0)
                     FROM   temp_gui_jrnl_lines_unposted tsjlu
                     WHERE sjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
                     AND sjlu.jlu_jrnl_line_number = tsjlu.jlu_jrnl_line_number
@@ -7327,13 +7456,13 @@ lvPeriodStartDate := NULL;
 				   /* jlu_period_year */		nvl(tsjlu.jlu_period_year,0),
 				   /* jlu_period_ltd */			nvl(tsjlu.jlu_period_ltd,0)
              FROM   temp_gui_jrnl_lines_unposted tsjlu
-             WHERE  tsjlu.jlu_jrnl_hdr_id 		 = gJournalHeader.jhu_jrnl_id
-             AND	tsjlu.user_session_id 		 = gSessionId
-             AND 	NOT EXISTS (SELECT 1
+             WHERE  tsjlu.jlu_jrnl_hdr_id      = gJournalHeader.jhu_jrnl_id
+             AND  tsjlu.user_session_id      = gSessionId
+             AND  NOT EXISTS (SELECT 1
                                 FROM   gui_jrnl_lines_unposted sjlu
                                 WHERE  sjlu.jlu_jrnl_hdr_id = tsjlu.jlu_jrnl_hdr_id
-                                AND	   sjlu.jlu_jrnl_line_number = tsjlu.jlu_jrnl_line_number
-								AND    sjlu.JLU_EPG_ID = tsjlu.JLU_EPG_ID);
+                                AND    sjlu.jlu_jrnl_line_number = tsjlu.jlu_jrnl_line_number
+                AND    sjlu.JLU_EPG_ID = tsjlu.JLU_EPG_ID);
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
                  NULL; -- do nothing
@@ -7419,8 +7548,8 @@ lvPeriodStartDate := NULL;
     FUNCTION fnui_journal_edit_permission(owner VARCHAR2, editor VARCHAR2) RETURN BOOLEAN
     IS
 
-        lvFound		NUMBER;
-        lvSuccess	BOOLEAN;
+        lvFound   NUMBER;
+        lvSuccess BOOLEAN;
 
     BEGIN
 
@@ -7442,14 +7571,14 @@ lvPeriodStartDate := NULL;
         -- Restrict user to view journals in their groups or sub-groups
         BEGIN
             SELECT  1
-            INTO	lvFound
+            INTO  lvFound
             FROM
-            (	SELECT 1
+            ( SELECT 1
                 FROM   ui_meta_user_groups child
                             INNER JOIN ui_meta_user_groups parent
                                   ON child.mmg_group_id = parent.mmg_group_id
                 WHERE  child.mmg_user_id = owner
-                AND	   parent.mmg_user_id = editor
+                AND    parent.mmg_user_id = editor
                 UNION
                 SELECT 1
                 FROM   ui_meta_group_hierarchy
@@ -7458,7 +7587,7 @@ lvPeriodStartDate := NULL;
                             INNER JOIN ui_meta_user_groups child
                                   ON mgh_child_id = child.mmg_group_id
                 WHERE  child.mmg_user_id = owner
-                AND	   parent.mmg_user_id = editor	) tmp;
+                AND    parent.mmg_user_id = editor  ) tmp;
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
                 prui_log_error(gJournalLine.jlu_jrnl_hdr_id, gJournalLine.jlu_jrnl_line_number, 9999,
@@ -7482,12 +7611,12 @@ lvPeriodStartDate := NULL;
     BEGIN
 
          /*SELECT SEQ_SLR_JRNL_HEADERS_ID.NEXTVAL
-         INTO	lvSeq
-         FROM	DUAL;
-		 */
-		 -- sequence replace with function
-		 -- to get header id in the similar way as in Import process it is done
-		 lvSeq := FNSLR_GETHEADERID;
+         INTO lvSeq
+         FROM DUAL;
+     */
+     -- sequence replace with function
+     -- to get header id in the similar way as in Import process it is done
+     lvSeq := FNSLR_GETHEADERID;
 
          SELECT STANDARD_HASH(lvSeq, 'MD5') INTO lvJournalId FROM dual;
          gJournalHeader.jhu_jrnl_id := lvJournalId;
@@ -7499,7 +7628,6 @@ lvPeriodStartDate := NULL;
               pr_error(1, SQLERRM, 0, 'fnui_get_next_journal_id', 'seq_slr_jrnl_headers_id', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
               RAISE;
     END fnui_get_next_journal_id;
-
     --********************************************************************************
 
     FUNCTION fnui_get_next_line_no RETURN NUMBER
@@ -7508,10 +7636,10 @@ lvPeriodStartDate := NULL;
     BEGIN
 
          SELECT MAX(jlu_jrnl_line_number)+1
-         INTO	lvSeq
-         FROM	temp_gui_jrnl_lines_unposted
+         INTO lvSeq
+         FROM temp_gui_jrnl_lines_unposted
          WHERE  jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
-         AND	user_session_id = gSessionId;
+         AND  user_session_id = gSessionId;
 
          RETURN lvSeq;
 
@@ -7528,16 +7656,16 @@ lvPeriodStartDate := NULL;
 
     FUNCTION fnui_does_journal_exist(journal_id VARCHAR2) RETURN BOOLEAN
     IS
-        lvFound		NUMBER := 0;
-        lvSuccess	BOOLEAN;
+        lvFound   NUMBER := 0;
+        lvSuccess BOOLEAN;
     BEGIN
 
         lvSuccess := FALSE;
 
-        SELECT 	1
-        INTO	lvFound
-        FROM	gui_jrnl_headers_unposted
-        WHERE	jhu_jrnl_id = journal_id;
+        SELECT  1
+        INTO  lvFound
+        FROM  gui_jrnl_headers_unposted
+        WHERE jhu_jrnl_id = journal_id;
 
         IF lvFound > 0 THEN
            lvSuccess := TRUE;
@@ -7557,17 +7685,17 @@ lvPeriodStartDate := NULL;
 
     FUNCTION fnui_does_line_exist(journal_id VARCHAR2, line_no NUMBER) RETURN BOOLEAN
     IS
-        lvFound		NUMBER;
-        lvSuccess	BOOLEAN;
+        lvFound   NUMBER;
+        lvSuccess BOOLEAN;
     BEGIN
 
         lvSuccess := FALSE;
 
-        SELECT 	1
-        INTO	lvFound
-        FROM	gui_jrnl_lines_unposted
-        WHERE	jlu_jrnl_hdr_id = journal_id
-        AND		jlu_jrnl_line_number = line_no;
+        SELECT  1
+        INTO  lvFound
+        FROM  gui_jrnl_lines_unposted
+        WHERE jlu_jrnl_hdr_id = journal_id
+        AND   jlu_jrnl_line_number = line_no;
 
         lvSuccess := (lvFound=1);
 
@@ -7637,32 +7765,32 @@ lvPeriodStartDate := NULL;
 
     PROCEDURE prui_update_header_stats(journal_id IN VARCHAR2)
     IS
-       lvDebits 	NUMBER(38,3);
+       lvDebits   NUMBER(38,3);
        lvCredits    NUMBER(38,3);
-       lvLines		NUMBER(38);
-	   lvEntityProcGroup VARCHAR2(60);
+       lvLines    NUMBER(38);
+     lvEntityProcGroup VARCHAR2(60);
     BEGIN
 
         -- Get new stats
         SELECT COUNT(*) AS total_lines,
                SUM(DECODE(SIGN(jlu_tran_amount),-1,jlu_tran_amount,0)) AS total_hash_credit,
                SUM(DECODE(SIGN(jlu_tran_amount),1,jlu_tran_amount,0)) AS total_hash_debit,
-			   MAX(jlu_epg_id) AS entity_proc_group
+         MAX(jlu_epg_id) AS entity_proc_group
         INTO   lvLines,
                lvCredits,
                lvDebits,
-			   lvEntityProcGroup
+         lvEntityProcGroup
         FROM   gui_jrnl_lines_unposted
         WHERE  jlu_jrnl_hdr_id = journal_id
         ;
 
         -- Update journal header
         UPDATE gui_jrnl_headers_unposted
-        SET jhu_jrnl_total_hash_debit	  = NVL(lvDebits,0),
-            jhu_jrnl_total_hash_credit	  = NVL(lvCredits,0),
-            jhu_jrnl_total_lines		  = NVL(lvLines,0),
-			--set entity group for header base on journal lines
-            jhu_epg_id					  = lvEntityProcGroup,
+        SET jhu_jrnl_total_hash_debit   = NVL(lvDebits,0),
+            jhu_jrnl_total_hash_credit    = NVL(lvCredits,0),
+            jhu_jrnl_total_lines      = NVL(lvLines,0),
+      --set entity group for header base on journal lines
+            jhu_epg_id            = lvEntityProcGroup,
             jhu_version = gJournalVersion +1
         WHERE jhu_jrnl_id = journal_id;
 
@@ -7680,11 +7808,11 @@ lvPeriodStartDate := NULL;
 
       CURSOR cur_journal_lines(jrnl_id VARCHAR2) IS
           SELECT jlu_jrnl_line_number
-          FROM 	 gui_jrnl_lines_unposted
+          FROM   gui_jrnl_lines_unposted
           WHERE  jlu_jrnl_hdr_id = jrnl_id
-		  ORDER BY jlu_jrnl_line_number asc;
+      ORDER BY jlu_jrnl_line_number asc;
 
-      line_number 	   NUMBER;
+      line_number      NUMBER;
       next_line_number NUMBER := 1;
 
     BEGIN
@@ -7694,12 +7822,12 @@ lvPeriodStartDate := NULL;
 
         FOR rec IN cur_journal_lines(journal_id)
         LOOP
-			UPDATE gui_jrnl_lines_unposted
+      UPDATE gui_jrnl_lines_unposted
             SET jlu_jrnl_line_number = next_line_number
             WHERE
                 jlu_jrnl_hdr_id = journal_id
             AND jlu_jrnl_line_number = rec.jlu_jrnl_line_number
-			and jlu_jrnl_line_number <> next_line_number;
+      and jlu_jrnl_line_number <> next_line_number;
 
             next_line_number := next_line_number + 1;
 
@@ -7774,15 +7902,15 @@ lvPeriodStartDate := NULL;
 
     --********************************************************************************
 
-    PROCEDURE prui_get_calendar_details(business_date 			   IN DATE,
-                                        period_days_set			   IN VARCHAR2,
-                                        entity					   IN VARCHAR2,
+    PROCEDURE prui_get_calendar_details(business_date          IN DATE,
+                                        period_days_set        IN VARCHAR2,
+                                        entity             IN VARCHAR2,
                                         previous_period_starts     OUT DATE,
-                                        previous_period_ends 	   OUT DATE,
-                                        period_starts 			   OUT DATE,
-                                        previous_date 			   OUT DATE,
-                                        next_date 	  			   OUT DATE,
-                                        period_ends	  			   OUT DATE,
+                                        previous_period_ends     OUT DATE,
+                                        period_starts          OUT DATE,
+                                        previous_date          OUT DATE,
+                                        next_date              OUT DATE,
+                                        period_ends            OUT DATE,
                                         next_period_ends           OUT DATE,
                                         next_period_starts         OUT DATE)
     IS
@@ -7810,21 +7938,21 @@ lvPeriodStartDate := NULL;
                      MAX(ed_date) OVER (PARTITION BY ed_entity_set,TO_CHAR(ed_date, 'yyyy'),TO_CHAR(ed_date, 'mm') ORDER BY ed_date DESC,ed_entity_set) as period_end_monthly,
                      LAG(ed_date,1) OVER (PARTITION BY ed_entity_set ORDER BY ed_date,ed_entity_set) as prev_bus_date,
                      LEAD(ed_date,1) OVER (PARTITION BY ed_entity_set ORDER BY ed_date,ed_entity_set) as next_bus_date
-              FROM	SLR_ENTITY_DAYS
-              WHERE	ed_entity_set = period_days_set
-              AND	ed_status	  = 'O') days,
+              FROM  SLR_ENTITY_DAYS
+              WHERE ed_entity_set = period_days_set
+              AND ed_status   = 'O') days,
              (SELECT lag(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_BUS_PERIOD,ep_entity) as fist_day_of_prev_mon,
 lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_BUS_PERIOD,ep_entity) as fist_day_of_next_mon,
                      lag(EP_BUS_PERIOD_END,1) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_BUS_PERIOD,ep_entity) as last_day_of_prev_mon,
                      lead(EP_BUS_PERIOD_END,1) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_BUS_PERIOD,ep_entity) as last_day_of_next_mon,
                      ep_cal_period_start period_start,
                      ep_cal_period_end period_end
-              FROM	SLR_ENTITY_PERIODS
-              WHERE	ep_entity = entity
+              FROM  SLR_ENTITY_PERIODS
+              WHERE ep_entity = entity
               AND   ep_period_type != 0) periods
             WHERE business_date <= period_end--periods.ep_cal_period_end
             AND   business_date >= period_start--periods.ep_cal_period_start
-            AND	  TRUNC(ed_date) = TRUNC(business_date);
+            AND   TRUNC(ed_date) = TRUNC(business_date);
 
     EXCEPTION
          WHEN NO_DATA_FOUND THEN
@@ -7838,16 +7966,16 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
             pr_error(1, SQLERRM, 0, 'prui_get_calendar_details', 'slr_entity_days', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     END prui_get_calendar_details;
 
-	--********************************************************************************
+  --********************************************************************************
 
 
-   PROCEDURE prui_update_unprocessed_jrnls(	status_from                     IN CHAR,
-											status_to                     	IN CHAR,
-											list_string                   	IN VARCHAR2,
-											success                       	OUT VARCHAR2)
+   PROCEDURE prui_update_unprocessed_jrnls( status_from                     IN CHAR,
+                      status_to                       IN CHAR,
+                      list_string                     IN VARCHAR2,
+                      success                         OUT VARCHAR2)
    IS
    journal_list array_list := array_list();
-   list_count		NUMBER;
+   list_count   NUMBER;
    BEGIN
 
    success := 'Y';
@@ -7894,82 +8022,82 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
 
 
-	-- ---------------------------------------------------------------------------
-	-- Function to retrieve Entity Processing Group for given pJrnlHdrID
-	-- Notes:
-	--      based on TEMP_GUI_JRNL_LINES_UNPOSTED table
-	-- ---------------------------------------------------------------------------
-	FUNCTION fGetEntityProcGroup
-		(
-			pJrnlHdrID          in SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+  -- ---------------------------------------------------------------------------
+  -- Function to retrieve Entity Processing Group for given pJrnlHdrID
+  -- Notes:
+  --      based on TEMP_GUI_JRNL_LINES_UNPOSTED table
+  -- ---------------------------------------------------------------------------
+  FUNCTION fGetEntityProcGroup
+    (
+      pJrnlHdrID          in SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
             session_id          in VARCHAR2
-		) 	RETURN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE
-	AS
-		s_proc_name             		VARCHAR2(80) := 'PGUI_MANUAL_JOURNAL.fGetEntityProcGroup';
-		s_table_name            		VARCHAR2(32);
-		vEPG_DIMENSION_column_name   	SLR_ENTITY_PROC_GROUP_CONFIG.EPGC_JLU_COLUMN_NAME%TYPE;
-		v_entity_proc_group     		SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;    -- returned
-		v_sql 							varchar(1000);
+    )   RETURN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE
+  AS
+    s_proc_name                 VARCHAR2(80) := 'PGUI_MANUAL_JOURNAL.fGetEntityProcGroup';
+    s_table_name                VARCHAR2(32);
+    vEPG_DIMENSION_column_name    SLR_ENTITY_PROC_GROUP_CONFIG.EPGC_JLU_COLUMN_NAME%TYPE;
+    v_entity_proc_group         SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;    -- returned
+    v_sql               varchar(1000);
 
-	BEGIN
+  BEGIN
 
-		----------------------------------------------------------------------------
-		-- Get column name which defines Entity Group mapping.
-		-- vEPG_DIMENSION_column_name is a column name of SLR_JRNL_LINES_UNPOSTED table
-		-- Assume there is exactly one row, but don't validate it.
-		----------------------------------------------------------------------------
-		s_table_name := 'SLR_ENTITY_PROC_GROUP_CONFIG';
+    ----------------------------------------------------------------------------
+    -- Get column name which defines Entity Group mapping.
+    -- vEPG_DIMENSION_column_name is a column name of SLR_JRNL_LINES_UNPOSTED table
+    -- Assume there is exactly one row, but don't validate it.
+    ----------------------------------------------------------------------------
+    s_table_name := 'SLR_ENTITY_PROC_GROUP_CONFIG';
 
-		BEGIN
-			SELECT max(EPGC_JLU_COLUMN_NAME)
-			INTO vEPG_DIMENSION_column_name
-			FROM SLR_ENTITY_PROC_GROUP_CONFIG;
-		EXCEPTION
-			WHEN NO_DATA_FOUND THEN
-				-- It is not an error when SLR_ENTITY_PROC_GROUP_CONFIG is empty
-				NULL;
-		END;
+    BEGIN
+      SELECT max(EPGC_JLU_COLUMN_NAME)
+      INTO vEPG_DIMENSION_column_name
+      FROM SLR_ENTITY_PROC_GROUP_CONFIG;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        -- It is not an error when SLR_ENTITY_PROC_GROUP_CONFIG is empty
+        NULL;
+    END;
 
-		--------------------------------------------------------------------------------------------------
-		-- Use vEPG_DIMENSION_column_name to retrieve Entity Processing Group from TEMP_GUI_JRNL_LINES_UNPOSTED.
-		-- If vEPG_DIMENSION_column_name is null then skip condition against EPG_DIMENSION.
-		--------------------------------------------------------------------------------------------------
-		s_table_name := 'SLR_ENTITY_PROC_GROUP';
+    --------------------------------------------------------------------------------------------------
+    -- Use vEPG_DIMENSION_column_name to retrieve Entity Processing Group from TEMP_GUI_JRNL_LINES_UNPOSTED.
+    -- If vEPG_DIMENSION_column_name is null then skip condition against EPG_DIMENSION.
+    --------------------------------------------------------------------------------------------------
+    s_table_name := 'SLR_ENTITY_PROC_GROUP';
 
-		v_sql :=
-		  ' SELECT  DISTINCT EPG_ID
-			FROM    TEMP_GUI_JRNL_LINES_UNPOSTED, SLR_ENTITY_PROC_GROUP
-			WHERE
-				JLU_JRNL_HDR_ID = :pJrnlHdrID
-			AND USER_SESSION_ID = :session_id
-			AND JLU_ENTITY = EPG_ENTITY';
+    v_sql :=
+      ' SELECT  DISTINCT EPG_ID
+      FROM    TEMP_GUI_JRNL_LINES_UNPOSTED, SLR_ENTITY_PROC_GROUP
+      WHERE
+        JLU_JRNL_HDR_ID = :pJrnlHdrID
+      AND USER_SESSION_ID = :session_id
+      AND JLU_ENTITY = EPG_ENTITY';
 
-		if vEPG_DIMENSION_column_name is not null then
-			v_sql := v_sql || ' AND (EPG_DIMENSION IS NULL OR EPG_DIMENSION = '||vEPG_DIMENSION_column_name||') ';
-		end if;
+    if vEPG_DIMENSION_column_name is not null then
+      v_sql := v_sql || ' AND (EPG_DIMENSION IS NULL OR EPG_DIMENSION = '||vEPG_DIMENSION_column_name||') ';
+    end if;
 
-		EXECUTE IMMEDIATE v_sql
-		INTO v_entity_proc_group
-		USING pJrnlHdrID,session_id;
+    EXECUTE IMMEDIATE v_sql
+    INTO v_entity_proc_group
+    USING pJrnlHdrID,session_id;
 
-		RETURN v_entity_proc_group;
+    RETURN v_entity_proc_group;
 
-	EXCEPTION
-		WHEN NO_DATA_FOUND THEN
-			-- will be validated and mark as error during further validation phase
-			RETURN 'NULL';
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      -- will be validated and mark as error during further validation phase
+      RETURN 'NULL';
 
-		WHEN TOO_MANY_ROWS THEN
-			-- will be validated and mark as error during further validation phase
-			RETURN 'NULL';
+    WHEN TOO_MANY_ROWS THEN
+      -- will be validated and mark as error during further validation phase
+      RETURN 'NULL';
 
-		WHEN OTHERS THEN
-			-- Log message
-			pr_error(0, 'Errors during retrieving Entity Processing Group for Jrnl Header: '|| pJrnlHdrID,
-				0, s_proc_name, s_table_name, null, 'Entity', 'SLR', 'PL/SQL', SQLCODE);
-			RAISE;
+    WHEN OTHERS THEN
+      -- Log message
+      pr_error(0, 'Errors during retrieving Entity Processing Group for Jrnl Header: '|| pJrnlHdrID,
+        0, s_proc_name, s_table_name, null, 'Entity', 'SLR', 'PL/SQL', SQLCODE);
+      RAISE;
 
-	END fGetEntityProcGroup;
+  END fGetEntityProcGroup;
 
 
 
@@ -7983,7 +8111,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         gvSubLedgerGenLastBalForBD := v_generate;
     END prui_setSubLgrGenLastBalForBD;
 
-	FUNCTION fnui_validate_jrnl_type RETURN BOOLEAN
+  FUNCTION fnui_validate_jrnl_type RETURN BOOLEAN
     IS
 
 
@@ -7996,24 +8124,24 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
       BEGIN
 
-			/* validate journal type against entity configuration */
-		  if gEntityConfiguration.ent_adjustment_flag = 'N' then
+      /* validate journal type against entity configuration */
+      if gEntityConfiguration.ent_adjustment_flag = 'N' then
 
-				 select 1 into lvFound from
-				 slr.slr_ext_jrnl_types
-				 where ejt_type = gJournalHeader.jhu_jrnl_type
-				 and (
-						(ejt_balance_type_1 = 20 and ejt_balance_type_2 is null)
-						or
-						(ejt_balance_type_2 = 20 and ejt_balance_type_1 is null)
-					  );
+         select 1 into lvFound from
+         slr.slr_ext_jrnl_types
+         where ejt_type = gJournalHeader.jhu_jrnl_type
+         and (
+            (ejt_balance_type_1 = 20 and ejt_balance_type_2 is null)
+            or
+            (ejt_balance_type_2 = 20 and ejt_balance_type_1 is null)
+            );
 
-				IF lvFound > 0 THEN
-					prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1023, 'The entity [' || gJournalHeader.jhu_jrnl_entity || '] does not allow adjustments to be processed.');
-					lvSuccess := FALSE;
-				END IF;
+        IF lvFound > 0 THEN
+          prui_log_error(gJournalHeader.jhu_jrnl_id, 0, 1023, 'The entity [' || gJournalHeader.jhu_jrnl_entity || '] does not allow adjustments to be processed.');
+          lvSuccess := FALSE;
+        END IF;
 
-		  end if;
+      end if;
 
 
       EXCEPTION
@@ -8036,7 +8164,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
     END fnui_validate_jrnl_type;
 
 
-    PROCEDURE prui_increment_journal_version(journal_id IN VARCHAR2, updated_by IN SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE	)
+    PROCEDURE prui_increment_journal_version(journal_id IN VARCHAR2, updated_by IN SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE  )
     IS
 
     begin
@@ -8060,66 +8188,65 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
     end prui_increment_journal_version;
 
-
     PROCEDURE prui_calculate_journal_rates(journal_id in VARCHAR2)
     IS
     begin
 
       if  (gEntityConfiguration.ENT_APPLY_FX_TRANSLATION = 'Y' ) then
-		MERGE INTO gui_jrnl_lines_unposted gjlu
-		USING (SELECT * FROM slr.SLR_FX_TRANSLATION_CONFIG
-			   WHERE   FTC_PROCESS_TYPE = 'FX_TRANSLATION'
-				   and FTC_TARGET_AMOUNT_TYPE = 'Base'
-			) SFTC_base
-			ON (SFTC_base.FTC_ENTITY = gjlu.JLU_ENTITY
-			   and SFTC_base.FTC_GAAP = gjlu.JLU_SEGMENT_2
-			   and gjlu.jlu_jrnl_hdr_id = journal_id)
-			WHEN MATCHED THEN
-			UPDATE
-			SET	 jlu_base_rate =
-			CASE
-				WHEN jlu_tran_amount = 0
-				THEN 0 ELSE
-					case when SFTC_base.FTC_FX_MODE = 'Step-by-Step' then
-						CASE WHEN NVL(jlu_local_amount,0) = 0 OR LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_local_amount, 9)))) > 9
-						THEN 0
-						ELSE ROUND(jlu_base_amount/jlu_local_amount, 9) END
-					when SFTC_base.FTC_FX_MODE = 'Direct' then
-						CASE WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
-						THEN 0
-						ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)	END
-					else 0 end
-				END
-			, jlu_local_rate =
-			CASE
-				WHEN jlu_tran_amount = 0
-				THEN 0
-				WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
-				THEN 0
-				ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
-			END;
-	  else
-        UPDATE gui_jrnl_lines_unposted
-			SET	 jlu_base_rate =
-			CASE
-				WHEN jlu_tran_amount = 0
-				THEN 0
-				WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
-				THEN 0
-				ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)
-			END
-			, jlu_local_rate =
-			CASE
-				WHEN jlu_tran_amount = 0
-				THEN 0
-				WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
-				THEN 0
-				ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
-			END
-		WHERE jlu_jrnl_hdr_id = journal_id;
-	  end if;
+    MERGE INTO gui_jrnl_lines_unposted gjlu
+    USING (SELECT * FROM slr.SLR_FX_TRANSLATION_CONFIG
+         WHERE   FTC_PROCESS_TYPE = 'FX_TRANSLATION'
+           and FTC_TARGET_AMOUNT_TYPE = 'Base'
+      ) SFTC_base
+      ON (SFTC_base.FTC_ENTITY = gjlu.JLU_ENTITY
+         and SFTC_base.FTC_GAAP = gjlu.JLU_SEGMENT_2
+         and gjlu.jlu_jrnl_hdr_id = journal_id)
+      WHEN MATCHED THEN
+      UPDATE
+      SET  jlu_base_rate =
+      CASE
+        WHEN jlu_tran_amount = 0
+        THEN 0 ELSE
+          case when SFTC_base.FTC_FX_MODE = 'Step-by-Step' then
+            CASE WHEN jlu_local_amount IS NULL OR LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_local_amount, 9)))) > 9
+            THEN 0
+            ELSE ROUND(jlu_base_amount/jlu_local_amount, 9) END
+          when SFTC_base.FTC_FX_MODE = 'Direct' then
+            CASE WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
+            THEN 0
+            ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)  END
+          else 0 end
+        END
+      , jlu_local_rate =
+      CASE
+        WHEN jlu_tran_amount = 0
+        THEN 0
+        WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
+        THEN 0
+        ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
+      END;
+    else
+      UPDATE gui_jrnl_lines_unposted
+      SET  jlu_base_rate =
+        CASE
+          WHEN jlu_tran_amount = 0
+          THEN 0
+          WHEN LENGTH(ABS(trunc(ROUND(jlu_base_amount/jlu_tran_amount, 9)))) > 9
+          THEN 0
+          ELSE ROUND(jlu_base_amount/jlu_tran_amount, 9)
+          END
+        , jlu_local_rate =
+        CASE
+          WHEN jlu_tran_amount = 0
+          THEN 0
+          WHEN LENGTH(ABS(trunc(ROUND(jlu_local_amount/jlu_tran_amount, 9)))) > 9
+          THEN 0
+          ELSE ROUND(jlu_local_amount/jlu_tran_amount, 9)
+          END
+      WHERE jlu_jrnl_hdr_id = journal_id;
+    end if;
 
-		-- Execute any custom processes
+    -- Execute any custom processes
         pgui_jrnl_custom.prui_update_rates(journal_id);
 
        EXCEPTION
@@ -8146,13 +8273,13 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
     end prui_add_jrnl_to_posting_queue;
 
     PROCEDURE prui_authorise_journal(
-        session_id			IN		VARCHAR2,
-        journal_id			IN 		SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
-        updated_by			IN		SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version in gui_jrnl_headers_unposted.jhu_version%type,
-        success				OUT VARCHAR2)
+        success       OUT VARCHAR2)
     IS
-        vEntityProcGroupName	VARCHAR2(20);
+        vEntityProcGroupName  VARCHAR2(20);
         lvValidateState CHAR(1);
         lvReversingDate DATE;
         v_jrnl_num_of_lines NUMBER(10,0);
@@ -8172,7 +8299,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
        gSessionId := session_id;
        gJournalVersion := journal_version;
 
-		  begin
+      begin
           /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
           prui_lock_journal(journal_id,updated_by);
 
@@ -8201,7 +8328,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
       --validate journal--
      /*  do not validate as it should be ok by now
-	 BEGIN
+   BEGIN
         IF fnui_validate_journal_header <> gSTATE_OK THEN
             success := 'F';
         END IF;
@@ -8212,13 +8339,13 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
               success := 'F';
       END; */
 
-	  if not fnui_get_journal_type then
-		success := 'F';
-	  end IF;
+    if not fnui_get_journal_type then
+    success := 'F';
+    end IF;
 
-	  IF NOT fnui_get_entity	 THEN
-		success := 'F';
-	  END IF;
+    IF NOT fnui_get_entity   THEN
+    success := 'F';
+    END IF;
 
       -- Exit if errors
       IF (success = 'F' or fnui_any_errors(journal_id )) THEN
@@ -8248,8 +8375,8 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
       SELECT JHU_EPG_ID, jhu_jrnl_total_lines
       INTO vEntityProcGroupName, v_jrnl_num_of_lines
-	  FROM GUI_JRNL_HEADERS_UNPOSTED
-	  WHERE JHU_JRNL_ID = journal_id;
+    FROM GUI_JRNL_HEADERS_UNPOSTED
+    WHERE JHU_JRNL_ID = journal_id;
 
 
      begin
@@ -8280,7 +8407,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
      COMMIT;
 
     EXCEPTION
-		    WHEN OTHERS THEN
+        WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_authorise_journal', 'gui_jrnl_headers_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
@@ -8289,17 +8416,17 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
     END prui_authorise_journal;
 
-	PROCEDURE prui_upsert_attachment(
-        session_id			IN VARCHAR2,
-        journal_id			IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+  PROCEDURE prui_upsert_attachment(
+        session_id      IN VARCHAR2,
+        journal_id      IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         file_no         IN gui_jrnl_file.JF_FILE_NO%TYPE ,
         file_name       IN gui_jrnl_file.JF_FILE_NAME%TYPE,
         file_comment    IN gui_jrnl_file.JF_COMMENT%TYPE,
         mime_type       in gui_jrnl_file.jf_mime_type%type,
         attachment      IN gui_jrnl_file.JF_FILE%TYPE,
-        updated_by			IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        updated_by      IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
-        success				  OUT VARCHAR2
+        success         OUT VARCHAR2
     )
     IS
 
@@ -8318,7 +8445,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
        gSessionId := session_id;
        gJournalVersion := journal_version;
 
-		  begin
+      begin
           /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
           prui_lock_journal(journal_id,updated_by);
 
@@ -8395,7 +8522,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
        COMMIT;
 
     EXCEPTION
-		    WHEN OTHERS THEN
+        WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_upsert_attachment', 'gui_jrnl_file', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
@@ -8405,17 +8532,17 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
     end prui_upsert_attachment;
 
     PROCEDURE prui_delete_attachments(
-        session_id			IN VARCHAR2,
-        journal_id			IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        session_id      IN VARCHAR2,
+        journal_id      IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
         file_no_list    IN varchar2,
-        updated_by			IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        updated_by      IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
         journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
-        success				  OUT VARCHAR2
+        success         OUT VARCHAR2
     )
     IS
-      attachment_list  			array_list := array_list();
-      list_count 	 			NUMBER(12);
-      loop_count 	 			NUMBER(12);
+      attachment_list       array_list := array_list();
+      list_count        NUMBER(12);
+      loop_count        NUMBER(12);
       v_file_no NUMBER(10);
       v_success_count NUMBER(5) :=0;
       v_failure_count number(5) :=0;
@@ -8433,7 +8560,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
        gSessionId := session_id;
        gJournalVersion := journal_version;
 
-		  begin
+      begin
           /* lock journal so only one user can edit it. Procedure commits changes, signals journal_locked_exeption if journal already locked */
           prui_lock_journal(journal_id,updated_by);
 
@@ -8494,9 +8621,9 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       )
       loop
            UPDATE gui_jrnl_file
-           SET 	jf_file_no = jrnl_file_cursor.new_no
+           SET  jf_file_no = jrnl_file_cursor.new_no
            WHERE jf_jrnl_hdr_id = jrnl_file_cursor.jf_jrnl_hdr_id
-           AND 	jf_file_no = jrnl_file_cursor.old_no;
+           AND  jf_file_no = jrnl_file_cursor.old_no;
       END loop;
 
       IF (v_success_count > 0 AND v_failure_count > 0) THEN
@@ -8511,14 +8638,12 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         prui_increment_journal_version(journal_id, updated_by);
       END IF;
 
-
-
       /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
        prui_unlock_journal(journal_id,updated_by);
        COMMIT;
 
     EXCEPTION
-		    WHEN OTHERS THEN
+        WHEN OTHERS THEN
              pr_error(1, SQLERRM, 0, 'prui_delete_attachments', 'gui_jrnl_file', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
              /* unlock journal so it can be edited again, procedure commits changes, logs but does not raise exceptions */
@@ -8560,7 +8685,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
     BEGIN
 
       select 1 into v_found from gui_jrnl_headers_unposted
-    	WHERE jhu_jrnl_id = journal_id AND JHU_VERSION = journal_version;
+      WHERE jhu_jrnl_id = journal_id AND JHU_VERSION = journal_version;
 
 
     exception
@@ -8598,7 +8723,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
           jhu_jrnl_validated_by,jhu_jrnl_validated_on,jhu_jrnl_posted_by,jhu_jrnl_posted_on,
           jhu_jrnl_total_hash_debit,jhu_jrnl_total_hash_credit,jhu_jrnl_total_lines,
           jhu_created_by,jhu_created_on,jhu_amended_by,jhu_amended_on,jhu_jrnl_pref_static_src,
-          jhu_manual_flag,jhu_epg_id,jhu_jrnl_rev_date)
+          jhu_manual_flag,jhu_epg_id,jhu_jrnl_rev_date,jhu_department_id)
        SELECT
           gjhu.jhu_jrnl_id,
           gjhu.jhu_jrnl_type,
@@ -8626,10 +8751,12 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
           gjhu.jhu_jrnl_pref_static_src,
           ''Y'',
           gjhu.jhu_epg_id,
-          gjhu.jhu_jrnl_rev_date
+          gjhu.jhu_jrnl_rev_date,
+          gjhu.jhu_department_id
         FROM gui_jrnl_headers_unposted gjhu
         WHERE gjhu.jhu_jrnl_id IN ('||journal_id_list||')
         and gjhu.jhu_jrnl_status = ''Q''';
+
         execute immediate vSql;
 
         IF SQL%ROWCOUNT = 0 THEN
@@ -8709,7 +8836,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
             gjlu.jlu_period_ltd
           FROM gui_jrnl_lines_unposted gjlu
             JOIN gui_jrnl_headers_unposted gjhu ON gjlu.jlu_jrnl_hdr_id = gjhu.jhu_jrnl_id
-			LEFT JOIN slr_entities on ent_entity = gjlu.jlu_entity
+      LEFT JOIN slr_entities on ent_entity = gjlu.jlu_entity
           WHERE gjhu.jhu_jrnl_id in ('||journal_id_list||')
             AND gjhu.jhu_jrnl_status = ''Q''';
 
@@ -8720,10 +8847,9 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         WHERE gjf.jf_jrnl_hdr_id = gjhu.jhu_jrnl_id
         AND gjhu.jhu_jrnl_id IN ('||journal_id_list||')
         and gjhu.jhu_jrnl_status = ''Q''';
-        
+
      OPEN jrnl_file_cursor FOR vsql;
      loop
-     
         fetch jrnl_file_cursor INTO jrnl_file_rec;
         EXIT WHEN jrnl_file_cursor%NOTFOUND;
 
@@ -8761,7 +8887,6 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         FROM DUAL;
 
      END loop;
-             
      close jrnl_file_cursor;
 
     exception
@@ -8789,7 +8914,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       lv_journal_id_list VARCHAR2(10000);
       lv_lock_handle  VARCHAR2(100);
       lv_lock_result  INTEGER;
-      lv_header_id_list  VARCHAR2 (10000);
+      lv_header_id_list  VARCHAR2 (10000); -- AG custom
 
       epg_locked_exception exception;
       batch_critical_exception exception;
@@ -8798,26 +8923,28 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
         status:='S';
 
-        --DBMS_LOCK.ALLOCATE_UNIQUE('MAH_PROCESS_SLR_' || epg_id, lv_lock_handle);
+        DBMS_LOCK.ALLOCATE_UNIQUE('MAH_PROCESS_SLR_' || epg_id, lv_lock_handle);
 
-        --lv_lock_result := DBMS_LOCK.REQUEST(lv_lock_handle, DBMS_LOCK.X_MODE, 5, false);
+        lv_lock_result := DBMS_LOCK.REQUEST(lv_lock_handle, DBMS_LOCK.X_MODE, 5, false);
 
         IF lv_lock_result != 0 THEN
           raise epg_locked_exception;
         END IF;
 
         BEGIN
-          -- process elimination records for each journal header
+
+         --AG Custom process elimination records for each journal header
           pProcessEliminations(journal_id_list,status, lv_header_id_list);
 
           IF LENGTH(lv_header_id_list) > 1 THEN
-            lv_journal_id_list := journal_id_list || ',' ||lv_header_id_list;            
+            lv_journal_id_list := journal_id_list || ',' ||lv_header_id_list;
           ELSE
             lv_journal_id_list := journal_id_list;
           END IF;
 
           prui_copy_journals_to_slr(epg_id, lv_journal_id_list, lv_process_id);
           COMMIT;
+          -- end AG Custom
 
         exception
           WHEN others THEN
@@ -8843,10 +8970,10 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       END;
 
       begin
-        prui_create_reversing_journal(epg_id,journal_id_list,lv_process_id,gSTATUS_VALIDATED);
+        prui_create_reversing_journal(epg_id,lv_journal_id_list,lv_process_id,gSTATUS_VALIDATED);
         commit;
         --mark future dated journals (set 'W' status)--
-        prui_mark_future_dated_jrnls(epg_id,journal_id_list,gSTATUS_VALIDATED);
+        prui_mark_future_dated_jrnls(epg_id,lv_journal_id_list,gSTATUS_VALIDATED);
         commit;
       exception
         WHEN others THEN
@@ -8898,7 +9025,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         status := 'L';
       WHEN batch_critical_exception THEN
         --delete all copied to slr journals, copy errors to gui--
-        prui_rollback_err_slr_journals(epg_id => epg_id,journal_id_list => journal_id_list, rollback_all => TRUE);
+        prui_rollback_err_slr_journals(epg_id => epg_id,journal_id_list => lv_journal_id_list, rollback_all => TRUE);
         prui_log_posting_error(epg_id => epg_id,journal_id_list => lv_journal_id_list, error_message => 'There was an unexpected error during post to the subledger. Please inspect fr_log for details.');
         commit;
         lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
@@ -8924,8 +9051,8 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
     vSql :=
     'SELECT count(1)
     FROM slr_jrnl_headers_unposted sjhu,
-		 slr.slr_ext_jrnl_types ejt,
-		 slr.slr_jrnl_types jt
+     slr.slr_ext_jrnl_types ejt,
+     slr.slr_jrnl_types jt
     WHERE sjhu.jhu_jrnl_id in ('||journal_id_list||')
     AND sjhu.jhu_jrnl_status = :status
     AND sjhu.jhu_jrnl_process_id = :process_id
@@ -8937,74 +9064,74 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
     IF vRevJrnlCount > 0 THEN
 
-		BEGIN
-		  savepoint create_reversing_journal;
+    BEGIN
+      savepoint create_reversing_journal;
 
-		  --delegate creation of reversing journals to slr_post_journals_pkg
-		  syn_ui_post_journals_pkg.pCreate_reversing_journal(journal_id_list, epg_id, status, process_id);
+      --delegate creation of reversing journals to slr_post_journals_pkg
+      syn_ui_post_journals_pkg.pCreate_reversing_journal(journal_id_list, epg_id, status, process_id);
 
       --execute custom logic
-	    pgui_jrnl_custom.prui_create_reversing_journal(epg_id,journal_id_list);
+      pgui_jrnl_custom.prui_create_reversing_journal(epg_id,journal_id_list);
 
-		exception
-		  WHEN others THEN
-		  ROLLBACK TO SAVEPOINT create_reversing_journal;
-		  pr_error(1, SQLERRM, 0, 'prui_create_reversing_journal.2', 'slr_jrnl_headers_unposted/slr_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    exception
+      WHEN others THEN
+      ROLLBACK TO SAVEPOINT create_reversing_journal;
+      pr_error(1, SQLERRM, 0, 'prui_create_reversing_journal.2', 'slr_jrnl_headers_unposted/slr_jrnl_lines_unposted', NULL, NULL, gPackageName, 'PL/SQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 
-		  execute immediate
-		   'INSERT INTO gui_jrnl_line_errors (
-			  jle_jrnl_process_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
-			  jle_error_code, jle_error_string, jle_created_by, jle_created_on,
-			  jle_amended_by, jle_amended_on)
-		   SELECT  :process_id, jhu_jrnl_source_jrnl_id, 0,
-			  ''MADJ-9999'', ''Unable to create reversing journal for journal ''||TO_CHAR(jhu_jrnl_id), user, sysdate, user, sysdate
-		   FROM slr_jrnl_headers_unposted sjhu,
-				slr.slr_ext_jrnl_types ejt,
-				slr.slr_jrnl_types jt
-		   WHERE sjhu.jhu_jrnl_id in ('||journal_id_list||')
-		   AND sjhu.jhu_jrnl_process_id = :process_id
-		   AND sjhu.jhu_jrnl_status  = :status
-		   AND sjhu.jhu_jrnl_type = ejt.ejt_type
-		   AND jt.jt_type = ejt.ejt_jt_type
-		   AND jt.jt_reverse_flag = ''Y'''
-		  USING process_id, process_id, status;
+      execute immediate
+       'INSERT INTO gui_jrnl_line_errors (
+        jle_jrnl_process_id, jle_jrnl_hdr_id, jle_jrnl_line_number,
+        jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+        jle_amended_by, jle_amended_on)
+       SELECT  :process_id, jhu_jrnl_source_jrnl_id, 0,
+        ''MADJ-9999'', ''Unable to create reversing journal for journal ''||TO_CHAR(jhu_jrnl_id), user, sysdate, user, sysdate
+       FROM slr_jrnl_headers_unposted sjhu,
+        slr.slr_ext_jrnl_types ejt,
+        slr.slr_jrnl_types jt
+       WHERE sjhu.jhu_jrnl_id in ('||journal_id_list||')
+       AND sjhu.jhu_jrnl_process_id = :process_id
+       AND sjhu.jhu_jrnl_status  = :status
+       AND sjhu.jhu_jrnl_type = ejt.ejt_type
+       AND jt.jt_type = ejt.ejt_jt_type
+       AND jt.jt_reverse_flag = ''Y'''
+      USING process_id, process_id, status;
 
-		  EXECUTE IMMEDIATE
-		  'UPDATE slr_jrnl_lines_unposted sjlu
-		   SET sjlu.jlu_jrnl_status = ''E''
-			  ,sjlu.jlu_jrnl_status_text = ''Error''
-		   WHERE sjlu.jlu_jrnl_hdr_id
-		   IN (select jhu_jrnl_id
-			  FROM slr_jrnl_headers_unposted sjhu,
-				   slr.slr_ext_jrnl_types ejt,
-				   slr.slr_jrnl_types jt
-			  WHERE sjhu.jhu_jrnl_id in ('||journal_id_list||')
-			  AND sjhu.jhu_jrnl_status = :status
-			  AND sjhu.jhu_jrnl_type = ejt.ejt_type
-			  AND jt.jt_type = ejt.ejt_jt_type
-			  AND jt.jt_reverse_flag = ''Y'')
-		   AND sjlu.jlu_jrnl_status = :status
-		   AND sjlu.jlu_jrnl_process_id = :process_id
-		   AND sjlu.jlu_epg_id = '''||epg_id||''''
-		  using status, status, process_id;
+      EXECUTE IMMEDIATE
+      'UPDATE slr_jrnl_lines_unposted sjlu
+       SET sjlu.jlu_jrnl_status = ''E''
+        ,sjlu.jlu_jrnl_status_text = ''Error''
+       WHERE sjlu.jlu_jrnl_hdr_id
+       IN (select jhu_jrnl_id
+        FROM slr_jrnl_headers_unposted sjhu,
+           slr.slr_ext_jrnl_types ejt,
+           slr.slr_jrnl_types jt
+        WHERE sjhu.jhu_jrnl_id in ('||journal_id_list||')
+        AND sjhu.jhu_jrnl_status = :status
+        AND sjhu.jhu_jrnl_type = ejt.ejt_type
+        AND jt.jt_type = ejt.ejt_jt_type
+        AND jt.jt_reverse_flag = ''Y'')
+       AND sjlu.jlu_jrnl_status = :status
+       AND sjlu.jlu_jrnl_process_id = :process_id
+       AND sjlu.jlu_epg_id = '''||epg_id||''''
+      using status, status, process_id;
 
-		 EXECUTE IMMEDIATE
-		  'UPDATE (select jhu_jrnl_status, jhu_jrnl_status_text
-			FROM slr_jrnl_headers_unposted,
-				 slr.slr_ext_jrnl_types ejt,
-				 slr.slr_jrnl_types jt
-			WHERE jhu_jrnl_id in ('||journal_id_list||')
-			AND jhu_jrnl_status  = :status
-			AND jhu_jrnl_type = ejt.ejt_type
-			AND jhu_jrnl_process_id = :process_id
-			AND jt.jt_type = ejt.ejt_jt_type
-			AND jt.jt_reverse_flag = ''Y'') sjhu
-		  SET sjhu.jhu_jrnl_status = ''E'',
-		  sjhu.jhu_jrnl_status_text = ''Error'''
-		 USING status, process_id;
+     EXECUTE IMMEDIATE
+      'UPDATE (select jhu_jrnl_status, jhu_jrnl_status_text
+      FROM slr_jrnl_headers_unposted,
+         slr.slr_ext_jrnl_types ejt,
+         slr.slr_jrnl_types jt
+      WHERE jhu_jrnl_id in ('||journal_id_list||')
+      AND jhu_jrnl_status  = :status
+      AND jhu_jrnl_type = ejt.ejt_type
+      AND jhu_jrnl_process_id = :process_id
+      AND jt.jt_type = ejt.ejt_jt_type
+      AND jt.jt_reverse_flag = ''Y'') sjhu
+      SET sjhu.jhu_jrnl_status = ''E'',
+      sjhu.jhu_jrnl_status_text = ''Error'''
+     USING status, process_id;
 
-		 end;
+     end;
 
    end if;
 
@@ -9060,10 +9187,10 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         jle_error_code, jle_error_string, jle_created_by, jle_created_on,
         jle_amended_by, jle_amended_on)
      select jle_jrnl_process_id, gjhu.jhu_jrnl_id, jle_jrnl_line_number,
-            jle_error_code,	jle_error_string, jle_created_by, jle_created_on,
-            jle_amended_by,	jle_amended_on
-     from 	slr_jrnl_line_errors jle, slr_jrnl_headers_unposted jhu, gui_jrnl_headers_unposted gjhu
-     where	jle_jrnl_hdr_id = jhu.jhu_jrnl_id
+            jle_error_code, jle_error_string, jle_created_by, jle_created_on,
+            jle_amended_by, jle_amended_on
+     from   slr_jrnl_line_errors jle, slr_jrnl_headers_unposted jhu, gui_jrnl_headers_unposted gjhu
+     where  jle_jrnl_hdr_id = jhu.jhu_jrnl_id
      and    jhu.jhu_jrnl_id = gjhu.jhu_jrnl_id
      and    jhu.jhu_jrnl_process_id = coalesce(:process_id, jhu.jhu_jrnl_process_id)
      and    jhu.jhu_jrnl_id in ('||journal_id_list||')';
@@ -9128,7 +9255,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
      END IF;
      vSql := vSql||')';
 
-	 /* build attachment file id list */
+   /* build attachment file id list */
       OPEN file_attachment_cursor FOR vSql;
       loop
         fetch file_attachment_cursor INTO v_file_id;
@@ -9143,20 +9270,20 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       close file_attachment_cursor;
 
       IF v_file_id_list IS NOT NULL THEN
-		  vSql := 'delete from slr.slr_jrnl_file_attachment
-			where jfa_jf_file_id in ('||v_file_id_list||')';
+      vSql := 'delete from slr.slr_jrnl_file_attachment
+      where jfa_jf_file_id in ('||v_file_id_list||')';
 
-		  EXECUTE IMMEDIATE vSql;
+      EXECUTE IMMEDIATE vSql;
 
-		  vSql := 'delete from slr.slr_jrnl_file
-			where jf_file_id in ('||v_file_id_list||')';
+      vSql := 'delete from slr.slr_jrnl_file
+      where jf_file_id in ('||v_file_id_list||')';
 
-		  EXECUTE IMMEDIATE vSql;
-	  end if;
+      EXECUTE IMMEDIATE vSql;
+    end if;
 
       vSql :=
      'delete from slr_jrnl_headers_unposted
-     where jhu_jrnl_id in  ('||journal_id_list||')
+     where jhu_jrnl_id in ('||journal_id_list||')
      and jhu_jrnl_process_id = coalesce(:process_id, jhu_jrnl_process_id)';
      IF not rollback_all THEN
         vSql := vSql||' and jhu_jrnl_status in (''E'',''V'')';
@@ -9182,15 +9309,19 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
   BEGIN
     --delete journals posted to slr from gui tables, those will have the 'Q' status as oposed to the failed journals ('E' status).--
 
+
+     -- In the following AG had customized where sjhu.jhu_jrnl_id = gjhu.jhu_jrnl_id by substituting  sjhu.jhu_jrnl_id in ('||journal_id_list||')  In two places
+     -- Allowing the base version to overrite our customization
+
     EXECUTE IMMEDIATE
       'delete from gui_jrnl_headers_unposted gjhu
-       where gjhu.jhu_jrnl_id in ('||journal_id_list||')
+      where gjhu.jhu_jrnl_id in ('||journal_id_list||')
       and gjhu.jhu_jrnl_status = ''Q''
       and (exists (select 1 from slr_jrnl_headers_unposted sjhu
-            where sjhu.jhu_jrnl_id in ('||journal_id_list||')
+            where sjhu.jhu_jrnl_id = gjhu.jhu_jrnl_id
             and   sjhu.jhu_jrnl_status = ''W'')
           or exists (select 1 from slr_jrnl_headers sjh
-            where sjh.JH_JRNL_ID in ('||journal_id_list||')
+            where sjh.JH_JRNL_ID = gjhu.jhu_jrnl_id
             and sjh.JH_JRNL_DATE = gjhu.JHU_JRNL_DATE
             and sjh.JH_JRNL_EPG_ID = gjhu.JHU_EPG_ID)
            )';
@@ -9214,6 +9345,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
       'delete from gui_jrnl_line_errors gjle
        where gjle.jle_jrnl_hdr_id in ('||journal_id_list||')
        and not exists (select 1 from gui_jrnl_headers_unposted gjhu where gjhu.jhu_jrnl_id in ('||journal_id_list||') and gjhu.jhu_jrnl_id = gjle.jle_jrnl_hdr_id )';
+
 
   exception
     WHEN others THEN
@@ -9339,10 +9471,10 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
         jle_error_code, jle_error_string, jle_created_by, jle_created_on,
         jle_amended_by, jle_amended_on)
      SELECT 0, jhu_jrnl_id, 0,
-            ''MADJ-9999'',	:error_string, user, sysdate ,
-            user,	sysdate
-     FROM 	gui_jrnl_headers_unposted
-     WHERE	jhu_jrnl_id in ('||journal_id_list||')'
+            ''MADJ-9999'',  :error_string, user, sysdate ,
+            user, sysdate
+     FROM   gui_jrnl_headers_unposted
+     WHERE  jhu_jrnl_id in ('||journal_id_list||')'
      USING error_message;
 
   exception
@@ -9359,6 +9491,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 --  END fnui_get_standard_hash_sql;
 
    --********************************************************************************
+    -- AG custom
    FUNCTION fnui_validate_madj_source
       RETURN BOOLEAN
    IS
@@ -9484,6 +9617,136 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
    END fnui_validate_madj_source;
 
    --********************************************************************************
+   -- AG custom
+   FUNCTION fnui_validate_madj_effective_date -- AG Custom
+      RETURN BOOLEAN
+   IS
+      lvFound     NUMBER := NULL;
+      lvSuccess   BOOLEAN;
+   BEGIN
+      lvSuccess := TRUE;
+
+      BEGIN
+         --Look for errors in account code
+         INSERT INTO temp_gui_jrnl_line_errors (jle_jrnl_process_id,
+                                                user_session_id,
+                                                jle_jrnl_hdr_id,
+                                                jle_jrnl_line_number,
+                                                jle_error_code,
+                                                jle_error_string,
+                                                jle_created_by,
+                                                jle_created_on,
+                                                jle_amended_by,
+                                                jle_amended_on)
+            SELECT                                   /* jle_jrnl_process_id */
+                  0,
+                   /* user_session_id */
+                   gSessionId,
+                   /* jle_jrnl_hdr_id */
+                   jlu_jrnl_hdr_id,
+                   /* jle_jrnl_line_number */
+                   jlu_jrnl_line_number,
+                   /* jle_error_code */
+                   'MADJ-1010',
+                   /* jle_error_string */
+                   'Effective Date can not be JAN 1',
+                   /* jle_created_by */
+                   'SYSTEM',
+                   /* jle_created_on */
+                   SYSDATE,
+                   /* jle_amended_by */
+                   'SYSTEM',
+                   /* jle_amended_on */
+                   SYSDATE
+              FROM temp_gui_jrnl_lines_unposted
+             WHERE     jlu_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                   AND user_session_id = gSessionId
+                   AND to_number(to_char(jlu_effective_date,'MM')) = 1 and to_number(to_char(jlu_effective_date,'DD')) = 1;
+      EXCEPTION
+         WHEN OTHERS
+         THEN
+            pr_error (1,
+                      SQLERRM,
+                      0,
+                      'fnui_validate_madj_effective_date',
+                      'vw_ui_madj_source_system',
+                      NULL,
+                      NULL,
+                      gPackageName,
+                      'PL/SQL',
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL);
+            lvSuccess := FALSE;
+      END;
+
+      --How many errors were found
+      BEGIN
+         SELECT COUNT (*)
+           INTO lvFound
+           FROM temp_gui_jrnl_line_errors
+          WHERE     jle_jrnl_hdr_id = gJournalHeader.jhu_jrnl_id
+                AND user_session_id = gSessionId
+                AND jle_error_code = 'MADJ-1010';
+      EXCEPTION
+         WHEN NO_DATA_FOUND
+         THEN
+            NULL;                                                -- do nothing
+         WHEN OTHERS
+         THEN
+            pr_error (1,
+                      SQLERRM,
+                      0,
+                      'fnui_validate_madj_effective_date',
+                      'temp_gui_jrnl_headers_unposted',
+                      NULL,
+                      NULL,
+                      gPackageName,
+                      'PL/SQL',
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL);
+      END;
+
+      IF lvFound > 0
+      THEN
+         lvSuccess := FALSE;
+      END IF;
+
+      RETURN lvSuccess;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         pr_error (1,
+                   SQLERRM,
+                   0,
+                   'fnui_validate_madj_effective_date',
+                   'vw_ui_madj_source_system',
+                   NULL,
+                   NULL,
+                   gPackageName,
+                   'PL/SQL',
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL);
+         RETURN FALSE;
+   END fnui_validate_madj_effective_date;
+
+
+
+  -- AG Custom
   FUNCTION fnui_validate_acc_event_type
       RETURN BOOLEAN
    IS
@@ -9614,6 +9877,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
    END fnui_validate_acc_event_type;
 
    --********************************************************************************
+   -- AG custom
    FUNCTION fnui_validate_ledger
       RETURN BOOLEAN
    IS
@@ -9742,6 +10006,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
          RETURN FALSE;
    END fnui_validate_ledger;
 
+   -- AG custom
    PROCEDURE pCombinationCheck_GJLU (
       pinEPGID       IN slr.slr_entity_proc_group.epg_id%TYPE,
       pinProcessID   IN slr.slr_job_statistics.js_process_id%TYPE,
@@ -9939,7 +10204,7 @@ lead(EP_BUS_PERIOD_START) over (PARTITION BY ep_entity ORDER BY EP_BUS_YEAR,EP_B
 
 
    --********************************************************************************
-
+    -- AG custom
    PROCEDURE pProcessEliminations (journal_id_list   IN     VARCHAR2,
                                    success              OUT CHAR,
                                   lv_header_id_list IN OUT VARCHAR2 )
@@ -9997,7 +10262,7 @@ return;
 
    --********************************************************************************
 
-
+    -- AG custom
    PROCEDURE pCreateEliminations (
       journal_id    IN     SLR_JRNL_HEADERS.JH_JRNL_ID%TYPE,
       success          OUT CHAR,
@@ -10022,7 +10287,8 @@ return;
                               ELE.LEGAL_ENTITY_LINK_TYP)
                 LEFT JOIN stn.posting_method_derivation_rein psmre
                    ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
-                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD
+                       AND pmd.legal_entity_link_typ='GAAP_CONSOLIDATION')
                 LEFT JOIN STN.POSTING_LEDGER pl2 on (
                     pl2.ledger_id = pmd.OUTPUT_LEDGER_ID )
           WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
@@ -10040,8 +10306,8 @@ return;
             EXIT;
         END IF;
 
-        vHeaderId := fnui_get_next_journal_id;        
-        
+        vHeaderId := fnui_get_next_journal_id;
+
         IF LENGTH(lv_header_id_list) > 1 THEN
                lv_header_id_list := lv_header_id_list || ',' ||''''||vHeaderId||'''';
         ELSE
@@ -10078,7 +10344,8 @@ return;
                 jhu_jrnl_ref_id,
                 jhu_jrnl_rev_date,
                 jhu_manual_flag,
-                jhu_version
+                jhu_version,
+                jhu_department_id
            FROM gui.gui_jrnl_headers_unposted gu
                 CROSS JOIN
                 (SELECT DISTINCT
@@ -10097,7 +10364,8 @@ return;
                                       ELE.LEGAL_ENTITY_LINK_TYP)
                         LEFT JOIN stn.posting_method_derivation_rein psmre
                            ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
-                               AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+                               AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD
+                               AND pmd.legal_entity_link_typ='GAAP_CONSOLIDATION')
                   WHERE JLU.JLU_SEGMENT_7 IN ('AA', 'CA')) ce
           WHERE     gu.jhu_jrnl_id = ce.jlu_jrnl_hdr_id
                 AND gu.jhu_jrnl_id = trim('''' FROM journal_id)
@@ -10272,7 +10540,8 @@ return;
                               ELE.LEGAL_ENTITY_LINK_TYP)
                 LEFT JOIN stn.posting_method_derivation_rein psmre
                    ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
-                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD
+                       AND pmd.legal_entity_link_typ='GAAP_CONSOLIDATION')
                 LEFT JOIN STN.POSTING_LEDGER pl2 on (
                     pl2.ledger_id = pmd.OUTPUT_LEDGER_ID )
           WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
