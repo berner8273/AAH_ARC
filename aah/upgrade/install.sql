@@ -24,6 +24,9 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
+conn ~gui_logon
+ @@gui/us84390.sql
+
 conn ~stn_logon
  @@stn/us84390.sql
  @@stn/us85183.sql
