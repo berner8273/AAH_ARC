@@ -2067,6 +2067,7 @@ as (
         join fdr.fr_archive_ctl arc on arc.arct_id = pARCT_ID
         where m.mdate <= (gp.gp_todays_bus_date - arc.arct_archive_days )
         and db.fdb_balance_type = m.fdb_balance_type
+        AND db.fdb_balance_date <> m.mdate
         AND db.fdb_balance_type= r_jt.BAL_TYPE
         );
 
@@ -2163,8 +2164,8 @@ INSERT INTO SLR.SLR_EBA_DAILY_BALANCES_TMP (EDB_FAK_ID,
           EDB_BASE_LTD_BALANCE,
           0,
           0,
-          EDB_LOCAL_YTD_BALANCE,
-          CASE WHEN EDB_PERIOD_YEAR = new_bal_year THEN EDB_LOCAL_LTD_BALANCE ELSE 0 END,
+          CASE WHEN EDB_PERIOD_YEAR = new_bal_year THEN EDB_LOCAL_YTD_BALANCE ELSE 0 END,
+          EDB_LOCAL_LTD_BALANCE,
           EDB_ENTITY,
           EDB_EPG_ID,
           new_bal_month AS EDB_PERIOD_MONTH,
@@ -2214,6 +2215,7 @@ INSERT INTO SLR.SLR_EBA_DAILY_BALANCES_TMP (EDB_FAK_ID,
                                                      - arc.arct_archive_days)
                                              AND db.edb_balance_type =
                                                     m.edb_balance_type
+                                             AND db.edb_balance_date <> new_bal_date
                                              AND db.edb_balance_type =
                                                     r_jt.BAL_TYPE);
 END LOOP;
