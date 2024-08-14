@@ -26,21 +26,7 @@ define unittest_login=~8
 /* Begin AAH custom upgrades */
 
 
-conn ~stn_logon
-@@stn/upgrade_stn_packages.sql
-@@stn/upgrade_stn_views.sql
-
-conn ~fdr_logon
-@@fdr/upgrade_fdr_procedures.sql
-
 conn ~gui_logon
-@@gui/upgrade_gui_packages.sql
-
-conn ~slr_logon
-@@slr/upgrade_slr_packages.sql
-
-conn ~sys_logon
-grant create job to public;
 
 /* End AAH custom upgrades */
 
