@@ -22,12 +22,11 @@ define unittest_login=~8
 
 /* Check AAH upgrade versions - do not remove */
 
-
 /* Begin AAH custom upgrades */
 
-
-conn ~gui_logon
-
+conn ~stn_logon
+ @@stn/us78363.sql
+ 
 /* End AAH custom upgrades */
 
 /* Refresh grants to aah_read_only and aah_rdr roles - do not remove */
