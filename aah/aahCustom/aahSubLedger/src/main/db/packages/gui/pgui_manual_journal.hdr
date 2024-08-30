@@ -1,0 +1,305 @@
+CREATE OR REPLACE PACKAGE GUI.PGUI_MANUAL_JOURNAL AS
+
+    TYPE global_ref_cursor IS REF CURSOR;
+   --- TYPE array_list IS TABLE OF VARCHAR2(50);
+
+    -- For use with R2 code base
+    PROCEDURE prui_search_headers(
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        journal_type    IN    SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE,
+        entity        IN    SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE,
+        source_system   IN    SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE,
+        effective_date    IN    VARCHAR2,
+        reversing_date    IN    VARCHAR2,
+        description     IN    SLR_JRNL_HEADERS.JH_JRNL_DESCRIPTION%TYPE,
+        created_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        created_on      IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        updated_on      IN    VARCHAR2,
+        posted_by     IN    SLR_JRNL_HEADERS.JH_JRNL_POSTED_BY%TYPE,
+        posted_on     IN    VARCHAR2,
+        authorised_by   IN    SLR_JRNL_HEADERS.JH_JRNL_AUTHORISED_BY%TYPE,
+        authorised_on   IN    VARCHAR2,
+        entity_list     IN    VARCHAR2,
+        user_id       IN    VARCHAR2,
+        resultset     OUT   global_ref_cursor );
+
+    -- For use with R2 code base
+    PROCEDURE prui_get_header(
+        journal_id      IN OUT  SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        resultset     OUT   global_ref_cursor );
+
+    -- For use with R2 code base
+    PROCEDURE prui_get_lines(
+        journal_id      IN OUT  SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        coding_convention IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
+        resultset     OUT   global_ref_cursor );
+
+    -- For use with R2 code base
+    PROCEDURE prui_get_line(
+        journal_id      IN OUT  SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        line_no       IN OUT  SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+        coding_convention IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
+        resultset     OUT   global_ref_cursor );
+
+    PROCEDURE prui_validate_journal (
+        session_id      IN VARCHAR2,
+        journal_id      IN VARCHAR2,
+        user_id       IN VARCHAR2,
+        success       OUT VARCHAR2);
+        --errorList       OUT gJournalLineErrors );
+
+    PROCEDURE prui_upsert_header(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        journal_type    IN    SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE,
+        entity        IN    SLR_JRNL_HEADERS.JH_JRNL_ENTITY%TYPE,
+        source_system   IN    SLR_JRNL_HEADERS.JH_JRNL_SOURCE%TYPE,
+        effective_date    IN    VARCHAR2,
+        reversing_date    IN    VARCHAR2,
+        description     IN    VARCHAR2,
+        coding_convention   IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_PREF_STATIC_SRC%TYPE,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        no_validate     IN    CHAR DEFAULT 'N',
+        status              IN      CHAR DEFAULT NULL,
+        journal_version in gui_jrnl_headers_unposted.jhu_version%type,
+        department_id in SLR_JRNL_HEADERS_UNPOSTED.JHU_DEPARTMENT_ID%TYPE,
+        journal_id_out    OUT   SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        journal_version_out out gui_jrnl_headers_unposted.jhu_version%type,
+        success       OUT VARCHAR2);
+
+    PROCEDURE prui_upsert_line(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        line_number     IN    SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+        description     IN    VARCHAR2,
+        account       IN    SLR_JRNL_LINES.JL_ACCOUNT%TYPE,
+        entity        IN    SLR_JRNL_LINES.JL_ENTITY%TYPE,
+        effective_date    IN    VARCHAR2,
+        value_date      IN    VARCHAR2,
+        segment_1     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_1%TYPE,
+        segment_2     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_2%TYPE,
+        segment_3     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_3%TYPE,
+        segment_4     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_4%TYPE,
+        segment_5     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_5%TYPE,
+        segment_6     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_6%TYPE,
+        segment_7     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_7%TYPE,
+        segment_8     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_8%TYPE,
+        segment_9     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_9%TYPE,
+        segment_10      IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_SEGMENT_10%TYPE,
+        attribute_1     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE,
+        attribute_2     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE,
+        attribute_3     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE,
+        attribute_4     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE,
+        attribute_5     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE,
+        reference_1     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE,
+        reference_2     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE,
+        reference_3     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_3%TYPE,
+        reference_4     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_4%TYPE,
+        reference_5     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_5%TYPE,
+        reference_6     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_6%TYPE,
+        reference_7     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_7%TYPE,
+        reference_8     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_8%TYPE,
+        reference_9     IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_9%TYPE,
+        reference_10            IN    TEMP_GUI_JRNL_LINES_UNPOSTED.JLU_REFERENCE_10%TYPE,
+        tran_currency   IN    SLR_JRNL_LINES.JL_TRAN_CCY%TYPE,
+        tran_amount     IN    SLR_JRNL_LINES.JL_TRAN_AMOUNT%TYPE,
+        base_currency   IN    SLR_JRNL_LINES.JL_BASE_CCY%TYPE,
+        base_rate     IN    SLR_JRNL_LINES.JL_BASE_RATE%TYPE,
+        base_amount     IN    SLR_JRNL_LINES.JL_BASE_AMOUNT%TYPE,
+        local_currency    IN    SLR_JRNL_LINES.JL_LOCAL_CCY%TYPE,
+        local_rate      IN    SLR_JRNL_LINES.JL_LOCAL_RATE%TYPE,
+        local_amount    IN    SLR_JRNL_LINES.JL_LOCAL_AMOUNT%TYPE,
+        updated_by      IN    SLR_JRNL_LINES.JL_CREATED_BY%TYPE,
+        no_validate     IN    CHAR DEFAULT 'N',
+        journal_version in gui_jrnl_headers_unposted.jhu_version%type,
+        journal_line_out  OUT   NUMBER,
+        journal_version_out out gui_jrnl_headers_unposted.jhu_version%type,
+        success       OUT VARCHAR2 );
+
+    PROCEDURE prui_bulk_submission(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        updated_by      IN    SLR_JRNL_LINES.JL_AMENDED_BY%TYPE,
+        journal_id_out    OUT   VARCHAR2,
+        success       OUT VARCHAR2 );
+
+    PROCEDURE prui_delete_journals(
+        session_id      IN    VARCHAR2,
+        journal_id_list   IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        success       OUT VARCHAR2,
+        failed_jrnl_list    OUT     VARCHAR2 );
+
+    PROCEDURE prui_post_journals(
+        session_id      IN    VARCHAR2,
+        journal_id_list   IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        success       OUT VARCHAR2,
+        failed_jrnl_list    OUT     VARCHAR2);
+
+    PROCEDURE prui_delete_journal(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        journal_version in gui_jrnl_headers_unposted.jhu_version%type,
+        success       OUT VARCHAR2);
+
+    PROCEDURE prui_copy_lines(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        line_number_list  IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_LINES_UNPOSTED.JLU_CREATED_BY%TYPE,
+        journal_version in gui_jrnl_headers_unposted.jhu_version%type,
+        success       OUT VARCHAR2 );
+
+    PROCEDURE prui_delete_lines(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        line_number_list  IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_LINES.JL_CREATED_BY%TYPE,
+        journal_version in gui_jrnl_headers_unposted.jhu_version%type,
+        success       OUT VARCHAR2 );
+
+    PROCEDURE prui_reverse_journal(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        reversing_date    IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_CREATED_BY%TYPE,
+        new_jrnl_id     OUT   SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        success       OUT VARCHAR2 );
+
+    -- For use with R2 code base
+    PROCEDURE prui_copy_journal(
+        session_id          IN      VARCHAR2,
+        journal_id          IN      SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        effective_date      IN      SLR_JRNL_HEADERS.JH_JRNL_DATE%TYPE,
+        reversing_date      IN      SLR_JRNL_HEADERS.JH_JRNL_REV_DATE%TYPE,
+        updated_by          IN      SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        new_jrnl_id         OUT     SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        success             OUT VARCHAR2 );
+
+    PROCEDURE prui_post_journal(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        journal_version in gui_jrnl_headers_unposted.jhu_version%type,
+        success       OUT VARCHAR2);
+
+    PROCEDURE prui_authorise_journals(
+        session_id      IN    VARCHAR2,
+        journal_id_list   IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        success       OUT VARCHAR2,
+        failed_jrnl_list    OUT     VARCHAR2);
+
+    PROCEDURE prui_reject_journals(
+        session_id      IN    VARCHAR2,
+        journal_id_list   IN    VARCHAR2,
+        reason_description  IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        success       OUT VARCHAR2 ,
+        failed_jrnl_list    OUT     VARCHAR2);
+
+    -- For use with R2 code base
+    PROCEDURE prui_get_journal_errors(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        line_number     IN    SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+        errorList     OUT   global_ref_cursor );
+
+    -- Logging
+    PROCEDURE prui_log_error( journal_id  IN SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+                              line_no   IN SLR_JRNL_LINES.JL_JRNL_LINE_NUMBER%TYPE,
+                              error_no    IN NUMBER,
+                              message     IN VARCHAR2);
+
+    PROCEDURE prui_cleardown_session_data(session_id VARCHAR2, journal_id in VARCHAR2 default null);
+    FUNCTION fnui_source_to_fdr(field_name VARCHAR2, src_sys_id VARCHAR2, src_code VARCHAR2) RETURN VARCHAR2;
+    FUNCTION fnui_fdr_to_source(field_name VARCHAR2, src_sys_id VARCHAR2, fdr_code VARCHAR2) RETURN VARCHAR2;
+    FUNCTION fnui_fdr_related_val(field_name VARCHAR2, fdr_code VARCHAR2) RETURN VARCHAR2;
+    FUNCTION fnui_fdr_desc(field_name VARCHAR2, fdr_code VARCHAR2) RETURN VARCHAR2;
+    FUNCTION fnui_get_next_journal_id RETURN VARCHAR2;
+    FUNCTION fnui_get_next_line_no RETURN NUMBER;
+
+    PROCEDURE prui_get_calendar_details(business_date          IN DATE,
+                                        period_days_set        IN VARCHAR2,
+                                        entity             IN VARCHAR2,
+                                        previous_period_starts     OUT DATE,
+                                        previous_period_ends     OUT DATE,
+                                        period_starts          OUT DATE,
+                                        previous_date          OUT DATE,
+                                        next_date              OUT DATE,
+                                        period_ends            OUT DATE,
+                                        next_period_ends           OUT DATE,
+                                        next_period_starts         OUT DATE);
+
+
+
+    PROCEDURE prui_update_unprocessed_jrnls(status_from                 IN CHAR,
+                                            status_to                   IN CHAR,
+                                            list_string                 IN VARCHAR2,
+                                            success                     OUT VARCHAR2);
+
+    PROCEDURE prui_removed_failed_jrnls(status                     IN CHAR,
+                                        journal_id                 IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE );
+
+    PROCEDURE prui_setSubLgrGenLastBalForBD(p_generate IN CHAR DEFAULT 'N');
+    
+    PROCEDURE prui_authorise_journal(
+        session_id      IN    VARCHAR2,
+        journal_id      IN    SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        journal_version in gui_jrnl_headers_unposted.jhu_version%type,
+        success       OUT VARCHAR2);
+        
+    PROCEDURE prui_post_queued_journals(
+     epg_id IN VARCHAR2,
+     journal_id_list IN VARCHAR2,
+     status OUT VARCHAR2);
+   
+  PROCEDURE prui_upsert_attachment(
+        session_id      IN VARCHAR2,
+        journal_id      IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        file_no         IN gui_jrnl_file.JF_FILE_NO%TYPE ,
+        file_name       IN gui_jrnl_file.JF_FILE_NAME%TYPE,
+        file_comment    IN gui_jrnl_file.JF_COMMENT%TYPE,
+        mime_type       in gui_jrnl_file.jf_mime_type%type,
+        attachment      IN gui_jrnl_file.JF_FILE%TYPE,
+        updated_by      IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
+        success         OUT VARCHAR2
+    );
+
+  PROCEDURE prui_delete_attachments(
+        session_id      IN VARCHAR2,
+        journal_id      IN SLR_JRNL_HEADERS_UNPOSTED.JHU_JRNL_ID%TYPE,
+        file_no_list    IN varchar2,
+        updated_by      IN SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
+        success         OUT VARCHAR2
+    );
+
+  procedure prui_reject_journal(session_id      IN    VARCHAR2,
+        journal_id    IN    VARCHAR2,
+        reason_description  IN    VARCHAR2,
+        updated_by      IN    SLR_JRNL_HEADERS.JH_AMENDED_BY%TYPE,
+        journal_version IN gui_jrnl_headers_unposted.jhu_version%TYPE,
+        success       OUT VARCHAR2);
+    
+  PROCEDURE prui_rollback_err_slr_journals(epg_id IN VARCHAR2,journal_id_list IN VARCHAR2, rollback_all IN boolean :=FALSE, process_id IN NUMBER DEFAULT NULL);
+  
+  PROCEDURE prui_delete_gui_journals(journal_id_list IN VARCHAR2);  
+
+    /******************************************************************************************
+    Declare private global variables
+    ******************************************************************************************/
+--    gJournalHeader    SLR_JRNL_HEADERS_UNPOSTED%ROWTYPE;
+--    gSessionId        VARCHAR2(50) := NULL;
+--    gJournalLineNumber  NUMBER(12) := -1;
+  --PROCEDURE prui_add_jrnl_to_posting_queue(journal_id IN VARCHAR2, epg_id IN VARCHAR2,jrnl_num_of_lines IN NUMBER);
+  
+  --PROCEDURE prui_restore_jrnl_to_posting_queue;
+  
+END pgui_manual_journal;
+/

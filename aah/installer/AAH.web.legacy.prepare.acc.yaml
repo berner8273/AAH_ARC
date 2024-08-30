@@ -53,6 +53,7 @@ options:
 
   - task: installSteps
     title: "Prepare Legacy AAH Web Application (WAR)"
+    showCondition: "aah.installer.ENABLE_LEGACY_GUI || aah.installer.PRECONFIGURE_LEGACY_GUI"
     progressTitle: "'Preparing: '+getResourceDefinition('aahLegWebApp_web_xml').getZipContainer()"
     finishMessage: "getResourceDefinition('aahLegWebApp_web_xml').getZipContainer()+' prepared'"
     jobs:
@@ -230,7 +231,6 @@ options:
       onResourceNotFoundAction: fail
       properties:
         "//Resource[@name='jdbc/fdr']/@url": aah.internal.jdbc
-        "/@xmlValidation": "false"
         "//Resource[@name='jdbc/fdr']/@username": aah.web.legacy.tmp.fdrUserEncryptedDes
         "//Resource[@name='jdbc/fdr']/@password": aah.web.legacy.tmp.fdrPassEncryptedDes
         "/@docBase": web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX
@@ -248,7 +248,7 @@ options:
         "/@docBase": web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX
         "/@path": "'/'+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX"
 
-    # save tokenEncryptionKey, jee.server.type to ApplicationResources.properties
+    # save ApplicationResources.properties
     - step: resourceWrite
       description: "Writing configuration to ApplicationResources.properties"
       resource: aahLegWebApp_WEB-INF_ApplicationResources.properties
@@ -256,6 +256,12 @@ options:
       properties:
         jee.server.type: web.deployment.serverType.toUpperCase()
         security.token.generator.tokenEncryptionKey: aah.internal.tokenEncryptionKey
+        security.filter.cors.enabled: aah.web.security.filter.cors.enabled
+        security.filter.cors.allowed-methods: aah.web.security.filter.cors.allowedMethods
+        security.filter.cors.allowed-headers: aah.web.security.filter.cors.allowedHeaders
+        security.filter.cors.allowed-origins: aah.web.security.filter.cors.allowedOrigins
+        security.filter.cors.allow-credentials: aah.web.security.filter.cors.allowCredentials
+        security.filter.cors.max-age: aah.web.security.filter.cors.maxAge
 
     # Tomcat/JBoss: save log4j.properties
     - step: resourceWrite
@@ -294,7 +300,7 @@ options:
   # --- DEPLOY LEGACY WEB APP TO TOMCAT ---
   - task: singleJob
     title: "Deploy Legacy AAH Web Application to Tomcat"
-    showCondition: "web.deployment.installationType.equals('DEPLOY') && web.deployment.serverType.equals('Tomcat')"
+    showCondition: "aah.installer.ENABLE_LEGACY_GUI && web.deployment.installationType.equals('DEPLOY') && web.deployment.serverType.equals('Tomcat')"
     progressTitle: "'Deploying Legacy Web Application to Tomcat:'"
     finishMessage: "'Legacy Web Application /'+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX +' deployed to Tomcat'"
     job:
@@ -317,7 +323,7 @@ options:
   # --- UNDEPLOY LEGACY WEB APP FROM WEBLOGIC ---
   - task: singleJob
     title: "Undeploy Legacy AAH Web Application from WebLogic"
-    showCondition: "web.deployment.serverType.equals('WebLogic') && web.deployment.installationType.equals('DEPLOY') && isWebLogic()"
+    showCondition: "aah.installer.ENABLE_LEGACY_GUI && web.deployment.serverType.equals('WebLogic') && web.deployment.installationType.equals('DEPLOY') && isWebLogic()"
     progressTitle: "'Undeploying Legacy Web Application from WebLogic:'"
     finishMessage: "'Legacy Web Application undeployed from WebLogic'"
     job:
@@ -337,51 +343,10 @@ options:
       debug: true
       showCommand: false
 
-  # --- DEPLOY MYFACES TO WEBLOGIC ---
-  - task: singleJob
-    title: "Deploy MyFaces to WebLogic"
-    showCondition: "web.deployment.serverType.equals('WebLogic') && web.deployment.installationType.equals('DEPLOY') && isWebLogic()"
-    progressTitle: "'Deploying MyFaces to WebLogic:'"
-    finishMessage: "'MyFaces deployed to WebLogic'"
-    job:
-      step: deployWebLogic
-      # deploy WAR file defined as resource
-      resourceName: aahWebApp_myfaces
-      description: "Deploy MyFaces to WebLogic"
-      action: redeploy
-      adminUrl: "web.deployment.webLogic.adminProtocol + '://' + web.deployment.hostname +':' + web.deployment.webLogic.adminPort"
-      user: web.deployment.username
-      pass: decryptIfNeeded(web.deployment.password)
-      ignoreHostnameVerification: true
-      skipModuleScanning: true
-      keyStore: "'DemoTrust'"
-      isLibrary: true
-      isRemote: web.deployment.webLogic.isRemote
-      doUpload: true
-      verbose: true
-      noStage: false
-      noWait: false
-#      timeout: 2
-      debug: true
-      showCommand: false
-      name: "'myfaces'"
-#      options:
-#        -stage:
-#        -retiretimeout: 20
-#        -adminmode:
-#        -ignoresessions:
-#        -altappdd: "'./bin/app.file'"
-#      javaArgs:
-#        - "'-Dweblogic.security.allowCryptoJDefaultJCEVerification=true'"
-#      environment:
-#        WL_EXAMPLE_ENV_VAR: "'value'"
-#      # working dir for a script
-#      workingDir: "'./'"
-
   # --- DEPLOY LEGACY WEB APP TO WEBLOGIC ---
   - task: singleJob
     title: "Deploy Legacy AAH Web Application to WebLogic"
-    showCondition: "web.deployment.serverType.equals('WebLogic') && web.deployment.installationType.equals('DEPLOY') && isWebLogic()"
+    showCondition: "aah.installer.ENABLE_LEGACY_GUI && web.deployment.serverType.equals('WebLogic') && web.deployment.installationType.equals('DEPLOY') && isWebLogic()"
     progressTitle: "'Deploying Legacy AAH Web Application to WebLogic:'"
     finishMessage: "'Legacy AAH Web Application deployed'"
     job:
@@ -425,7 +390,7 @@ options:
   # --- DEPLOY LEGACY WEB APP TO JBOSS ---
   - task: singleJob
     title: "Deploy Legacy AAH Web Application to JBoss server"
-    showCondition: "web.deployment.installationType.equals('DEPLOY') && web.deployment.serverType.equals('JBoss')"
+    showCondition: "aah.installer.ENABLE_LEGACY_GUI && web.deployment.installationType.equals('DEPLOY') && web.deployment.serverType.equals('JBoss')"
     progressTitle: "'JBoss web server deployment progress:'"
     finishMessage: "'JBoss deployment /'+web.deployment.aahWebAppFolder + aah.installer.OLD_APP_FOLDER_SUFIX +' done'"
     job:

@@ -1,4 +1,5 @@
-CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
+
+CREATE OR REPLACE PACKAGE BODY "SLR_VALIDATE_JOURNALS_PKG" AS
 -- -------------------------------------------------------------------------------
 /* ***************************************************************************
 *
@@ -55,7 +56,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_status IN CHAR := 'U',
         p_UseHeaders IN BOOLEAN := FALSE,
-		lv_sql_group_by IN VARCHAR2
+        lv_sql_group_by IN VARCHAR2
         );
 
    PROCEDURE pValidateBalanceDiff
@@ -79,7 +80,6 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_VALIDATE_JOURNALS_PKG" AS
         p_UseHeaders IN BOOLEAN := FALSE
     );
 
-
 PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_process_id in NUMBER, p_status IN CHAR);
 
     /**************************************************************************
@@ -90,7 +90,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     gProcessIdStr               VARCHAR(30) := NULL;
     gEntityConfiguration        SLR_ENTITIES%ROWTYPE;
     gJournalEntity               slr_entities.ent_entity%TYPE;
-	  gJournalEpgId               SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
+    gJournalEpgId               SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE;
     gJournalType                SLR_JRNL_HEADERS.JH_JRNL_TYPE%TYPE;
     gJournalStatus              CHAR(1);
     gJournalDate                SLR_JRNL_HEADERS.JH_JRNL_DATE%TYPE;
@@ -135,7 +135,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     gTotalUpdates               NUMBER(10);
 
     gv_table_name               VARCHAR2(30);
-	  gErrorsNumber				NUMBER;
+    gErrorsNumber       NUMBER;
 
     -- Static global data
     gs_stage CHAR(3) := 'SLR';
@@ -244,6 +244,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
       cPROC_NAME VARCHAR2(50) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateJournals';
       lCurrBusDate CONSTANT DATE := SLR_UTILITIES_PKG.fEntityGroupCurrBusDate(p_epg_id);
 
+      lValidateSQL_var VARCHAR2(32767);
       lValidateSQL VARCHAR2(32767) DEFAULT q'[
         with jrnl_lines as (
           select ]'|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || q'[ distinct
@@ -266,7 +267,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
             jlu_base_rate,
             jlu_local_amount,
             jlu_base_amount
-          from slr_jrnl_lines_unposted
+          from slr_jrnl_lines_unposted   :p_subpartition_name
           where jlu_epg_id = :pc_epg_id and jlu_jrnl_status = :pc_status
         ), entities as (
           select distinct jlu_epg_id, jlu_entity, jlu_jrnl_type, jlu_account
@@ -338,7 +339,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
             join slr_jrnl_types typ on ext.ejt_jt_type = typ.jt_type
             join slr_ext_jrnl_type_rule rul on rul.ejtr_code = ext.ejt_rev_ejtr_code
           where jlu_jrnl_rev_date is null
-		    and jlu_jrnl_ref_id is null
+        and jlu_jrnl_ref_id is null
             and typ.jt_reverse_flag = 'Y'
             and ext.ejt_rev_ejtr_code = 'NONE'
         ), ext_type_between_validate as (
@@ -491,11 +492,11 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
 
       lEpgValidation SIMPLE_INTEGER DEFAULT 0;
       lVal VARCHAR2(200);
-/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
-      TYPE cur_type IS REF CURSOR;
-      cValidateRows cur_type;
-      lv_sql VARCHAR2(32000);
-/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
+	/*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
+		  TYPE cur_type IS REF CURSOR;
+		  cValidateRows cur_type;
+		  lv_sql VARCHAR2(32000);
+	/*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
       PROCEDURE validateReversingDateRules (
         pEntity IN slr_entities.ent_entity%TYPE,
         pJrnlType IN slr_jrnl_lines_unposted.jlu_jrnl_type%TYPE,
@@ -915,7 +916,11 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
       END pValidateBalances;
 
     BEGIN
-
+      IF slr_post_journals_pkg.gp_business_date is NULL THEN 
+        slr_post_journals_pkg.gp_business_date:=lCurrBusDate;
+      END IF;
+	  gProcessId := p_process_id;
+      gProcessIdStr := TO_CHAR(gProcessId);
       SLR_ADMIN_PKG.InitLog(p_epg_id, p_process_id);
       SLR_ADMIN_PKG.Info('Validation start');
 
@@ -927,8 +932,13 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
       UPDATE slr_jrnl_lines_unposted SET jlu_jrnl_status = 'W'
       WHERE jlu_epg_id = p_epg_id AND jlu_jrnl_status = p_status
         AND jlu_effective_date > lCurrBusDate;
-
-      OPEN lValidateCur FOR lValidateSQL USING p_epg_id, p_status;
+      
+	  IF p_epg_id IS NOT NULL AND p_status IS NOT NULL THEN 
+       lValidateSQL_var := REPLACE(lValidateSQL,':p_subpartition_name',' subpartition (P'||p_epg_id||'_S'||p_status||' )');
+      ELSE 
+	   lValidateSQL_var := REPLACE(lValidateSQL,':p_subpartition_name','');
+	  end if;
+     OPEN lValidateCur FOR lValidateSQL_var USING p_epg_id, p_status;
       <<validate_loop>>
       LOOP
         FETCH lValidateCur BULK COLLECT INTO lValidationTable LIMIT cROWLIMIT;
@@ -1173,7 +1183,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
         EXIT WHEN lValidateCur%NOTFOUND;
       END LOOP;
       CLOSE lValidateCur;
-
+	  
 /*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
 	  -- Custom AG validation...
 	  -- Event Class Periods
@@ -1271,12 +1281,12 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
         s_proc_name CONSTANT VARCHAR2(80) := 'SLR_VALIDATE_JOURNALS_PKG.fSetValidationStatistics';
     BEGIN
 
-		-- Log the Number of Journals failing Validation to the error Handler
-		-- -------------------------------------------------------------------*
-		IF gErrorsNumber > 0 THEN
-			pWriteLogError(s_proc_name, 'SLR_JRNL_LINES_UNPOSTED', 'There are ' || gErrorsNumber || ' journal lines in error for Process Id [' || p_process_id || ']. More detailed description can be found in SLR_JRNL_LINE_ERRORS');
-			gErrorsNumber:=0;
-		END IF;
+    -- Log the Number of Journals failing Validation to the error Handler
+    -- -------------------------------------------------------------------*
+    IF gErrorsNumber > 0 THEN
+      			pWriteLogError(s_proc_name, 'SLR_JRNL_LINES_UNPOSTED', 'There is/are ' || gErrorsNumber || ' journal(s) in error for Process Id [' || p_process_id || ']. More detailed description can be found in SLR_JRNL_LINE_ERRORS');
+      gErrorsNumber:=0;
+    END IF;
 
         SELECT  i.BLOCK_GETS,CONSISTENT_GETS,PHYSICAL_READS,BLOCK_CHANGES,CONSISTENT_CHANGES
         INTO    gEND_BLOCK_GETS,gEND_CONSISTENT_GETS,gEND_PHYSICAL_READS,gEND_BLOCK_CHANGES,gEND_CONSISTENT_CHANGES
@@ -1406,34 +1416,66 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     --
     -- MHC 24-NOV-2004 BASELINE CODE FOR RELEASE 2
     -- ---------------------------------------------------------------------------
+
     PROCEDURE pInitializeProcedure
     (
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_process_id IN NUMBER
     )
     AS
+        e_wrong_posting_date_flag EXCEPTION;
         s_proc_name CONSTANT VARCHAR2(80):= 'SLR_VALIDATE_JOURNALS_PKG.fInitializeProcedure';
-		s_SID VARCHAR2(256);
-		s_business_date date;
+    s_SID VARCHAR2(256);
+    s_business_date date;
+        s_bus_date_flag SLR_SYSTEM_CONFIG.PARAM_VALUE%TYPE;
+        s_count NUMBER;
+        s_entity SLR_ENTITIES.ENT_ENTITY%TYPE;
     BEGIN
+    select sys_context('userenv','SID') SID
+    into s_SID
+    from DUAL;
 
+        SELECT count(PARAM_VALUE)
+        INTO s_count
+        FROM SLR_SYSTEM_CONFIG
+        WHERE PARAM_NAME = 'POSTING_DATE_DERIVATION';
 
-		select sys_context('userenv','SID') SID
-		into s_SID
-		from DUAL;
+        IF s_count = 1 THEN
+            SELECT PARAM_VALUE
+            INTO s_bus_date_flag
+            FROM SLR_SYSTEM_CONFIG
+            WHERE PARAM_NAME = 'POSTING_DATE_DERIVATION';
+        ELSE
+            s_bus_date_flag := 'E';
+        END IF;
 
+        IF s_bus_date_flag = 'E' THEN
+            SELECT ENT_BUSINESS_DATE
+            INTO s_business_date
+            FROM SLR_ENTITIES
+            WHERE ENT_ENTITY =
+                  (
+                      SELECT EPG_ENTITY
+                      FROM SLR_ENTITY_PROC_GROUP
+                      WHERE EPG_ID = p_epg_id
+                      AND ROWNUM = 1
+                  );
+        ELSIF s_bus_date_flag = 'G' THEN
+            SELECT EPG_ENTITY INTO s_entity
+            FROM SLR_ENTITY_PROC_GROUP
+            WHERE EPG_ID = p_epg_id
+              AND ROWNUM = 1;
 
-		SELECT ENT_BUSINESS_DATE
-			INTO s_business_date
-				FROM SLR_ENTITIES
-				WHERE ENT_ENTITY =
-				(
-					SELECT EPG_ENTITY
-					FROM SLR_ENTITY_PROC_GROUP
-					WHERE EPG_ID =p_epg_id
-						AND ROWNUM = 1
-				);
-
+            SELECT GP_TODAYS_BUS_DATE
+            INTO s_business_date
+            FROM FR_GLOBAL_PARAMETER
+                LEFT OUTER JOIN FR_LPG_CONFIG
+                ON NVL(LC_LPG_ID, 1) = LPG_ID
+            WHERE NVL(LC_GRP_CODE, s_entity) = s_entity
+              AND NVL(LC_LPG_ID,1) = LPG_ID;
+        ELSE
+            RAISE e_wrong_posting_date_flag;
+        END IF;
 
         INSERT INTO SLR_JOB_STATISTICS
         (
@@ -1441,8 +1483,8 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
             JS_PROCESS_NAME,
             JS_START_TIME,
             JS_EPG_ID,
-			JS_SID,
-			JS_BUSINESS_DATE
+      JS_SID,
+      JS_BUSINESS_DATE
         )
         VALUES
         (
@@ -1450,8 +1492,8 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
             gc_process_name,
             SYSDATE,
             p_epg_id,
-			s_SID,
-			s_business_date
+      s_SID,
+      s_business_date
         );
 
         COMMIT;
@@ -1463,12 +1505,15 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
         AND i.SID = s.SID;
 
     EXCEPTION
+        WHEN e_wrong_posting_date_flag THEN
+            pWriteLogError(s_proc_name, 'SLR_SYSTEM_CONFIG', 'Wrong Posting Date Derivation flag. It should be either E or G.');
+            SLR_ADMIN_PKG.Error('Error during posting journals (e_wrong_posting_date_flag).');
+            RAISE_APPLICATION_ERROR(-20001, 'Wrong Posting Date Derivation flag. It should be either E or G. Instead value ' || s_bus_date_flag || ' is set in the SLR_SYSTEM_CONFIG table.');
+
         WHEN OTHERS THEN
             pWriteLogError(s_proc_name, 'SLR_ENTITIES', 'Failure to initialise Validation');
             SLR_ADMIN_PKG.Error('Failure to initialise Validation');
             RAISE_APPLICATION_ERROR(-20001, 'Fatal error during pInitializeProcedure: ' || SQLERRM);
-
-
     END pInitializeProcedure;
 
     -- ---------------------------------------------------------------------------
@@ -1496,10 +1541,45 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
         s_proc_name     VARCHAR2(80) := 'SLR_VALIDATE_JOURNALS_PKG.pWriteLineError';
         v_sql           VARCHAR2(4000);
         v_msg           SLR_JRNL_LINE_ERRORS.JLE_ERROR_STRING%TYPE;
+        vErrorsNumber   NUMBER;
+        v_header_ids_sql VARCHAR2(4000);
 
     BEGIN
         SLR_ADMIN_PKG.Debug('Writing line error with msg: [' || p_msg || ']');
 
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_errors',
+                                p_process_id    => p_process_id,
+                                p_object_name   => 'SLR_JRNL_LINE_ERRORS',
+								p_epg_id        => p_epg_id,
+								p_tab_partition => 'P'||p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_uposted',
+                                p_process_id    => p_process_id,
+                                p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_LINES_UNPOSTED',
+                                p_tab_partition => 'P'||p_epg_id,
+                                p_sub_partition   => 'P'||p_epg_id||'_SE',
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_header',
+                                p_process_id    => p_process_id,
+								p_epg_id        => p_epg_id,
+								p_tab_partition => 'P'||p_epg_id,
+  							    p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_HEADERS_UNPOSTED',
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
         v_msg := substr(p_msg, 1, 200);
 
         v_sql := 'INSERT INTO SLR_JRNL_LINE_ERRORS
@@ -1516,14 +1596,24 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
                 JLU_JRNL_LINE_NUMBER,
                 99999,
                 ''' || v_msg|| '''
-                FROM SLR_JRNL_LINES_UNPOSTED
+                FROM SLR_JRNL_LINES_UNPOSTED partition (P'||p_epg_id||')
                 WHERE JLU_ENTITY = :p_entity
                 AND JLU_EPG_ID = :p_epg_id
 				AND JLU_JRNL_STATUS IN (:p_status,''E'') '
                 || p_sql;
 
-        dbms_output.put_line(v_sql);
+        --dbms_output.put_line(v_sql);
         EXECUTE IMMEDIATE v_sql USING p_process_id, p_entity, p_epg_id, p_status;
+        COMMIT;
+
+        v_header_ids_sql := '(SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
+                    WHERE JLU_ENTITY = :p_entity
+                    AND JLU_EPG_ID = :p_epg_id
+					AND JLU_JRNL_STATUS = :p_status '
+                        || p_sql || ')';
+
+        EXECUTE IMMEDIATE 'SELECT count(distinct JLU_JRNL_HDR_ID) FROM ' || v_header_ids_sql INTO vErrorsNumber USING p_entity, p_epg_id, p_status;
+        gErrorsNumber := NVL(gErrorsNumber, 0) + vErrorsNumber;
 
         IF p_UseHeaders THEN
 
@@ -1532,40 +1622,37 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
                         ||'        JHU_AMENDED_BY = :id,'
                         ||'        JHU_AMENDED_ON = SYSDATE,'
 						||'        JHU_JRNL_PROCESS_ID = :process_id'
-                        ||' WHERE   (JHU_JRNL_ID) IN
-                (
-                    SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
-                    WHERE JLU_ENTITY = :p_entity
-                    AND JLU_EPG_ID = :p_epg_id
-					AND JLU_JRNL_STATUS = :p_status '
-                        || p_sql || '
-                )';
-
-            EXECUTE IMMEDIATE v_sql USING USER,p_process_id, p_entity, p_epg_id, p_status ;
+                        ||' WHERE   (JHU_JRNL_ID) IN'
+                        ||' :HeaderIds';
+            SLR_ADMIN_PKG.Debug('Update headers query', v_sql);
+            EXECUTE IMMEDIATE replace(v_sql, ':HeaderIds', v_header_ids_sql) USING USER, p_process_id, p_entity, p_epg_id, p_status ;
         END IF;
 
-        v_sql := 'UPDATE slr_jrnl_lines_unposted
+        v_sql := 'UPDATE slr_jrnl_lines_unposted partition (P'||p_epg_id||')
             SET JLU_JRNL_STATUS = ''E'',
             JLU_JRNL_STATUS_TEXT = :status_text,
             JLU_AMENDED_BY = :id,
             JLU_AMENDED_ON = SYSDATE,
 			JLU_JRNL_PROCESS_ID = :process_id
             WHERE JLU_JRNL_HDR_ID IN
-            (
-                SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID FROM SLR_JRNL_LINES_UNPOSTED
-                WHERE JLU_ENTITY = :p_entity
-                AND JLU_EPG_ID = :p_epg_id
-				AND JLU_JRNL_STATUS = :p_status '
-                    || p_sql || '
-            )
+            :HeaderIds
 		 AND JLU_EPG_ID = :p_epg_id
 		 AND JLU_JRNL_STATUS = :p_status';
 
-        EXECUTE IMMEDIATE v_sql USING p_status_text, USER,p_process_id, p_entity, p_epg_id, p_status, p_epg_id, p_status;
-
-		gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
-
+        SLR_ADMIN_PKG.Debug('Update lines query', v_sql);
+        EXECUTE IMMEDIATE replace(v_sql, ':HeaderIds', v_header_ids_sql) USING p_status_text, USER,p_process_id, p_entity, p_epg_id, p_status, p_epg_id, p_status;
         COMMIT;
+																	
+																							 
+        pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                            p_stage         => LOWER(s_proc_name)||'_errors',
+                                            p_process_id    => p_process_id);
+        pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                            p_stage         => LOWER(s_proc_name)||'_uposted',
+                                            p_process_id    => p_process_id);
+        pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                            p_stage         => LOWER(s_proc_name)||'_header',
+                                            p_process_id    => p_process_id);
 
     EXCEPTION
         WHEN OTHERS THEN
@@ -1574,6 +1661,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
                 p_process_id,p_entity, p_epg_id,p_status);
             SLR_ADMIN_PKG.Error('Failure to write errors to log and unposted journals for process id ['||p_process_id||'] ');
             ROLLBACK;
+            pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
             dbms_output.put_line(dbms_utility.format_error_backtrace);
             RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pWriteLineError: ' || SQLERRM ||' line: '||substr(dbms_utility.format_error_backtrace, 1, instr(dbms_utility.format_error_backtrace, chr(10))));
 
@@ -1691,7 +1779,6 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     END pWriteLineErrorEventClass;
 
 /*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
-
     --------------------------------------------------------------------------------
 
     -- ---------------------------------------------------------------------------
@@ -1725,7 +1812,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
         p_table_name    in  VARCHAR2,
         p_msg           in  VARCHAR2,
         p_process_id    in  SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_PROCESS_ID%TYPE,
-		p_epg_id        IN  SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+        p_epg_id        IN  SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_status        IN  CHAR := 'U',
         p_entity        IN  slr_entities.ent_entity%TYPE:=NULL
     )
@@ -1753,7 +1840,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     (
         p_process_id   in SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_PROCESS_ID%TYPE,
         p_status_text  in SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_STATUS_TEXT%TYPE,
-		p_epg_id       IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+        p_epg_id       IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_entity       IN slr_entities.ent_entity%TYPE:=NULL,
         p_status       IN CHAR := 'U'
     )
@@ -1762,15 +1849,41 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
 
     v_sql           VARCHAR2(4000);
 
-    v_msg           SLR_JRNL_LINE_ERRORS.JLE_ERROR_STRING%TYPE;
-    s_proc_name     VARCHAR2(80) := 'SLR_VALIDATE_JOURNALS_PKG.pSetJournalToError';
+    v_msg            SLR_JRNL_LINE_ERRORS.JLE_ERROR_STRING%TYPE;
+    s_proc_name      VARCHAR2(80) := 'SLR_VALIDATE_JOURNALS_PKG.pSetJournalToError';
     s_UpdatedBy      SLR_ENTITIES.ENT_CREATED_BY%TYPE := USER;
     d_WhenUpdated    SLR_ENTITIES.ENT_CREATED_ON%TYPE := SYSDATE;
-
+	v_tab_partition  prc_object_state_in_process.tab_partition%TYPE;
+	v_sub_partion    prc_object_state_in_process.sub_partition%TYPE;
     BEGIN
+	 IF P_EPG_ID IS NOT NULL THEN 
+	    v_tab_partition :=  'P'||p_epg_id;
+	    v_sub_partion   :=  'P'||p_epg_id||'_SE';
+     END IF;	  
     --dbms_output.put_line('--> pSetJournalToError');
-    	gv_table_name := 'SLR_JRNL_LINES_UNPOSTED';
+      gv_table_name := 'SLR_JRNL_LINES_UNPOSTED';
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_uposted',
+                                p_process_id    => p_process_id,
+                                p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+                                p_object_name   => 'SLR_JRNL_LINES_UNPOSTED',
+                                p_tab_partition => v_tab_partition,
+                                p_sub_partition   => v_sub_partion,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
 
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_header',
+                                p_process_id    => p_process_id,
+								p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+                                p_object_name   => 'SLR_JRNL_HEADERS_UNPOSTED',
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+    
       IF gUser IS NOT NULL THEN
           s_UpdatedBy := gUser;
       END IF;
@@ -1793,6 +1906,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
                         WHERE JLU_EPG_ID = p_epg_id
                         AND JLU_JRNL_STATUS = p_status );
 
+
 		  UPDATE 	SLR_JRNL_LINES_UNPOSTED
         	SET    	JLU_JRNL_STATUS = 'E',
                		JLU_JRNL_STATUS_TEXT = p_status_text,
@@ -1806,6 +1920,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
             )
 		 AND JLU_EPG_ID = p_epg_id
 		 AND JLU_JRNL_STATUS = p_status;
+		 COMMIT;
 
     end if;
     IF p_entity IS NOT NULL THEN
@@ -1842,8 +1957,15 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     END IF;
 
         COMMIT;
-        --dbms_output.put_line('<-- pSetJournalToError');
 
+
+        --dbms_output.put_line('<-- pSetJournalToError');
+    pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                        p_stage         => LOWER(s_proc_name)||'_uposted',
+                                        p_process_id    => p_process_id);
+    pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                        p_stage         => LOWER(s_proc_name)||'_header',
+                                        p_process_id    => p_process_id);
     EXCEPTION
         WHEN OTHERS THEN
             pr_error(2, 'Failure to set journal to error for process id ['||gProcessIdStr||']: '||SQLERRM,
@@ -1907,8 +2029,43 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     AS
         s_proc_name CONSTANT VARCHAR2(65) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateSegmentDiff';
         lv_sql VARCHAR2(32000);
+        vErrorsNumber NUMBER;
+        v_header_ids_sql VARCHAR2(4000);
+	
     BEGIN
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_errors',
+                                p_process_id    => p_process_id,
+                                p_object_name   => 'SLR_JRNL_LINE_ERRORS',
+                                p_epg_id        => p_epg_id,
+								p_tab_partition => 'P'||p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
 
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_uposted',
+                                p_process_id    => p_process_id,
+                                p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_LINES_UNPOSTED',
+                                p_tab_partition => 'P'||p_epg_id,
+                                p_sub_partition   => 'P'||p_epg_id||'_SE',
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_header',
+                                p_process_id    => p_process_id,
+								p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_HEADERS_UNPOSTED',
+                                p_tab_partition => 'P'||p_epg_id,
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
 
         lv_sql := 'INSERT INTO SLR_JRNL_LINE_ERRORS
             (
@@ -1942,10 +2099,30 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
                 AND JLU_JRNL_STATUS IN (:p_status,''E'')
                 AND JLU_EPG_ID = :p_epg_id';
 
-
-      EXECUTE IMMEDIATE lv_sql USING p_process_id, p_status, p_epg_id;
-
+        EXECUTE IMMEDIATE lv_sql USING p_process_id, p_status, p_epg_id;
         IF SQL%ROWCOUNT > 0 THEN
+            v_header_ids_sql := '(SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
+                                    FROM SLR_JRNL_LINES_UNPOSTED
+                                  INNER JOIN SLR_ENTITIES
+                                    ON JLU_ENTITY = ENT_ENTITY
+                                  INNER JOIN SLR_FAK_DEFINITIONS
+                                    ON FD_ENTITY = JLU_ENTITY
+                                  LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
+                                    ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
+                                AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
+                                AND FS'||p_seg_no||'_STATUS = ''A''
+                                  WHERE
+                                  FS.ROWID IS NULL
+                                  AND (CASE WHEN (FD_SEGMENT_'||p_seg_no||'_TYPE = ''C'') AND  (JLU_SEGMENT_'||p_seg_no||' != ''NVS'') THEN 1
+                                          WHEN (FD_SEGMENT_'||p_seg_no||'_TYPE = ''C'')  AND  (JLU_SEGMENT_'||p_seg_no||' = ''NVS'') THEN 0
+                                          WHEN (FD_SEGMENT_'||p_seg_no||'_TYPE = ''M'')  THEN 1
+                                          ELSE 0
+                                        END) = 1
+                                AND JLU_JRNL_STATUS = :p_status
+                                AND JLU_EPG_ID = :p_epg_id)';
+
+            EXECUTE IMMEDIATE 'SELECT count(distinct JLU_JRNL_HDR_ID) FROM ' || v_header_ids_sql INTO vErrorsNumber USING p_status, p_epg_id;
+            gErrorsNumber := NVL(gErrorsNumber, 0) + vErrorsNumber;
 
             IF p_UseHeaders THEN
                 lv_sql := ' UPDATE SLR_JRNL_HEADERS_UNPOSTED'
@@ -1954,30 +2131,11 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
                                     ||' JHU_AMENDED_ON   =  SYSDATE,'
 									||' JHU_JRNL_PROCESS_ID   =  :p_process_id'
                               ||' WHERE (JHU_JRNL_ID) IN
-                              (
-                                SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
-                                FROM SLR_JRNL_LINES_UNPOSTED
-                              INNER JOIN SLR_ENTITIES
-                                ON JLU_ENTITY = ENT_ENTITY
-                              INNER JOIN SLR_FAK_DEFINITIONS
-                                ON FD_ENTITY = JLU_ENTITY
-                              LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
-                                ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
-                              AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
-                              AND FS'||p_seg_no||'_STATUS = ''A''
-                              WHERE
-                              FS.ROWID IS NULL
-                              AND (CASE WHEN (FD_SEGMENT_'||p_seg_no||'_TYPE = ''C'') AND  (JLU_SEGMENT_'||p_seg_no||' != ''NVS'') THEN 1
-                                      WHEN (FD_SEGMENT_'||p_seg_no||'_TYPE = ''C'')  AND  (JLU_SEGMENT_'||p_seg_no||' = ''NVS'') THEN 0
-                                      WHEN (FD_SEGMENT_'||p_seg_no||'_TYPE = ''M'')  THEN 1
-                                      ELSE 0
-                                    END) = 1
-                            AND JLU_JRNL_STATUS = :p_status
-                            AND JLU_EPG_ID = :p_epg_id )';
 
-
-                EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id;
-
+                                :HeaderIds
+                              ';
+                SLR_ADMIN_PKG.Debug('Update headers query', lv_sql);
+                EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_process_id, p_status, p_epg_id;
             END IF;
 
             lv_sql := '
@@ -1988,38 +2146,28 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
                 JLU_JRNL_PROCESS_ID = :p_process_id,
                 JLU_JRNL_STATUS_TEXT = ''Invalid Segment:'||p_seg_no||'''
                 WHERE JLU_JRNL_HDR_ID IN
-                (
-                    SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
-                    FROM SLR_JRNL_LINES_UNPOSTED
-                    INNER JOIN SLR_ENTITIES
-                      ON JLU_ENTITY = ENT_ENTITY
-                    INNER JOIN SLR_FAK_DEFINITIONS
-                      ON FD_ENTITY = JLU_ENTITY
-                    LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
-                      ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
-                    AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
-                    AND FS'||p_seg_no||'_STATUS = ''A''
-                  WHERE
-                    FS.ROWID IS NULL
-                    AND (CASE WHEN (FD_SEGMENT_'||p_seg_no||'_TYPE = ''C'') AND  (JLU_SEGMENT_'||p_seg_no||' != ''NVS'') THEN 1
-                            WHEN (FD_SEGMENT_'||p_seg_no||'_TYPE = ''C'')  AND  (JLU_SEGMENT_'||p_seg_no||' = ''NVS'') THEN 0
-                            WHEN (FD_SEGMENT_'||p_seg_no||'_TYPE = ''M'')  THEN 1
-                            ELSE 0
-                          END) = 1
-                  AND JLU_JRNL_STATUS = :p_status
-                  AND JLU_EPG_ID = :p_epg_id )';
+                :HeaderIds';
 
-			gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
-
-            EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id;
-
+            SLR_ADMIN_PKG.Debug('Update lines query', lv_sql);
+            EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_process_id, p_status, p_epg_id;
         END IF;
-
         COMMIT;
+ 
+	
+       pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                           p_stage         => LOWER(s_proc_name)||'_errors',
+                                           p_process_id    => p_process_id);
+       pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                           p_stage         => LOWER(s_proc_name)||'_uposted',
+                                           p_process_id    => p_process_id);
+       pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                           p_stage         => LOWER(s_proc_name)||'_header',
+                                           p_process_id    => p_process_id);
 
     EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
+            pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
             pWriteLogError(s_proc_name, 'SLR_FAK_SEGMENT_'||p_seg_no,
                 'Error during validating segment ' || p_seg_no || ': ' || SQLERRM, p_process_id,p_epg_id,p_status);
             SLR_ADMIN_PKG.Error('Error during validating segment ' || p_seg_no || ': ' || SQLERRM);
@@ -2040,8 +2188,45 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     ) IS
       s_proc_name CONSTANT VARCHAR2(65) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateSegment';
       lv_sql VARCHAR2(32000);
+      vErrorsNumber NUMBER;
+      v_header_ids_sql VARCHAR2(4000);
+	  
     BEGIN
-      lv_sql := 'INSERT INTO SLR_JRNL_LINE_ERRORS
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_errors',
+                                p_process_id    => p_process_id,
+                                p_object_name   => 'SLR_JRNL_LINE_ERRORS',
+                                p_epg_id        => p_epg_id,
+								p_tab_partition => 'P'||p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_uposted',
+                                p_process_id    => p_process_id,
+                                p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_LINES_UNPOSTED',
+                                p_tab_partition => 'P'||p_epg_id,
+                                p_sub_partition   => 'P'||p_epg_id||'_SE',
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_header',
+                                p_process_id    => p_process_id,
+                                p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_HEADERS_UNPOSTED',
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+            lv_sql := 'INSERT INTO SLR_JRNL_LINE_ERRORS
         (
           JLE_JRNL_PROCESS_ID,
           JLE_JRNL_HDR_ID,
@@ -2055,35 +2240,26 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
           99999,
           ''Invalid Segment:'||p_seg_no||'''' -- added for consistency, replaces ''||FD_SEGMENT_'||p_seg_no||'_NAME'
           ||' FROM SLR_JRNL_LINES_UNPOSTED
-          INNER JOIN SLR_ENTITIES
+          INNER JOIN SLR_ENTITIES 
             ON JLU_ENTITY = ENT_ENTITY
           LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
             ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
             AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
             AND FS'||p_seg_no||'_STATUS = ''A''
-          WHERE
+          WHERE 
             FS.ROWID IS NULL
             AND JLU_JRNL_STATUS IN (:p_status,''E'')
             AND JLU_EPG_ID = :p_epg_id ';
 
-      IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
-        lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS''';
-      END IF;
+        IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
+          lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS''';
+        END IF;
 
-      SLR_ADMIN_PKG.Debug('Validation. Segment: '||p_seg_no || ' validated.', lv_sql);
+        SLR_ADMIN_PKG.Debug('Validation. Segment: '||p_seg_no || ' validated.', lv_sql);
         EXECUTE IMMEDIATE lv_sql USING p_process_id, p_status, p_epg_id;
 
         IF SQL%ROWCOUNT > 0 THEN
-
-          IF p_UseHeaders THEN
-            lv_sql := ' UPDATE SLR_JRNL_HEADERS_UNPOSTED
-              SET JHU_JRNL_STATUS  =   ''E'',
-                JHU_AMENDED_BY   =  USER,
-                JHU_AMENDED_ON   =  SYSDATE,
-                JHU_JRNL_PROCESS_ID   =  :p_process_id
-              WHERE (JHU_JRNL_ID) IN
-              (
-                SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
+          v_header_ids_sql := '( SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
                 FROM SLR_JRNL_LINES_UNPOSTED
                 INNER JOIN SLR_ENTITIES
                   ON JLU_ENTITY = ENT_ENTITY
@@ -2097,14 +2273,26 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
                   AND JLU_EPG_ID = :p_epg_id ';
 
           IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
-              lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS'')';
+            v_header_ids_sql := v_header_ids_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS'')';
           ELSE
-              lv_sql := lv_sql || ')';
+            v_header_ids_sql := v_header_ids_sql || ')';
           END IF;
 
-          EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id;
+          EXECUTE IMMEDIATE 'SELECT count(distinct JLU_JRNL_HDR_ID) FROM ' || v_header_ids_sql INTO vErrorsNumber USING p_status, p_epg_id;
+          gErrorsNumber := NVL(gErrorsNumber, 0) + vErrorsNumber;
 
-        END IF;
+          IF p_UseHeaders THEN
+              lv_sql := ' UPDATE SLR_JRNL_HEADERS_UNPOSTED
+              SET JHU_JRNL_STATUS  =   ''E'',
+                  JHU_AMENDED_BY   =  USER,
+                  JHU_AMENDED_ON   =  SYSDATE,
+                  JHU_JRNL_PROCESS_ID   =  :p_process_id
+              WHERE (JHU_JRNL_ID) IN
+                  :HeaderIds';
+
+             SLR_ADMIN_PKG.Debug('Update headers query', lv_sql);
+             EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_process_id, p_status, p_epg_id;
+          END IF;
 
           lv_sql := '
             UPDATE SLR_JRNL_LINES_UNPOSTED
@@ -2114,37 +2302,29 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
               JLU_JRNL_PROCESS_ID = :p_process_id,
               JLU_JRNL_STATUS_TEXT = ''Invalid Segment:'||p_seg_no||'''
             WHERE JLU_JRNL_HDR_ID IN
-              (
-                SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'SELECT_LINE_ERRORS') || ' JLU_JRNL_HDR_ID
-                FROM SLR_JRNL_LINES_UNPOSTED
-                  INNER JOIN SLR_ENTITIES
-                    ON JLU_ENTITY = ENT_ENTITY
-                  LEFT JOIN SLR_FAK_SEGMENT_'||p_seg_no||' FS
-                    ON JLU_SEGMENT_'||p_seg_no||' =  FS'||p_seg_no||'_SEGMENT_VALUE
-                    AND ENT_SEGMENT_'||p_seg_no||'_SET = FS'||p_seg_no||'_ENTITY_SET
-                    AND FS'||p_seg_no||'_STATUS = ''A''
-                  WHERE
-                    FS.ROWID IS NULL
-                    AND JLU_JRNL_STATUS  = :p_status
-                    AND JLU_EPG_ID = :p_epg_id ';
+            :HeaderIds
+            AND JLU_EPG_ID = :p_epg_id AND JLU_JRNL_STATUS = :p_status';
 
-          gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
-
-          IF p_seg_type = 'C' THEN  -- Conditional segment: only validate when not NVS (TTP91/TTP143).
-            lv_sql := lv_sql || ' AND JLU_SEGMENT_'||p_seg_no||' != ''NVS'')   AND JLU_EPG_ID = :p_epg_id AND JLU_JRNL_STATUS = :p_status ';
-          ELSE
-            lv_sql := lv_sql || ')  AND JLU_EPG_ID = :p_epg_id AND JLU_JRNL_STATUS = :p_status ';
-          END IF;
-
-          EXECUTE IMMEDIATE lv_sql using p_process_id, p_status, p_epg_id,  p_epg_id, p_status;
-
+          SLR_ADMIN_PKG.Debug('Update lines query', lv_sql);
+          EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_process_id, p_status, p_epg_id,  p_epg_id, p_status;
         END IF;
 
         COMMIT;
 
+       pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                            p_stage         => LOWER(s_proc_name)||'_errors',
+                                            p_process_id    => p_process_id);
+       pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                            p_stage         => LOWER(s_proc_name)||'_uposted',
+                                            p_process_id    => p_process_id);
+       pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                            p_stage         => LOWER(s_proc_name)||'_header',
+                                            p_process_id    => p_process_id);
+
     EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
+            pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
             pWriteLogError(s_proc_name, '', 'Error during validating segments ' || p_seg_no || ': ' || SQLERRM, p_process_id,p_epg_id,p_status);
             SLR_ADMIN_PKG.Error('Error during validating segment ' || p_seg_no || ': ' || SQLERRM, dbms_utility.format_error_backtrace);
             RAISE e_internal_processing_error; -- raised to stop execution
@@ -2152,7 +2332,7 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     END pValidateSegment;
 
 
-	PROCEDURE pValidateBalanceDiff
+  PROCEDURE pValidateBalanceDiff
     (
         p_process_id IN NUMBER,
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
@@ -2162,28 +2342,63 @@ PROCEDURE pUpdateJLUPeriods(pEpgId in slr_jrnl_lines_unposted.jlu_epg_id%type,p_
     AS
         s_proc_name CONSTANT VARCHAR2(65) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateBalanceDiff';
         lv_sql VARCHAR2(32000);
+		v_header_ids_sql VARCHAR2(4000);
+    	vErrorsNumber NUMBER;
 
-		TYPE cur_type IS REF CURSOR;
-		cValidateRows cur_type;
-		v_jlu_entity SLR.SLR_FAK_DEFINITIONS.FD_ENTITY%TYPE;
-		v_SEGMENT_1_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_1_BALANCE_CHECK%TYPE;
-		v_SEGMENT_2_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_2_BALANCE_CHECK%TYPE;
-		v_SEGMENT_3_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_3_BALANCE_CHECK%TYPE;
-		v_SEGMENT_4_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_4_BALANCE_CHECK%TYPE;
-		v_SEGMENT_5_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_5_BALANCE_CHECK%TYPE;
-		v_SEGMENT_6_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_6_BALANCE_CHECK%TYPE;
-		v_SEGMENT_7_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_7_BALANCE_CHECK%TYPE;
-		v_SEGMENT_8_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_8_BALANCE_CHECK%TYPE;
-		v_SEGMENT_9_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_9_BALANCE_CHECK%TYPE;
-		v_SEGMENT_10_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_10_BALANCE_CHECK%TYPE;
-		v_Rank integer;
-		v_curr_rank integer := 1;
-		v_GROUP_ENTITY VARCHAR2(32000) := '';
-		v_GROUP_SEGMENT VARCHAR2(5000) := '';
-		v_GROUP_FLAG boolean := FALSE;
-		v_CURR  VARCHAR2(1) := 0;
+    TYPE cur_type IS REF CURSOR;
+    cValidateRows cur_type;
+    v_jlu_entity SLR.SLR_FAK_DEFINITIONS.FD_ENTITY%TYPE;
+    v_SEGMENT_1_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_1_BALANCE_CHECK%TYPE;
+    v_SEGMENT_2_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_2_BALANCE_CHECK%TYPE;
+    v_SEGMENT_3_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_3_BALANCE_CHECK%TYPE;
+    v_SEGMENT_4_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_4_BALANCE_CHECK%TYPE;
+    v_SEGMENT_5_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_5_BALANCE_CHECK%TYPE;
+    v_SEGMENT_6_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_6_BALANCE_CHECK%TYPE;
+    v_SEGMENT_7_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_7_BALANCE_CHECK%TYPE;
+    v_SEGMENT_8_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_8_BALANCE_CHECK%TYPE;
+    v_SEGMENT_9_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_9_BALANCE_CHECK%TYPE;
+    v_SEGMENT_10_BALANCE_CHECK SLR_FAK_DEFINITIONS.FD_SEGMENT_10_BALANCE_CHECK%TYPE;
+    v_Rank integer;
+    v_curr_rank integer := 1;
+    v_GROUP_ENTITY VARCHAR2(32000) := '';
+    v_GROUP_SEGMENT VARCHAR2(5000) := '';
+    v_GROUP_FLAG boolean := FALSE;
+    v_CURR  VARCHAR2(1) := 0;
 
 BEGIN
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_errors',
+                                p_process_id    => p_process_id,
+								p_epg_id        => p_epg_id,
+								p_tab_partition => 'P'||p_epg_id,
+                                p_object_name   => 'SLR_JRNL_LINE_ERRORS',
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_uposted',
+                                p_process_id    => p_process_id,
+                                p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_LINES_UNPOSTED',
+                                p_tab_partition => 'P'||p_epg_id,
+                                p_sub_partition   => 'P'||p_epg_id||'_SE',
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_header',
+                                p_process_id    => p_process_id,
+								p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_HEADERS_UNPOSTED',
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
 lv_sql := '
         SELECT
         DISTINCT
@@ -2229,18 +2444,9 @@ lv_sql := '
 
 			EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id;
               IF SQL%ROWCOUNT > 0 THEN
-                IF p_UseHeaders = TRUE THEN
-                    -- old logic for GUI screens compatibility
-                        lv_sql :=    'UPDATE SLR_JRNL_HEADERS_UNPOSTED
-                                    SET JHU_JRNL_STATUS  =   ''E'',
-                                    JHU_AMENDED_BY   =  USER,
-                                    JHU_AMENDED_ON   =  SYSDATE
-                                    WHERE (JHU_JRNL_ID) IN
-                                    (
-                                        SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || ' DISTINCT
-                                        JLU_JRNL_HDR_ID
-                                        FROM
-                                        SLR_JRNL_LINES_UNPOSTED
+              
+                v_header_ids_sql := '(  SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || ' DISTINCT    JLU_JRNL_HDR_ID
+                                        FROM SLR_JRNL_LINES_UNPOSTED
                                         WHERE
                                         JLU_EPG_ID = :p_epg_id
                                         AND JLU_JRNL_STATUS = :p_status
@@ -2248,7 +2454,19 @@ lv_sql := '
                                         GROUP BY JLU_JRNL_HDR_ID, JLU_EFFECTIVE_DATE ' || v_GROUP_SEGMENT || ', JLU_TRAN_CCY
                                         HAVING SUM(JLU_TRAN_AMOUNT) != 0)';
 
-                    EXECUTE IMMEDIATE lv_sql USING p_epg_id, p_status;
+                EXECUTE IMMEDIATE 'SELECT count(JLU_JRNL_HDR_ID) FROM ' || v_header_ids_sql INTO vErrorsNumber USING p_epg_id, p_status;
+                gErrorsNumber := NVL(gErrorsNumber, 0) + vErrorsNumber;
+                                        
+                IF p_UseHeaders = TRUE THEN
+                    -- old logic for GUI screens compatibility
+                        lv_sql :=    'UPDATE SLR_JRNL_HEADERS_UNPOSTED
+                                    SET JHU_JRNL_STATUS  =   ''E'',
+                                    JHU_AMENDED_BY   =  USER,
+                                    JHU_AMENDED_ON   =  SYSDATE
+                                    WHERE (JHU_JRNL_ID) IN
+                                    :HeaderIds';
+                    SLR_ADMIN_PKG.Debug('Update headers query', lv_sql);
+                    EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_epg_id, p_status;
                 END IF;
 
                 lv_sql := 'update SLR_JRNL_LINES_UNPOSTED
@@ -2258,21 +2476,14 @@ lv_sql := '
                         JLU_AMENDED_ON = SYSDATE,
                         JLU_JRNL_PROCESS_ID = :process_id
                     where JLU_JRNL_HDR_ID IN
-                        (
-                            SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || ' JLU_JRNL_HDR_ID
-                            FROM SLR_JRNL_LINES_UNPOSTED
-                            WHERE JLU_ENTITY IN ('||v_GROUP_ENTITY||')
-                            AND JLU_EPG_ID = :p_epg_id
-                            AND JLU_JRNL_STATUS = :p_status
-                            GROUP BY JLU_JRNL_HDR_ID, JLU_EFFECTIVE_DATE '  || v_GROUP_SEGMENT ||', JLU_TRAN_CCY
-                            HAVING SUM(JLU_TRAN_AMOUNT) != 0
-                        )
-                        AND JLU_ENTITY IN ('||v_GROUP_ENTITY||')
+                        :HeaderIds
+						AND JLU_ENTITY IN ('||v_GROUP_ENTITY||')
                         AND JLU_EPG_ID = :p_epg_id
                         AND JLU_JRNL_STATUS = :p_status ';
 
-               EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id, p_status, p_epg_id, p_status;
-				gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
+                SLR_ADMIN_PKG.Debug('Update lines query', lv_sql);
+                EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_process_id, p_epg_id, p_status, p_epg_id, p_status;
+
                 COMMIT;
             END IF;
 
@@ -2356,19 +2567,9 @@ lv_sql := '
             EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id;
 
 			IF SQL%ROWCOUNT > 0 THEN
-                IF p_UseHeaders = TRUE THEN
-                    -- old logic for GUI screens compatibility
 
-                        lv_sql :=    'UPDATE SLR_JRNL_HEADERS_UNPOSTED
-                                    SET JHU_JRNL_STATUS  =   ''E'',
-                                    JHU_AMENDED_BY   =  USER,
-                                    JHU_AMENDED_ON   =  SYSDATE
-                                    WHERE (JHU_JRNL_ID) IN
-                                    (
-                                        SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || ' DISTINCT
-                                        JLU_JRNL_HDR_ID
-                                        FROM
-                                        SLR_JRNL_LINES_UNPOSTED
+                v_header_ids_sql := '(  SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || ' DISTINCT JLU_JRNL_HDR_ID
+                                        FROM SLR_JRNL_LINES_UNPOSTED
                                         WHERE
                                         JLU_EPG_ID = :p_epg_id
                                         AND JLU_JRNL_STATUS = :p_status
@@ -2376,7 +2577,20 @@ lv_sql := '
                                         GROUP BY JLU_JRNL_HDR_ID, JLU_EFFECTIVE_DATE ' || v_GROUP_SEGMENT || ', JLU_TRAN_CCY
                                         HAVING SUM(JLU_TRAN_AMOUNT) != 0)';
 
-                    EXECUTE IMMEDIATE lv_sql USING p_epg_id, p_status;
+                EXECUTE IMMEDIATE 'SELECT count(JLU_JRNL_HDR_ID) FROM ' || v_header_ids_sql INTO vErrorsNumber USING p_epg_id, p_status;
+                gErrorsNumber := NVL(gErrorsNumber, 0) + vErrorsNumber;
+
+                IF p_UseHeaders = TRUE THEN
+                    -- old logic for GUI screens compatibility
+
+                        lv_sql :=  'UPDATE SLR_JRNL_HEADERS_UNPOSTED
+                                    SET JHU_JRNL_STATUS  =   ''E'',
+                                    JHU_AMENDED_BY   =  USER,
+                                    JHU_AMENDED_ON   =  SYSDATE
+                                    WHERE (JHU_JRNL_ID) IN
+                                    :HeaderIds';
+                    SLR_ADMIN_PKG.Debug('Update headers query', lv_sql);
+                    EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_epg_id, p_status;
                 END IF;
 
                 lv_sql := 'update SLR_JRNL_LINES_UNPOSTED
@@ -2386,28 +2600,32 @@ lv_sql := '
                         JLU_AMENDED_ON = SYSDATE,
                         JLU_JRNL_PROCESS_ID = :process_id
                     where JLU_JRNL_HDR_ID IN
-                        (
-                            SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || ' JLU_JRNL_HDR_ID
-                            FROM SLR_JRNL_LINES_UNPOSTED
-                            WHERE JLU_ENTITY IN ('||v_GROUP_ENTITY||')
-                            AND JLU_EPG_ID = :p_epg_id
-                            AND JLU_JRNL_STATUS = :p_status
-                            GROUP BY JLU_JRNL_HDR_ID, JLU_EFFECTIVE_DATE '  || v_GROUP_SEGMENT ||', JLU_TRAN_CCY
-                            HAVING SUM(JLU_TRAN_AMOUNT) != 0
-                        )
+                        :HeaderIds
                         AND JLU_ENTITY IN ('||v_GROUP_ENTITY||')
                         AND JLU_EPG_ID = :p_epg_id
                         AND JLU_JRNL_STATUS = :p_status ';
-                EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id, p_status, p_epg_id, p_status;
-                gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
+
+                SLR_ADMIN_PKG.Debug('Update lines query', lv_sql);
+                EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_process_id, p_epg_id, p_status, p_epg_id, p_status;
+
                 COMMIT;
           END IF;
     END IF;
 		SLR_ADMIN_PKG.Debug('Validation. Balances for different configuration - validated.');
 
+    pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                        p_stage         => LOWER(s_proc_name)||'_errors',
+                                        p_process_id    => p_process_id);
+    pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                        p_stage         => LOWER(s_proc_name)||'_uposted',
+                                        p_process_id    => p_process_id);
+    pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                        p_stage         => LOWER(s_proc_name)||'_header',
+                                        p_process_id    => p_process_id);
     EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
+            pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
             pWriteLogError(s_proc_name, 'SLR_JRNL_LINES_UNPOSTED',
                 'Error during validating balances: ' || SQLERRM, p_process_id,p_epg_id,p_status);
             SLR_ADMIN_PKG.Error('Error during validating balances: ' || SQLERRM);
@@ -2421,15 +2639,50 @@ lv_sql := '
         p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
         p_status IN CHAR := 'U',
         p_UseHeaders IN BOOLEAN := FALSE,
-		lv_sql_group_by IN VARCHAR2
+    lv_sql_group_by IN VARCHAR2
 
     )
     AS
         s_proc_name CONSTANT VARCHAR2(65) := 'SLR_VALIDATE_JOURNALS_PKG.pValidateBalance';
         lv_sql VARCHAR2(32000);
-    BEGIN
+		 vErrorsNumber NUMBER;
+        v_header_ids_sql VARCHAR2(4000);        
 
-            lv_sql := 'INSERT INTO SLR_JRNL_LINE_ERRORS
+    BEGIN
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_errors',
+                                p_process_id    => p_process_id,
+								p_epg_id        => p_epg_id,
+								p_tab_partition => 'P'||p_epg_id,
+                                p_object_name   => 'SLR_JRNL_LINE_ERRORS',
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_uposted',
+                                p_process_id    => p_process_id,
+                                p_epg_id        => p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_LINES_UNPOSTED',
+                                p_tab_partition => 'P'||p_epg_id,
+                                p_sub_partition   => 'P'||p_epg_id||'_SE',
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+
+      pg_process_state.log_proc(p_conf_group    => 'SLR',
+                                p_stage         => LOWER(s_proc_name)||'_header',
+                                p_process_id    => p_process_id,
+								p_epg_id        => p_epg_id,
+								p_tab_partition => 'P'||p_epg_id,
+								p_business_date => slr_post_journals_pkg.gp_business_date,
+								p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                                p_object_name   => 'SLR_JRNL_HEADERS_UNPOSTED',
+                                p_start_dt      => sysdate,
+                                p_status        => 'P');
+                        lv_sql := 'INSERT INTO SLR_JRNL_LINE_ERRORS
                 (
                     JLE_JRNL_PROCESS_ID,
                     JLE_JRNL_HDR_ID,
@@ -2452,6 +2705,19 @@ lv_sql := '
             EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id, p_status;
 
             IF SQL%ROWCOUNT > 0 THEN
+                v_header_ids_sql := '(  SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || ' DISTINCT
+                                        JLU_JRNL_HDR_ID
+                                        FROM SLR_JRNL_LINES_UNPOSTED, SLR_ENTITIES
+                                        WHERE
+                                        JLU_EPG_ID = :p_epg_id
+                                        AND JLU_JRNL_STATUS = :p_status
+                                        AND JLU_ENTITY = ENT_ENTITY
+                                        GROUP BY ENT_ENTITY, ' || lv_sql_group_by ||
+                                        ' HAVING SUM(JLU_TRAN_AMOUNT) != 0)';
+
+                EXECUTE IMMEDIATE 'SELECT count(JLU_JRNL_HDR_ID) FROM ' || v_header_ids_sql INTO vErrorsNumber USING p_epg_id, p_status;
+                gErrorsNumber := NVL(gErrorsNumber, 0) + vErrorsNumber;
+
                 IF p_UseHeaders = TRUE THEN
                     -- old logic for GUI screens compatibility
 
@@ -2460,19 +2726,9 @@ lv_sql := '
                                     JHU_AMENDED_BY   =  USER,
                                     JHU_AMENDED_ON   =  SYSDATE
                                     WHERE (JHU_JRNL_ID) IN
-                                    (
-                                        SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || ' DISTINCT
-                                        JLU_JRNL_HDR_ID
-                                        FROM
-                                        SLR_JRNL_LINES_UNPOSTED, SLR_ENTITIES
-                                        WHERE
-                                        JLU_EPG_ID = :p_epg_id
-                                        AND JLU_JRNL_STATUS = :p_status
-                                        AND JLU_ENTITY = ENT_ENTITY
-                                        GROUP BY ENT_ENTITY, ' || lv_sql_group_by ||
-                                        ' HAVING SUM(JLU_TRAN_AMOUNT) != 0)';
-
-                    EXECUTE IMMEDIATE lv_sql USING p_epg_id, p_status;
+                                    :HeaderIds';
+                    SLR_ADMIN_PKG.Debug('Update headers query', lv_sql);
+                    EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_epg_id, p_status;
                 END IF;
 
                 lv_sql := 'update SLR_JRNL_LINES_UNPOSTED
@@ -2482,26 +2738,29 @@ lv_sql := '
                         JLU_AMENDED_ON = SYSDATE,
                         JLU_JRNL_PROCESS_ID = :process_id
                     where JLU_JRNL_HDR_ID IN
-                        (
-                            SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'JOURNAL_VALIDATIONS') || ' JLU_JRNL_HDR_ID
-                            FROM SLR_JRNL_LINES_UNPOSTED, SLR_ENTITIES
-                            WHERE JLU_ENTITY =  ENT_ENTITY
-                            AND JLU_EPG_ID = :p_epg_id
-                            AND JLU_JRNL_STATUS = :p_status
-                            GROUP BY ENT_ENTITY, ' || lv_sql_group_by || '
-                            HAVING SUM(JLU_TRAN_AMOUNT) != 0
-                        )
+                        :HeaderIds
                         AND JLU_EPG_ID = :p_epg_id
                         AND JLU_JRNL_STATUS = :p_status ';
-                EXECUTE IMMEDIATE lv_sql USING p_process_id, p_epg_id, p_status, p_epg_id, p_status;
-                gErrorsNumber:=NVL(gErrorsNumber, 0) + SQL%ROWCOUNT;
+
+                SLR_ADMIN_PKG.Debug('Update lines query', lv_sql);
+                EXECUTE IMMEDIATE replace(lv_sql, ':HeaderIds', v_header_ids_sql) USING p_process_id, p_epg_id, p_status, p_epg_id, p_status;
                 COMMIT;
             END IF;
-			SLR_ADMIN_PKG.Debug('Validation. Balances for the same configuration - validated.');
 
-	EXCEPTION
+      SLR_ADMIN_PKG.Debug('Validation. Balances for the same configuration - validated.');
+      pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                          p_stage         => LOWER(s_proc_name)||'_errors',
+                                          p_process_id    => p_process_id);
+      pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                          p_stage         => LOWER(s_proc_name)||'_uposted',
+                                          p_process_id    => p_process_id);
+      pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                          p_stage         => LOWER(s_proc_name)||'_header',
+                                          p_process_id    => p_process_id);
+  EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
+            pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
             pWriteLogError(s_proc_name, 'SLR_JRNL_LINES_UNPOSTED',
                 'Error during validating balances: ' || SQLERRM, p_process_id,p_epg_id,p_status);
             SLR_ADMIN_PKG.Error('Error during validating balances: ' || SQLERRM);
@@ -2586,29 +2845,29 @@ lv_sql := '
     s_proc_name CONSTANT VARCHAR2(65) := 'SLR_VALIDATE_JOURNALS_PKG.pUpdateJLUPeriods';
   begin
 
-			EXECUTE IMMEDIATE  'UPDATE '|| SLR_UTILITIES_PKG.fHint(pEpgId, 'UPDATE_JLU_PERIODS') || '
-			(SELECT  JLU_PERIOD_MONTH,
-					JLU_PERIOD_YEAR,
-					JLU_PERIOD_LTD,
-					(select EP_BUS_PERIOD
-						from SLR_ENTITY_PERIODS
-						where JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
-						AND EP_ENTITY = JLU_ENTITY AND EP_PERIOD_TYPE <> 0
-					) EP_BUS_PERIOD,
-					 (select EP_BUS_YEAR
-						from SLR_ENTITY_PERIODS
-						where JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
-						AND EP_ENTITY = JLU_ENTITY AND EP_PERIOD_TYPE <> 0
-					) EP_BUS_YEAR,
-					(select CASE WHEN EA_ACCOUNT_TYPE_FLAG = ''P'' THEN EP_BUS_YEAR ELSE 1 END
-						from slr_entities,  slr_entity_accounts, SLR_ENTITY_PERIODS
-						where EA_ACCOUNT = JLU_ACCOUNT and  JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
-						AND EP_ENTITY = JLU_ENTITY AND EP_PERIOD_TYPE <> 0 AND EA_ENTITY_SET = ENT_ACCOUNTS_SET AND ENT_ENTITY = JLU_ENTITY
-					) EP_BUS_LTD
-			FROM slr_jrnl_lines_unposted
-			   WHERE JLU_EPG_ID = ''' || pEpgId || ''' AND JLU_JRNL_STATUS = ''' || p_status || ''' ) UNPOSTED
-			SET UNPOSTED.JLU_PERIOD_MONTH = UNPOSTED.EP_BUS_PERIOD, UNPOSTED.JLU_PERIOD_YEAR = UNPOSTED.EP_BUS_YEAR, UNPOSTED.JLU_PERIOD_LTD = EP_BUS_LTD
-			WHERE (JLU_PERIOD_YEAR IS NULL OR JLU_PERIOD_MONTH IS NULL OR JLU_PERIOD_LTD IS NULL)';
+      EXECUTE IMMEDIATE  'UPDATE '|| SLR_UTILITIES_PKG.fHint(pEpgId, 'UPDATE_JLU_PERIODS') || '
+      (SELECT  JLU_PERIOD_MONTH,
+          JLU_PERIOD_YEAR,
+          JLU_PERIOD_LTD,
+          (select EP_BUS_PERIOD
+            from SLR_ENTITY_PERIODS
+            where JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
+            AND EP_ENTITY = JLU_ENTITY AND EP_PERIOD_TYPE <> 0
+          ) EP_BUS_PERIOD,
+           (select EP_BUS_YEAR
+            from SLR_ENTITY_PERIODS
+            where JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
+            AND EP_ENTITY = JLU_ENTITY AND EP_PERIOD_TYPE <> 0
+          ) EP_BUS_YEAR,
+          (select CASE WHEN EA_ACCOUNT_TYPE_FLAG = ''P'' THEN EP_BUS_YEAR ELSE 1 END
+            from slr_entities,  slr_entity_accounts, SLR_ENTITY_PERIODS
+            where EA_ACCOUNT = JLU_ACCOUNT and  JLU_EFFECTIVE_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
+            AND EP_ENTITY = JLU_ENTITY AND EP_PERIOD_TYPE <> 0 AND EA_ENTITY_SET = ENT_ACCOUNTS_SET AND ENT_ENTITY = JLU_ENTITY
+          ) EP_BUS_LTD
+      FROM slr_jrnl_lines_unposted
+         WHERE JLU_EPG_ID = ''' || pEpgId || ''' AND JLU_JRNL_STATUS = ''' || p_status || ''' ) UNPOSTED
+      SET UNPOSTED.JLU_PERIOD_MONTH = UNPOSTED.EP_BUS_PERIOD, UNPOSTED.JLU_PERIOD_YEAR = UNPOSTED.EP_BUS_YEAR, UNPOSTED.JLU_PERIOD_LTD = EP_BUS_LTD
+      WHERE (JLU_PERIOD_YEAR IS NULL OR JLU_PERIOD_MONTH IS NULL OR JLU_PERIOD_LTD IS NULL)';
 
     exception
      WHEN OTHERS THEN
@@ -2628,9 +2887,21 @@ lv_sql := '
   )
   IS
       s_proc_name VARCHAR2(80) := 'SLR_VALIDATE_JOURNLAS_PKG.pInsertFakEbaCombinations';
-      lv_START_TIME 	PLS_INTEGER := 0;
+      lv_START_TIME   PLS_INTEGER := 0;
       lv_sql VARCHAR2(32000);
   BEGIN
+
+    pg_process_state.log_proc(p_conf_group    => 'SLR',
+                              p_stage         => s_proc_name||'_fak',
+                              p_process_id    => p_process_id,
+                              p_object_name   => 'SLR_FAK_COMBINATIONS',
+                              p_epg_id        => p_epg_id,
+							  p_business_date => slr_post_journals_pkg.gp_business_date,
+							  p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                              p_tab_partition => 'P'||p_epg_id,
+                              p_start_dt      => sysdate,
+                              p_status        => 'P');
+
 
       lv_sql := '
           INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'MERGE_FAK') || ' INTO SLR_FAK_COMBINATIONS PARTITION FOR ('''||p_epg_id||''')
@@ -2649,7 +2920,8 @@ lv_sql := '
               FC_SEGMENT_8,
               FC_SEGMENT_9,
               FC_SEGMENT_10,
-              FC_FAK_ID
+              FC_FAK_ID,
+        FC_PROCESS_ID
           )
           WITH ROWS_TO_INSERT AS
           (
@@ -2694,12 +2966,29 @@ lv_sql := '
               JLU_SEGMENT_8,
               JLU_SEGMENT_9,
               JLU_SEGMENT_10,
-              JLU_FAK_ID
+              JLU_FAK_ID,
+        '||p_process_id||'
           FROM ROWS_TO_INSERT
       ';
       lv_START_TIME := DBMS_UTILITY.GET_TIME();
       EXECUTE IMMEDIATE lv_sql;
       COMMIT;
+
+    pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                        p_stage         =>  s_proc_name||'_fak',
+                                        p_process_id    => p_process_id);
+
+    pg_process_state.log_proc(p_conf_group    => 'SLR',
+                              p_stage         => s_proc_name||'_eba',
+                              p_process_id    => p_process_id,
+                              p_object_name   => 'SLR_EBA_COMBINATIONS',
+                              p_epg_id        => p_epg_id,
+							  p_business_date => slr_post_journals_pkg.gp_business_date,
+							  p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                              p_tab_partition => 'P'||p_epg_id,
+                              p_start_dt      => sysdate,
+                              p_status        => 'P');
+
       SLR_ADMIN_PKG.PerfInfo( 'FAKC. FAK combination query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
       SLR_ADMIN_PKG.Info('New FAK combinations inserted');
 
@@ -2713,7 +3002,8 @@ lv_sql := '
               EC_ATTRIBUTE_2,
               EC_ATTRIBUTE_3,
               EC_ATTRIBUTE_4,
-              EC_ATTRIBUTE_5
+              EC_ATTRIBUTE_5,
+        EC_PROCESS_ID
           )
           WITH ROWS_TO_INSERT AS
           (
@@ -2728,7 +3018,7 @@ lv_sql := '
                   JLU_EBA_ID
               FROM SLR_JRNL_LINES_UNPOSTED SUBPARTITION FOR (''' || p_epg_id || ''', '''||p_status||''')
               WHERE NOT EXISTS (
-                SELECT 1 FROM SLR_EBA_COMBINATIONS PARTITION FOR (''' || p_epg_id || ''')
+                SELECT  ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'MERGE_EBA_EXISTS') || ' 1 FROM SLR_EBA_COMBINATIONS PARTITION FOR (''' || p_epg_id || ''')
                 WHERE JLU_EPG_ID = EC_EPG_ID
                     AND JLU_ATTRIBUTE_1 = EC_ATTRIBUTE_1
                     AND JLU_ATTRIBUTE_2 = EC_ATTRIBUTE_2
@@ -2746,10 +3036,13 @@ lv_sql := '
             JLU_ATTRIBUTE_2,
             JLU_ATTRIBUTE_3,
             JLU_ATTRIBUTE_4,
-            JLU_ATTRIBUTE_5
+            JLU_ATTRIBUTE_5,
+      '||p_process_id||'
           FROM ROWS_TO_INSERT
       ';
-
+    pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                        p_stage         =>  s_proc_name||'_eba',
+                                        p_process_id    => p_process_id);
       lv_START_TIME := DBMS_UTILITY.GET_TIME();
       EXECUTE IMMEDIATE lv_sql;
       COMMIT;
@@ -2767,5 +3060,5 @@ lv_sql := '
 
 END SLR_VALIDATE_JOURNALS_PKG;
 /************************************ End of Package *******************************************/
-
 /
+

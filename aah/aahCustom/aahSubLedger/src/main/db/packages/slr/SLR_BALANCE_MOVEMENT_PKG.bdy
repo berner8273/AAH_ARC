@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
+CREATE OR REPLACE PACKAGE BODY SLR_BALANCE_MOVEMENT_PKG AS
 
   PROCEDURE pBMTraceJob(pDescription IN VARCHAR2, pSQL IN VARCHAR2) AS
     PRAGMA AUTONOMOUS_TRANSACTION;
@@ -15,53 +15,53 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
                                          ,pSource      IN slr_process_source.sps_source_name%TYPE
                                          ,pBalanceDate IN DATE
                                          ,pRateSet     IN slr_entity_rates.er_entity_set%type
-										 ,gProcId OUT number
+                     ,gProcId OUT number
                                         ) AS
 
      vProcName VARCHAR2(30) := 'pBMRunBalanceMovementProcess';
      v_count INTEGER := 0;
-	 v_count2 INTEGER := 0;
+   v_count2 INTEGER := 0;
      v_lines_count INTEGER :=0;
-	 v_SID VARCHAR2(256);
-	gEND_BLOCK_GETS NUMBER(38);
-	gEND_CONSISTENT_GETS NUMBER(38);
-	gEND_PHYSICAL_READS NUMBER(38);
-	gEND_BLOCK_CHANGES NUMBER(38);
-	gEND_CONSISTENT_CHANGES    NUMBER(38);
+   v_SID VARCHAR2(256);
+  gEND_BLOCK_GETS NUMBER(38);
+  gEND_CONSISTENT_GETS NUMBER(38);
+  gEND_PHYSICAL_READS NUMBER(38);
+  gEND_BLOCK_CHANGES NUMBER(38);
+  gEND_CONSISTENT_CHANGES    NUMBER(38);
      CURSOR cEntityProcGroups IS
         SELECT DISTINCT JLU_EPG_ID
         FROM slr_jrnl_lines_unposted
         WHERE jlu_jrnl_process_id = gProcessId;
   BEGIN
 
-		if (pProcess is not null and pProcess not in ('FXREVALUE','FXPLSWEEP','FXPOSITION','FXCLEARDOWN','PLREPATRIATION','PLRETEARNINGS')) then
-			RAISE_APPLICATION_ERROR(-20001,'Unsupported process: ' || pProcess ||'. Supported processes: ''FXPLSWEEP'', ''FXREVALUE'', ''FXPOSITION'', ''FXCLEARDOWN'', ''PLREPATRIATION'', ''PLRETEARNINGS''');
-		end if;
+    if (pProcess is not null and pProcess not in ('FXREVALUE','FXPLSWEEP','FXPOSITION','FXCLEARDOWN','PLREPATRIATION','PLRETEARNINGS')) then
+      RAISE_APPLICATION_ERROR(-20001,'Unsupported process: ' || pProcess ||'. Supported processes: ''FXPLSWEEP'', ''FXREVALUE'', ''FXPOSITION'', ''FXCLEARDOWN'', ''PLREPATRIATION'', ''PLRETEARNINGS''');
+    end if;
 
-		/*check for null params*/
-		IF (pProcess IS NULL OR pEntProcSet IS NULL OR pConfig IS NULL OR pSource IS NULL )THEN
-			RAISE_APPLICATION_ERROR(-20001,'Process, entity processing set, config and source cannot be null');
-		END IF;
+    /*check for null params*/
+    IF (pProcess IS NULL OR pEntProcSet IS NULL OR pConfig IS NULL OR pSource IS NULL )THEN
+      RAISE_APPLICATION_ERROR(-20001,'Process, entity processing set, config and source cannot be null');
+    END IF;
 
-		--for retained earnings date must be specified
-		IF(pBalanceDate IS NULL AND pProcess = 'PLRETEARNINGS') THEN
-			RAISE_APPLICATION_ERROR(-20001,'Balance date parameter has not been provided. Balance date must be the last working day of the year');
-		end if;
-		/*check for null params*/
+    --for retained earnings date must be specified
+    IF(pBalanceDate IS NULL AND pProcess = 'PLRETEARNINGS') THEN
+      RAISE_APPLICATION_ERROR(-20001,'Balance date parameter has not been provided. Balance date must be the last working day of the year');
+    end if;
+    /*check for null params*/
 
-		/*check entity set*/
+    /*check entity set*/
     SELECT count(*)
-		INTO v_count
-		FROM SLR_BM_ENTITY_PROCESSING_SET
-		WHERE BMEPS_SET_ID = pEntProcSet;
+    INTO v_count
+    FROM SLR_BM_ENTITY_PROCESSING_SET
+    WHERE BMEPS_SET_ID = pEntProcSet;
 
-		IF v_count = 0 THEN
-			RAISE_APPLICATION_ERROR(-20001,'Unable to find entity processing set: '||pEntProcSet);
-		END IF;
-		/*check entity set*/
+    IF v_count = 0 THEN
+      RAISE_APPLICATION_ERROR(-20001,'Unable to find entity processing set: '||pEntProcSet);
+    END IF;
+    /*check entity set*/
 
-		/*check config*/
-		begin
+    /*check config*/
+    begin
       SELECT pc_jt_type, pc_fak_eba_flag, PC_AGGREGATION, PC_FX_MANAGE_CCY, PC_CUSTOM_PROCEDURE, PC_METHOD
       INTO  gJournalType, gFakEbaFlag, gWhichAmount, gFxManageCcy, gCustomProcedure, gMethod
       FROM slr_process_config_detail
@@ -72,50 +72,52 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
       WHEN NO_DATA_FOUND THEN
         RAISE_APPLICATION_ERROR(-20001,'Unable to find process configuration for config '||pConfig||' and process '||pProcess);
 
-	  END;
-	  if gMethod <> 'DEFAULT' then
+    END;
+
+    if gMethod <> 'DEFAULT' then
         RAISE_APPLICATION_ERROR(-20001,'The FAS52 process is no longer supported. Please use the Step by Step Revaluation mode, defined in FX Translation Configuration instead.');
       end if;
-		--if process is set on FAK level check that all attributes in config detail are null
-		if gFakEbaFlag = 'F' then
-			SELECT count(*) into v_count
+
+    --if process is set on FAK level check that all attributes in config detail are null
+    if gFakEbaFlag = 'F' then
+      SELECT count(*) into v_count
             FROM slr_process_config_detail
             WHERE pcd_pc_config = pConfig
             AND   pcd_pc_p_process = pProcess
             AND  (pcd_attribute_1 IS NOT NULL OR pcd_attribute_2 IS NOT NULL OR pcd_attribute_3 IS NOT NULL OR pcd_attribute_4 IS NOT NULL OR pcd_attribute_5 IS NOT NULL);
 
-			IF v_count > 0 THEN
-				RAISE_APPLICATION_ERROR(-20001,'Process config detail cannot specify attributes (pcd_attribute_1..5) when config FAK_EBA_FLAG equals ''F''.');
-			END IF;
+      IF v_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20001,'Process config detail cannot specify attributes (pcd_attribute_1..5) when config FAK_EBA_FLAG equals ''F''.');
+      END IF;
 
-		end if;
+    end if;
 
-		/*Validation when: SLR_PROCESS_CONFIG.PC_FAK_EBA_FLAG = 'F' and ENT_POST_FAK_BALANCES = 'N'*/
+    /*Validation when: SLR_PROCESS_CONFIG.PC_FAK_EBA_FLAG = 'F' and ENT_POST_FAK_BALANCES = 'N'*/
 
-		if gFakEbaFlag = 'F' then
+    if gFakEbaFlag = 'F' then
 
-		SELECT COUNT(*) INTO v_count FROM
-		 slr_bm_entity_processing_set, slr_entities
+    SELECT COUNT(*) INTO v_count FROM
+     slr_bm_entity_processing_set, slr_entities
          WHERE
-		bmeps_set_id = pEntProcSet AND ent_entity = BMEPS_ENTITY AND ENT_POST_FAK_BALANCES = 'N' ;
+    bmeps_set_id = pEntProcSet AND ent_entity = BMEPS_ENTITY AND ENT_POST_FAK_BALANCES = 'N' ;
 
-		SELECT COUNT(*) INTO v_count2 FROM
-		slr_process_config_detail,slr_entities
-		WHERE pcd_pc_config = pConfig AND  pcd_pc_p_process = pProcess AND pcd_entity <> '**SOURCE**' AND pcd_entity = ent_entity AND ENT_POST_FAK_BALANCES = 'N'
-		;
+    SELECT COUNT(*) INTO v_count2 FROM
+    slr_process_config_detail,slr_entities
+    WHERE pcd_pc_config = pConfig AND  pcd_pc_p_process = pProcess AND pcd_entity <> '**SOURCE**' AND pcd_entity = ent_entity AND ENT_POST_FAK_BALANCES = 'N'
+    ;
 
-		IF (v_count > 0 OR v_count2 > 0) THEN
-				RAISE_APPLICATION_ERROR(-20001,'Inconsistent setup for FAK balance posting. Check entities in Entity Processing Set: ' || pEntProcSet);
-		END IF;
+    IF (v_count > 0 OR v_count2 > 0) THEN
+        RAISE_APPLICATION_ERROR(-20001,'Inconsistent setup for FAK balance posting. Check entities in Entity Processing Set: ' || pEntProcSet);
+    END IF;
 
-		end if;
+    end if;
 
-		--******************************
+    --******************************
     /*check config*/
 
 
-		/*check source*/
-			begin
+    /*check source*/
+      begin
         SELECT sps_db_object_name, sps_db_object_name2, SPS_FAK_EBA_FLAG, pSource
         INTO gProcessSource.ps_source_obj1, gProcessSource.ps_source_obj2, gProcessSource.ps_fak_eba_flag, gProcessSource.ps_source
         FROM slr_process_source
@@ -132,27 +134,27 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
         RAISE_APPLICATION_ERROR(-20001,'Process source '||pSource||' does not exist or is not activated');
 
       end;
-		/*check source*/
+    /*check source*/
 
 
-		/*check rate set*/
-		IF pRateSet IS NOT NULL THEN
+    /*check rate set*/
+    IF pRateSet IS NOT NULL THEN
           IF (pProcess = 'PLRETEARNINGS' or pProcess = 'FXCLEARDOWN') THEN
             RAISE_APPLICATION_ERROR(-20001,'Rate set parameter ['||pRateSet||'] has been provided.');
           END IF;
-		END IF;
+    END IF;
 
-		IF (pProcess = 'PLRETEARNINGS' and gWhichAmount <>'L') THEN
-			RAISE_APPLICATION_ERROR(-20001,'PLRETEARNINGS can only move LTD. PC_AGGREGATION must be set to L.');
-		end if;
-
-
-		/*check rate set*/
+    IF (pProcess = 'PLRETEARNINGS' and gWhichAmount <>'L') THEN
+      RAISE_APPLICATION_ERROR(-20001,'PLRETEARNINGS can only move LTD. PC_AGGREGATION must be set to L.');
+    end if;
 
 
-		--for retained earnings last working day of the year must be the same for all entities within entity processing set
-		IF(pProcess = 'PLRETEARNINGS') THEN
-			BEGIN
+    /*check rate set*/
+
+
+    --for retained earnings last working day of the year must be the same for all entities within entity processing set
+    IF(pProcess = 'PLRETEARNINGS') THEN
+      BEGIN
         SELECT MAX(c.rnk) into v_count FROM
         (SELECT RANK() OVER (ORDER BY b.ep_bus_period_end) AS rnk FROM
         SLR_BM_ENTITY_PROCESSING_SET LEFT JOIN slr_entity_periods a ON (a.EP_ENTITY = BMEPS_ENTITY)
@@ -170,49 +172,49 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
         null;
 
       end;
-		end if;
+    end if;
 
-		gBalanceDate := pBalancedate;
+    gBalanceDate := pBalancedate;
 
-		if pBalanceDate is null then
+    if pBalanceDate is null then
 
-			--check if balance date is the same for all entities within processing set--
-			SELECT MAX(a.rnk) into v_count FROM
-			(SELECT
-				RANK() OVER (ORDER BY ENT_BUSINESS_DATE) AS rnk
-				FROM slr_entities where ent_entity in (select BMEPS_ENTITY from SLR_BM_ENTITY_PROCESSING_SET where BMEPS_SET_ID = pEntProcSet)
-			) a;
+      --check if balance date is the same for all entities within processing set--
+      SELECT MAX(a.rnk) into v_count FROM
+      (SELECT
+        RANK() OVER (ORDER BY ENT_BUSINESS_DATE) AS rnk
+        FROM slr_entities where ent_entity in (select BMEPS_ENTITY from SLR_BM_ENTITY_PROCESSING_SET where BMEPS_SET_ID = pEntProcSet)
+      ) a;
 
-			IF v_count > 1 THEN
-				RAISE_APPLICATION_ERROR(-20001,'Entity business date not consistent within entity processing set: '||pEntProcSet);
-			end if;
+      IF v_count > 1 THEN
+        RAISE_APPLICATION_ERROR(-20001,'Entity business date not consistent within entity processing set: '||pEntProcSet);
+      end if;
 
-			select ENT_BUSINESS_DATE into gBalanceDate
-			from slr_entities,SLR_BM_ENTITY_PROCESSING_SET
-			where ent_entity = BMEPS_ENTITY
-			AND BMEPS_SET_ID = pEntProcSet
+      select ENT_BUSINESS_DATE into gBalanceDate
+      from slr_entities,SLR_BM_ENTITY_PROCESSING_SET
+      where ent_entity = BMEPS_ENTITY
+      AND BMEPS_SET_ID = pEntProcSet
       AND ROWNUM < 2;
     else
-			--check if provided date is open for each entity within entity processing set
-			SELECT
-			count(*) into v_count
-			FROM
-			SLR_BM_ENTITY_PROCESSING_SET INNER JOIN slr_entities ON (ent_entity = bmeps_entity)
-			LEFT JOIN  slr_entity_days a ON (ED_ENTITY_SET = ENT_PERIODS_AND_DAYS_SET)
-			LEFT JOIN slr_entity_periods b ON (b.EP_ENTITY = BMEPS_ENTITY)
-			WHERE BMEPS_SET_ID = pEntProcSet
-			AND ED_DATE =  pBalanceDate
-			AND ED_DATE BETWEEN b.ep_cal_period_start AND b.ep_cal_period_end
-			AND (nvl(a.ed_status,'C') = 'C' OR nvl(b.ep_status,'C') = 'C')
+      --check if provided date is open for each entity within entity processing set
+      SELECT
+      count(*) into v_count
+      FROM
+      SLR_BM_ENTITY_PROCESSING_SET INNER JOIN slr_entities ON (ent_entity = bmeps_entity)
+      LEFT JOIN  slr_entity_days a ON (ED_ENTITY_SET = ENT_PERIODS_AND_DAYS_SET)
+      LEFT JOIN slr_entity_periods b ON (b.EP_ENTITY = BMEPS_ENTITY)
+      WHERE BMEPS_SET_ID = pEntProcSet
+      AND ED_DATE =  pBalanceDate
+      AND ED_DATE BETWEEN b.ep_cal_period_start AND b.ep_cal_period_end
+      AND (nvl(a.ed_status,'C') = 'C' OR nvl(b.ep_status,'C') = 'C')
 /*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
-			AND pProcess <> 'PLRETEARNINGS'  
+			AND pProcess <> 'PLRETEARNINGS'
 /*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
-			;
+      ;
 
-			if v_count > 0 then
-				RAISE_APPLICATION_ERROR(-20001,'Balance date must be a working day for all entities within entity processing set: '||pEntProcSet);
-			end if;
-		end if;
+      if v_count > 0 then
+        RAISE_APPLICATION_ERROR(-20001,'Balance date must be a working day for all entities within entity processing set: '||pEntProcSet);
+      end if;
+    end if;
 
     gProcess     := pProcess;
     gEntProcSet  := pEntprocset;
@@ -227,10 +229,10 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     INTO     gProcessId
     FROM     DUAL;
 
-	gProcId := gProcessId;
-	select sys_context('userenv','SID') SID
-	into v_SID
-	from DUAL;
+  gProcId := gProcessId;
+  select sys_context('userenv','SID') SID
+  into v_SID
+  from DUAL;
 
     -- Record process in SLR_JOB_STATISTICS
     INSERT INTO SLR_JOB_STATISTICS (
@@ -240,7 +242,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
                                   JS_JRNL_TYPE,
                                   JS_BUSINESS_DATE,
                                   JS_START_TIME,
-								  JS_SID
+                  JS_SID
                                   )
                           VALUES (
                                  gProcessId,
@@ -249,7 +251,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
                                  gJournalType,
                                  gBalanceDate,
                                  SYSDATE,
-								 v_SID
+                 v_SID
                                  );
 
 
@@ -270,7 +272,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
         WHERE   JS_PROCESS_ID = gProcessId
         AND     JS_PROCESS_NAME = gProcess;
 
-		COMMIT;
+    COMMIT;
 -----------------------------------------------
 
     IF pProcess = 'FXREVALUE' THEN
@@ -285,16 +287,16 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
       pBMPLRepatriation(v_lines_count);
     elsif pProcess = 'PLRETEARNINGS' THEN
       pBMPLRetainedEarnings(v_lines_count);
-	  ELSE
+    ELSE
       RAISE_APPLICATION_ERROR(-20001,'Unsupported process: ' || gProcess);
     end if;
 
-	/*run custom procedure*/
-	if gCustomProcedure is not null then
-		pBMTraceJob('Custom procedure START', 'call '||gCustomProcedure||'('||gProcessId||')');
-		execute immediate 'call '||gCustomProcedure||'('||gProcessId||')';
-		pBMTraceJob('Custom procedure END', null);
-	end if;
+  /*run custom procedure*/
+  if gCustomProcedure is not null then
+    pBMTraceJob('Custom procedure START', 'call '||gCustomProcedure||'('||gProcessId||')');
+    execute immediate 'call '||gCustomProcedure||'('||gProcessId||')';
+    pBMTraceJob('Custom procedure END', null);
+  end if;
 
     /*update job statistics record*/
     UPDATE SLR_JOB_STATISTICS
@@ -337,6 +339,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
         END IF;
 
   end pBMUpdateJLUFakEbaId;
+
   FUNCTION getPeriodMonth (pEntity SLR_ENTITY_PERIODS.EP_ENTITY%type, pEffectiveDate date) RETURN SLR_ENTITY_PERIODS.EP_BUS_PERIOD%type
   AS
     v_period_month SLR_ENTITY_PERIODS.EP_BUS_PERIOD%type;
@@ -481,7 +484,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     SELECT slr_process_config_detail.*
     into processConfig
     FROM slr_process_config_detail INNER JOIN slr_process_config ON (pcd_pc_config = pc_config AND pcd_pc_p_process = pc_p_process)
-		WHERE pcd_pc_config = gConfig AND  pcd_pc_p_process = gProcess AND  pcd_config_type = config_type;
+    WHERE pcd_pc_config = gConfig AND  pcd_pc_p_process = gProcess AND  pcd_config_type = config_type;
 
     return processConfig;
 
@@ -606,31 +609,31 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
 
   BEGIN
 
-	/*check currency set*/
-	IF(gProcess = 'FXCLEARDOWN') THEN
-		SELECT count(*) INTO vCount
-		FROM slr_process_config
-		WHERE pc_config = gConfig
-		and pc_fx_manage_ccy is not null;
+  /*check currency set*/
+  IF(gProcess = 'FXCLEARDOWN') THEN
+    SELECT count(*) INTO vCount
+    FROM slr_process_config
+    WHERE pc_config = gConfig
+    and pc_fx_manage_ccy is not null;
 
-		IF(vCount > 0)THEN
-				RAISE_APPLICATION_ERROR(-20001,'Invalid config: '||gConfig||' FX Management Currency cannot be overridden for FX cleardown');
-		end if;
-	END IF;
+    IF(vCount > 0)THEN
+        RAISE_APPLICATION_ERROR(-20001,'Invalid config: '||gConfig||' FX Management Currency cannot be overridden for FX cleardown');
+    end if;
+  END IF;
 
-	IF(gProcess = 'PLREPATRIATION' OR gProcess = 'FXPLSWEEP') THEN
-		SELECT count(*) INTO vCount
-		FROM slr_bm_entity_processing_set, slr_process_config, slr_entities
-		WHERE bmeps_set_id = gEntProcSet
-		and pc_config = gConfig
-		and ent_entity = bmeps_entity
-		and pc_fx_manage_ccy is not null
-		and not exists(SELECT ent_currency_set FROM slr_entity_currencies WHERE ec_entity_set = ent_currency_set and ec_ccy = pc_fx_manage_ccy);
+  IF(gProcess = 'PLREPATRIATION' OR gProcess = 'FXPLSWEEP') THEN
+    SELECT count(*) INTO vCount
+    FROM slr_bm_entity_processing_set, slr_process_config, slr_entities
+    WHERE bmeps_set_id = gEntProcSet
+    and pc_config = gConfig
+    and ent_entity = bmeps_entity
+    and pc_fx_manage_ccy is not null
+    and not exists(SELECT ent_currency_set FROM slr_entity_currencies WHERE ec_entity_set = ent_currency_set and ec_ccy = pc_fx_manage_ccy);
 
-		IF(vCount > 0)THEN
-				RAISE_APPLICATION_ERROR(-20001,'Invalid pc_fx_manage_ccy for config: '|| gConfig);
-		end if;
-	END IF;
+    IF(vCount > 0)THEN
+        RAISE_APPLICATION_ERROR(-20001,'Invalid pc_fx_manage_ccy for config: '|| gConfig);
+    end if;
+  END IF;
 
     IF(gProcess = 'FXREVALUE') THEN
         SELECT count(*) INTO vCount
@@ -669,7 +672,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
 
     /*check currency set*/
 
-	--get source config--
+  --get source config--
     sourceConfig := fBMGetProcessConfig(source_config_type);
 
     --get target config--
@@ -814,14 +817,15 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
           ELSE
               RAISE_APPLICATION_ERROR(-20001,'pBMValidateConfigForEPG: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
           END IF;
+
   end pBMValidateConfigForEPG;
 
   PROCEDURE pBMCreateOffset AS
     processConfig slr_process_config_detail%rowtype;
     v_insert_stmt VARCHAR2(1000);
     v_stmt VARCHAR2(6000);
-	  v_sel_stmt VARCHAR2(3000);
-	  v_from_clause VARCHAR2(1500);
+    v_sel_stmt VARCHAR2(3000);
+    v_from_clause VARCHAR2(1500);
   BEGIN
     --get offset config--
     processConfig := fBMGetProcessConfig('Offset');
@@ -884,14 +888,15 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
           ELSE
               RAISE_APPLICATION_ERROR(-20001,'pBMCreateOffset: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
           END IF;
+
   END pBMCreateOffset;
 
   PROCEDURE pBMCreateNostro AS
     processConfig slr_process_config_detail%rowtype;
     v_insert_stmt VARCHAR2(1000);
     v_stmt VARCHAR2(6000);
-	  v_sel_stmt VARCHAR2(3000);
-	  v_from_clause VARCHAR2(1500);
+    v_sel_stmt VARCHAR2(3000);
+    v_from_clause VARCHAR2(1500);
   BEGIN
     --get offset config--
     processConfig := fBMGetProcessConfig('Nostro');
@@ -954,6 +959,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
           ELSE
               RAISE_APPLICATION_ERROR(-20001,'pBMCreateNostro: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
           END IF;
+
   END pBMCreateNostro;
 
   FUNCTION fBMGetEPGId(pEntity slr_jrnl_lines_temp.jl_entity%TYPE
@@ -972,7 +978,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     vDimentionValue slr_entity_proc_group.epg_dimension%TYPE;
     vSql VARCHAR2(300);
     vEpgId slr_jrnl_lines_unposted.jlu_epg_id%TYPE;
-	vMsgError VARCHAR2(200);
+  vMsgError VARCHAR2(200);
   BEGIN
 --dbms_output.put_line('fBMGetEPGId called');
     BEGIN
@@ -1017,24 +1023,24 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
 
       end if;
 
-		SELECT DISTINCT EPG_ID
-		INTO vEpgId
-		FROM SLR_ENTITY_PROC_GROUP
-		WHERE EPG_ID = vEpgId;
+    SELECT DISTINCT EPG_ID
+    INTO vEpgId
+    FROM SLR_ENTITY_PROC_GROUP
+    WHERE EPG_ID = vEpgId;
 
       RETURN vEpgId;
 
 
-		EXCEPTION
-			WHEN NO_DATA_FOUND THEN
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
 
-				IF vDimentionValue IS NULL THEN
-					vMsgError := 'fBMGetEPGId: Entity Processing Group not found for EPG_ENTITY = ' || pEntity;
-				ELSE
-					vMsgError := 'fBMGetEPGId: Entity Processing Group not found for EPG_ENTITY = ' || pEntity || ' and EPG_DIMENSION = ' || vDimentionValue;
-				END IF;
+        IF vDimentionValue IS NULL THEN
+          vMsgError := 'fBMGetEPGId: Entity Processing Group not found for EPG_ENTITY = ' || pEntity;
+        ELSE
+          vMsgError := 'fBMGetEPGId: Entity Processing Group not found for EPG_ENTITY = ' || pEntity || ' and EPG_DIMENSION = ' || vDimentionValue;
+        END IF;
 
-				RAISE_APPLICATION_ERROR(-20001,vMsgError);
+        RAISE_APPLICATION_ERROR(-20001,vMsgError);
 
   END fBMGetEPGId;
 
@@ -1200,6 +1206,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
           ELSE
               RAISE_APPLICATION_ERROR(-20001,'pBMCreateUnpostedJournals: '||dbms_utility.FORMAT_ERROR_STACK||';'||dbms_utility.FORMAT_ERROR_BACKTRACE);
           END IF;
+
   end pBMCreateUnpostedJournals;
 
 
@@ -1214,7 +1221,6 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     v_from_clause VARCHAR2(2000);
     v_from_clause2 varchar2(2000);
     v_local_amount varchar2(250);
-
 
   BEGIN
     pBMTraceJob(gProcess||' START',null);
@@ -1232,6 +1238,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
 
     IF gFakEbaFlag = 'E' THEN
       v_from_clause := ' from '||coalesce(gProcessSource.ps_source_obj2, 'SLR_BM_LATEST_BAL_TMP')||' edb inner join slr_fak_combinations on (epg_id = fc_epg_id and FAK_ID = fc_fak_id) ';
+
       --join to eba_combinations only if config specifies attributes--
       IF(processConfig.pcd_attribute_1 IS NOT NULL OR processConfig.pcd_attribute_2 IS NOT NULL OR processConfig.pcd_attribute_3 IS NOT NULL
           OR processConfig.pcd_attribute_4 IS NOT NULL OR processConfig.pcd_attribute_5 IS NOT NULL) THEN
@@ -1243,9 +1250,9 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
 
     ELSE
       v_from_clause := ' from '||coalesce(gProcessSource.ps_source_obj2, 'SLR_BM_LATEST_BAL_TMP')||' fdb inner join slr_fak_combinations on (epg_id = fc_epg_id and KEY_ID = fc_fak_id) ';
-
       v_from_clause := v_from_clause||' inner join SLR_BM_ENTITY_PROCESSING_SET on (fc_entity = BMEPS_ENTITY and BMEPS_SET_ID = :pEntProcSet)';
     end if;
+
     --validate fx translation config--
     v_stmt := 'INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)'
         ||' SELECT :pProcessId,:pProcess,:pConfig,:pSource,:pEntProcSet,null'
@@ -1281,8 +1288,6 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
         COMMIT;
         RAISE_APPLICATION_ERROR(-20001,'FX Translation Config not found');
     END IF;
-
-
 
     --validate rates--
     v_stmt := 'INSERT INTO SLR_PROCESS_ERRORS(SPE_PROCESS_ID,SPE_P_PROCESS,SPE_PC_CONFIG,SPE_SPS_SOURCE_NAME,SPE_BMEPS_SET_ID,SPE_ENTITY,SPE_ERROR_MESSAGE)'
@@ -1338,7 +1343,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     IF(sql%rowcount > 0) THEN
       COMMIT;
       RAISE_APPLICATION_ERROR(-20001,'Rates not found');
-		END IF;
+    END IF;
 
     --construct adjustment line insert--
     v_insert_stmt := 'insert into SLR_JRNL_LINES_TEMP (jl_description,jl_effective_date,jl_value_date,'
@@ -1415,6 +1420,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     --rate set--
     v_sel_stmt := v_sel_stmt || ',null';
 
+
     v_sel_stmt := v_sel_stmt ||',TARGET_ENTITY,FC_ACCOUNT,MAX(FC_SEGMENT_1),MAX(FC_SEGMENT_2),MAX(FC_SEGMENT_3),MAX(FC_SEGMENT_4),MAX(FC_SEGMENT_5)'
                              ||',MAX(FC_SEGMENT_6),MAX(FC_SEGMENT_7),MAX(FC_SEGMENT_8),MAX(FC_SEGMENT_9),MAX(FC_SEGMENT_10)'
                              ||',MAX(EC_ATTRIBUTE_1),MAX(EC_ATTRIBUTE_2),MAX(EC_ATTRIBUTE_3),MAX(EC_ATTRIBUTE_4),MAX(EC_ATTRIBUTE_5)';
@@ -1434,6 +1440,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     EXECUTE IMMEDIATE v_stmt
     using processConfig.pcd_description,gBalanceDate,gBalanceDate,gJournalType,gEntProcSet,gBalanceDate,gBalanceDate;
 
+
     --create offset--
     pBMCreateOffset;
     commit;
@@ -1446,7 +1453,6 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     EXCEPTION
       WHEN OTHERS THEN
         pBMTraceJob(gProcess||' STOPPED',null);
-
         IF SQLCODE =-20001 THEN
             RAISE_APPLICATION_ERROR(-20001,'pBMFxRevaluation: '||sqlerrm);
         ELSE
@@ -2201,7 +2207,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     IF(sql%rowcount > 0) THEN
       COMMIT;
       RAISE_APPLICATION_ERROR(-20001,'Rates not found');
-		END IF;
+    END IF;
 
     --construct adjustment line insert--
     v_insert_stmt := 'insert into SLR_JRNL_LINES_TEMP (jl_description,jl_effective_date,jl_value_date,'
@@ -2218,7 +2224,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
                   ||' AND FTC_TARGET_AMOUNT_TYPE = (CASE WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ''Base'' ELSE ''Local'' END)'
                   ||' AND FTC_PROCESS_TYPE = ''FX_REVALUATION'')'
                   ||' LEFT JOIN SLR_ENTITY_CURRENCIES on (EC_ENTITY_SET = ENT_CURRENCY_SET AND EC_CCY = (CASE when '|| NVL(gFxManageCcy, 'NULL')|| ' is not null then '
-				  ||  case when gFxManageCcy is not null then ''''|| gFxManageCcy||'''' else 'NULL' end|| ' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END) AND EC_STATUS = ''A'')'
+          ||  case when gFxManageCcy is not null then ''''|| gFxManageCcy||'''' else 'NULL' end|| ' WHEN ENT_FX_MANAGE_FLAG = ''B'' THEN ENT_BASE_CCY ELSE ENT_LOCAL_CCY END) AND EC_STATUS = ''A'')'
                   ||' LEFT JOIN SLR_ENTITY_RATES ON ('
                   ||' ER_ENTITY_SET = FTC_FX_RATE_SET'
                   ||' AND ER_RATE_TYPE = FTC_RATE_TYPE'
@@ -2430,7 +2436,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     LEFT JOIN slr_entity_periods b ON (a.EP_ENTITY = b.EP_ENTITY AND a.EP_BUS_YEAR = b.EP_BUS_YEAR )
     WHERE
       BMEPS_SET_ID = gEntProcSet
-      AND	gBalanceDate BETWEEN  A.ep_cal_period_start AND A.ep_cal_period_end
+      AND gBalanceDate BETWEEN  A.ep_cal_period_start AND A.ep_cal_period_end
       and (gBalanceDate <> a.ep_bus_period_end OR a.ep_period_type <> 2)
       and  b.ep_period_type = 2;
 
@@ -2495,7 +2501,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
 
 /*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
 --    v_from_clause2 := ' from slr_jrnl_headers jh INNER JOIN slr_jrnl_lines jl ON (jh_jrnl_date = jl_effective_date and jh_jrnl_epg_id = jl_epg_id and JH_JRNL_ID=JL_JRNL_HDR_ID AND jh.JH_JRNL_INTERNAL_PERIOD_FLAG = ''Y'')'
-/*T.Nulty added clause  and jh.jh_jrnl_source = :gConfig  - otherwise applied JE to all rules*/																		   
+/*T.Nulty added clause  and jh.jh_jrnl_source = :gConfig  - otherwise applied JE to all rules*/
     v_from_clause2 := ' from slr_jrnl_headers jh INNER JOIN slr_jrnl_lines jl ON (jh_jrnl_date = jl_effective_date and jh_jrnl_epg_id = jl_epg_id and JH_JRNL_ID=JL_JRNL_HDR_ID AND jh.JH_JRNL_INTERNAL_PERIOD_FLAG = ''Y'' and jh.jh_jrnl_source = :gConfig  )'
 /*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
                    ||' INNER JOIN SLR_BM_ENTITY_PROCESSING_SET ON (BMEPS_ENTITY = JL_ENTITY and BMEPS_SET_ID = :pEntProcSet)'
@@ -2514,7 +2520,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
 
 /*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
 --  v_sel_stmt := ' select ';
---  Original line above modified with fHint in one line below												 
+--  Original line above modified with fHint in one line below
     v_sel_stmt := ' select ' || SLR_UTILITIES_PKG.fHint('AG', 'PL_RETAINED_EARNINGS') || ' ';
 /*-----------CUSTOMIZATION FROM 20.2.3 MERGE END-----------*/
     v_sel_stmt := v_sel_stmt ||':pcd_description,max(p2.EP_BUS_PERIOD_START),max(p2.EP_BUS_PERIOD_START)';
@@ -2576,7 +2582,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
     v_stmt := v_insert_stmt || v_sel_stmt||v_from_clause ||v_group_by_clause||' UNION ALL '||v_sel_stmt2||v_from_clause2 ||v_group_by_clause2;
 
 /*-----------CUSTOMIZATION FROM 20.2.3 MERGE START-----------*/
-/*T.Nulty added pConfig variable*/								  
+/*T.Nulty added pConfig variable*/
     pBMTraceJob('ADJUSTMENT',v_stmt||'; bindings['||processConfig.pcd_description||','||gJournalType||','||gEntProcSet||','||gBalanceDate||','
                                                   ||processConfig.pcd_description||','||gJournalType||','||gConfig||','||gEntProcSet||','||gBalanceDate||','||gJournalType||']');
 /*T.Nulty added pConfig variable*/
@@ -2606,7 +2612,6 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_BALANCE_MOVEMENT_PKG" AS
   END pBMPLRetainedEarnings;
 
 
-
 procedure pBMGetLatestBalanceFak(pBalanceDate in date, pEntProcSet in slr_bm_entity_processing_set.bmeps_set_id%type)
 as
   sql_string VARCHAR2(10000);
@@ -2620,7 +2625,6 @@ BEGIN
 --  pdate_string := to_char(pBalanceDate, 'YYYY-MM-DD');
    pdate_string := to_char(last_day(pBalanceDate), 'YYYY-MM-DD');
 -- END custom
-
 
   if(gWhichAmount = 'L') then
     amount_string := 'TRAN_LTD_BALANCE as BTRAN, BASE_LTD_BALANCE as BBASE, LOCAL_LTD_BALANCE as BLOCAL';
@@ -2672,6 +2676,7 @@ end pBMGetLatestBalanceFak;
     pdate_string_part VARCHAR2(12);
     amount_string VARCHAR2(1024);
     v_partition   pls_integer;
+    v_count_processing_set  pls_integer;
   BEGIN
 
     pbmtracejob('pBMGetLatestBalance TRUNCATE',
@@ -2685,22 +2690,45 @@ end pBMGetLatestBalanceFak;
     IF v_partition=0 THEN
          SLR_ADMIN_PKG.CreateDatePartitions('SLR_LAST_BALANCES', pDateTo => pbalancedate);
     END IF;
+     
+	 SELECT count (1) into v_count_processing_set
+                 FROM slr_bm_entity_processing_set pd
+            INNER JOIN slr.slr_entity_proc_group eg ON pd.bmeps_entity = eg.epg_entity and bmeps_set_id= pentprocset
+            INNER JOIN  slr_last_balance_helper help on help.lbh_epg_id = eg.epg_id;
 
 
-    FOR r_epg IN (SELECT DISTINCT lbh_epg_id AS epg_id
-                    FROM slr_last_balance_helper --slr_last_balances_index
-                   WHERE lbh_generated_for <> pBalanceDate) LOOP
+    IF v_count_processing_set = 0 or pentprocset is null THEN 
+       FOR r_epg IN (SELECT DISTINCT lbh_epg_id AS epg_id
+                       FROM slr_last_balance_helper --slr_last_balances_index
+                      WHERE lbh_generated_for <> pBalanceDate) LOOP
+ 
+             slr_admin_pkg.addepgsubpartition('SLR_LAST_BALANCES',
+                                              p_epg_id           => r_epg.epg_id,
+                                              p_datefrom         => pBalanceDate,
+                                              p_dateto           => pBalanceDate);
 
+             slr_post_journals_pkg.pgeneratelastbalances(p_epg_id     => r_epg.epg_id,
+                                                         p_process_id => gProcessId,
+                                                         p_day        => pBalanceDate);
+       END LOOP;
+   ELSE 
+       FOR r_epg IN ( SELECT DISTINCT help.lbh_epg_id AS epg_id
+                         FROM slr_bm_entity_processing_set pd
+                           INNER JOIN slr.slr_entity_proc_group eg ON pd.bmeps_entity = eg.epg_entity and bmeps_set_id= pentprocset
+                           INNER JOIN  slr_last_balance_helper help on help.lbh_epg_id = eg.epg_id
+					                   and LBH_GENERATED_FOR <> pBalanceDate )
+       LOOP
 
-      slr_admin_pkg.addepgsubpartition('SLR_LAST_BALANCES',
-                                       p_epg_id           => r_epg.epg_id,
-                                       p_datefrom         => pBalanceDate,
-                                       p_dateto           => pBalanceDate);
+         slr_admin_pkg.addepgsubpartition('SLR_LAST_BALANCES',
+                                          p_epg_id           => r_epg.epg_id,
+                                          p_datefrom         => pBalanceDate,
+                                          p_dateto           => pBalanceDate);
 
-      slr_post_journals_pkg.pgeneratelastbalances(p_epg_id     => r_epg.epg_id,
-                                                  p_process_id => gProcessId,
-                                                  p_day        => pBalanceDate);
-    END LOOP;
+         slr_post_journals_pkg.pgeneratelastbalances(p_epg_id     => r_epg.epg_id,
+                                                     p_process_id => gProcessId,
+                                                     p_day        => pBalanceDate);
+       END LOOP;
+    END IF ;
 
     IF (gWhichAmount = 'L') THEN
       amount_string := 'TRAN_LTD_BALANCE as BTRAN, BASE_LTD_BALANCE as BBASE, LOCAL_LTD_BALANCE as BLOCAL';

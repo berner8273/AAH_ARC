@@ -1,4 +1,9 @@
-CREATE OR REPLACE PACKAGE SLR."SLR_VALIDATE_JOURNALS_PKG" 
+
+--------------------------------------------------------
+--  DDL for Package SLR_VALIDATE_JOURNALS_PKG
+--------------------------------------------------------
+
+CREATE OR REPLACE PACKAGE "SLR"."SLR_VALIDATE_JOURNALS_PKG" 
 AS
 /* ***************************************************************************
 *
@@ -21,7 +26,7 @@ AS
       value8 varchar2(200), 
       value9 varchar2(200) 
     );    
-
+    
     type ttValidationTable is table of rValidationRow;
 
     /**************************************************************************

@@ -1,6 +1,6 @@
-CREATE OR REPLACE PACKAGE BODY SLR."SLR_POST_JOURNALS_PKG" AS
+CREATE OR REPLACE PACKAGE BODY SLR.SLR_POST_JOURNALS_PKG AS
 /******************************************************************************
---
+--446
 --  Id: $Id: slr_post_journals_pkg.sql,v 1.10 2005/05/31 07:48:14 pfrench Exp $
 --
 --  Description: Package Body for Posting Journals
@@ -73,7 +73,8 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_POST_JOURNALS_PKG" AS
     FUNCTION fInitializeProcedure
     (
         p_epg_id        IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
-        p_process_id    IN NUMBER
+        p_process_id    IN NUMBER,
+        p_business_date IN SLR_ENTITIES.ENT_BUSINESS_DATE%TYPE
     )
     RETURN BOOLEAN;
 
@@ -202,7 +203,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_POST_JOURNALS_PKG" AS
     gRESULT_PHYSICAL_READS      NUMBER(38);
     gRESULT_BLOCK_CHANGES       NUMBER(38);
     gRESULT_CONSISTENT_CHANGES  NUMBER(38);
-      gROWCNT_LIMIT_NUMBER NUMBER(38);
+    gROWCNT_LIMIT_NUMBER NUMBER(38);
 
     /* Declare Statistics Global Variables                                      */
     gPostStartTime              DATE;
@@ -228,6 +229,7 @@ CREATE OR REPLACE PACKAGE BODY SLR."SLR_POST_JOURNALS_PKG" AS
     e_internal_processing_error EXCEPTION;
     e_lock_acquire_error EXCEPTION;
     e_fak_daily_balances_error EXCEPTION;
+    e_wrong_posting_date_flag EXCEPTION;
 
     c_lock_request_timeout CONSTANT NUMBER := 300; -- seconds
     c_process_name CONSTANT VARCHAR2(10) := 'Post';
@@ -246,7 +248,7 @@ PROCEDURE pPostJournals
         p_process_id IN NUMBER,
         p_status IN CHAR := 'U',
         p_UseHeaders IN BOOLEAN := FALSE,
-        p_rate_set IN slr_entities.ent_rate_set%TYPE
+    p_rate_set IN slr_entities.ent_rate_set%TYPE
     )
     IS
         s_proc_name VARCHAR2(65) := 'SLR_POST_JOURNALS_PKG.pPostJournals';
@@ -257,17 +259,24 @@ PROCEDURE pPostJournals
         lv_entity_config SLR_ENTITIES%ROWTYPE;
         lv_rollback_eba BOOLEAN := FALSE;
         lv_rollback_fak BOOLEAN := FALSE;
-            lv_start_time     PLS_INTEGER := 0;
+        lv_start_time   PLS_INTEGER := 0;
         e_bad_journals  EXCEPTION;
         e_no_rows EXCEPTION;
         e_others        EXCEPTION;
         lv_rate_set VARCHAR2(2500);  --- for check p_rate_set
         vCount NUMBER;
         lv_balance_counter NUMBER;
-		lv_balance_counter_old_bd NUMBER;								   
+        lv_balance_counter_old_bd NUMBER;
+      lv_cursor    NUMBER ;
+        lv_countrows NUMBER;
+      lv_sql Varchar2 (32000);
+      v_bus_date_flag SLR_SYSTEM_CONFIG.PARAM_VALUE%TYPE;
+        lv_entity SLR_ENTITIES.ENT_ENTITY%TYPE;
+
     BEGIN
         SLR_ADMIN_PKG.InitLog(p_epg_id, p_process_id);
         SLR_ADMIN_PKG.Debug(s_proc_name || ' - begin');
+        gp_process_id:= p_process_id;
 
         -- ----------------------------------------------------------------------
         -- PACKAGE REGISTRATION
@@ -280,24 +289,68 @@ PROCEDURE pPostJournals
             RAISE e_others;
         END IF;
 
-        SELECT ENT_BUSINESS_DATE, ENT_POST_FAK_BALANCES
-        INTO lv_business_date, lv_post_fak_balances
-        FROM SLR_ENTITIES
-        WHERE ENT_ENTITY =
-        (
-            SELECT EPG_ENTITY
+        SELECT count(PARAM_VALUE)
+        INTO vCount
+        FROM SLR_SYSTEM_CONFIG
+        WHERE PARAM_NAME = 'POSTING_DATE_DERIVATION';
+
+        IF vCount = 1 THEN
+            SELECT PARAM_VALUE
+            INTO v_bus_date_flag
+            FROM SLR_SYSTEM_CONFIG
+            WHERE PARAM_NAME = 'POSTING_DATE_DERIVATION';
+        ELSE
+            v_bus_date_flag := 'E';
+        END IF;
+
+        IF v_bus_date_flag = 'E' THEN
+            SELECT ENT_BUSINESS_DATE, ENT_POST_FAK_BALANCES
+            INTO lv_business_date, lv_post_fak_balances
+            FROM SLR_ENTITIES
+            WHERE ENT_ENTITY =
+            (
+                SELECT EPG_ENTITY
+                FROM SLR_ENTITY_PROC_GROUP
+                WHERE EPG_ID = p_epg_id
+                AND ROWNUM = 1
+            );
+        ELSIF v_bus_date_flag = 'G' THEN
+            SELECT ENT_POST_FAK_BALANCES
+            INTO lv_post_fak_balances
+            FROM SLR_ENTITIES
+            WHERE ENT_ENTITY =
+                  (
+                      SELECT EPG_ENTITY
+                      FROM SLR_ENTITY_PROC_GROUP
+                      WHERE EPG_ID = p_epg_id
+                        AND ROWNUM = 1
+                  );
+
+            SELECT EPG_ENTITY INTO lv_entity
             FROM SLR_ENTITY_PROC_GROUP
             WHERE EPG_ID = p_epg_id
-                AND ROWNUM = 1
-        );
+            AND ROWNUM = 1;
+
+            SELECT GP_TODAYS_BUS_DATE
+            INTO lv_business_date
+            FROM FR_GLOBAL_PARAMETER
+                LEFT OUTER JOIN FR_LPG_CONFIG
+                ON NVL(LC_LPG_ID, 1) = LPG_ID
+            WHERE NVL(LC_GRP_CODE, lv_entity) = lv_entity
+            AND NVL(LC_LPG_ID,1) = LPG_ID;
+        ELSE
+            RAISE e_wrong_posting_date_flag;
+        END IF;
 
         -- ----------------------------------------------------------------------
         -- Set Starting Statistics
         -- ----------------------------------------------------------------------
-        IF NOT fInitializeProcedure(p_epg_id, p_process_id) THEN
+        IF NOT fInitializeProcedure(p_epg_id, p_process_id, lv_business_date) THEN
             RAISE e_others;
         END IF;
-
+        if gp_business_date is null then 
+		  gp_business_date:=lv_business_date;
+		ENd if;
 
 
         SELECT /*+ PARALLEL(SLR_JRNL_LINES_UNPOSTED, 5)*/  MIN(JLU_EFFECTIVE_DATE)
@@ -307,14 +360,14 @@ PROCEDURE pPostJournals
             AND JLU_JRNL_STATUS = p_status ;
 
          IF lv_oldest_backdate IS NULL THEN
-             IF NOT fSetPostingStatistics(p_epg_id, p_process_id) THEN
-               RAISE e_others;
-             END IF;
-            COMMIT;
-            RAISE e_no_rows; -- no rows to process
+       IF NOT fSetPostingStatistics(p_epg_id, p_process_id) THEN
+         RAISE e_others;
+       END IF;
+      COMMIT;
+      RAISE e_no_rows; -- no rows to process
         END IF;
 
-        ----- #13336
+    ----- #13336
         If p_rate_set is null then lv_rate_set := null;
         else lv_rate_set := p_rate_set;
         end if;
@@ -342,6 +395,8 @@ PROCEDURE pPostJournals
 
             WHEN OTHERS THEN
                 -- FATAL
+				Rollback;
+				pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
                 gv_msg := 'pTranslateJournals: Failure during translate journals. ';
                 pr_error(1, gv_msg || SQLERRM, 0, s_proc_name, null, p_process_id, 'Process Id', gs_stage, 'PL/SQL');
                 RAISE e_bad_journals;
@@ -359,7 +414,7 @@ PROCEDURE pPostJournals
                 AND LBI_EPG_ID = p_epg_id
         )
         LOOP
-                DELETE FROM SLR_LAST_BALANCES_INDEX WHERE LBI_EPG_ID = p_epg_id AND LBI_GENERATED_FOR= r.LBI_GENERATED_FOR;
+          DELETE FROM SLR_LAST_BALANCES_INDEX WHERE LBI_EPG_ID = p_epg_id AND LBI_GENERATED_FOR= r.LBI_GENERATED_FOR;
           EXECUTE IMMEDIATE 'ALTER TABLE SLR_LAST_BALANCES TRUNCATE SUBPARTITION '|| SLR_UTILITIES_PKG.fSubpartitionName(p_epg_id, r.LBI_GENERATED_FOR);
         END LOOP;
 
@@ -381,7 +436,7 @@ PROCEDURE pPostJournals
                     AND LFI_EPG_ID = p_epg_id
             )
             LOOP
-                      DELETE FROM SLR_FAK_LAST_BALANCES_INDEX WHERE LFI_EPG_ID = p_epg_id AND LFI_GENERATED_FOR= r.LFI_GENERATED_FOR;
+              DELETE FROM SLR_FAK_LAST_BALANCES_INDEX WHERE LFI_EPG_ID = p_epg_id AND LFI_GENERATED_FOR= r.LFI_GENERATED_FOR;
               EXECUTE IMMEDIATE 'ALTER TABLE SLR_FAK_LAST_BALANCES TRUNCATE SUBPARTITION '|| SLR_UTILITIES_PKG.fSubpartitionName(p_epg_id, r.LFI_GENERATED_FOR);
             END LOOP;
 
@@ -438,8 +493,8 @@ PROCEDURE pPostJournals
 
           IF lv_oldest_backdate = lv_business_date AND lv_balance_counter = 0 THEN
             SLR_ADMIN_PKG.Debug('FAK Balances generation mode: 3');
-           pGenerateFAKDailyBalances(p_epg_id, p_process_id, lv_business_date, p_status);
-   ELSIF lv_oldest_backdate = lv_oldest_backdate_max AND lv_balance_counter_old_bd = 0   THEN
+            pGenerateFAKDailyBalances(p_epg_id, p_process_id, lv_business_date, p_status);
+          ELSIF lv_oldest_backdate = lv_oldest_backdate_max AND lv_balance_counter_old_bd = 0   THEN
             SLR_ADMIN_PKG.Debug('FAK Balances generation mode: 3');
             pGenerateFAKDailyBalances(p_epg_id,
                                       p_process_id,
@@ -468,10 +523,19 @@ PROCEDURE pPostJournals
         -- If you want to be able to pick up all journals posted since the last batch
         -- you need the MAH date as the SLR date is rolled at the start of the batch
         -- and the MAH date is rolled at the end of the batch.
+        pg_process_state.log_proc(p_conf_group   => 'SLR',
+                                  p_stage         => 'slr_post_journals.postjournals_slr_jrnl_headers',
+                                  p_process_id    => p_process_id,
+                                  p_epg_id        => p_epg_id,
+								  p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+								  p_business_date => gp_business_date,
+                                  p_object_name   => 'SLR_JRNL_HEADERS',
+                                  p_start_dt      => sysdate,
+                                  p_status        => 'P');
 
 
         lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-        EXECUTE IMMEDIATE '
+        lv_sql :='
             INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'POSTING_HEADERS') || ' INTO SLR_JRNL_HEADERS
             (
                 JH_JRNL_ID,
@@ -502,7 +566,7 @@ PROCEDURE pPostJournals
                 JH_AMENDED_BY,
                 JH_AMENDED_ON,
                 JH_BUS_POSTING_DATE,
-                        JH_JRNL_INTERNAL_PERIOD_FLAG,
+                JH_JRNL_INTERNAL_PERIOD_FLAG,
                 JH_JRNL_ENT_RATE_SET,
                 JH_JRNL_TRANSLATION_DATE
             )
@@ -514,7 +578,7 @@ PROCEDURE pPostJournals
                 MAX(JLU_EPG_ID),
                 ''P'',
                 NULL,
-                MAX(NVL(' || p_process_id || ',JLU_JRNL_PROCESS_ID)),
+                MAX(NVL(:p_process_id ,JLU_JRNL_PROCESS_ID)),
                 MAX(JLU_JRNL_DESCRIPTION),
                 MAX(JLU_JRNL_SOURCE),
                 MAX(JLU_JRNL_SOURCE_JRNL_ID),
@@ -538,27 +602,45 @@ PROCEDURE pPostJournals
                 MAX(JLU_CREATED_ON),
                 NVL(MAX(JLU_AMENDED_BY),USER),
                 NVL(MAX(JLU_AMENDED_ON),SYSDATE),
-                ''' || lv_business_date || '''
-                        ,MAX(JLU_JRNL_INTERNAL_PERIOD_FLAG),
-				MAX(JLU_JRNL_ENT_RATE_SET),
+                 :lv_business_date,
+                MAX(JLU_JRNL_INTERNAL_PERIOD_FLAG),
+                MAX(JLU_JRNL_ENT_RATE_SET),
                 MAX(JLU_TRANSLATION_DATE)
             FROM SLR_JRNL_LINES_UNPOSTED
-            WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                AND JLU_JRNL_STATUS = ''' || p_status || '''
+            WHERE JLU_EPG_ID = :p_epg_id
+                AND JLU_JRNL_STATUS = :p_status
             GROUP BY JLU_JRNL_HDR_ID
         ';
-/*-----------UPGRADE 22.1.1 MERGE START-----------*/
---above line NVL(MAX(JLU_JRNL_ENT_RATE_SET), ''' || lv_rate_set || ''') ,
---replace with MAX(JLU_JRNL_ENT_RATE_SET),
-/*-----------UPGRADE 22.1.1 MERGE END-----------*/
-        SLR_ADMIN_PKG.PerfInfo( 'JH. Journal Header query execution elapsed time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+    lv_cursor := dbms_sql.open_cursor;
+    dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+    dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+    dbms_sql.bind_variable( lv_cursor, ':lv_business_date',lv_business_date);
+    dbms_sql.bind_variable( lv_cursor, ':p_status',p_status);
+    dbms_sql.bind_variable( lv_cursor, ':p_process_id',p_process_id);
+    lv_CountRows := dbms_sql.execute( lv_cursor );
+    dbms_sql.close_cursor( lv_cursor );
+    SLR_ADMIN_PKG.PerfInfo( 'JH. Journal Header query execution elapsed time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
         SLR_ADMIN_PKG.Debug('Headers inserted into SLR_JRNL_HEADERS');
+
+    pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                        p_stage         => 'slr_post_journals.postjournals_slr_jrnl_headers',
+                                        p_process_id    => p_process_id);
 
         -- ----------------------------------------------------------------------
         -- Post Lines
         -- ----------------------------------------------------------------------
-        lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-        EXECUTE IMMEDIATE '
+    pg_process_state.log_proc(p_conf_group   => 'SLR',
+                              p_stage        => 'slr_post_journals.postjournals_slr_jrnl_lines',
+                              p_process_id   => p_process_id,
+                              p_epg_id       => p_epg_id,
+							  p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+							  p_business_date => gp_business_date,
+                              p_object_name  => 'SLR_JRNL_LINES',
+                              p_start_dt     => sysdate,
+                              p_status       => 'P');
+
+    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+       lv_sql :='
             INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'POSTING_LINES') || ' INTO SLR_JRNL_LINES
             (
                 JL_JRNL_HDR_ID,
@@ -617,7 +699,7 @@ PROCEDURE pPostJournals
                 JL_PERIOD_MONTH,
                 JL_PERIOD_YEAR,
                 JL_PERIOD_LTD,
-                JL_TYPE
+        JL_TYPE
             )
             SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'POSTING_LINES_SUBSELECT') || '
                 JLU_JRNL_HDR_ID,
@@ -626,7 +708,7 @@ PROCEDURE pPostJournals
                 JLU_EBA_ID,
                 ''P'',
                 NULL,
-                NVL(' || p_process_id ||',JLU_JRNL_PROCESS_ID),
+                NVL(:p_process_id ,JLU_JRNL_PROCESS_ID),
                 JLU_DESCRIPTION,
                 JLU_SOURCE_JRNL_ID,
                 JLU_EFFECTIVE_DATE,
@@ -672,18 +754,30 @@ PROCEDURE pPostJournals
                 NVL(JLU_AMENDED_BY,USER),
                 NVL(JLU_AMENDED_ON,SYSDATE),
                 JLU_TRANSLATION_DATE,
-                ''' || lv_business_date || ''' AS JL_BUS_POSTING_DATE,
+                :lv_business_date  AS JL_BUS_POSTING_DATE,
                 JLU_PERIOD_MONTH,
                 JLU_PERIOD_YEAR,
                 JLU_PERIOD_LTD,
-                        JLU_TYPE
+                JLU_TYPE
             FROM V_SLR_JRNL_LINES_UNPOSTED_JT
-            WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-              AND JLU_JRNL_STATUS = ''' || p_status || '''
+            WHERE JLU_EPG_ID = :p_epg_id
+              AND JLU_JRNL_STATUS = :p_status
               AND JT_BALANCE_TYPE_NUMBER = 1
         ';
+        lv_cursor := dbms_sql.open_cursor;
+    dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+        dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+        dbms_sql.bind_variable( lv_cursor, ':lv_business_date',lv_business_date);
+        dbms_sql.bind_variable( lv_cursor, ':p_status',p_status);
+        dbms_sql.bind_variable( lv_cursor, ':p_process_id',p_process_id);
+        lv_CountRows := dbms_sql.execute( lv_cursor );
+        dbms_sql.close_cursor( lv_cursor );
         SLR_ADMIN_PKG.PerfInfo( 'JL. Journal lines query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
         SLR_ADMIN_PKG.Debug('Lines inserted into SLR_JRNL_LINES');
+
+        pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                            p_stage         => 'slr_post_journals.postjournals_slr_jrnl_lines',
+                                            p_process_id    => p_process_id);
 
         -- ----------------------------------------------------------------------
         -- Clear Posted Data
@@ -730,8 +824,8 @@ PROCEDURE pPostJournals
             RAISE e_others;
         END IF;
         COMMIT;
-
-
+       pg_process_state.Set_Process_Finished(p_process_id => p_process_id);
+       slr_admin_pkg.droppart(p_table_name => 'SLR_JRNL_LINES_UNPOSTED_TMP', p_part_name => 'P' || p_epg_id);
         --EXECUTE IMMEDIATE 'ALTER SESSION DISABLE PARALLEL DML';
 
         SLR_ADMIN_PKG.Debug(s_proc_name || ' - end');
@@ -746,6 +840,7 @@ PROCEDURE pPostJournals
             gv_msg := 'Internal processing error. Please check fr_log for details.';
            -- EXECUTE IMMEDIATE 'ALTER SESSION DISABLE PARALLEL DML';
             SLR_ADMIN_PKG.Error('Error during posting journals (e_internal_processing_error).');
+            pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
             RAISE_APPLICATION_ERROR(-20001, gv_msg);
 
         WHEN e_fak_daily_balances_error THEN
@@ -754,7 +849,15 @@ PROCEDURE pPostJournals
             END IF;
             --EXECUTE IMMEDIATE 'ALTER SESSION DISABLE PARALLEL DML';
             SLR_ADMIN_PKG.Error('Error during posting journals (e_fak_daily_balances_error).');
+            pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
             RAISE_APPLICATION_ERROR(-20001, 'Error during posting journals.');
+
+        WHEN e_wrong_posting_date_flag THEN
+            gv_msg := 'Wrong Posting Date Derivation flag. It should be either E or G. Instead value ' || v_bus_date_flag || ' is set in the SLR_SYSTEM_CONFIG table.';
+           -- EXECUTE IMMEDIATE 'ALTER SESSION DISABLE PARALLEL DML';
+            SLR_ADMIN_PKG.Error('Error during posting journals (e_wrong_posting_date_flag).');
+            pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
+            RAISE_APPLICATION_ERROR(-20001, gv_msg);
 
         WHEN OTHERS THEN
             SLR_ADMIN_PKG.Info('Rollback');
@@ -769,11 +872,10 @@ PROCEDURE pPostJournals
                 p_process_id,p_epg_id , p_status );
             SLR_ADMIN_PKG.Error('Error during posting journals');
             --EXECUTE IMMEDIATE 'ALTER SESSION DISABLE PARALLEL DML';
+            pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
             RAISE_APPLICATION_ERROR(-20001, 'Error during posting journals. : ' || SQLERRM);
 
     END pPostJournals;
-
-
 
 
     PROCEDURE pSetEbaIndexes(p_local BOOLEAN, p_global BOOLEAN)
@@ -825,14 +927,14 @@ PROCEDURE pPostJournals
     -- BJP 17-AUG-2007 Added setting of current entity business year pCurBusYear
     -- ------------------------------------------------------------------------
       FUNCTION fInitializeProcedure
-      ( p_epg_id        IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
-        p_process_id    IN NUMBER
+    ( p_epg_id        IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+      p_process_id    IN NUMBER,
+      p_business_date IN SLR_ENTITIES.ENT_BUSINESS_DATE%TYPE
        )
-       RETURN BOOLEAN
+     RETURN BOOLEAN
     IS
         s_proc_name  VARCHAR2(80) := 'SLR_POST_JOURNALS_PKG.fInitializeProcedure';
         s_SID VARCHAR2(256);
-        s_business_date date;
 
 
     BEGIN
@@ -850,22 +952,9 @@ PROCEDURE pPostJournals
         FROM    V$SESSION s,  V$SESS_IO i
         WHERE s.sid = SYS_CONTEXT('userenv','sid') AND i.SID = s.SID;
 
-        select sys_context('userenv','SID') SID
-        into s_SID
-        from DUAL;
-
-        SELECT ENT_BUSINESS_DATE
-            INTO s_business_date
-                FROM SLR_ENTITIES
-                WHERE ENT_ENTITY =
-                (
-                    SELECT EPG_ENTITY
-                    FROM SLR_ENTITY_PROC_GROUP
-                    WHERE EPG_ID =p_epg_id
-                        AND ROWNUM = 1
-                );
-
-
+    select sys_context('userenv','SID') SID
+    into s_SID
+    from DUAL;
 
         -- Step 2. Insert record to the Job statistics table
         -- ------------------------------------------------------------------------
@@ -876,17 +965,17 @@ PROCEDURE pPostJournals
                                         JS_PROCESS_NAME,
                                         JS_EPG_ID,
                                         JS_START_TIME,
-                                        JS_SID,
-                                        JS_BUSINESS_DATE
+                    JS_SID,
+                    JS_BUSINESS_DATE
                                         )
                                   VALUES(
                                          p_process_id,
                                          c_process_name,
                                          p_epg_id,
                                          gPostStartTime,
-                                         s_SID,
-                                         s_business_date
-                                         );
+                     s_SID,
+                     p_business_date
+                     );
 
         COMMIT;
 
@@ -995,30 +1084,32 @@ PROCEDURE pPostJournals
 
 PROCEDURE pGenerateLastBalances
 (
-    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+  p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
     p_process_id IN NUMBER,
-    p_day DATE -- last balances will be generated for this day
+  p_day DATE -- last balances will be generated for this day
 )
 AS
     s_proc_name VARCHAR2(65) := 'SLR_POST_JOURNALS_PKG.pGenerateLastBalances';
-    lv_sql_create_lb VARCHAR2(32000);
-    lv_table_name VARCHAR2(32);
-    lv_last_correct_lb DATE;
-    lv_START_TIME     PLS_INTEGER := 0;
-    lv_BusDate     DATE;
-    lv_sql VARCHAR2(32000);
-    lv_inserted BOOLEAN := FALSE;
+  lv_sql_create_lb VARCHAR2(32000);
+  lv_table_name VARCHAR2(32);
+  lv_last_correct_lb DATE;
+  lv_START_TIME   PLS_INTEGER := 0;
+  lv_BusDate  DATE;
+  lv_sql VARCHAR2(32000);
+  lv_inserted BOOLEAN := FALSE;
+  lv_cursor    NUMBER ;
+  lv_countrows NUMBER;
 BEGIN
 
-    SELECT MAX(LBI_GENERATED_FOR)
-    INTO lv_last_correct_lb
-    FROM SLR_LAST_BALANCES_INDEX
+  SELECT MAX(LBI_GENERATED_FOR)
+  INTO lv_last_correct_lb
+  FROM SLR_LAST_BALANCES_INDEX
     WHERE LBI_EPG_ID = p_epg_id
         AND LBI_GENERATED_FOR <= p_day;
 
     lv_BusDate:= SLR_UTILITIES_PKG.fEntityGroupCurrBusDate(p_epg_id);
 
-    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+  lv_START_TIME:=DBMS_UTILITY.GET_TIME();
     IF lv_last_correct_lb IS NULL THEN
         lv_sql:= '
             INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'GENERATE_LAST_BALANCES') || ' INTO SLR_LAST_BALANCES
@@ -1076,7 +1167,7 @@ BEGIN
                 EDB_PERIOD_QTR,
                 EDB_PERIOD_YEAR,
                 EDB_PERIOD_LTD,
-                :day___1
+                :p_day
             FROM
             (
                 SELECT
@@ -1107,15 +1198,22 @@ BEGIN
                     EDB_PERIOD_LTD,
                     ROW_NUMBER () OVER (PARTITION BY EDB_BALANCE_TYPE, EDB_EBA_ID ORDER BY EDB_BALANCE_DATE DESC) rn
                 FROM SLR_EBA_DAILY_BALANCES
-                WHERE EDB_BALANCE_DATE <= :day___2
-                    AND EDB_EPG_ID = ''' || p_epg_id || '''
+                WHERE EDB_BALANCE_DATE <= :p_day
+                    AND EDB_EPG_ID = :p_epg_id
             )
             WHERE rn = 1
         ';
-        EXECUTE IMMEDIATE lv_sql USING p_day, p_day;
-        IF SQL%ROWCOUNT > 0 THEN
-            lv_inserted := TRUE;
-        END IF;
+    lv_cursor:= dbms_sql.open_cursor;
+    dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+        dbms_sql.bind_variable( lv_cursor, ':p_day',p_day);
+        dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+        lv_CountRows := dbms_sql.execute( lv_cursor );
+        dbms_sql.close_cursor( lv_cursor );
+
+
+    IF lv_CountRows > 0 THEN
+      lv_inserted := TRUE;
+    END IF;
     ELSE
         IF lv_last_correct_lb < p_day THEN
             lv_sql:='
@@ -1174,7 +1272,7 @@ BEGIN
                     EDB_PERIOD_QTR,
                     EDB_PERIOD_YEAR,
                     EDB_PERIOD_LTD,
-                    :day___1
+                    :p_day
                 FROM
                 (
                     SELECT
@@ -1233,8 +1331,8 @@ BEGIN
                             LB_PERIOD_YEAR AS EDB_PERIOD_YEAR,
                             LB_PERIOD_LTD AS EDB_PERIOD_LTD
                         FROM SLR_LAST_BALANCES
-                        WHERE LB_GENERATED_FOR = :last_correct_lb___2
-                            AND LB_EPG_ID = ''' || p_epg_id || '''
+                        WHERE LB_GENERATED_FOR = :lv_last_correct_lb
+                            AND LB_EPG_ID = :p_epg_id
                         UNION ALL
                         SELECT
                             EDB_BALANCE_DATE,
@@ -1263,54 +1361,63 @@ BEGIN
                             EDB_PERIOD_YEAR,
                             EDB_PERIOD_LTD
                         FROM SLR_EBA_DAILY_BALANCES
-                        WHERE EDB_BALANCE_DATE > :last_correct_lb___3
-                            AND EDB_BALANCE_DATE <= :day___4
-                            AND EDB_EPG_ID = ''' || p_epg_id || '''
+                        WHERE EDB_BALANCE_DATE > :lv_last_correct_lb
+                            AND EDB_BALANCE_DATE <= :p_day
+                            AND EDB_EPG_ID =:p_epg_id
                     )
                 )
                 WHERE rn = 1
             ';
-            EXECUTE IMMEDIATE lv_sql USING p_day, lv_last_correct_lb, lv_last_correct_lb, p_day;
-            IF SQL%ROWCOUNT > 0 THEN
-                lv_inserted := TRUE;
-            END IF;
+    lv_cursor:= dbms_sql.open_cursor;
+    dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+        dbms_sql.bind_variable( lv_cursor, ':lv_last_correct_lb',lv_last_correct_lb);
+    dbms_sql.bind_variable( lv_cursor, ':p_day',p_day);
+    dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+        lv_CountRows := dbms_sql.execute( lv_cursor );
+        dbms_sql.close_cursor( lv_cursor );
+
+
+      IF lv_CountRows > 0 THEN
+        lv_inserted := TRUE;
+      END IF;
         END IF;
-    END IF;
+  END IF;
 
-    /* need to insert here, even if lv_inserted := FALSE, as SLR_LAST_BALANCE_HELPER is used by reporting views as a pointer to SLR_EBA_DAILY_BALANCES */
-        MERGE INTO SLR_LAST_BALANCE_HELPER LBH1
-        USING (
-          SELECT p_epg_id as LBH_EPG_ID FROM dual
-        ) LBH2
-        ON
-        (
-           LBH1.LBH_EPG_ID = LBH2.LBH_EPG_ID
-        )
-        WHEN MATCHED THEN UPDATE SET LBH_GENERATED_FOR = p_day, LBH_BUSSINESS_DATE=lv_BusDate
-        WHEN NOT MATCHED THEN INSERT (LBH1.LBH_EPG_ID,LBH1.LBH_GENERATED_FOR,LBH1.LBH_BUSSINESS_DATE) VALUES (p_epg_id,p_day,lv_BusDate);
+  /* need to insert here, even if lv_inserted := FALSE, as SLR_LAST_BALANCE_HELPER is used by reporting views as a pointer to SLR_EBA_DAILY_BALANCES */
+    MERGE INTO SLR_LAST_BALANCE_HELPER LBH1
+    USING (
+      SELECT p_epg_id as LBH_EPG_ID FROM dual
+    ) LBH2
+    ON
+    (
+       LBH1.LBH_EPG_ID = LBH2.LBH_EPG_ID
+    )
+    WHEN MATCHED THEN UPDATE SET LBH_GENERATED_FOR = p_day, LBH_BUSSINESS_DATE=lv_BusDate
+    WHEN NOT MATCHED THEN INSERT (LBH1.LBH_EPG_ID,LBH1.LBH_GENERATED_FOR,LBH1.LBH_BUSSINESS_DATE) VALUES (p_epg_id,p_day,lv_BusDate);
 
-    /*the content of SLR_LAST_BALANCES_INDEX should match SLR_LAST_BALANCES */
-    IF lv_inserted = TRUE THEN
-        MERGE INTO SLR_LAST_BALANCES_INDEX LBI1
-        USING (
-          SELECT p_epg_id as LBI_EPG_ID, p_day as LBI_GENERATED_FOR FROM dual
-        ) LBI2
-        ON
-        (
-          LBI1.LBI_EPG_ID = LBI2.LBI_EPG_ID AND LBI1.LBI_GENERATED_FOR = LBI2.LBI_GENERATED_FOR
-        )
-        WHEN NOT MATCHED THEN INSERT (LBI1.LBI_EPG_ID,LBI1.LBI_GENERATED_FOR) VALUES (p_epg_id,p_day);
-    END IF;
+  /*the content of SLR_LAST_BALANCES_INDEX should match SLR_LAST_BALANCES */
+  IF lv_inserted = TRUE THEN
+    MERGE INTO SLR_LAST_BALANCES_INDEX LBI1
+    USING (
+      SELECT p_epg_id as LBI_EPG_ID, p_day as LBI_GENERATED_FOR FROM dual
+    ) LBI2
+    ON
+    (
+      LBI1.LBI_EPG_ID = LBI2.LBI_EPG_ID AND LBI1.LBI_GENERATED_FOR = LBI2.LBI_GENERATED_FOR
+    )
+    WHEN NOT MATCHED THEN INSERT (LBI1.LBI_EPG_ID,LBI1.LBI_GENERATED_FOR) VALUES (p_epg_id,p_day);
+  END IF;
     COMMIT;
     SLR_ADMIN_PKG.Debug('Last balances generated.', lv_sql);
-    SLR_ADMIN_PKG.PerfInfo( 'LB. Last Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
+  SLR_ADMIN_PKG.PerfInfo( 'LB. Last Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
 
 EXCEPTION
-    WHEN OTHERS THEN
+  WHEN OTHERS THEN
+     pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
         ROLLBACK;
-        pWriteLogError(s_proc_name, 'SLR_LAST_BALANCES',
-            'Error during generating SLR_LAST_BALANCES table: ' || SQLERRM,
-            p_process_id,p_epg_id );
+    pWriteLogError(s_proc_name, 'SLR_LAST_BALANCES',
+      'Error during generating SLR_LAST_BALANCES table: ' || SQLERRM,
+      p_process_id,p_epg_id );
         SLR_ADMIN_PKG.Error('Error during generating SLR_LAST_BALANCES table: '|| SQLERRM);
         RAISE e_internal_processing_error; -- raised to stop execution
 
@@ -1320,16 +1427,16 @@ END pGenerateLastBalances;
 
 PROCEDURE pGenerateEBADailyBalances
 (
-    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+  p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
     p_process_id IN NUMBER,
-    p_business_date IN DATE,
-    p_oldest_backdate IN DATE,
-    p_status IN CHAR := 'U'
+  p_business_date IN DATE,
+  p_oldest_backdate IN DATE,
+  p_status IN CHAR := 'U'
 )
 AS
     s_proc_name VARCHAR2(65) := 'SLR_POST_JOURNALS_PKG.pGenerateEBADailyBalances';
-    lv_sql VARCHAR2(32000);
-    lv_date DATE;
+  lv_sql VARCHAR2(32000);
+  lv_date DATE;
     lv_lock_handle VARCHAR2(100);
     lv_lock_result INTEGER;
     lv_table_name VARCHAR2(30) := 'SLR_EBA_CLC_' || p_epg_id;
@@ -1338,8 +1445,20 @@ AS
     lv_rollback_exchange BOOLEAN := FALSE;
     lv_including_indexes VARCHAR2(100) := NULL;
     lv_update_indexes VARCHAR2(100) := NULL;
-    lv_START_TIME     PLS_INTEGER := 0;
+    lv_START_TIME   PLS_INTEGER := 0;
+    lv_cursor    NUMBER := dbms_sql.open_cursor;
+    lv_countrows NUMBER;
+
 BEGIN
+   pg_process_state.log_proc(p_conf_group    => 'SLR',
+                             p_stage         => 'slr_post_journals.pGenerateEBADailyBalances_p_epg_id',
+                             p_process_id    => p_process_id,
+                             p_epg_id        => p_epg_id,
+							 p_business_date => gp_business_date,
+                             p_object_name   => 'SLR_EBA_PM_' || p_epg_id,
+                             p_start_dt      => sysdate,
+                             p_status        => 'P');
+
 
     lv_sql := '
     INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'EBA_DAILY_BALANCES_INSERT') || ' INTO ' || lv_table_name || '
@@ -1400,53 +1519,53 @@ BEGIN
         EDB_PERIOD_LTD,
         EDB_PROCESS_ID,
         EDB_AMENDED_ON
-    FROM
+  FROM
+  (
     (
-        (
-            SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'EBA_DAILY_BALANCES_ALL') || '
-                EDB_FAK_ID,
-                EDB_EBA_ID,
-                EDB_BALANCE_DATE,
-                EDB_BALANCE_TYPE,
-                EDB_TRAN_DAILY_MOVEMENT,
-                EDB_TRAN_MTD_BALANCE,
-                EDB_TRAN_QTD_BALANCE,
-                EDB_TRAN_YTD_BALANCE,
-                EDB_TRAN_LTD_BALANCE,
-                EDB_BASE_DAILY_MOVEMENT,
-                EDB_BASE_MTD_BALANCE,
-                EDB_BASE_QTD_BALANCE,
-                EDB_BASE_YTD_BALANCE,
-                EDB_BASE_LTD_BALANCE,
-                EDB_LOCAL_DAILY_MOVEMENT,
-                EDB_LOCAL_MTD_BALANCE,
-                EDB_LOCAL_QTD_BALANCE,
-                EDB_LOCAL_YTD_BALANCE,
-                EDB_LOCAL_LTD_BALANCE,
-                EDB_ENTITY,
-                EDB_EPG_ID,
-                EDB_PERIOD_MONTH,
-                EDB_PERIOD_QTR,
-                EDB_PERIOD_YEAR,
-                EDB_PERIOD_LTD,
-                ''N'' EDB_JRNL_INTERNAL_PERIOD_FLAG,
-                :process_id___1 EDB_PROCESS_ID,
+      SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'EBA_DAILY_BALANCES_ALL') || '
+        EDB_FAK_ID,
+        EDB_EBA_ID,
+        EDB_BALANCE_DATE,
+        EDB_BALANCE_TYPE,
+        EDB_TRAN_DAILY_MOVEMENT,
+        EDB_TRAN_MTD_BALANCE,
+        EDB_TRAN_QTD_BALANCE,
+        EDB_TRAN_YTD_BALANCE,
+        EDB_TRAN_LTD_BALANCE,
+        EDB_BASE_DAILY_MOVEMENT,
+        EDB_BASE_MTD_BALANCE,
+        EDB_BASE_QTD_BALANCE,
+        EDB_BASE_YTD_BALANCE,
+        EDB_BASE_LTD_BALANCE,
+        EDB_LOCAL_DAILY_MOVEMENT,
+        EDB_LOCAL_MTD_BALANCE,
+        EDB_LOCAL_QTD_BALANCE,
+        EDB_LOCAL_YTD_BALANCE,
+        EDB_LOCAL_LTD_BALANCE,
+        EDB_ENTITY,
+        EDB_EPG_ID,
+        EDB_PERIOD_MONTH,
+        EDB_PERIOD_QTR,
+        EDB_PERIOD_YEAR,
+        EDB_PERIOD_LTD,
+        ''N'' EDB_JRNL_INTERNAL_PERIOD_FLAG,
+                :p_process_id EDB_PROCESS_ID,
                 EDB_AMENDED_ON
-            FROM SLR_EBA_DAILY_BALANCES, SLR_ENTITIES ent
-            WHERE EDB_EPG_ID = ''' || p_epg_id || '''
-                AND EDB_BALANCE_DATE >= :oldest_backdate___2
+      FROM SLR_EBA_DAILY_BALANCES, SLR_ENTITIES ent
+      WHERE EDB_EPG_ID = :p_epg_id
+        AND EDB_BALANCE_DATE >= :p_oldest_backdate
         AND ent.ENT_ENTITY = EDB_ENTITY
         AND ((EDB_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR EDB_BALANCE_TYPE <> ''20'')
-                AND EDB_EBA_ID NOT IN
-                    (
+        AND EDB_EBA_ID NOT IN
+          (
                         SELECT JLU_EBA_ID FROM SLR_JRNL_LINES_UNPOSTED, SLR_EXT_JRNL_TYPES jt
-                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                        AND JLU_JRNL_STATUS = '''|| p_status ||'''
-                        AND JLU_JRNL_TYPE = jt.EJT_TYPE
+                        WHERE JLU_EPG_ID = :p_epg_id
+            AND JLU_JRNL_STATUS = :p_status
+            AND JLU_JRNL_TYPE = jt.EJT_TYPE
                         and (EDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_1 or EDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_2)
                     )
-        )
-        UNION ALL
+    )
+    UNION ALL
         SELECT * FROM
         (
             SELECT '|| SLR_UTILITIES_PKG.fHint(p_epg_id, 'EBA_DAILY_BALANCES_CALC') || '
@@ -1476,7 +1595,7 @@ BEGIN
                 EDB_PERIOD_YEAR,
                 EDB_PERIOD_LTD,
                 EDB_JRNL_INTERNAL_PERIOD_FLAG,
-                :process_id___3 EDB_PROCESS_ID,
+                :p_process_id EDB_PROCESS_ID,
                 EDB_AMENDED_ON
             FROM
             (
@@ -1532,29 +1651,29 @@ BEGIN
                         EDB_PERIOD_LTD,
                         EDB_JRNL_INTERNAL_PERIOD_FLAG,
                         EDB_AMENDED_ON
-                    FROM
-                    (
-                        SELECT
-                            EDB_FAK_ID, EDB_EBA_ID,
-                            EDB_BALANCE_DATE, EDB_BALANCE_TYPE,
-                            EDB_TRAN_DAILY_MOVEMENT,EDB_TRAN_LTD_BALANCE EDB_TRAN_LTD_BALANCE_IP,
-                            EDB_BASE_DAILY_MOVEMENT,EDB_BASE_LTD_BALANCE EDB_BASE_LTD_BALANCE_IP,
+          FROM
+          (
+            SELECT
+              EDB_FAK_ID, EDB_EBA_ID,
+              EDB_BALANCE_DATE, EDB_BALANCE_TYPE,
+              EDB_TRAN_DAILY_MOVEMENT,EDB_TRAN_LTD_BALANCE EDB_TRAN_LTD_BALANCE_IP,
+              EDB_BASE_DAILY_MOVEMENT,EDB_BASE_LTD_BALANCE EDB_BASE_LTD_BALANCE_IP,
                             EDB_LOCAL_DAILY_MOVEMENT,EDB_LOCAL_LTD_BALANCE EDB_LOCAL_LTD_BALANCE_IP,
                             EDB_ENTITY,
                             EDB_EPG_ID, EDB_PERIOD_MONTH, EDB_PERIOD_QTR,
                             EDB_PERIOD_YEAR, EDB_PERIOD_LTD,
                             ''N'' EDB_JRNL_INTERNAL_PERIOD_FLAG,
                             EDB_AMENDED_ON
-                        FROM SLR_EBA_DAILY_BALANCES, SLR_ENTITIES ent
-                        WHERE EDB_EPG_ID = ''' || p_epg_id || '''
-                            AND EDB_BALANCE_DATE >= :oldest_backdate___4
+            FROM SLR_EBA_DAILY_BALANCES, SLR_ENTITIES ent
+            WHERE EDB_EPG_ID = :p_epg_id
+              AND EDB_BALANCE_DATE >= :p_oldest_backdate
               AND ent.ENT_ENTITY = EDB_ENTITY
               AND ((EDB_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR EDB_BALANCE_TYPE <> ''20'')
-                            AND EDB_EBA_ID IN
-                                (
+              AND EDB_EBA_ID IN
+                (
                                     SELECT JLU_EBA_ID FROM SLR_JRNL_LINES_UNPOSTED
-                                    WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                                    AND JLU_JRNL_STATUS = '''|| p_status ||'''
+                                    WHERE JLU_EPG_ID = :p_epg_id
+                  AND JLU_JRNL_STATUS = :p_status
                                 )
                         UNION ALL
                         SELECT
@@ -1568,55 +1687,64 @@ BEGIN
                             JLU_PERIOD_YEAR EDB_PERIOD_YEAR, JLU_PERIOD_LTD EDB_PERIOD_LTD,
                             NVL(JLU_JRNL_INTERNAL_PERIOD_FLAG,''N'') EDB_JRNL_INTERNAL_PERIOD_FLAG,
                             SYSDATE EDB_AMENDED_ON
-                        FROM V_SLR_JRNL_LINES_UNPOSTED_JT, SLR_ENTITIES ent
-                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
+            FROM V_SLR_JRNL_LINES_UNPOSTED_JT, SLR_ENTITIES ent
+            WHERE JLU_EPG_ID = :p_epg_id
              AND ent.ENT_ENTITY = JLU_ENTITY
              AND ((JT_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR JT_BALANCE_TYPE <> ''20'')
-                            AND JLU_JRNL_STATUS = '''|| p_status ||'''
-                    )
-                )
-                GROUP BY EDB_BALANCE_DATE, EDB_EBA_ID, EDB_FAK_ID, EDB_BALANCE_TYPE, EDB_ENTITY, EDB_EPG_ID, EDB_PERIOD_YEAR, EDB_PERIOD_MONTH, EDB_PERIOD_QTR, EDB_PERIOD_LTD
-                UNION ALL
-                SELECT /*+ NO_MERGE */
-                    LB_FAK_ID EDB_FAK_ID, LB_EBA_ID EDB_EBA_ID,
-                    TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'') EDB_BALANCE_DATE, LB_BALANCE_TYPE EDB_BALANCE_TYPE,
+              AND JLU_JRNL_STATUS =  :p_status
+          )
+        )
+        GROUP BY EDB_BALANCE_DATE, EDB_EBA_ID, EDB_FAK_ID, EDB_BALANCE_TYPE, EDB_ENTITY, EDB_EPG_ID, EDB_PERIOD_YEAR, EDB_PERIOD_MONTH, EDB_PERIOD_QTR, EDB_PERIOD_LTD
+        UNION ALL
+        SELECT /*+ NO_MERGE */
+          LB_FAK_ID EDB_FAK_ID, LB_EBA_ID EDB_EBA_ID,
+          :c_unused_date_for_lb EDB_BALANCE_DATE, LB_BALANCE_TYPE EDB_BALANCE_TYPE,
                     0 EDB_TRAN_DAILY_MOVEMENT, LB_TRAN_MTD_BALANCE EDB_TRAN_MTD_BALANCE, LB_TRAN_QTD_BALANCE EDB_TRAN_QTD_BALANCE,
-                    LB_TRAN_YTD_BALANCE EDB_TRAN_YTD_BALANCE, LB_TRAN_LTD_BALANCE EDB_TRAN_LTD_BALANCE, LB_TRAN_LTD_BALANCE EDB_TRAN_LTD_BALANCE_IP,
+          LB_TRAN_YTD_BALANCE EDB_TRAN_YTD_BALANCE, LB_TRAN_LTD_BALANCE EDB_TRAN_LTD_BALANCE, LB_TRAN_LTD_BALANCE EDB_TRAN_LTD_BALANCE_IP,
                     0 EDB_BASE_DAILY_MOVEMENT, LB_BASE_MTD_BALANCE EDB_BASE_MTD_BALANCE, LB_BASE_QTD_BALANCE EDB_BASE_QTD_BALANCE,
-                    LB_BASE_YTD_BALANCE EDB_BASE_YTD_BALANCE, LB_BASE_LTD_BALANCE EDB_BASE_LTD_BALANCE, LB_BASE_LTD_BALANCE EDB_BASE_LTD_BALANCE_IP,
+          LB_BASE_YTD_BALANCE EDB_BASE_YTD_BALANCE, LB_BASE_LTD_BALANCE EDB_BASE_LTD_BALANCE, LB_BASE_LTD_BALANCE EDB_BASE_LTD_BALANCE_IP,
                     0 EDB_LOCAL_DAILY_MOVEMENT, LB_LOCAL_MTD_BALANCE EDB_LOCAL_MTD_BALANCE, LB_LOCAL_QTD_BALANCE EDB_LOCAL_QTD_BALANCE,
-                    LB_LOCAL_YTD_BALANCE EDB_LOCAL_YTD_BALANCE, LB_LOCAL_LTD_BALANCE EDB_LOCAL_LTD_BALANCE, LB_LOCAL_LTD_BALANCE EDB_LOCAL_LTD_BALANCE_IP,
-                    LB_ENTITY EDB_ENTITY, LB_EPG_ID EDB_EPG_ID,
+          LB_LOCAL_YTD_BALANCE EDB_LOCAL_YTD_BALANCE, LB_LOCAL_LTD_BALANCE EDB_LOCAL_LTD_BALANCE, LB_LOCAL_LTD_BALANCE EDB_LOCAL_LTD_BALANCE_IP,
+          LB_ENTITY EDB_ENTITY, LB_EPG_ID EDB_EPG_ID,
                     LB_PERIOD_MONTH EDB_PERIOD_MONTH, LB_PERIOD_QTR EDB_PERIOD_QTR, LB_PERIOD_YEAR EDB_PERIOD_YEAR,
-                    LB_PERIOD_LTD EDB_PERIOD_LTD, ''N'' EDB_JRNL_INTERNAL_PERIOD_FLAG, TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'') EDB_AMENDED_ON
-                FROM SLR_LAST_BALANCES, SLR_ENTITIES ent
-                WHERE LB_GENERATED_FOR =  (:oldest_backdate___5 - 1)
-                    AND LB_EPG_ID = ''' || p_epg_id || '''
+          LB_PERIOD_LTD EDB_PERIOD_LTD, ''N'' EDB_JRNL_INTERNAL_PERIOD_FLAG, :c_unused_date_for_lb EDB_AMENDED_ON
+        FROM SLR_LAST_BALANCES, SLR_ENTITIES ent
+        WHERE LB_GENERATED_FOR =  (:p_oldest_backdate - 1)
+          AND LB_EPG_ID =  :p_epg_id
           AND ent.ENT_ENTITY = LB_ENTITY
              AND ((LB_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR LB_BALANCE_TYPE <> ''20'')
                     AND LB_EBA_ID IN
                     (
                         SELECT JLU_EBA_ID FROM SLR_JRNL_LINES_UNPOSTED
-                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                        AND JLU_JRNL_STATUS = '''|| p_status ||'''
-                    )
-            )
-        )
-        WHERE EDB_BALANCE_DATE > TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'')
-        AND EDB_EBA_ID IN
+                        WHERE JLU_EPG_ID = :p_epg_id
+                        AND JLU_JRNL_STATUS = :p_status                     )
+
+      )
+    )
+        WHERE EDB_BALANCE_DATE > :c_unused_date_for_lb
+    AND EDB_EBA_ID IN
                     (
                         SELECT JLU_EBA_ID FROM SLR_JRNL_LINES_UNPOSTED, SLR_EXT_JRNL_TYPES jt
-                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                        AND JLU_JRNL_STATUS = '''|| p_status ||'''
+                        WHERE JLU_EPG_ID =  :p_epg_id
+                        AND JLU_JRNL_STATUS = :p_status
                         AND JLU_JRNL_TYPE = jt.EJT_TYPE
                         and (EDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_1 or EDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_2)
                     )
-    )
-    ';
+  )
+  ';
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+    dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+    dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+    dbms_sql.bind_variable( lv_cursor, ':p_process_id',p_process_id);
+    dbms_sql.bind_variable( lv_cursor, ':c_unused_date_for_lb',c_unused_date_for_lb);
+    dbms_sql.bind_variable( lv_cursor, ':p_oldest_backdate',p_oldest_backdate);
+  dbms_sql.bind_variable( lv_cursor, ':p_status',p_status);
 
 
-    EXECUTE IMMEDIATE lv_sql USING p_process_id, p_oldest_backdate, p_process_id, p_oldest_backdate, p_oldest_backdate;
+    lv_CountRows := dbms_sql.execute( lv_cursor );
+    dbms_sql.close_cursor( lv_cursor );
+
+
     COMMIT;
     SLR_ADMIN_PKG.PerfInfo( 'EBA. EBA Daily Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
     SLR_ADMIN_PKG.Debug('EBA daily balances inserted into CLC table', lv_sql);
@@ -1667,25 +1795,31 @@ BEGIN
     lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
 
     SLR_ADMIN_PKG.Info('EBA daily balances generated');
+    pg_process_state.log_proc_completed(p_conf_group    => 'SLR',
+                                        p_stage         => 'slr_post_journals.pGenerateEBADailyBalances_p_epg_id',
+                                        p_process_id    => p_process_id);
+
 
 EXCEPTION
     WHEN e_lock_acquire_error THEN
         pWriteLogError(s_proc_name, 'SLR_EBA_DAILY_BALANCES',
-            'Error during generating EBA daily balances: can''t acquire lock to exchange partitions',
-            p_process_id,p_epg_id , p_status );
+      'Error during generating EBA daily balances: can''t acquire lock to exchange partitions',
+      p_process_id,p_epg_id , p_status );
         SLR_ADMIN_PKG.Error('Error during generating EBA daily balances: can''t acquire lock to exchange partitions');
-        RAISE e_internal_processing_error; -- raised to stop execution
+        pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
+	    RAISE e_internal_processing_error; -- raised to stop execution
 
-    WHEN OTHERS THEN
+  WHEN OTHERS THEN
         lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
         pWriteLogError(s_proc_name, 'SLR_EBA_DAILY_BALANCES',
-            'Error during generating EBA daily balances: '|| SQLERRM,
+      'Error during generating EBA daily balances: '|| SQLERRM,
             p_process_id,p_epg_id , p_status );
         SLR_ADMIN_PKG.Error('Error during generating EBA daily balances: '|| SQLERRM);
         IF lv_rollback_exchange = TRUE THEN
             pEbaBalancesRollback(p_epg_id, p_process_id);
         END IF;
-        RAISE e_internal_processing_error;
+        pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
+		RAISE e_internal_processing_error;
 
 END pGenerateEBADailyBalances;
 
@@ -1701,8 +1835,22 @@ PROCEDURE pGenerateEBADailyBalancesMerge
 )
 AS
     lv_sql VARCHAR2(32000);
-    lv_START_TIME     PLS_INTEGER := 0;
+  lv_START_TIME   PLS_INTEGER := 0;
+  lv_cursor    NUMBER(19) := dbms_sql.open_cursor;
+  lv_countrows NUMBER;
 BEGIN
+
+
+    pg_process_state.log_proc(p_conf_group  => 'SLR',
+                              p_stage       => 'slr_post_journals.pGenerateEBADailyBalancesMerge',
+                              p_process_id  => p_process_id,
+                              p_epg_id      => p_epg_id,
+							  p_business_date => gp_business_date,
+							  p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                              p_object_name => 'SLR_EBA_DAILY_BALANCES',
+                              p_start_dt    => sysdate,
+                              p_status      => 'P');
+
 
     lv_sql := '
         MERGE ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'EBA_DAILY_BALANCES_MERGE') || ' INTO SLR_EBA_DAILY_BALANCES B USING
@@ -1734,7 +1882,7 @@ BEGIN
                     EDB_PERIOD_MONTH,
                     EDB_PERIOD_QTR,
                     EDB_PERIOD_YEAR,
-                    :process_id___1 AS EDB_PROCESS_ID,
+                    :p_process_id AS EDB_PROCESS_ID,
                     EDB_AMENDED_ON
                 FROM
                 (   SELECT data_set.*,
@@ -1815,13 +1963,13 @@ BEGIN
                                     EDB_LOCAL_LTD_BALANCE LOCAL_LTD,
                                     1 BAL_EXISTS
                                 FROM SLR_EBA_DAILY_BALANCES
-                                WHERE EDB_EPG_ID = ''' || p_epg_id || '''
-                                    AND EDB_BALANCE_DATE >= :oldest_backdate___2
+                                WHERE EDB_EPG_ID = :p_epg_id
+                                    AND EDB_BALANCE_DATE >= :p_oldest_backdate
                                     AND EDB_EBA_ID IN
                                     (
                                         SELECT JLU_EBA_ID FROM SLR_JRNL_LINES_UNPOSTED
-                                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                                        AND JLU_JRNL_STATUS = ''' || p_status || '''
+                                        WHERE JLU_EPG_ID = :p_epg_id
+                                        AND JLU_JRNL_STATUS = :p_status
                                     )
                                 UNION ALL
                                 SELECT
@@ -1843,15 +1991,15 @@ BEGIN
                                     0 LOCAL_LTD,
                                     0 BAL_EXISTS
                                 FROM V_SLR_JRNL_LINES_UNPOSTED_JT
-                                WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                                    AND JLU_JRNL_STATUS = ''' || p_status || '''
+                                WHERE JLU_EPG_ID =:p_epg_id
+                                    AND JLU_JRNL_STATUS = :p_status
                             )
                         )
                         GROUP BY EDB_BALANCE_DATE, EDB_EBA_ID, EDB_FAK_ID, EDB_BALANCE_TYPE, EDB_ENTITY, EDB_EPG_ID, EDB_PERIOD_MONTH, EDB_PERIOD_QTR, EDB_PERIOD_YEAR
                         UNION ALL
                         SELECT
                             LB_FAK_ID EDB_FAK_ID, LB_EBA_ID EDB_EBA_ID,
-                            TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'') EDB_BALANCE_DATE, LB_BALANCE_TYPE EDB_BALANCE_TYPE,
+                            :c_unused_date_for_lb EDB_BALANCE_DATE, LB_BALANCE_TYPE EDB_BALANCE_TYPE,
                             0 EDB_TRAN_DAILY_MOVEMENT, LB_TRAN_MTD_BALANCE EDB_TRAN_MTD_BALANCE, LB_TRAN_QTD_BALANCE EDB_TRAN_QTD_BALANCE,
                             LB_TRAN_YTD_BALANCE EDB_TRAN_YTD_BALANCE, LB_TRAN_LTD_BALANCE EDB_TRAN_LTD_BALANCE,
                             0 EDB_BASE_DAILY_MOVEMENT, LB_BASE_MTD_BALANCE EDB_BASE_MTD_BALANCE, LB_BASE_QTD_BALANCE EDB_BASE_QTD_BALANCE,
@@ -1860,29 +2008,29 @@ BEGIN
                             LB_LOCAL_YTD_BALANCE EDB_LOCAL_YTD_BALANCE, LB_LOCAL_LTD_BALANCE EDB_LOCAL_LTD_BALANCE,
                             LB_ENTITY EDB_ENTITY, LB_EPG_ID EDB_EPG_ID,
                             LB_PERIOD_MONTH EDB_PERIOD_MONTH, LB_PERIOD_QTR EDB_PERIOD_QTR, LB_PERIOD_YEAR EDB_PERIOD_YEAR,
-                            TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'') EDB_AMENDED_ON,
+                            :c_unused_date_for_lb EDB_AMENDED_ON,
                             LB_TRAN_LTD_BALANCE TRAN_LTD,
                             LB_BASE_LTD_BALANCE BASE_LTD,
                             LB_LOCAL_LTD_BALANCE LOCAL_LTD,
                             1 BAL_EXISTS
                         FROM SLR_LAST_BALANCES
-                        WHERE LB_GENERATED_FOR =  (:oldest_backdate___3 - 1)
-                            AND LB_EPG_ID = ''' || p_epg_id || '''
+                        WHERE LB_GENERATED_FOR =  (:p_oldest_backdate - 1)
+                            AND LB_EPG_ID = :p_epg_id
                             AND LB_EBA_ID IN
                             (
                                 SELECT JLU_EBA_ID FROM SLR_JRNL_LINES_UNPOSTED
-                                WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                                AND JLU_JRNL_STATUS = ''' || p_status || '''
+                                WHERE JLU_EPG_ID = :p_epg_id
+                                AND JLU_JRNL_STATUS = :p_status
                             )
                         ) data_set
                 )
             )
-            WHERE EDB_BALANCE_DATE > TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'')
+            WHERE EDB_BALANCE_DATE > :c_unused_date_for_lb
                 AND EDB_EBA_ID IN
                 (
                     SELECT JLU_EBA_ID FROM SLR_JRNL_LINES_UNPOSTED, SLR_EXT_JRNL_TYPES jt
-                    WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                        AND JLU_JRNL_STATUS = ''' || p_status || '''
+                    WHERE JLU_EPG_ID = :p_epg_id
+                        AND JLU_JRNL_STATUS = :p_status
                         AND EDB_EBA_ID = JLU_EBA_ID
                         AND EDB_BALANCE_DATE >= JLU_EFFECTIVE_DATE
                         AND JLU_JRNL_TYPE = jt.EJT_TYPE
@@ -1897,8 +2045,8 @@ BEGIN
             AND CLC.EDB_EBA_ID = B.EDB_EBA_ID
             AND CLC.EDB_BALANCE_TYPE = B.EDB_BALANCE_TYPE
             AND CLC.EDB_EPG_ID = B.EDB_EPG_ID
-            AND B.EDB_BALANCE_DATE >= :oldest_backdate___4
-            AND B.EDB_EPG_ID = ''' || p_epg_id || '''
+            AND B.EDB_BALANCE_DATE >= :p_oldest_backdate
+            AND B.EDB_EPG_ID = :p_epg_id
         )
         WHEN MATCHED THEN UPDATE SET
             B.EDB_TRAN_DAILY_MOVEMENT = CLC.EDB_TRAN_DAILY_MOVEMENT,
@@ -1983,14 +2131,30 @@ BEGIN
 --            AND CLC.EDB_PERIOD_YEAR=B.EDB_PERIOD_YEAR
 --            AND CLC.EDB_PERIOD_MONTH=B.EDB_PERIOD_MONTH
 /*-----------UPGRADE 22.1.1 MERGE END-----------*/
-    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+  lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+  dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+  dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+  dbms_sql.bind_variable( lv_cursor, ':p_oldest_backdate',p_oldest_backdate);
+  dbms_sql.bind_variable( lv_cursor, ':c_unused_date_for_lb',c_unused_date_for_lb);
+
+  dbms_sql.bind_variable( lv_cursor, ':p_status',p_status);
+  dbms_sql.bind_variable( lv_cursor, ':p_process_id',p_process_id);
+  lv_CountRows := dbms_sql.execute( lv_cursor );
+  dbms_sql.close_cursor( lv_cursor );
+
 /*-----------UPGRADE 22.1.1 MERGE START-----------*/
-	SLR_ADMIN_PKG.Debug('EBA Daily Balances generated (Merge).', lv_sql);
+  SLR_ADMIN_PKG.Debug('EBA Daily Balances generated (Merge).', lv_sql);
 --line move from the bottom
-/*-----------UPGRADE 22.1.1 MERGE END-----------*/
-    EXECUTE IMMEDIATE lv_sql USING p_process_id, p_oldest_backdate, p_oldest_backdate, p_oldest_backdate;
+/*-----------UPGRADE 22.1.1 MERGE END-----------*/						   
+ -- EXECUTE IMMEDIATE lv_sql USING p_process_id, p_oldest_backdate, p_oldest_backdate, p_oldest_backdate;
     SLR_ADMIN_PKG.PerfInfo( 'EBAM. Merge EBA Daily Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
---    SLR_ADMIN_PKG.Debug('EBA Daily Balances generated (Merge).', lv_sql);
+
+   pg_process_state.log_proc_completed(p_conf_group   => 'SLR',
+                                       p_stage        => 'slr_post_journals.pGenerateEBADailyBalancesMerge',
+                                       p_process_id   => p_process_id);
+   EXCEPTION WHEN OTHERS THEN
+        pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
+    RAISE;
 
 END pGenerateEBADailyBalancesMerge;
 
@@ -2003,7 +2167,20 @@ PROCEDURE pGenerateEBADailyBalances
 ) IS
   lv_sql VARCHAR2(32000);
   lv_start_time pls_integer := 0;
+  lv_cursor    NUMBER := dbms_sql.open_cursor;
+  lv_countrows NUMBER;
 BEGIN
+    pg_process_state.log_proc(p_conf_group   => 'SLR',
+                              p_stage        => 'slr_post_journals.pGenerateEBADailyBalances',
+                              p_process_id   => p_process_id,
+                              p_epg_id        => p_epg_id,
+							  p_business_date => gp_business_date,
+							  p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+                              p_object_name  => 'SLR_EBA_DAILY_BALANCES',
+                              p_sub_partition  => 'P'||to_char(p_business_date, 'yyyymmdd')||'_S'||p_epg_id,
+                              p_start_dt     =>  sysdate,
+                              p_status       => 'P');
+
 
   lv_sql:= '
     insert /*+ append */ into slr_eba_daily_balances subpartition for (date '''||to_char(p_business_date, 'yyyy-mm-dd')||''', '''||p_epg_id||''') (
@@ -2047,7 +2224,7 @@ BEGIN
           (jlu_base_amount) as jlu_base_amount_ltd,
           (jlu_local_amount) as jlu_local_amount_ltd
         from v_slr_jrnl_lines_unposted_jt
-        where jlu_epg_id = '''||p_epg_id||''' and jlu_jrnl_status = '''||p_status||'''
+        where jlu_epg_id = :p_epg_id and jlu_jrnl_status = :p_status
       ), jlu_aggr as (
         select --+ no_merge
           jlu_fak_id, jlu_eba_id, jlu_effective_date, jlu_balance_type, jlu_entity, jlu_period_month, jlu_period_qtr, jlu_period_year,
@@ -2106,7 +2283,7 @@ BEGIN
           coalesce(lb_local_ltd_balance, 0)+jlu_local_amount_ltd as jlu_local_ltd_balance
         from jlu_aggr
           left join lbi on jlu_effective_date=next_generated_for
-          left join slr_last_balances on lb_generated_for=lbi_generated_for and lb_epg_id='''||p_epg_id||''' and lb_eba_id=jlu_eba_id and lb_generated_for>=date '''||to_char(p_business_date, 'yyyy-mm-dd')||'''-1 and lb_balance_type=jlu_balance_type
+          left join slr_last_balances on lb_generated_for=lbi_generated_for and lb_epg_id=:p_epg_id and lb_eba_id=jlu_eba_id and lb_generated_for>=date '''||to_char(p_business_date, 'yyyy-mm-dd')||'''-1 and lb_balance_type=jlu_balance_type
       )
     select
       jlu_fak_id,
@@ -2129,18 +2306,36 @@ BEGIN
       jlu_local_ytd_balance,
       jlu_local_ltd_balance,
       jlu_entity,
-      '''||p_epg_id||''',
+      :p_epg_id,
       jlu_period_month,
       jlu_period_qtr,
       jlu_period_year,
       1,
-      '''||p_process_id||''',
+      :p_process_id,
       sysdate from bal';
 
+
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    EXECUTE IMMEDIATE lv_sql;
+  dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+    dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+    dbms_sql.bind_variable( lv_cursor, ':p_status',p_status);
+    dbms_sql.bind_variable( lv_cursor, ':p_process_id',p_process_id);
+    lv_CountRows := dbms_sql.execute( lv_cursor );
+    dbms_sql.close_cursor( lv_cursor );
+
+
+
+    --EXECUTE IMMEDIATE lv_sql;
     SLR_ADMIN_PKG.PerfInfo( 'EBAI. Insert EBA Daily Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
     SLR_ADMIN_PKG.Debug('EBA Daily Balances generated (Insert).', lv_sql);
+
+	pg_process_state.log_proc_completed(p_conf_group   => 'SLR',
+                                        p_stage        => 'slr_post_journals.pGenerateEBADailyBalances',
+                                        p_process_id   => p_process_id);
+   EXCEPTION WHEN OTHERS THEN
+        pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
+    RAISE;
+
 
 END pGenerateEBADailyBalances;
 
@@ -2153,7 +2348,21 @@ PROCEDURE pGenerateFAKDailyBalances
 ) IS
   lv_sql VARCHAR2(32000);
   lv_start_time pls_integer := 0;
+  lv_cursor    NUMBER := dbms_sql.open_cursor;
+  lv_countrows NUMBER;
 BEGIN
+
+    pg_process_state.log_proc(p_conf_group   => 'SLR',
+                              p_stage        => 'slr_post_journals.pGenerateFAKDailyBalances_sub',
+                              p_process_id   => p_process_id,
+                              p_object_name  => 'SLR_FAK_DAILY_BALANCES',
+                              p_epg_id        => p_epg_id,
+							  p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+							  p_business_date => gp_business_date,
+                              p_sub_partition  => 'P'||to_char(p_business_date, 'yyyymmdd')||'_S'||p_epg_id,
+                              p_start_dt     =>  sysdate,
+                              p_status       => 'P');
+
 
   lv_sql:= '
     insert /*+ append */ into slr_fak_daily_balances subpartition for (date '''||to_char(p_business_date, 'yyyy-mm-dd')||''', '''||p_epg_id||''') (
@@ -2196,7 +2405,7 @@ BEGIN
           (jlu_base_amount) as jlu_base_amount_ltd,
           (jlu_local_amount) as jlu_local_amount_ltd
         from v_slr_jrnl_lines_unposted_jt
-        where jlu_epg_id = '''||p_epg_id||''' and jlu_jrnl_status = '''||p_status||'''
+        where jlu_epg_id = :p_epg_id and jlu_jrnl_status = :p_status
       ), jlu_aggr as (
         select --+ no_merge
           jlu_fak_id, jlu_effective_date, jlu_balance_type, jlu_entity, jlu_period_month, jlu_period_qtr, jlu_period_year,
@@ -2210,7 +2419,7 @@ BEGIN
         group by jlu_fak_id, jlu_effective_date, jlu_balance_type, jlu_entity, jlu_period_month, jlu_period_qtr, jlu_period_year
       ), bal as (
         select --+ no_merge
-          jlu_aggr.*, lb.*, coalesce(row_number() over (partition by jlu_fak_id, jlu_effective_date, jlu_balance_type, jlu_entity, jlu_period_month, jlu_period_qtr, jlu_period_year order by lb_period_month, lb_period_year), 1) as counter
+          jlu_aggr.*, lb.*, coalesce(row_number() over (partition by jlu_fak_id, jlu_effective_date, jlu_balance_type, jlu_entity, jlu_period_month, jlu_period_year order by lb_period_month, lb_period_year), 1) as counter
         from jlu_aggr
           left join lbi on jlu_effective_date=next_generated_for
           left join (
@@ -2220,7 +2429,7 @@ BEGIN
               sum(lb_tran_ytd_balance) as lb_tran_ytd_balance, sum(lb_base_ytd_balance) as lb_base_ytd_balance, sum(lb_local_ytd_balance) as lb_local_ytd_balance,
               sum(lb_tran_ltd_balance) as lb_tran_ltd_balance, sum(lb_base_ltd_balance) as lb_base_ltd_balance, sum(lb_local_ltd_balance) as lb_local_ltd_balance
             from slr_last_balances
-            where lb_epg_id='''||p_epg_id||''' and lb_generated_for>=date '''||to_char(p_business_date, 'yyyy-mm-dd')||'''-1
+            where lb_epg_id=:p_epg_id and lb_generated_for>=date '''||to_char(p_business_date, 'yyyy-mm-dd')||'''-1
             group by lb_generated_for, lb_fak_id, lb_period_month, lb_period_qtr, lb_period_year, lb_balance_type
           ) lb on lb.lb_generated_for=lbi_generated_for and lb.lb_balance_type=jlu_balance_type and jlu_fak_id=lb.lb_fak_id
       ), group_bal as (
@@ -2291,33 +2500,47 @@ BEGIN
       jlu_local_ytd_balance,
       jlu_local_ltd_balance,
       jlu_entity,
-      '''||p_epg_id||''',
+      :p_epg_id,
       jlu_period_month,
       jlu_period_qtr,
       jlu_period_year,
       1,
-      '''||p_process_id||''',
+      :p_process_id,
       sysdate from group_bal';
 
-    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    EXECUTE IMMEDIATE lv_sql;
+  lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+  --EXECUTE IMMEDIATE lv_sql;
+      dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+    dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+    dbms_sql.bind_variable( lv_cursor, ':p_status',p_status);
+    dbms_sql.bind_variable( lv_cursor, ':p_process_id',p_process_id);
+    lv_CountRows := dbms_sql.execute( lv_cursor );
+    dbms_sql.close_cursor( lv_cursor );
   SLR_ADMIN_PKG.PerfInfo( 'FBAI. Insert FAK Daily Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
   SLR_ADMIN_PKG.Debug('FAK Daily Balances generated (Insert).', lv_sql);
+
+  pg_process_state.log_proc_completed(p_conf_group   => 'SLR',
+                                      p_stage        => 'slr_post_journals.pGenerateFAKDailyBalances_sub',
+                                      p_process_id   => p_process_id);
+  EXCEPTION WHEN OTHERS THEN
+        pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
+    RAISE;
+
 
 END pGenerateFAKDailyBalances;
 
 PROCEDURE pGenerateFAKDailyBalances
 (
-    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+  p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
     p_process_id IN NUMBER,
-    p_business_date IN DATE,
-    p_oldest_backdate IN DATE,
-    p_status IN CHAR := 'U'
+  p_business_date IN DATE,
+  p_oldest_backdate IN DATE,
+  p_status IN CHAR := 'U'
 )
 AS
     s_proc_name VARCHAR2(65) := 'SLR_POST_JOURNALS_PKG.pGenerateFAKDailyBalances';
-    lv_sql VARCHAR2(32000);
-    lv_date DATE;
+  lv_sql VARCHAR2(32000);
+  lv_date DATE;
     lv_lock_handle VARCHAR2(100);
     lv_lock_result INTEGER;
     lv_table_name VARCHAR2(30) := 'SLR_FAK_CLC_' || p_epg_id;
@@ -2326,8 +2549,21 @@ AS
     lv_rollback_exchange BOOLEAN := FALSE;
     lv_including_indexes VARCHAR2(100) := NULL;
     lv_update_indexes VARCHAR2(100) := NULL;
-    lv_START_TIME     PLS_INTEGER := 0;
+    lv_START_TIME   PLS_INTEGER := 0;
+    lv_cursor    NUMBER ;
+    lv_countrows NUMBER;
 BEGIN
+
+  pg_process_state.log_proc(p_conf_group   => 'SLR',
+                            p_stage        => 'slr_post_journals.pGenerateFAKDailyBalances_epg_id',
+                            p_process_id   => p_process_id,
+                            p_object_name  =>'SLR_FAK_CLC_' || p_epg_id,
+                            p_epg_id        => p_epg_id,
+							p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+							p_business_date => gp_business_date,
+                            p_start_dt     =>  sysdate,
+                            p_status       => 'P');
+
 
     lv_sql := '
     INSERT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'FAK_DAILY_BALANCES_INSERT') || ' INTO ' || lv_table_name || '
@@ -2358,7 +2594,7 @@ BEGIN
         FDB_PERIOD_LTD,
         FDB_PROCESS_ID,
         FDB_AMENDED_ON
-    )
+  )
     SELECT
         FDB_FAK_ID,
         FDB_BALANCE_DATE,
@@ -2386,217 +2622,226 @@ BEGIN
         FDB_PERIOD_LTD,
         FDB_PROCESS_ID,
         FDB_AMENDED_ON
-    FROM
+  FROM
+  (
     (
-        (
-            SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'FAK_DAILY_BALANCES_ALL') || '
-                FDB_FAK_ID,
-                FDB_BALANCE_DATE,
-                FDB_BALANCE_TYPE ,
-                FDB_TRAN_DAILY_MOVEMENT,
-                FDB_TRAN_MTD_BALANCE,
+      SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'FAK_DAILY_BALANCES_ALL') || '
+        FDB_FAK_ID,
+        FDB_BALANCE_DATE,
+        FDB_BALANCE_TYPE ,
+        FDB_TRAN_DAILY_MOVEMENT,
+        FDB_TRAN_MTD_BALANCE,
                 FDB_TRAN_QTD_BALANCE,
-                FDB_TRAN_YTD_BALANCE,
-                FDB_TRAN_LTD_BALANCE,
-                FDB_BASE_DAILY_MOVEMENT,
-                FDB_BASE_MTD_BALANCE,
+        FDB_TRAN_YTD_BALANCE,
+        FDB_TRAN_LTD_BALANCE,
+        FDB_BASE_DAILY_MOVEMENT,
+        FDB_BASE_MTD_BALANCE,
                 FDB_BASE_QTD_BALANCE,
-                FDB_BASE_YTD_BALANCE,
-                FDB_BASE_LTD_BALANCE,
-                FDB_LOCAL_DAILY_MOVEMENT,
-                FDB_LOCAL_MTD_BALANCE,
+        FDB_BASE_YTD_BALANCE,
+        FDB_BASE_LTD_BALANCE,
+        FDB_LOCAL_DAILY_MOVEMENT,
+        FDB_LOCAL_MTD_BALANCE,
                 FDB_LOCAL_QTD_BALANCE,
-                FDB_LOCAL_YTD_BALANCE,
-                FDB_LOCAL_LTD_BALANCE,
-                FDB_ENTITY,
-                FDB_EPG_ID,
-                FDB_PERIOD_MONTH,
+        FDB_LOCAL_YTD_BALANCE,
+        FDB_LOCAL_LTD_BALANCE,
+        FDB_ENTITY,
+        FDB_EPG_ID,
+        FDB_PERIOD_MONTH,
                 FDB_PERIOD_QTR,
-                FDB_PERIOD_YEAR,
-                FDB_PERIOD_LTD,
-                ''N'' FDB_JRNL_INTERNAL_PERIOD_FLAG,
-                :process_id___1 FDB_PROCESS_ID,
+        FDB_PERIOD_YEAR,
+        FDB_PERIOD_LTD,
+        ''N'' FDB_JRNL_INTERNAL_PERIOD_FLAG,
+                :p_process_id FDB_PROCESS_ID,
                 FDB_AMENDED_ON
-            FROM SLR_FAK_DAILY_BALANCES, SLR_ENTITIES ent
-            WHERE FDB_EPG_ID = ''' || p_epg_id || '''
+      FROM SLR_FAK_DAILY_BALANCES, SLR_ENTITIES ent
+      WHERE FDB_EPG_ID = :p_epg_id
      AND ent.ENT_ENTITY = FDB_ENTITY
       AND ((FDB_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR FDB_BALANCE_TYPE <> ''20'')
-                AND FDB_BALANCE_DATE >= :oldest_backdate___2
-                AND FDB_FAK_ID NOT IN
-                    (
+        AND FDB_BALANCE_DATE >= :p_oldest_backdate
+        AND FDB_FAK_ID NOT IN
+          (
                         SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED, SLR_EXT_JRNL_TYPES jt
-                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                        AND JLU_JRNL_STATUS = '''|| p_status || '''
-                        AND JLU_JRNL_TYPE = jt.EJT_TYPE
-                        and (FDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_1 or FDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_2)
-                    )
-        )
-        UNION ALL
-        SELECT * FROM
-        (
-            SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'FAK_DAILY_BALANCES_CALC') || '
-                FDB_FAK_ID,
-                FDB_BALANCE_DATE,
-                FDB_BALANCE_TYPE,
-                CAST(FDB_TRAN_DAILY_MOVEMENT AS NUMBER(38,3)) FDB_TRAN_DAILY_MOVEMENT,
-                CAST(SUM(FDB_TRAN_MTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_MONTH, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_TRAN_MTD_BALANCE,
-                CAST(SUM(FDB_TRAN_QTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_QTR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_TRAN_QTD_BALANCE,
-                CAST(SUM(FDB_TRAN_YTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_TRAN_YTD_BALANCE,
-                CAST(SUM(CASE WHEN FDB_JRNL_INTERNAL_PERIOD_FLAG = ''N'' THEN FDB_TRAN_LTD_BALANCE ELSE FDB_TRAN_LTD_BALANCE_IP END ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_LTD, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_TRAN_LTD_BALANCE,
-                CAST(FDB_BASE_DAILY_MOVEMENT AS NUMBER(38,3)) FDB_BASE_DAILY_MOVEMENT,
-                CAST(SUM(FDB_BASE_MTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_MONTH, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_BASE_MTD_BALANCE,
-                CAST(SUM(FDB_BASE_QTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_QTR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_BASE_QTD_BALANCE,
-                CAST(SUM(FDB_BASE_YTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_BASE_YTD_BALANCE,
-                CAST(SUM(CASE WHEN FDB_JRNL_INTERNAL_PERIOD_FLAG = ''N'' THEN FDB_BASE_LTD_BALANCE ELSE FDB_BASE_LTD_BALANCE_IP END ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_LTD, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_BASE_LTD_BALANCE,
-                CAST(FDB_LOCAL_DAILY_MOVEMENT  AS NUMBER(38,3)) FDB_LOCAL_DAILY_MOVEMENT,
-                CAST(SUM(FDB_LOCAL_MTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_MONTH, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_LOCAL_MTD_BALANCE,
-                CAST(SUM(FDB_LOCAL_QTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_QTR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_LOCAL_QTD_BALANCE,
-                CAST(SUM(FDB_LOCAL_YTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_LOCAL_YTD_BALANCE,
-                CAST(SUM(CASE WHEN FDB_JRNL_INTERNAL_PERIOD_FLAG = ''N'' THEN FDB_LOCAL_LTD_BALANCE ELSE FDB_LOCAL_LTD_BALANCE_IP END ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_LTD, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_LOCAL_LTD_BALANCE,
-                FDB_ENTITY,
-                FDB_EPG_ID,
-                FDB_PERIOD_MONTH,
-                FDB_PERIOD_QTR,
-                FDB_PERIOD_YEAR,
-                FDB_PERIOD_LTD,
-                FDB_JRNL_INTERNAL_PERIOD_FLAG,
-                :process_id___3 FDB_PROCESS_ID,
-                FDB_AMENDED_ON
-            FROM
-            (
-                SELECT /*+ NO_MERGE */
-                    FDB_FAK_ID,
-                    FDB_BALANCE_DATE,
-                    FDB_BALANCE_TYPE,
-                    SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_DAILY_MOVEMENT,
-                    SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_MTD_BALANCE,
-                    SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_QTD_BALANCE,
-                    SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_YTD_BALANCE,
-                    SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_LTD_BALANCE,
-                    SUM(FDB_TRAN_LTD_BALANCE_IP) FDB_TRAN_LTD_BALANCE_IP,
-                    SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_DAILY_MOVEMENT,
-                    SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_MTD_BALANCE,
-                    SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_QTD_BALANCE,
-                    SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_YTD_BALANCE,
-                    SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_LTD_BALANCE,
-                    SUM(FDB_BASE_LTD_BALANCE_IP) FDB_BASE_LTD_BALANCE_IP,
-                    SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_DAILY_MOVEMENT,
-                    SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_MTD_BALANCE,
-                    SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_QTD_BALANCE,
-                    SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_YTD_BALANCE,
-                    SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_LTD_BALANCE,
-                    SUM(FDB_LOCAL_LTD_BALANCE_IP) FDB_LOCAL_LTD_BALANCE_IP,
-                    FDB_ENTITY,
-                    FDB_EPG_ID,
-                    FDB_PERIOD_MONTH,
-                    FDB_PERIOD_QTR,
-                    FDB_PERIOD_YEAR,
-                    FDB_PERIOD_LTD,
-                    MAX(FDB_JRNL_INTERNAL_PERIOD_FLAG) AS FDB_JRNL_INTERNAL_PERIOD_FLAG,
-                    MAX(FDB_AMENDED_ON) AS FDB_AMENDED_ON
-                FROM
-                (
-                    SELECT
-                        FDB_FAK_ID,
-                        FDB_BALANCE_DATE,
-                        FDB_BALANCE_TYPE,
-                        FDB_TRAN_DAILY_MOVEMENT,
-                        FDB_TRAN_LTD_BALANCE_IP,
-                        FDB_BASE_DAILY_MOVEMENT,
-                        FDB_BASE_LTD_BALANCE_IP,
-                        FDB_LOCAL_DAILY_MOVEMENT,
-                        FDB_LOCAL_LTD_BALANCE_IP,
-                        FDB_ENTITY,
-                        FDB_EPG_ID,
-                        FDB_PERIOD_MONTH,
-                        FDB_PERIOD_QTR,
-                        FDB_PERIOD_YEAR,
-                        FDB_PERIOD_LTD,
-                        FDB_JRNL_INTERNAL_PERIOD_FLAG,
-                        FDB_AMENDED_ON
-                    FROM
-                    (
-                        SELECT
-                            FDB_FAK_ID, FDB_BALANCE_DATE,
-                            FDB_BALANCE_TYPE,
-                            FDB_TRAN_DAILY_MOVEMENT, FDB_TRAN_LTD_BALANCE FDB_TRAN_LTD_BALANCE_IP,
-                            FDB_BASE_DAILY_MOVEMENT, FDB_BASE_LTD_BALANCE FDB_BASE_LTD_BALANCE_IP,
-                            FDB_LOCAL_DAILY_MOVEMENT, FDB_LOCAL_LTD_BALANCE FDB_LOCAL_LTD_BALANCE_IP,
-                            FDB_ENTITY, FDB_EPG_ID,
-                            FDB_PERIOD_MONTH, FDB_PERIOD_QTR, FDB_PERIOD_YEAR,
-                            FDB_PERIOD_LTD, ''N'' FDB_JRNL_INTERNAL_PERIOD_FLAG, FDB_AMENDED_ON
-                        FROM SLR_FAK_DAILY_BALANCES, SLR_ENTITIES ent
-                        WHERE FDB_EPG_ID = ''' || p_epg_id || '''
-            AND ent.ENT_ENTITY = FDB_ENTITY
-              AND ((FDB_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR FDB_BALANCE_TYPE <> ''20'')
-                            AND FDB_BALANCE_DATE >= :oldest_backdate___4
-                            AND FDB_FAK_ID IN
-                                (
-                                    SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED
-                                    WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                                    AND JLU_JRNL_STATUS = '''|| p_status ||'''
-                                )
-                        UNION ALL
-                        SELECT
-                            JLU_FAK_ID FDB_FAK_ID, JLU_EFFECTIVE_DATE FDB_BALANCE_DATE,
-                            JT_BALANCE_TYPE FDB_BALANCE_TYPE,
-                            JLU_TRAN_AMOUNT FDB_TRAN_DAILY_MOVEMENT,JLU_TRAN_AMOUNT FDB_TRAN_LTD_BALANCE_IP,
-                            JLU_BASE_AMOUNT FDB_BASE_DAILY_MOVEMENT,JLU_BASE_AMOUNT FDB_BASE_LTD_BALANCE_IP,
-                            JLU_LOCAL_AMOUNT FDB_LOCAL_DAILY_MOVEMENT,JLU_LOCAL_AMOUNT FDB_LOCAL_LTD_BALANCE_IP,
-                            JLU_ENTITY FDB_ENTITY, JLU_EPG_ID FDB_EPG_ID,
-                            JLU_PERIOD_MONTH FDB_PERIOD_MONTH, JLU_PERIOD_QTR FDB_PERIOD_QTR, JLU_PERIOD_YEAR FDB_PERIOD_YEAR,
-                            JLU_PERIOD_LTD FDB_PERIOD_LTD,NVL(JLU_JRNL_INTERNAL_PERIOD_FLAG,''N'') FDB_JRNL_INTERNAL_PERIOD_FLAG, SYSDATE FDB_AMENDED_ON
-                        FROM V_SLR_JRNL_LINES_UNPOSTED_JT, SLR_ENTITIES ent
-                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-            AND ent.ENT_ENTITY = JLU_ENTITY
-              AND ((JT_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR JT_BALANCE_TYPE <> ''20'')
-                            AND JLU_JRNL_STATUS = '''|| p_status || '''
-                    )
-                )
-                GROUP BY FDB_BALANCE_DATE, FDB_FAK_ID, FDB_BALANCE_TYPE, FDB_ENTITY, FDB_EPG_ID, FDB_PERIOD_MONTH, FDB_PERIOD_QTR, FDB_PERIOD_YEAR, FDB_PERIOD_LTD
-                UNION ALL
-                SELECT /*+ NO_MERGE */
-                    LB_FAK_ID FDB_FAK_ID, TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'') FDB_BALANCE_DATE,
-                    LB_BALANCE_TYPE FDB_BALANCE_TYPE,    0 FDB_TRAN_DAILY_MOVEMENT,
-                    LB_TRAN_MTD_BALANCE FDB_TRAN_MTD_BALANCE, LB_TRAN_QTD_BALANCE FDB_TRAN_QTD_BALANCE, LB_TRAN_YTD_BALANCE FDB_TRAN_YTD_BALANCE,
-                    LB_TRAN_LTD_BALANCE FDB_TRAN_LTD_BALANCE, LB_TRAN_LTD_BALANCE FDB_TRAN_LTD_BALANCE_IP,
-                    0 FDB_BASE_DAILY_MOVEMENT,
-                    LB_BASE_MTD_BALANCE FDB_BASE_MTD_BALANCE, LB_BASE_QTD_BALANCE FDB_BASE_QTD_BALANCE, LB_BASE_YTD_BALANCE FDB_BASE_YTD_BALANCE,
-                    LB_BASE_LTD_BALANCE FDB_BASE_LTD_BALANCE, LB_BASE_LTD_BALANCE FDB_BASE_LTD_BALANCE_IP,
-                    0 FDB_LOCAL_DAILY_MOVEMENT,
-                    LB_LOCAL_MTD_BALANCE FDB_LOCAL_MTD_BALANCE,    LB_LOCAL_QTD_BALANCE FDB_LOCAL_QTD_BALANCE,LB_LOCAL_YTD_BALANCE FDB_LOCAL_YTD_BALANCE,
-                    LB_LOCAL_LTD_BALANCE FDB_LOCAL_LTD_BALANCE, LB_LOCAL_LTD_BALANCE FDB_LOCAL_LTD_BALANCE_IP,
-                    LB_ENTITY FDB_ENTITY,
-                    LB_EPG_ID FDB_EPG_ID, LB_PERIOD_MONTH FDB_PERIOD_MONTH, LB_PERIOD_QTR FDB_PERIOD_QTR,
-                    LB_PERIOD_YEAR FDB_PERIOD_YEAR,    LB_PERIOD_LTD FDB_PERIOD_LTD, ''N'' FDB_JRNL_INTERNAL_PERIOD_FLAG,
-                    TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'') FDB_AMENDED_ON
-                FROM SLR_LAST_BALANCES, SLR_ENTITIES ent
-                WHERE LB_EPG_ID = ''' || p_epg_id || '''
-          AND ent.ENT_ENTITY = LB_ENTITY
-          AND ((LB_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR LB_BALANCE_TYPE <> ''20'')
-                    AND LB_GENERATED_FOR = (:oldest_backdate___5 - 1)
-                    AND LB_FAK_ID IN
-                    (
-                        SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED
-                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                        AND JLU_JRNL_STATUS = '''|| p_status ||'''
-                    )
-            )
-        )
-        WHERE FDB_BALANCE_DATE > TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'')
-        AND FDB_FAK_ID IN
-                    (
-                        SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED, SLR_EXT_JRNL_TYPES jt
-                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                        AND JLU_JRNL_STATUS = '''|| p_status ||'''
-                        AND JLU_JRNL_TYPE = jt.EJT_TYPE
+                        WHERE JLU_EPG_ID = :p_epg_id
+            AND JLU_JRNL_STATUS = :p_status
+            AND JLU_JRNL_TYPE = jt.EJT_TYPE
                         and (FDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_1 or FDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_2)
                     )
     )
-    ';
+    UNION ALL
+        SELECT * FROM
+    (
+      SELECT ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'FAK_DAILY_BALANCES_CALC') || '
+        FDB_FAK_ID,
+        FDB_BALANCE_DATE,
+        FDB_BALANCE_TYPE,
+        CAST(FDB_TRAN_DAILY_MOVEMENT AS NUMBER(38,3)) FDB_TRAN_DAILY_MOVEMENT,
+        CAST(SUM(FDB_TRAN_MTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_MONTH, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_TRAN_MTD_BALANCE,
+        CAST(SUM(FDB_TRAN_QTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_QTR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_TRAN_QTD_BALANCE,
+        CAST(SUM(FDB_TRAN_YTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_TRAN_YTD_BALANCE,
+        CAST(SUM(CASE WHEN FDB_JRNL_INTERNAL_PERIOD_FLAG = ''N'' THEN FDB_TRAN_LTD_BALANCE ELSE FDB_TRAN_LTD_BALANCE_IP END ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_LTD, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_TRAN_LTD_BALANCE,
+        CAST(FDB_BASE_DAILY_MOVEMENT AS NUMBER(38,3)) FDB_BASE_DAILY_MOVEMENT,
+        CAST(SUM(FDB_BASE_MTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_MONTH, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_BASE_MTD_BALANCE,
+        CAST(SUM(FDB_BASE_QTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_QTR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_BASE_QTD_BALANCE,
+        CAST(SUM(FDB_BASE_YTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_BASE_YTD_BALANCE,
+        CAST(SUM(CASE WHEN FDB_JRNL_INTERNAL_PERIOD_FLAG = ''N'' THEN FDB_BASE_LTD_BALANCE ELSE FDB_BASE_LTD_BALANCE_IP END ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_LTD, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_BASE_LTD_BALANCE,
+        CAST(FDB_LOCAL_DAILY_MOVEMENT  AS NUMBER(38,3)) FDB_LOCAL_DAILY_MOVEMENT,
+        CAST(SUM(FDB_LOCAL_MTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_MONTH, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_LOCAL_MTD_BALANCE,
+        CAST(SUM(FDB_LOCAL_QTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_PERIOD_QTR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_LOCAL_QTD_BALANCE,
+        CAST(SUM(FDB_LOCAL_YTD_BALANCE ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_YEAR, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_LOCAL_YTD_BALANCE,
+        CAST(SUM(CASE WHEN FDB_JRNL_INTERNAL_PERIOD_FLAG = ''N'' THEN FDB_LOCAL_LTD_BALANCE ELSE FDB_LOCAL_LTD_BALANCE_IP END ) OVER (PARTITION BY FDB_BALANCE_TYPE, FDB_PERIOD_LTD, FDB_FAK_ID ORDER BY FDB_BALANCE_DATE) AS NUMBER(38,3)) FDB_LOCAL_LTD_BALANCE,
+        FDB_ENTITY,
+        FDB_EPG_ID,
+        FDB_PERIOD_MONTH,
+                FDB_PERIOD_QTR,
+        FDB_PERIOD_YEAR,
+        FDB_PERIOD_LTD,
+        FDB_JRNL_INTERNAL_PERIOD_FLAG,
+                :p_process_id FDB_PROCESS_ID,
+                FDB_AMENDED_ON
+      FROM
+      (
+        SELECT /*+ NO_MERGE */
+          FDB_FAK_ID,
+          FDB_BALANCE_DATE,
+          FDB_BALANCE_TYPE,
+          SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_DAILY_MOVEMENT,
+          SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_MTD_BALANCE,
+          SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_QTD_BALANCE,
+          SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_YTD_BALANCE,
+          SUM(FDB_TRAN_DAILY_MOVEMENT) FDB_TRAN_LTD_BALANCE,
+          SUM(FDB_TRAN_LTD_BALANCE_IP) FDB_TRAN_LTD_BALANCE_IP,
+          SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_DAILY_MOVEMENT,
+          SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_MTD_BALANCE,
+          SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_QTD_BALANCE,
+          SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_YTD_BALANCE,
+          SUM(FDB_BASE_DAILY_MOVEMENT) FDB_BASE_LTD_BALANCE,
+          SUM(FDB_BASE_LTD_BALANCE_IP) FDB_BASE_LTD_BALANCE_IP,
+          SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_DAILY_MOVEMENT,
+          SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_MTD_BALANCE,
+          SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_QTD_BALANCE,
+          SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_YTD_BALANCE,
+          SUM(FDB_LOCAL_DAILY_MOVEMENT) FDB_LOCAL_LTD_BALANCE,
+          SUM(FDB_LOCAL_LTD_BALANCE_IP) FDB_LOCAL_LTD_BALANCE_IP,
+          FDB_ENTITY,
+          FDB_EPG_ID,
+          FDB_PERIOD_MONTH,
+          FDB_PERIOD_QTR,
+          FDB_PERIOD_YEAR,
+          FDB_PERIOD_LTD,
+          MAX(FDB_JRNL_INTERNAL_PERIOD_FLAG) AS FDB_JRNL_INTERNAL_PERIOD_FLAG,
+          MAX(FDB_AMENDED_ON) AS FDB_AMENDED_ON
+        FROM
+        (
+          SELECT
+            FDB_FAK_ID,
+            FDB_BALANCE_DATE,
+            FDB_BALANCE_TYPE,
+            FDB_TRAN_DAILY_MOVEMENT,
+            FDB_TRAN_LTD_BALANCE_IP,
+            FDB_BASE_DAILY_MOVEMENT,
+            FDB_BASE_LTD_BALANCE_IP,
+            FDB_LOCAL_DAILY_MOVEMENT,
+            FDB_LOCAL_LTD_BALANCE_IP,
+            FDB_ENTITY,
+            FDB_EPG_ID,
+            FDB_PERIOD_MONTH,
+            FDB_PERIOD_QTR,
+            FDB_PERIOD_YEAR,
+            FDB_PERIOD_LTD,
+            FDB_JRNL_INTERNAL_PERIOD_FLAG,
+                        FDB_AMENDED_ON
+          FROM
+          (
+            SELECT
+              FDB_FAK_ID, FDB_BALANCE_DATE,
+              FDB_BALANCE_TYPE,
+              FDB_TRAN_DAILY_MOVEMENT, FDB_TRAN_LTD_BALANCE FDB_TRAN_LTD_BALANCE_IP,
+              FDB_BASE_DAILY_MOVEMENT, FDB_BASE_LTD_BALANCE FDB_BASE_LTD_BALANCE_IP,
+                            FDB_LOCAL_DAILY_MOVEMENT, FDB_LOCAL_LTD_BALANCE FDB_LOCAL_LTD_BALANCE_IP,
+              FDB_ENTITY, FDB_EPG_ID,
+              FDB_PERIOD_MONTH, FDB_PERIOD_QTR, FDB_PERIOD_YEAR,
+              FDB_PERIOD_LTD, ''N'' FDB_JRNL_INTERNAL_PERIOD_FLAG, FDB_AMENDED_ON
+            FROM SLR_FAK_DAILY_BALANCES, SLR_ENTITIES ent
+            WHERE FDB_EPG_ID = :p_epg_id
+            AND ent.ENT_ENTITY = FDB_ENTITY
+              AND ((FDB_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR FDB_BALANCE_TYPE <> ''20'')
+              AND FDB_BALANCE_DATE >= :p_oldest_backdate
+              AND FDB_FAK_ID IN
+                (
+                                    SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED
+                                    WHERE JLU_EPG_ID = :p_epg_id
+                  AND JLU_JRNL_STATUS = :p_status
+                                )
+            UNION ALL
+            SELECT
+              JLU_FAK_ID FDB_FAK_ID, JLU_EFFECTIVE_DATE FDB_BALANCE_DATE,
+              JT_BALANCE_TYPE FDB_BALANCE_TYPE,
+              JLU_TRAN_AMOUNT FDB_TRAN_DAILY_MOVEMENT,JLU_TRAN_AMOUNT FDB_TRAN_LTD_BALANCE_IP,
+              JLU_BASE_AMOUNT FDB_BASE_DAILY_MOVEMENT,JLU_BASE_AMOUNT FDB_BASE_LTD_BALANCE_IP,
+              JLU_LOCAL_AMOUNT FDB_LOCAL_DAILY_MOVEMENT,JLU_LOCAL_AMOUNT FDB_LOCAL_LTD_BALANCE_IP,
+              JLU_ENTITY FDB_ENTITY, JLU_EPG_ID FDB_EPG_ID,
+              JLU_PERIOD_MONTH FDB_PERIOD_MONTH, JLU_PERIOD_QTR FDB_PERIOD_QTR, JLU_PERIOD_YEAR FDB_PERIOD_YEAR,
+              JLU_PERIOD_LTD FDB_PERIOD_LTD,NVL(JLU_JRNL_INTERNAL_PERIOD_FLAG,''N'') FDB_JRNL_INTERNAL_PERIOD_FLAG, SYSDATE FDB_AMENDED_ON
+            FROM V_SLR_JRNL_LINES_UNPOSTED_JT, SLR_ENTITIES ent
+            WHERE JLU_EPG_ID = :p_epg_id
+            AND ent.ENT_ENTITY = JLU_ENTITY
+              AND ((JT_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR JT_BALANCE_TYPE <> ''20'')
+              AND JLU_JRNL_STATUS = :p_status
+          )
+        )
+        GROUP BY FDB_BALANCE_DATE, FDB_FAK_ID, FDB_BALANCE_TYPE, FDB_ENTITY, FDB_EPG_ID, FDB_PERIOD_MONTH, FDB_PERIOD_QTR, FDB_PERIOD_YEAR, FDB_PERIOD_LTD
+        UNION ALL
+        SELECT /*+ NO_MERGE */
+          LB_FAK_ID FDB_FAK_ID, :c_unused_date_for_lb FDB_BALANCE_DATE,
+          LB_BALANCE_TYPE FDB_BALANCE_TYPE, 0 FDB_TRAN_DAILY_MOVEMENT,
+          LB_TRAN_MTD_BALANCE FDB_TRAN_MTD_BALANCE, LB_TRAN_QTD_BALANCE FDB_TRAN_QTD_BALANCE, LB_TRAN_YTD_BALANCE FDB_TRAN_YTD_BALANCE,
+          LB_TRAN_LTD_BALANCE FDB_TRAN_LTD_BALANCE, LB_TRAN_LTD_BALANCE FDB_TRAN_LTD_BALANCE_IP,
+          0 FDB_BASE_DAILY_MOVEMENT,
+          LB_BASE_MTD_BALANCE FDB_BASE_MTD_BALANCE, LB_BASE_QTD_BALANCE FDB_BASE_QTD_BALANCE, LB_BASE_YTD_BALANCE FDB_BASE_YTD_BALANCE,
+          LB_BASE_LTD_BALANCE FDB_BASE_LTD_BALANCE, LB_BASE_LTD_BALANCE FDB_BASE_LTD_BALANCE_IP,
+          0 FDB_LOCAL_DAILY_MOVEMENT,
+          LB_LOCAL_MTD_BALANCE FDB_LOCAL_MTD_BALANCE,    LB_LOCAL_QTD_BALANCE FDB_LOCAL_QTD_BALANCE,LB_LOCAL_YTD_BALANCE FDB_LOCAL_YTD_BALANCE,
+          LB_LOCAL_LTD_BALANCE FDB_LOCAL_LTD_BALANCE, LB_LOCAL_LTD_BALANCE FDB_LOCAL_LTD_BALANCE_IP,
+          LB_ENTITY FDB_ENTITY,
+          LB_EPG_ID FDB_EPG_ID, LB_PERIOD_MONTH FDB_PERIOD_MONTH, LB_PERIOD_QTR FDB_PERIOD_QTR,
+          LB_PERIOD_YEAR FDB_PERIOD_YEAR, LB_PERIOD_LTD FDB_PERIOD_LTD, ''N'' FDB_JRNL_INTERNAL_PERIOD_FLAG,
+                    :c_unused_date_for_lb FDB_AMENDED_ON
+        FROM SLR_LAST_BALANCES, SLR_ENTITIES ent
+        WHERE LB_EPG_ID = :p_epg_id
+          AND ent.ENT_ENTITY = LB_ENTITY
+          AND ((LB_BALANCE_TYPE = ''20'' AND ent.ENT_ADJUSTMENT_FLAG = ''Y'') OR LB_BALANCE_TYPE <> ''20'')
+          AND LB_GENERATED_FOR = (:p_oldest_backdate - 1)
+                    AND LB_FAK_ID IN
+                    (
+                        SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED
+                        WHERE JLU_EPG_ID = :p_epg_id
+                        AND JLU_JRNL_STATUS = :p_status
+                    )
+      )
+    )
+        WHERE FDB_BALANCE_DATE > :c_unused_date_for_lb
+    AND FDB_FAK_ID IN
+                    (
+                        SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED, SLR_EXT_JRNL_TYPES jt
+                        WHERE JLU_EPG_ID = :p_epg_id
+                        AND JLU_JRNL_STATUS = :p_status
+                        AND JLU_JRNL_TYPE = jt.EJT_TYPE
+                        and (FDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_1 or FDB_BALANCE_TYPE = jt.EJT_BALANCE_TYPE_2)
+                    )
+  )
+  ';
 
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    EXECUTE IMMEDIATE lv_sql USING p_process_id, p_oldest_backdate, p_process_id, p_oldest_backdate, p_oldest_backdate;
+    lv_cursor    := dbms_sql.open_cursor;
+    dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+    dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+    dbms_sql.bind_variable( lv_cursor, ':p_oldest_backdate',p_oldest_backdate);
+    dbms_sql.bind_variable( lv_cursor, ':c_unused_date_for_lb',c_unused_date_for_lb);
+    dbms_sql.bind_variable( lv_cursor, ':p_status',p_status);
+    dbms_sql.bind_variable( lv_cursor, ':p_process_id',p_process_id);
+    lv_CountRows := dbms_sql.execute( lv_cursor );
+    dbms_sql.close_cursor( lv_cursor );
+ -- EXECUTE IMMEDIATE lv_sql USING p_process_id, p_oldest_backdate, p_process_id, p_oldest_backdate, p_oldest_backdate;
     COMMIT;
     SLR_ADMIN_PKG.PerfInfo( 'FAK. FAK Daily Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
     SLR_ADMIN_PKG.Debug('FAK Daily Balances inserted into CLC table.', lv_sql);
@@ -2647,22 +2892,27 @@ BEGIN
     lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
 
     SLR_ADMIN_PKG.Info('FAK daily balances inserted into CLC table');
+    pg_process_state.log_proc_completed(p_conf_group   => 'SLR',
+                              p_stage        => 'slr_post_journals.pGenerateFAKDailyBalances_epg_id',
+                              p_process_id   => p_process_id);
 
 EXCEPTION
     WHEN e_lock_acquire_error THEN
         pWriteLogError(s_proc_name, 'SLR_FAK_DAILY_BALANCES',
-            'Error during generating FAK daily balances: can''t acquire lock to exchange partitions',
-            p_process_id,p_epg_id , p_status );
+      'Error during generating FAK daily balances: can''t acquire lock to exchange partitions',
+      p_process_id,p_epg_id , p_status );
         SLR_ADMIN_PKG.Error('Error during generating FAK daily balances: can''t acquire lock to exchange partitions');
+		pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
         RAISE e_internal_processing_error; -- raised to stop execution
-    WHEN OTHERS THEN
+  WHEN OTHERS THEN
         lv_lock_result := DBMS_LOCK.RELEASE(lv_lock_handle);
         pWriteLogError(s_proc_name, 'SLR_FAK_DAILY_BALANCES',
-            'Error during generating FAK daily balances ', p_process_id,p_epg_id , p_status );
+      'Error during generating FAK daily balances ', p_process_id,p_epg_id , p_status );
         SLR_ADMIN_PKG.Error('Error during generating FAK daily balances ');
         IF lv_rollback_exchange = TRUE THEN
             pFakBalancesRollback(p_epg_id, p_process_id);
         END IF;
+		pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
         RAISE e_fak_daily_balances_error;
 
 END pGenerateFAKDailyBalances;
@@ -2679,8 +2929,21 @@ PROCEDURE pGenerateFAKDailyBalancesMerge
 )
 AS
     lv_sql VARCHAR2(32000);
-    lv_START_TIME     PLS_INTEGER := 0;
+  lv_START_TIME   PLS_INTEGER := 0;
+  lv_cursor    NUMBER := dbms_sql.open_cursor;
+  lv_countrows NUMBER;
 BEGIN
+
+    pg_process_state.log_proc(p_conf_group   => 'SLR',
+                              p_stage        => 'slr_post_journals.pGenerateFAKDailyBalancesMerge',
+                              p_process_id   => p_process_id,
+                              p_object_name  => 'SLR_FAK_DAILY_BALANCES',
+                              p_epg_id        => p_epg_id,
+							  p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+							  p_business_date => gp_business_date,
+                              p_sub_partition  => 'P'||to_char(p_business_date, 'yyyymmdd')||'_S'||p_epg_id,
+                              p_start_dt     =>  sysdate,
+                              p_status       => 'P');
 
     lv_sql := '
         MERGE ' || SLR_UTILITIES_PKG.fHint(p_epg_id, 'FAK_DAILY_BALANCES_MERGE') || ' INTO SLR_FAK_DAILY_BALANCES B USING
@@ -2711,7 +2974,7 @@ BEGIN
                     FDB_PERIOD_MONTH,
                     FDB_PERIOD_QTR,
                     FDB_PERIOD_YEAR,
-                    :process_id___1 AS FDB_PROCESS_ID,
+                    :p_process_id AS FDB_PROCESS_ID,
                     FDB_AMENDED_ON
                 FROM
                 (   SELECT data_set.*,
@@ -2791,13 +3054,13 @@ BEGIN
                                     FDB_LOCAL_LTD_BALANCE LOCAL_LTD,
                                     1 BAL_EXISTS
                                 FROM SLR_FAK_DAILY_BALANCES
-                                WHERE FDB_EPG_ID = ''' || p_epg_id || '''
-                                    AND FDB_BALANCE_DATE >= :oldest_backdate___2
+                                WHERE FDB_EPG_ID = :p_epg_id
+                                    AND FDB_BALANCE_DATE >= :p_oldest_backdate
                                     AND FDB_FAK_ID IN
                                     (
                                         SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED
-                                        WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                                        AND JLU_JRNL_STATUS = ''' || p_status || '''
+                                        WHERE JLU_EPG_ID = :p_epg_id
+                                        AND JLU_JRNL_STATUS = :p_status
                                     )
                                 UNION ALL
                                 SELECT
@@ -2819,15 +3082,15 @@ BEGIN
                                     0 LOCAL_LTD,
                                     0 BAL_EXISTS
                                 FROM V_SLR_JRNL_LINES_UNPOSTED_JT
-                                WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                                    AND JLU_JRNL_STATUS = ''' || p_status || '''
+                                WHERE JLU_EPG_ID = :p_epg_id
+                                    AND JLU_JRNL_STATUS = :p_status
                             )
                         )
                         GROUP BY FDB_BALANCE_DATE, FDB_FAK_ID, FDB_BALANCE_TYPE, FDB_ENTITY, FDB_EPG_ID, FDB_PERIOD_MONTH, FDB_PERIOD_QTR, FDB_PERIOD_YEAR
                         UNION ALL
                         SELECT
                             LB_FAK_ID FDB_FAK_ID,
-                            TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'') FDB_BALANCE_DATE,
+                            :c_unused_date_for_lb FDB_BALANCE_DATE,
                             LB_BALANCE_TYPE FDB_BALANCE_TYPE,
                             0 FDB_TRAN_DAILY_MOVEMENT,
                             sum(LB_TRAN_MTD_BALANCE) FDB_TRAN_MTD_BALANCE,
@@ -2848,31 +3111,31 @@ BEGIN
                             LB_EPG_ID FDB_EPG_ID,
                             LB_PERIOD_MONTH FDB_PERIOD_MONTH, LB_PERIOD_QTR FDB_PERIOD_QTR,
                             LB_PERIOD_YEAR FDB_PERIOD_YEAR,
-                            TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'') FDB_AMENDED_ON,
+                            :c_unused_date_for_lb FDB_AMENDED_ON,
                             SUM(sum(LB_TRAN_LTD_BALANCE)) OVER(PARTITION BY LB_BALANCE_TYPE, LB_FAK_ID) TRAN_LTD,
                             SUM(sum(LB_BASE_LTD_BALANCE)) OVER(PARTITION BY LB_BALANCE_TYPE, LB_FAK_ID) BASE_LTD,
                             SUM(sum(LB_LOCAL_LTD_BALANCE)) OVER(PARTITION BY LB_BALANCE_TYPE, LB_FAK_ID) LOCAL_LTD,
                             1 BAL_EXISTS,
                             1 LAST_BAL
                         FROM SLR_LAST_BALANCES
-                        WHERE LB_GENERATED_FOR =  (:oldest_backdate___3 - 1)
-                            AND LB_EPG_ID = ''' || p_epg_id || '''
+                        WHERE LB_GENERATED_FOR =  (:p_oldest_backdate - 1)
+                            AND LB_EPG_ID = :p_epg_id
                             AND LB_FAK_ID IN
                             (
                                 SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED
-                                WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                                AND JLU_JRNL_STATUS = ''' || p_status || '''
+                                WHERE JLU_EPG_ID = :p_epg_id
+                                AND JLU_JRNL_STATUS = :p_status
                             )
                         GROUP BY LB_FAK_ID, LB_BALANCE_TYPE, LB_ENTITY, LB_EPG_ID, LB_PERIOD_MONTH, LB_PERIOD_QTR, LB_PERIOD_YEAR
                         ) data_set
                 )
             )
-            WHERE FDB_BALANCE_DATE > TO_DATE(''' || TO_CHAR(c_unused_date_for_lb, 'YYYY-MM-DD') || ''',''YYYY-MM-DD'')
+            WHERE FDB_BALANCE_DATE > :c_unused_date_for_lb
                 AND FDB_FAK_ID IN
                 (
                     SELECT JLU_FAK_ID FROM SLR_JRNL_LINES_UNPOSTED, SLR_EXT_JRNL_TYPES jt
-                    WHERE JLU_EPG_ID = ''' || p_epg_id || '''
-                        AND JLU_JRNL_STATUS = ''' || p_status || '''
+                    WHERE JLU_EPG_ID = :p_epg_id
+                        AND JLU_JRNL_STATUS = :p_status
                         AND FDB_FAK_ID = JLU_FAK_ID
                         AND FDB_BALANCE_DATE >= JLU_EFFECTIVE_DATE
                         AND JLU_JRNL_TYPE = jt.EJT_TYPE
@@ -2887,8 +3150,8 @@ BEGIN
             AND CLC.FDB_FAK_ID = B.FDB_FAK_ID
             AND CLC.FDB_BALANCE_TYPE = B.FDB_BALANCE_TYPE
             AND CLC.FDB_EPG_ID = B.FDB_EPG_ID
-            AND B.FDB_BALANCE_DATE >= :oldest_backdate___4
-            AND B.FDB_EPG_ID = ''' || p_epg_id || '''
+            AND B.FDB_BALANCE_DATE >= :p_oldest_backdate
+            AND B.FDB_EPG_ID = :p_epg_id
         )
         WHEN MATCHED THEN UPDATE SET
             B.FDB_TRAN_DAILY_MOVEMENT = CLC.FDB_TRAN_DAILY_MOVEMENT,
@@ -2966,23 +3229,38 @@ BEGIN
             CLC.FDB_PROCESS_ID,
             CLC.FDB_AMENDED_ON
         )';
-
 /*-----------UPGRADE 22.1.1 MERGE START-----------*/
 --lines added above to the ON condition
 --            AND CLC.EDB_PERIOD_YEAR=B.EDB_PERIOD_YEAR
 --            AND CLC.EDB_PERIOD_MONTH=B.EDB_PERIOD_MONTH
 /*-----------UPGRADE 22.1.1 MERGE END-----------*/
-    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    EXECUTE IMMEDIATE lv_sql USING p_process_id, p_oldest_backdate, p_oldest_backdate, p_oldest_backdate;
+  lv_START_TIME:=DBMS_UTILITY.GET_TIME();
+     dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+    dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+    dbms_sql.bind_variable( lv_cursor, ':p_oldest_backdate',p_oldest_backdate);
+    dbms_sql.bind_variable( lv_cursor, ':p_status',p_status);
+  dbms_sql.bind_variable( lv_cursor, ':c_unused_date_for_lb',c_unused_date_for_lb);
+
+    dbms_sql.bind_variable( lv_cursor, ':p_process_id',p_process_id);
+    lv_CountRows := dbms_sql.execute( lv_cursor );
+    dbms_sql.close_cursor( lv_cursor );
+
+
+ -- EXECUTE IMMEDIATE lv_sql USING p_process_id, p_oldest_backdate, p_oldest_backdate, p_oldest_backdate;
     SLR_ADMIN_PKG.PerfInfo( 'MFAK. Merge FAK Daily Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
     SLR_ADMIN_PKG.Debug('FAK Daily Balances generated (Merge).', lv_sql);
+    pg_process_state.log_proc_completed(p_conf_group   => 'SLR',
+                                        p_stage        => 'slr_post_journals.pGenerateFAKDailyBalancesMerge',
+                                        p_process_id   => p_process_id);
+   EXCEPTION WHEN OTHERS THEN
+        pg_process_state.Set_Process_Failed(p_process_id  => p_process_id,p_info=> SQLERRM);
+    RAISE;
 
 END pGenerateFAKDailyBalancesMerge;
 
-
 PROCEDURE pEbaBalancesRollback
 (
-    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+  p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
     p_process_id IN NUMBER
 )
 AS
@@ -3033,7 +3311,7 @@ END pEbaBalancesRollback;
 
 PROCEDURE pFakBalancesRollback
 (
-    p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
+  p_epg_id IN SLR_ENTITY_PROC_GROUP.EPG_ID%TYPE,
     p_process_id IN NUMBER
 )
 AS
@@ -3080,521 +3358,92 @@ BEGIN
 END pFakBalancesRollback;
 
 
-
-PROCEDURE pCreateEbaBalancesFromLines
-(
-    p_table_name IN VARCHAR2
-)
-AS
-    lv_START_TIME     PLS_INTEGER := 0;
-BEGIN
-    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    EXECUTE IMMEDIATE '
-       CREATE TABLE ' || p_table_name || '
-        (
-            EDB_FAK_ID,
-            EDB_EBA_ID,
-            EDB_BALANCE_DATE,
-            EDB_BALANCE_TYPE,
-            EDB_TRAN_DAILY_MOVEMENT,
-            EDB_TRAN_MTD_BALANCE,
-            EDB_TRAN_QTD_BALANCE,
-            EDB_TRAN_YTD_BALANCE,
-            EDB_TRAN_LTD_BALANCE,
-            EDB_BASE_DAILY_MOVEMENT,
-            EDB_BASE_MTD_BALANCE,
-            EDB_BASE_QTD_BALANCE,
-            EDB_BASE_YTD_BALANCE,
-            EDB_BASE_LTD_BALANCE,
-            EDB_LOCAL_DAILY_MOVEMENT,
-            EDB_LOCAL_MTD_BALANCE,
-            EDB_LOCAL_QTD_BALANCE,
-            EDB_LOCAL_YTD_BALANCE,
-            EDB_LOCAL_LTD_BALANCE,
-            EDB_ENTITY,
-            EDB_EPG_ID,
-            EDB_PERIOD_MONTH,
-            EDB_PERIOD_QTR,
-            EDB_PERIOD_YEAR,
-            EDB_PERIOD_LTD,
-            EDB_PROCESS_ID,
-            EDB_AMENDED_ON
-        )
-        AS
-        SELECT /*+ NO_PARALLEL*/
-            JL_FAK_ID,
-            JL_EBA_ID,
-            JL_EFFECTIVE_DATE,
-            JT_BALANCE_TYPE,
-            SUM(JL_TRAN_AMOUNT) EDB_TRAN_DAILY_MOVEMENT,
-            SUM(SUM(JL_TRAN_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR,JL_PERIOD_MONTH,JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_TRAN_MTD_BALANCE,
-            SUM(SUM(JL_TRAN_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR,JL_PERIOD_QTR,JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_TRAN_QTD_BALANCE,
-            SUM(SUM(JL_TRAN_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR,JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_TRAN_YTD_BALANCE,
-            SUM(SUM(JL_TRAN_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_LTD, JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_TRAN_LTD_BALANCE,
-            SUM(JL_BASE_AMOUNT) EDB_BASE_DAILY_MOVEMENT,
-            SUM(SUM(JL_BASE_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR,JL_PERIOD_MONTH,JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_BASE_MTD_BALANCE,
-            SUM(SUM(JL_BASE_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR,JL_PERIOD_QTR,JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_BASE_QTD_BALANCE,
-            SUM(SUM(JL_BASE_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR, JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_BASE_YTD_BALANCE,
-            SUM(SUM(JL_BASE_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_LTD, JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_BASE_LTD_BALANCE,
-            SUM(JL_LOCAL_AMOUNT) EDB_LOCAL_DAILY_MOVEMENT,
-            SUM(SUM(JL_LOCAL_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR,JL_PERIOD_MONTH, JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_LOCAL_MTD_BALANCE,
-            SUM(SUM(JL_LOCAL_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR,JL_PERIOD_QTR, JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_LOCAL_QTD_BALANCE,
-            SUM(SUM(JL_LOCAL_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR, JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_LOCAL_YTD_BALANCE,
-            SUM(SUM(JL_LOCAL_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_LTD,JL_EBA_ID ORDER BY JL_EFFECTIVE_DATE) EDB_LOCAL_LTD_BALANCE,
-            JL_ENTITY,
-            JL_EPG_ID,
-            JL_PERIOD_MONTH,
-            JL_PERIOD_QTR,
-            JL_PERIOD_YEAR,
-            JL_PERIOD_LTD,
-            MAX(JL_JRNL_PROCESS_ID) AS EDB_PROCESS_ID,
-            SYSDATE AS EDB_AMENDED_ON
-        FROM
-        (
-                SELECT SLR_JRNL_LINES.*, EJT_BALANCE_TYPE_1 JT_BALANCE_TYPE
-                FROM SLR_JRNL_LINES
-                JOIN SLR_JRNL_HEADERS
-                    ON JL_JRNL_HDR_ID = JH_JRNL_ID
-                JOIN SLR_EXT_JRNL_TYPES
-                    ON EJT_TYPE = JH_JRNL_TYPE
-                AND EJT_BALANCE_TYPE_1 IS NOT NULL
-            UNION ALL
-                SELECT SLR_JRNL_LINES.*, EJT_BALANCE_TYPE_2 JT_BALANCE_TYPE
-                FROM SLR_JRNL_LINES
-                JOIN SLR_JRNL_HEADERS
-                    ON JL_JRNL_HDR_ID = JH_JRNL_ID
-                JOIN SLR_EXT_JRNL_TYPES
-                    ON EJT_TYPE = JH_JRNL_TYPE
-                AND EJT_BALANCE_TYPE_2 IS NOT NULL
-
-        )
-        GROUP BY JL_FAK_ID, JL_EBA_ID, JL_EFFECTIVE_DATE, JT_BALANCE_TYPE, JL_ENTITY, JL_EPG_ID, JL_PERIOD_MONTH, JL_PERIOD_QTR, JL_PERIOD_YEAR, JL_PERIOD_LTD
-    ';
-    SLR_ADMIN_PKG.PerfInfo( 'EBAJL. EBA Daily Balances from Journal Lines query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-
-END pCreateEbaBalancesFromLines;
-
-
-
-PROCEDURE pCreateEbaBalancesFromLines2
-(
-    p_table_name IN VARCHAR2
-)
-AS
-    lv_START_TIME     PLS_INTEGER := 0;
-BEGIN
-    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    EXECUTE IMMEDIATE '
-        CREATE TABLE ' || p_table_name || '
-        (
-            EDB_FAK_ID,
-            EDB_EBA_ID,
-            EDB_BALANCE_DATE,
-            EDB_BALANCE_TYPE,
-            EDB_TRAN_DAILY_MOVEMENT,
-            EDB_TRAN_MTD_BALANCE,
-            EDB_TRAN_QTD_BALANCE,
-            EDB_TRAN_YTD_BALANCE,
-            EDB_TRAN_LTD_BALANCE,
-            EDB_BASE_DAILY_MOVEMENT,
-            EDB_BASE_MTD_BALANCE,
-            EDB_BASE_QTD_BALANCE,
-            EDB_BASE_YTD_BALANCE,
-            EDB_BASE_LTD_BALANCE,
-            EDB_LOCAL_DAILY_MOVEMENT,
-            EDB_LOCAL_MTD_BALANCE,
-            EDB_LOCAL_QTD_BALANCE,
-            EDB_LOCAL_YTD_BALANCE,
-            EDB_LOCAL_LTD_BALANCE,
-            EDB_ENTITY,
-            EDB_EPG_ID,
-            EDB_PERIOD_MONTH,
-            EDB_PERIOD_QTR,
-            EDB_PERIOD_YEAR,
-            EDB_PERIOD_LTD,
-            EDB_PROCESS_ID,
-            EDB_AMENDED_ON
-        )
-        AS
-        SELECT /*+ NO_PARALLEL*/
-            JL_FAK_ID,
-            JL_EBA_ID,
-            JL_EFFECTIVE_DATE,
-            JT_BALANCE_TYPE,
-            tran_daily,
-            tran_mtd,
-            tran_qtd,
-            tran_ytd,
-            tran_ltd,
-            base_daily,
-            base_mtd,
-            base_qtd,
-            base_ytd,
-            base_ltd,
-            local_daily,
-            local_mtd,
-            local_qtd,
-            local_ytd,
-            local_ltd,
-            JL_ENTITY,
-            JL_EPG_ID,
-            JL_PERIOD_MONTH,
-            JL_PERIOD_QTR,
-            JL_PERIOD_YEAR,
-            JL_PERIOD_LTD,
-            1 AS EDB_PROCESS_ID,
-            SYSDATE AS EDB_AMENDED_ON
-        FROM
-        (
-            SELECT
-                JL_EBA_ID, JL_FAK_ID, JL_EFFECTIVE_DATE,
-                SUM(JL_TRAN_AMOUNT) tran_daily,
-                SUM(JL_BASE_AMOUNT) base_daily,
-                SUM(JL_LOCAL_AMOUNT) local_daily,
-                JL_PERIOD_MONTH, JL_PERIOD_QTR, JL_PERIOD_YEAR, JL_PERIOD_LTD, JL_EPG_ID,
-                JT_BALANCE_TYPE, JL_ENTITY
-            FROM
-            (
-                    SELECT SLR_JRNL_LINES.*, EJT_BALANCE_TYPE_1 JT_BALANCE_TYPE
-                    FROM V_SLR_JOURNAL_LINES SLR_JRNL_LINES
-                    JOIN SLR_JRNL_HEADERS
-                        ON JL_JRNL_HDR_ID = JH_JRNL_ID
-                    JOIN SLR_EXT_JRNL_TYPES
-                        ON EJT_TYPE = JH_JRNL_TYPE
-                   AND EJT_BALANCE_TYPE_1 IS NOT NULL
-                UNION ALL
-                    SELECT SLR_JRNL_LINES.*, EJT_BALANCE_TYPE_2 JT_BALANCE_TYPE
-                    FROM V_SLR_JOURNAL_LINES SLR_JRNL_LINES
-                    JOIN SLR_JRNL_HEADERS
-                        ON JL_JRNL_HDR_ID = JH_JRNL_ID
-                    JOIN SLR_EXT_JRNL_TYPES
-                        ON EJT_TYPE = JH_JRNL_TYPE
-                     AND EJT_BALANCE_TYPE_2 IS NOT NULL
-            )
-            GROUP BY JL_EBA_ID, JL_FAK_ID, JL_EFFECTIVE_DATE, JL_PERIOD_MONTH, JL_PERIOD_QTR, JL_PERIOD_YEAR, JL_PERIOD_LTD, JL_EPG_ID, JT_BALANCE_TYPE, JL_ENTITY
-        )
-        MODEL
-            PARTITION BY (JL_EBA_ID, JL_FAK_ID, JT_BALANCE_TYPE, JL_EPG_ID, JL_ENTITY)
-            DIMENSION BY (JL_EFFECTIVE_DATE, JL_PERIOD_MONTH, JL_PERIOD_QTR, JL_PERIOD_YEAR, JL_PERIOD_LTD)
-            MEASURES
-            (
-                tran_daily, 0 tran_mtd, 0 tran_qtd, 0 tran_ytd, 0 tran_ltd,
-                base_daily, 0 base_mtd, 0 base_qtd, 0 base_ytd, 0 base_ltd,
-                local_daily, 0 local_mtd, 0 local_qtd, 0 local_ytd, 0 local_ltd
-            )
-            RULES
-            (
-                tran_mtd[ANY, ANY, ANY, ANY] = SUM(tran_daily) OVER (PARTITION BY JL_PERIOD_MONTH, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                tran_qtd[ANY, ANY, ANY, ANY] = SUM(tran_daily) OVER (PARTITION BY JL_PERIOD_QTR, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                tran_ytd[ANY, ANY, ANY, ANY] = SUM(tran_daily) OVER (PARTITION BY JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                tran_ltd[ANY, ANY, ANY, ANY] = SUM(tran_daily) OVER (PARTITION BY JL_PERIOD_LTD ORDER BY JL_EFFECTIVE_DATE),
-                base_mtd[ANY, ANY, ANY, ANY] = SUM(base_daily) OVER (PARTITION BY JL_PERIOD_MONTH, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                base_qtd[ANY, ANY, ANY, ANY] = SUM(base_daily) OVER (PARTITION BY JL_PERIOD_QTR, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                base_ytd[ANY, ANY, ANY, ANY] = SUM(base_daily) OVER (PARTITION BY JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                base_ltd[ANY, ANY, ANY, ANY] = SUM(base_daily) OVER (PARTITION BY JL_PERIOD_LTD ORDER BY JL_EFFECTIVE_DATE),
-                local_mtd[ANY, ANY, ANY, ANY] = SUM(local_daily) OVER (PARTITION BY JL_PERIOD_MONTH, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                local_qtd[ANY, ANY, ANY, ANY] = SUM(local_daily) OVER (PARTITION BY JL_PERIOD_QTR, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                local_ytd[ANY, ANY, ANY, ANY] = SUM(local_daily) OVER (PARTITION BY JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                local_ltd[ANY, ANY, ANY, ANY] = SUM(local_daily) OVER (PARTITION BY JL_PERIOD_LTD ORDER BY JL_EFFECTIVE_DATE)
-            )
-    ';
-    SLR_ADMIN_PKG.PerfInfo( 'EBAJL2. EBA Daily Balances from Journal Lines query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-END pCreateEbaBalancesFromLines2;
-
-
-
-PROCEDURE pCreateFakBalancesFromLines
-(
-    p_table_name IN VARCHAR2
-)
-AS
-    lv_START_TIME     PLS_INTEGER := 0;
-BEGIN
-    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    EXECUTE IMMEDIATE '
-       CREATE TABLE ' || p_table_name || '
-        (
-            FDB_FAK_ID,
-            FDB_BALANCE_DATE,
-            FDB_BALANCE_TYPE,
-            FDB_TRAN_DAILY_MOVEMENT,
-            FDB_TRAN_MTD_BALANCE,
-            FDB_TRAN_QTD_BALANCE,
-            FDB_TRAN_YTD_BALANCE,
-            FDB_TRAN_LTD_BALANCE,
-            FDB_BASE_DAILY_MOVEMENT,
-            FDB_BASE_MTD_BALANCE,
-            FDB_BASE_QTD_BALANCE,
-            FDB_BASE_YTD_BALANCE,
-            FDB_BASE_LTD_BALANCE,
-            FDB_LOCAL_DAILY_MOVEMENT,
-            FDB_LOCAL_MTD_BALANCE,
-            FDB_LOCAL_QTD_BALANCE,
-            FDB_LOCAL_YTD_BALANCE,
-            FDB_LOCAL_LTD_BALANCE,
-            FDB_ENTITY,
-            FDB_EPG_ID,
-            FDB_PERIOD_MONTH,
-            FDB_PERIOD_QTR,
-            FDB_PERIOD_YEAR,
-            FDB_PERIOD_LTD,
-            FDB_PROCESS_ID,
-            FDB_AMENDED_ON
-        )
-        AS
-        SELECT /*+ NO_PARALLEL*/
-            JL_FAK_ID,
-            JL_EFFECTIVE_DATE,
-            JT_BALANCE_TYPE,
-            SUM(JL_TRAN_AMOUNT) FDB_TRAN_DAILY_MOVEMENT,
-            SUM(SUM(JL_TRAN_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR,JL_PERIOD_MONTH, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_TRAN_MTD_BALANCE,
-            SUM(SUM(JL_TRAN_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR,JL_PERIOD_QTR, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_TRAN_QTD_BALANCE,
-            SUM(SUM(JL_TRAN_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_TRAN_YTD_BALANCE,
-            SUM(SUM(JL_TRAN_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_LTD, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_TRAN_LTD_BALANCE,
-            SUM(JL_BASE_AMOUNT) FDB_BASE_DAILY_MOVEMENT,
-            SUM(SUM(JL_BASE_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR, JL_PERIOD_MONTH, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_BASE_MTD_BALANCE,
-            SUM(SUM(JL_BASE_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR, JL_PERIOD_QTR, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_BASE_QTD_BALANCE,
-            SUM(SUM(JL_BASE_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_BASE_YTD_BALANCE,
-            SUM(SUM(JL_BASE_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_LTD, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_BASE_LTD_BALANCE,
-            SUM(JL_LOCAL_AMOUNT) FDB_LOCAL_DAILY_MOVEMENT,
-            SUM(SUM(JL_LOCAL_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR, JL_PERIOD_MONTH, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_LOCAL_MTD_BALANCE,
-            SUM(SUM(JL_LOCAL_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR, JL_PERIOD_QTR, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_LOCAL_QTD_BALANCE,
-            SUM(SUM(JL_LOCAL_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_YEAR, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_LOCAL_YTD_BALANCE,
-            SUM(SUM(JL_LOCAL_AMOUNT)) OVER (PARTITION BY JT_BALANCE_TYPE, JL_PERIOD_LTD, JL_FAK_ID ORDER BY JL_EFFECTIVE_DATE) FDB_LOCAL_LTD_BALANCE,
-            JL_ENTITY,
-            JL_EPG_ID,
-            JL_PERIOD_MONTH,
-            JL_PERIOD_QTR,
-            JL_PERIOD_YEAR,
-            JL_PERIOD_LTD,
-            MAX(JL_JRNL_PROCESS_ID) AS FDB_PROCESS_ID,
-            SYSDATE AS FDB_AMENDED_ON
-        FROM
-        (
-                SELECT SLR_JRNL_LINES.*, EJT_BALANCE_TYPE_1 JT_BALANCE_TYPE
-                FROM V_SLR_JOURNAL_LINES SLR_JRNL_LINES
-                JOIN SLR_JRNL_HEADERS
-                    ON JL_JRNL_HDR_ID = JH_JRNL_ID
-                JOIN SLR_EXT_JRNL_TYPES
-                    ON EJT_TYPE = JH_JRNL_TYPE
-                AND EJT_BALANCE_TYPE_1 IS NOT NULL
-            UNION ALL
-                SELECT SLR_JRNL_LINES.*, EJT_BALANCE_TYPE_2 JT_BALANCE_TYPE
-                FROM V_SLR_JOURNAL_LINES SLR_JRNL_LINES
-                JOIN SLR_JRNL_HEADERS
-                    ON JL_JRNL_HDR_ID = JH_JRNL_ID
-                JOIN SLR_EXT_JRNL_TYPES
-                    ON EJT_TYPE = JH_JRNL_TYPE
-               AND EJT_BALANCE_TYPE_2 IS NOT NULL
-        )
-        GROUP BY JL_FAK_ID, JL_EFFECTIVE_DATE, JT_BALANCE_TYPE, JL_ENTITY, JL_EPG_ID, JL_PERIOD_MONTH, JL_PERIOD_QTR, JL_PERIOD_YEAR, JL_PERIOD_LTD
-    ';
-    SLR_ADMIN_PKG.PerfInfo( 'FAKJL. FAK Daily Balances from Journal Lines query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-END pCreateFakBalancesFromLines;
-
-
-
-PROCEDURE pCreateFakBalancesFromLines2
-(
-    p_table_name IN VARCHAR2
-)
-AS
-    lv_START_TIME     PLS_INTEGER := 0;
-BEGIN
-    lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    EXECUTE IMMEDIATE '
-        CREATE TABLE ' || p_table_name || '
-        (
-            FDB_FAK_ID,
-            FDB_BALANCE_DATE,
-            FDB_BALANCE_TYPE,
-            FDB_TRAN_DAILY_MOVEMENT,
-            FDB_TRAN_MTD_BALANCE,
-            FDB_TRAN_QTD_BALANCE,
-            FDB_TRAN_YTD_BALANCE,
-            FDB_TRAN_LTD_BALANCE,
-            FDB_BASE_DAILY_MOVEMENT,
-            FDB_BASE_MTD_BALANCE,
-            FDB_BASE_QTD_BALANCE,
-            FDB_BASE_YTD_BALANCE,
-            FDB_BASE_LTD_BALANCE,
-            FDB_LOCAL_DAILY_MOVEMENT,
-            FDB_LOCAL_MTD_BALANCE,
-            FDB_LOCAL_QTD_BALANCE,
-            FDB_LOCAL_YTD_BALANCE,
-            FDB_LOCAL_LTD_BALANCE,
-            FDB_ENTITY,
-            FDB_EPG_ID,
-            FDB_PERIOD_MONTH,
-            FDB_PERIOD_QTR,
-            FDB_PERIOD_YEAR,
-            FDB_PERIOD_LTD,
-            FDB_PROCESS_ID,
-            FDB_AMENDED_ON
-        )
-        AS
-        SELECT /*+ NO_PARALLEL*/
-            JL_FAK_ID,
-            JL_EFFECTIVE_DATE,
-            JT_BALANCE_TYPE,
-            tran_daily,
-            tran_mtd,
-            tran_qtd,
-            tran_ytd,
-            tran_ltd,
-            base_daily,
-            base_mtd,
-            base_qtd,
-            base_ytd,
-            base_ltd,
-            local_daily,
-            local_mtd,
-            local_qtd,
-            local_ytd,
-            local_ltd,
-            JL_ENTITY,
-            JL_EPG_ID,
-            JL_PERIOD_MONTH,
-            JL_PERIOD_QTR,
-            JL_PERIOD_YEAR,
-            JL_PERIOD_LTD,
-            1 AS FDB_PROCESS_ID,
-            SYSDATE AS FDB_AMENDED_ON
-        FROM
-        (
-            SELECT
-                JL_FAK_ID, JL_EFFECTIVE_DATE,
-                SUM(JL_TRAN_AMOUNT) tran_daily,
-                SUM(JL_BASE_AMOUNT) base_daily,
-                SUM(JL_LOCAL_AMOUNT) local_daily,
-                JL_PERIOD_MONTH, JL_PERIOD_QTR, JL_PERIOD_YEAR, JL_PERIOD_LTD, JL_EPG_ID,
-                JT_BALANCE_TYPE, JL_ENTITY
-            FROM
-            (
-                    SELECT SLR_JRNL_LINES.*, EJT_BALANCE_TYPE_1 JT_BALANCE_TYPE
-                    FROM V_SLR_JOURNAL_LINES SLR_JRNL_LINES
-                    JOIN SLR_JRNL_HEADERS
-                        ON JL_JRNL_HDR_ID = JH_JRNL_ID
-                    JOIN SLR_EXT_JRNL_TYPES
-                        ON EJT_TYPE = JH_JRNL_TYPE
-                    AND EJT_BALANCE_TYPE_1 IS NOT NULL
-                UNION ALL
-                    SELECT SLR_JRNL_LINES.*, EJT_BALANCE_TYPE_2 JT_BALANCE_TYPE
-                    FROM V_SLR_JOURNAL_LINES SLR_JRNL_LINES
-                    JOIN SLR_JRNL_HEADERS
-                        ON JL_JRNL_HDR_ID = JH_JRNL_ID
-                    JOIN SLR_EXT_JRNL_TYPES
-                        ON EJT_TYPE = JH_JRNL_TYPE
-                    AND EJT_BALANCE_TYPE_2 IS NOT NULL
-            )
-            GROUP BY JL_FAK_ID, JL_EFFECTIVE_DATE, JL_PERIOD_MONTH, JL_PERIOD_QTR, JL_PERIOD_YEAR, JL_PERIOD_LTD, JL_EPG_ID, JT_BALANCE_TYPE, JL_ENTITY
-        )
-        MODEL
-            PARTITION BY (JL_FAK_ID, JT_BALANCE_TYPE, JL_EPG_ID, JL_ENTITY)
-            DIMENSION BY (JL_EFFECTIVE_DATE, JL_PERIOD_MONTH, JL_PERIOD_QTR, JL_PERIOD_YEAR, JL_PERIOD_LTD)
-            MEASURES
-            (
-                tran_daily, 0 tran_mtd, 0 tran_qtd, 0 tran_ytd, 0 tran_ltd,
-                base_daily, 0 base_mtd, 0 base_qtd, 0 base_ytd, 0 base_ltd,
-                local_daily, 0 local_mtd, 0 local_qtd, 0 local_ytd, 0 local_ltd
-            )
-            RULES
-            (
-                tran_mtd[ANY, ANY, ANY, ANY] = SUM(tran_daily) OVER (PARTITION BY JL_PERIOD_MONTH, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                tran_qtd[ANY, ANY, ANY, ANY] = SUM(tran_daily) OVER (PARTITION BY JL_PERIOD_QTR, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                tran_ytd[ANY, ANY, ANY, ANY] = SUM(tran_daily) OVER (PARTITION BY JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                tran_ltd[ANY, ANY, ANY, ANY] = SUM(tran_daily) OVER (PARTITION BY JL_PERIOD_LTD ORDER BY JL_EFFECTIVE_DATE),
-                base_mtd[ANY, ANY, ANY, ANY] = SUM(base_daily) OVER (PARTITION BY JL_PERIOD_MONTH, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                base_qtd[ANY, ANY, ANY, ANY] = SUM(base_daily) OVER (PARTITION BY JL_PERIOD_QTR, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                base_ytd[ANY, ANY, ANY, ANY] = SUM(base_daily) OVER (PARTITION BY JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                base_ltd[ANY, ANY, ANY, ANY] = SUM(base_daily) OVER (PARTITION BY JL_PERIOD_LTD ORDER BY JL_EFFECTIVE_DATE),
-                local_mtd[ANY, ANY, ANY, ANY] = SUM(local_daily) OVER (PARTITION BY JL_PERIOD_MONTH, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                local_qtd[ANY, ANY, ANY, ANY] = SUM(local_daily) OVER (PARTITION BY JL_PERIOD_QTR, JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                local_ytd[ANY, ANY, ANY, ANY] = SUM(local_daily) OVER (PARTITION BY JL_PERIOD_YEAR ORDER BY JL_EFFECTIVE_DATE),
-                local_ltd[ANY, ANY, ANY, ANY] = SUM(local_daily) OVER (PARTITION BY JL_PERIOD_LTD ORDER BY JL_EFFECTIVE_DATE)
-            )
-    ';
-    SLR_ADMIN_PKG.PerfInfo( 'FAKJL2. FAK Daily Balances from Journal Lines query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
-END pCreateFakBalancesFromLines2;
-
-
 PROCEDURE pCreateRevJournalTmpTable (p_epg VARCHAR2, p_process_id NUMBER) IS
 
-
-
     v_sql                CLOB := q'{
-    insert into  SLR_JRNL_LINES_UNPOSTED_TMP :p_partition /*+ APPEND NOLOGGING  parallel(12) enable_parallel_dml  */
+    insert into  SLR_JRNL_LINES_UNPOSTED_TMP :p_partition :p_hint_crterevjournaltmptable
 WITH periods AS
-  ( select /*+ parallel(12) */
-  ( SELECT PriorStart.EP_BUS_PERIOD_START FROM slr.SLR_ENTITY_PERIODS PriorStart
-              WHERE PriorStart.EP_ENTITY = per.EP_ENTITY AND  PriorStart.EP_BUS_YEAR = per.EP_BUS_YEAR
-              AND PriorStart.EP_BUS_PERIOD = per.EP_BUS_PERIOD - 1 AND PriorStart.EP_STATUS  = 'O' ) as  PriorEnd_EP_BUS_PERIOD_START,
-    (SELECT PriorEnd.EP_BUS_PERIOD_END FROM slr.SLR_ENTITY_PERIODS PriorEnd
-               WHERE PriorEnd.EP_ENTITY = per.EP_ENTITY AND PriorEnd.EP_BUS_YEAR = per.EP_BUS_YEAR
-                AND PriorEnd.EP_BUS_PERIOD = per.EP_BUS_PERIOD - 1 and PriorEnd.EP_STATUS  = 'O' ) as PriorEnd_EP_BUS_PERIOD_END,
-    (SELECT NextStart.EP_BUS_PERIOD_START FROM slr.SLR_ENTITY_PERIODS NextStart
-                       WHERE NextStart.EP_ENTITY = per.EP_ENTITY AND NextStart.EP_BUS_YEAR = per.EP_BUS_YEAR
-               AND NextStart.EP_BUS_PERIOD = per.EP_BUS_PERIOD + 1 and NextStart.EP_STATUS  = 'O' ) as NextStart_EP_BUS_PERIOD_START,
-    (SELECT NextEnd.EP_BUS_PERIOD_END FROM slr.SLR_ENTITY_PERIODS NextEnd
-                      WHERE NextEnd.EP_ENTITY = per.EP_ENTITY AND NextEnd.EP_BUS_YEAR = per.EP_BUS_YEAR
-              AND NextEnd.EP_BUS_PERIOD = per.EP_BUS_PERIOD + 1 and NextEnd.EP_STATUS  = 'O' )   as NextStart_EP_BUS_PERIOD_END,
-   priorper.EP_BUS_PERIOD_START as priorper_EP_BUS_PERIOD_START,
-   priorper.EP_BUS_PERIOD_END as priorper_EP_BUS_PERIOD_END,
-   NextPer.EP_BUS_PERIOD_START  as NextPer_EP_BUS_PERIOD_START,
-   NextPer.EP_BUS_PERIOD_END  as NextPer_EP_BUS_PERIOD_END,
+  ( select
+   CASE WHEN per.EP_BUS_PERIOD >1   THEN
+      ( SELECT PriorStart.EP_BUS_PERIOD_START
+           FROM slr.SLR_ENTITY_PERIODS PriorStart
+              WHERE PriorStart.EP_ENTITY = per.EP_ENTITY
+               AND  PriorStart.EP_BUS_YEAR = per.EP_BUS_YEAR
+               AND  PriorStart.EP_BUS_PERIOD = per.EP_BUS_PERIOD - 1 AND PriorStart.EP_STATUS  = 'O' )
+    ELSE
+       ( SELECT PriorStart.EP_BUS_PERIOD_START FROM slr.SLR_ENTITY_PERIODS PriorStart
+              WHERE PriorStart.EP_ENTITY = per.EP_ENTITY AND  PriorStart.EP_BUS_YEAR = per.EP_BUS_YEAR-1
+              AND PriorStart.EP_BUS_PERIOD = 12   AND PriorStart.EP_STATUS  = 'O' )
+
+         END AS  PriorEnd_EP_BUS_PERIOD_START,
+
+     CASE WHEN per.EP_BUS_PERIOD >1   THEN
+        (SELECT PriorEnd.EP_BUS_PERIOD_END
+           FROM slr.SLR_ENTITY_PERIODS PriorEnd
+               WHERE PriorEnd.EP_ENTITY = per.EP_ENTITY
+                AND PriorEnd.EP_BUS_YEAR = per.EP_BUS_YEAR
+                AND PriorEnd.EP_BUS_PERIOD = per.EP_BUS_PERIOD - 1 and PriorEnd.EP_STATUS  = 'O' )
+        ELSE
+         (SELECT PriorEnd.EP_BUS_PERIOD_END
+           FROM slr.SLR_ENTITY_PERIODS PriorEnd
+               WHERE PriorEnd.EP_ENTITY = per.EP_ENTITY
+                AND PriorEnd.EP_BUS_YEAR = per.EP_BUS_YEAR-1
+                AND PriorEnd.EP_BUS_PERIOD = 12 and PriorEnd.EP_STATUS  = 'O' )  -- and PriorEnd.EP_STATUS  = 'O'
+        END as PriorEnd_EP_BUS_PERIOD_END,
+
+     CASE WHEN per.EP_BUS_PERIOD <12  THEN
+       (SELECT NextStart.EP_BUS_PERIOD_START
+         FROM slr.SLR_ENTITY_PERIODS NextStart
+             WHERE NextStart.EP_ENTITY = per.EP_ENTITY
+               AND NextStart.EP_BUS_YEAR = per.EP_BUS_YEAR
+               AND NextStart.EP_BUS_PERIOD = per.EP_BUS_PERIOD + 1 and NextStart.EP_STATUS  = 'O' )
+      ELSE
+        (SELECT NextStart.EP_BUS_PERIOD_START
+          FROM slr.SLR_ENTITY_PERIODS NextStart
+            WHERE NextStart.EP_ENTITY = per.EP_ENTITY
+               AND NextStart.EP_BUS_YEAR = per.EP_BUS_YEAR+1
+               AND NextStart.EP_BUS_PERIOD = 1 and NextStart.EP_STATUS  = 'O' )
+      END as NextStart_EP_BUS_PERIOD_START,
+     CASE WHEN per.EP_BUS_PERIOD <12  THEN
+       ( SELECT NextEnd.EP_BUS_PERIOD_END
+          FROM slr.SLR_ENTITY_PERIODS NextEnd
+           WHERE NextEnd.EP_ENTITY = per.EP_ENTITY
+             AND NextEnd.EP_BUS_YEAR = per.EP_BUS_YEAR
+             AND NextEnd.EP_BUS_PERIOD = per.EP_BUS_PERIOD + 1
+             AND NextEnd.EP_STATUS  = 'O' )
+       ELSE
+           (SELECT NextEnd.EP_BUS_PERIOD_END
+             FROM slr.SLR_ENTITY_PERIODS NextEnd
+              WHERE NextEnd.EP_ENTITY = per.EP_ENTITY
+                AND NextEnd.EP_BUS_YEAR = per.EP_BUS_YEAR+1
+                AND NextEnd.EP_BUS_PERIOD =  1
+                AND NextEnd.EP_STATUS  = 'O' )
+       END   AS NextStart_EP_BUS_PERIOD_END,
+
    per.EP_BUS_PERIOD_START      as per_EP_BUS_PERIOD_START,
    per.EP_BUS_PERIOD_END      as per_EP_BUS_PERIOD_END,
    per.EP_BUS_PERIOD            as per_EP_BUS_PERIOD ,
    per.EP_BUS_YEAR   as per_EP_BUS_YEAR ,
    per.ep_entity as per_ep_entity
-    FROM slr.slr_entity_periods per
-   INNER JOIN slr.slr_entity_periods nextper
-      ON per.ep_status = 'O'
-     AND nextper.ep_entity = per.ep_entity
-     AND nextper.ep_bus_year = per.ep_bus_year + 1
-     AND nextper.ep_bus_period = 1
-   INNER JOIN slr.slr_entity_periods priorper
-      ON priorper.ep_entity = per.ep_entity
-     AND priorper.ep_bus_year = per.ep_bus_year - 1
-     AND priorper.ep_bus_period = 12) ,
+    FROM slr.slr_entity_periods per where per.ep_status = 'O'),
 journals as
- (SELECT /*+ parallel(12) use_hash(jlu_rev) use_hash( periods)*/   per_ep_entity,
+ (SELECT :p_hint_createrevjournaltmptable_jr  per_ep_entity,
   CASE WHEN jlu.JLU_JRNL_REV_DATE IS NOT NULL
        THEN JLU_JRNL_REV_DATE
   ELSE
     CASE WHEN rul.ejtr_period_date IS NOT NULL THEN
              CASE WHEN ejtr_prior_next_current = 'P' THEN
                        CASE WHEN ejtr_period_date  = 'S' THEN
-                                 CASE
-                                      WHEN per_EP_BUS_PERIOD > 1 and jlu_jrnl_hdr_id is  null THEN NULL
-                                      WHEN per_EP_BUS_PERIOD > 1 and jlu_jrnl_hdr_id is not null
-                                      THEN PriorEnd_EP_BUS_PERIOD_START --header_id is not null, for fix internal 12425
-                                      ELSE PriorPer_EP_BUS_PERIOD_START
-                                  END
+                                PriorEnd_EP_BUS_PERIOD_START
                             WHEN ejtr_period_date  = 'E' THEN
-                                 CASE
-                                      WHEN per_EP_BUS_PERIOD > 1 and jlu_jrnl_hdr_id is  null THEN NULL
-                                      WHEN per_EP_BUS_PERIOD > 1  and jlu_jrnl_hdr_id is not null
-                                      THEN PriorEnd_EP_BUS_PERIOD_END
-                                      ELSE  PriorPer_EP_BUS_PERIOD_END
-                                END
+                                PriorEnd_EP_BUS_PERIOD_END
                             END
                   WHEN ejtr_prior_next_current = 'N' THEN
                        CASE WHEN ejtr_period_date  = 'S' THEN
-                                 CASE
-                                      WHEN per_EP_BUS_PERIOD < 12 and jlu_jrnl_hdr_id is  null THEN NULL
-                                      WHEN per_EP_BUS_PERIOD < 12 and jlu_jrnl_hdr_id is not null
-                                      THEN NextStart_EP_BUS_PERIOD_START
-                                      ELSE NextPer_EP_BUS_PERIOD_START
-                                 END
+                             NextStart_EP_BUS_PERIOD_START
                            WHEN ejtr_period_date  = 'E' THEN
-                                CASE
-                                     WHEN per_EP_BUS_PERIOD < 12 and jlu_jrnl_hdr_id is  null THEN NULL
-                                     WHEN per_EP_BUS_PERIOD < 12 and jlu_jrnl_hdr_id is not null  THEN
-                                          NextStart_EP_BUS_PERIOD_END
-                                     ELSE  NextPer_EP_BUS_PERIOD_END
-                                END
-                       END
+                             NextStart_EP_BUS_PERIOD_END
+                        END
                   ELSE
                      CASE WHEN ejtr_period_date  = 'S' THEN   per_EP_BUS_PERIOD_START
                           WHEN ejtr_period_date  = 'E' THEN   per_EP_BUS_PERIOD_END
@@ -3667,19 +3516,17 @@ journals as
        jlu_jrnl_rev_date,
        JLU_VALUE_DATE,
        JLU_JRNL_PROCESS_ID,
-       CASE
-        WHEN jlu.JLU_TRANSLATION_DATE IS NULL THEN
-        jlu.JLU_EFFECTIVE_DATE
-        ELSE
-        jlu.JLU_TRANSLATION_DATE
-       END AS TRANSLATION_DATE,
+	   ext.ejt_translation_date_derived_from,
+	   NVL(jlu.JLU_TRANSLATION_DATE, jlu.JLU_EFFECTIVE_DATE) AS TRANSLATION_DATE,
+
        JLU_JRNL_STATUS_TEXT,
        jlu_jrnl_internal_period_flag,
        jlu_jrnl_ent_rate_set,
        jlu_type,jlu.rowid as row_id,
-         ent.ENT_BUSINESS_DATE AS BUSINESS_DATE,
-           per_EP_BUS_PERIOD,
- per_EP_BUS_YEAR
+       ent.ENT_BUSINESS_DATE AS BUSINESS_DATE,
+       per_EP_BUS_PERIOD,
+       per_EP_BUS_YEAR,
+  	   jlu.JLU_JRNL_REV_DATE as jlu_jrnl_par_rev_date
    FROM slr.slr_jrnl_lines_unposted :p_subpartition jlu
    INNER JOIN periods   ON per_ep_entity = jlu.jlu_entity  and jlu.jlu_jrnl_ref_id IS NULL
                           and jlu.jlu_effective_date BETWEEN per_EP_BUS_PERIOD_START AND  per_EP_BUS_PERIOD_END :p_process_sql
@@ -3688,7 +3535,7 @@ journals as
    INNER JOIN slr.slr_ext_jrnl_type_rule rul  ON rul.ejtr_code = ext.ejt_rev_ejtr_code
    INNER JOIN slr.slr_entities ent        ON jlu.jlu_entity = ent.ent_entity   AND ent.ent_status = 'A'
                                           AND ent.ent_entity = per_ep_entity
-   INNER JOIN slr_min_max_enityt_Dates_tmp mmd ON  mmd.ED_ENTITY_SET  = ent.ENT_PERIODS_AND_DAYS_SET and    jlu.jlu_effective_date  =    mmd.ED_DATE
+   INNER JOIN SLR_MIN_MAX_ENTITY_DATES_TMP mmd ON  mmd.ED_ENTITY_SET  = ent.ENT_PERIODS_AND_DAYS_SET and    jlu.jlu_effective_date  =    mmd.ED_DATE
     WHERE
     NOT EXISTS (SELECT 1
              FROM slr.slr_jrnl_lines_waiting jlw
@@ -3702,10 +3549,9 @@ journals as
             WHERE jlu_rev.jlu_jrnl_ref_id =jlu.jlu_jrnl_hdr_id
            --  AND  pomyslec nad JLU_REV.JLU_JRNL_REF_ID is not null   indeks  JLU_JRNL_REF_ID ,JLU_ENTITY ?
               and  jlu_rev.jlu_jrnl_ref_id IS NOT NULL
-              AND jlu_rev.jlu_entity = jlu.jlu_entity
-)
-)
-select /*+ parallel(12) */
+              AND jlu_rev.jlu_entity = jlu.jlu_entity)
+    )
+select  :p_hint_createrevjournaltmptable_mi
    STANDARD_HASH(JLU_JRNL_HDR_ID, 'MD5') AS JLU_JRNL_HDR_ID_new,
    JLU_JRNL_LINE_NUMBER,
     JLU_FAK_ID,
@@ -3773,7 +3619,12 @@ select /*+ parallel(12) */
     JLU_JRNL_PREF_STATIC_SRC,
     JLU_JRNL_REF_ID,
     null,
-    TRANSLATION_DATE,
+    	CASE
+        WHEN ejt_translation_date_derived_from='Reversing' THEN
+           ED_DAT
+        ELSE
+           TRANSLATION_DATE
+    END as   TRANSLATION_DATE,
     epp.EP_BUS_PERIOD,
     epp.EP_BUS_YEAR,
     1,
@@ -3782,7 +3633,9 @@ select /*+ parallel(12) */
     JLU_TYPE,
     row_id,
     rownum as jlu_rownum,
-    'P'||JLU_EPG_ID as  jlu_process_part
+    'P'||JLU_EPG_ID as  jlu_process_part,
+	:process_id,
+	jlu_jrnl_par_rev_date
  from journals jl
   inner join SLR_ENTITY_PERIODS epp
   on epp.EP_ENTITY = jl.JLU_ENTITY
@@ -3810,11 +3663,17 @@ select /*+ parallel(12) */
                                 p_part_value => v_part_name_value);
     END IF;
 
-    v_sql := REPLACE(v_sql, ':p_subpartition', v_subpartition);
-     v_sql := REPLACE(v_sql, ':p_partition', v_partition);
+    v_sql := REPLACE(v_sql, ':p_hint_crterevjournaltmptable', NVL(SLR_UTILITIES_PKG.fHint(p_epg, 'CREATEREVJOURNALTMPTABLE'),'/*+ APPEND NOLOGGING  parallel(12) enable_parallel_dml  */'));
+  v_sql := REPLACE(v_sql, ':p_hint_createrevjournaltmptable_jr', NVL(SLR_UTILITIES_PKG.fHint(p_epg, 'CREATEREVJOURNALTMPTABLE_JR'),'/*+ parallel(12) use_hash(jlu_rev) use_hash( periods)  */'));
+  v_sql := REPLACE(v_sql, ':p_hint_createrevjournaltmptable_mi', NVL(SLR_UTILITIES_PKG.fHint(p_epg, 'CREATEREVJOURNALTMPTABLE_MI'),'/*+ parallel(12) */'));
+
+
+  v_sql := REPLACE(v_sql, ':p_subpartition', v_subpartition);
+    v_sql := REPLACE(v_sql, ':p_partition', v_partition);
     v_sql := REPLACE(v_sql, ':p_process_sql', v_process_sql);
-    SLR_ADMIN_PKG.Debug('Rev_journal insert slr_min_max_enityt_dates_tmp ',null);
-    INSERT INTO slr_min_max_enityt_dates_tmp
+	v_sql := REPLACE(v_sql, ':process_id', gp_process_id);
+    SLR_ADMIN_PKG.Debug('Rev_journal insert slr_min_max_entity_dates_tmp ',null);
+    INSERT INTO slr_min_max_entity_dates_tmp
       SELECT s.*,
              (SELECT MIN(ent1.ed_date)
                 FROM slr.slr_entity_days ent1
@@ -3843,11 +3702,11 @@ select /*+ parallel(12) */
 
   END;
 
-PROCEDURE pInsertJournal(p_part_proess in  varchar2) IS
+PROCEDURE pInsertJournal(p_epg_id in  varchar2) IS
   v_sql clob ;
 BEGIN
-  v_sql := q'!
-  INSERT /*+ APPEND NOLOGGING  parallel(8) enable_parallel_dml  */
+  v_sql := '
+  INSERT   :p_hint_pinsertjournal
   INTO slr_jrnl_lines_unposted
     (jlu_jrnl_hdr_id,
      jlu_jrnl_line_number,
@@ -3923,7 +3782,7 @@ BEGIN
      jlu_jrnl_internal_period_flag,
      jlu_jrnl_ent_rate_set,
      jlu_type)
-    SELECT /*+  parallel(8) */
+    SELECT :p_hint_insertjournal_sel
      jlu_jrnl_hdr_id,
      jlu_jrnl_line_number,
      jlu_fak_id,
@@ -3998,18 +3857,23 @@ BEGIN
      jlu_jrnl_internal_period_flag,
      jlu_jrnl_ent_rate_set,
      jlu_type
-      FROM slr_jrnl_lines_unposted_tmp PARTITION(!'||p_part_proess||')';
-    SLR_ADMIN_PKG.Debug('Rev_journal start  insert_journal ',v_sql);
+      FROM slr_jrnl_lines_unposted_tmp PARTITION( P' || p_epg_id||')';
+
+    v_sql := REPLACE(v_sql, ':p_hint_pinsertjournal', NVL(SLR_UTILITIES_PKG.fHint(p_epg_id, 'PINSERTJOURNAL'),'/*+ APPEND NOLOGGING  parallel(8) enable_parallel_dml*/'));
+    v_sql := REPLACE(v_sql, ':p_hint_insertjournal_sel', NVL(SLR_UTILITIES_PKG.fHint(p_epg_id, 'INSERTJOURNAL_SEL'),'/*+ parallel(8)  */'));
+
+    SLR_ADMIN_PKG.Debug('Rev_journal start insert_journal ',v_sql);
     execute immediate v_sql;
     COMMIT;
-    SLR_ADMIN_PKG.Debug('Rev_journal end;  insert_journal ',null);
+    SLR_ADMIN_PKG.Debug('Rev_journal end insert_journal ',null);
 
 END;
 
-  PROCEDURE pUpdateJournal(p_part_proess     IN VARCHAR2,
+  PROCEDURE pUpdateJournal(p_part_process     IN VARCHAR2,
                            p_start_row       IN NUMBER,
                            p_end_row         IN NUMBER,
                            p_bulk_processing IN VARCHAR2,
+                           p_epg_id          IN VARCHAR2,
                            p_part_epg        IN VARCHAR2,
                            p_alert           in VARCHAR2,
                            p_rollback        in VARCHAR2) IS
@@ -4024,17 +3888,28 @@ END;
     uprec    Updrecord;
     l_cursor SYS_REFCURSOR;
     v_start_time   PLS_INTEGER := 0;
+  v_sql Varchar2(2000):= '
+    MERGE :p_hint_updatejournal  INTO slr_jrnl_lines_unposted partition ('||p_part_epg||') post
+    USING (
+      SELECT :p_hint_pupdatejournal_sel t.jlu_effective_date,t.jlu_rowid
+                FROM slr_jrnl_lines_unposted_tmp t
+               WHERE  t.jlu_rownum BETWEEN '||p_start_row||' AND '||p_end_row||'
+    ) tmp
+    ON
+    (
+       post.rowid = tmp.jlu_rowid
+    )
+    WHEN MATCHED THEN UPDATE SET post.jlu_jrnl_rev_date = tmp.jlu_effective_date';
   BEGIN
+    v_sql := REPLACE(v_sql, ':p_hint_updatejournal', NVL(SLR_UTILITIES_PKG.fHint(p_epg_id, 'PUPDATEJOURNAL'),'/*+ APPEND NOLOGGING  parallel(8) enable_parallel_dml*/'));
+    v_sql := REPLACE(v_sql, ':p_hint_pupdatejournal_sel', NVL(SLR_UTILITIES_PKG.fHint(p_epg_id, 'PUPDATEJOURNAL_SEL'),'/*+ parallel(8)  */'));
+
+
     v_START_TIME:=DBMS_UTILITY.GET_TIME();
     gROWCNT_LIMIT_NUMBER := 100000;
     IF  p_rollback ='N' THEN
     IF p_bulk_processing = 'N' THEN
-      UPDATE /*+  NOLOGGING  parallel(8) enable_parallel_dml  */ slr_jrnl_lines_unposted  u
-         SET u.jlu_jrnl_rev_date =
-             (SELECT t.jlu_effective_date
-                FROM slr_jrnl_lines_unposted_tmp t
-               WHERE u.rowid = t.jlu_rowid
-                 AND t.jlu_rownum BETWEEN p_start_row AND p_end_row);
+      execute immediate (v_sql);
 
     ELSE
     OPEN Updrow ;
@@ -4073,46 +3948,15 @@ END;
     slr_admin_pkg.perfinfo('pUpdateJournal reversing journals alert '||p_alert||' query execution time  ' ||
                          (dbms_utility.get_time() - v_start_time) /
                          100.0 || ' s.');
+   EXCEPTION WHEN OTHERS THEN
+      slr_admin_pkg.error('pUpdateJournal failed '||SQLERRM);
+      slr_admin_pkg.Debug(pLog => 'pUpdateJournal failed sql',pLogExt => v_sql||'  '||SQLERRM);
+      RAISE;
+
   END;
 
 
-PROCEDURE pRollbackRevJournalBatchParallel(p_epg_id     VARCHAR2,
-                                           p_process_id NUMBER) IS
-  v_count_jrnl      NUMBER(10);
-  v_group_jrnl      PLS_INTEGER := 6;
-  lv_start_time     PLS_INTEGER := 0;
-  v_part_name_value VARCHAR2(200) := 'P' || p_epg_id;
-  v_sql             VARCHAR2(2000) := q'!BEGIN
-        SLR_POST_JOURNALS_PKG.pUpdateJournal(p_part_proess     =>':p_epg_id',
-                                             p_start_row       => :p_start_row,
-                                             p_end_row         => :p_end_row,
-                                             p_bulk_processing => 'Y',
-                                             p_part_epg        =>'P:p_epg_id',
-                                             p_alert           =>':p_epg_id_:p_process_id',
-                                             p_rollback        =>'Y');
-          dbms_alert.Signal(NAME=> ':p_alert_name', Message=>'OK');
-          Commit;
-      EXCEPTION WHEN OTHERS THEN
-        slr_admin_pkg.Error('Rollback scheduler job proces :p_alert_name failed epg :p_epg_id scope  from :p_start_row to :p_end_row  process :p_process_id');
-        dbms_alert.Signal(NAME=> ':p_alert_name', Message=>'NOK');
-        Commit;
-    END;!';
-BEGIN
-  v_sql         := REPLACE(v_sql, ':p_epg_id', p_epg_id);
-  lv_start_time := dbms_utility.get_time();
-  SELECT COUNT(1)
-    INTO v_count_jrnl
-    FROM slr_jrnl_lines_unposted_tmp
-   WHERE jlu_process_part = 'P' || p_epg_id;
-  pg_scheduler_jobs_utl.run_sql_in_parallel_mode(p_proc_name => p_epg_id || '_' ||
-                                                                p_process_id, p_sql => v_sql, p_num_rows => v_count_jrnl, p_num_group => v_group_jrnl, p_alert_patern => 'P' ||
-                                                                    p_epg_id, p_num_parallel_threds => v_group_jrnl, p_process_id => p_process_id);
 
-  slr_admin_pkg.droppart(p_table_name => 'SLR_JRNL_LINES_UNPOSTED_TMP', p_part_name => v_part_name_value);
-  slr_admin_pkg.perfinfo('Rollback reversing journals query execution time pCreate_rev_journal_batch_parallel : ' ||
-                         (dbms_utility.get_time() - lv_start_time) /
-                         100.0 || ' s.');
-END;
 
 
 FUNCTION fCreateRevJournalBatchCount(orignal_jrnl_id   VARCHAR2,
@@ -4192,13 +4036,12 @@ BEGIN
           vepg2 || ' ) ' || vcompare;
 
   slr_admin_pkg.debug('reversing jrnls.', vsql);
-  slr_admin_pkg.debug('All :' || v_reverse ||
-                      ' reversal journals created.', v_sql);
+
   EXECUTE IMMEDIATE vsql
     INTO v_num_of_reverse;
-  slr_admin_pkg.debug('Count of reversals should be: ' ||
-                      v_num_of_reverse ||
-                      '. Count all reversing jrnls.', vsql);
+
+  slr_admin_pkg.debug('Estimated number of records to insert:' || v_num_of_reverse || ' reversal journal lines.', v_sql);
+
   RETURN v_num_of_reverse;
 
 END;
@@ -4213,45 +4056,69 @@ PROCEDURE pCreateRevJournalBatchParallel(p_epg_id   VARCHAR2,
   v_num_of_reverse  NUMERIC(28, 0);
   v_part_name_value VARCHAR2(200) := 'P' || p_epg_id;
   v_sql             VARCHAR2(2000) := q'!BEGIN
-        SLR_POST_JOURNALS_PKG.pUpdateJournal(p_part_proess     =>':p_epg_id',
+        SLR_POST_JOURNALS_PKG.pUpdateJournal(p_part_process     =>':p_epg_id',
                                              p_start_row       => :p_start_row,
                                              p_end_row         => :p_end_row,
-                                             p_bulk_processing => 'Y',
+                                             p_bulk_processing => 'N',
+											 p_epg_id          =>':p_epg_id',
                                              p_part_epg        =>'P:p_epg_id',
-                                             p_alert           =>':p_epg_id_:p_process_id',
+                                             p_alert           =>':p_alert_name',
                                              p_rollback        =>'N');
           dbms_alert.Signal(NAME=> ':p_alert_name', Message=>'OK');
           Commit;
       EXCEPTION WHEN OTHERS THEN
-        slr_admin_pkg.Error('Scheduler job proces :p_alert_name failed epg :p_epg_id scope  from :p_start_row to :p_end_row  process :p_process_id');
-        dbms_alert.Signal(NAME=> ':p_alert_name', Message=>'NOK');
-
+        slr_admin_pkg.Error('Scheduler job process :p_alert_name failed epg :p_epg_id scope  from :p_start_row to :p_end_row  process :p_process_id');
+        slr_admin_pkg.Debug('Scheduler job process errMsg' , SQLERRM);
+	    dbms_alert.Signal(NAME=> ':p_alert_name', Message=>'NOK');
+	    Commit;
     END;!';
 BEGIN
 
   v_num_of_reverse := fCreateRevJournalBatchCount(orignal_jrnl_id => NULL, entity_proc_group => p_epg_id, status => 'U', process_id => process_id);
 
   IF v_num_of_reverse > 0 THEN
+    pg_process_state.log_proc(p_conf_group   => 'SLR',
+                              p_stage         => 'slr_post_journals.pCreateRevJournalBatchParallel',
+                              p_process_id  => gp_process_id,
+                              p_epg_id        => p_epg_id,
+							  p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+							  p_business_date => gp_business_date,
+                              p_object_name  => 'SLR_JRNL_LINES_UNPOSTED',
+                              p_tab_partition => v_part_name_value,
+                              p_start_dt    => sysdate,
+                              p_status      => 'P');
+
     v_sql        := REPLACE(v_sql, ':p_epg_id', p_epg_id);
+    v_sql        := REPLACE(v_sql, ':p_process_id', gp_process_id);
+
     v_start_time := dbms_utility.get_time();
     slr_admin_pkg.droppart(p_table_name => 'SLR_JRNL_LINES_UNPOSTED_TMP', p_part_name => v_part_name_value);
 
     pCreateRevJournalTmptable(p_epg => p_epg_id, p_process_id => process_id);
 
-    pInsertJournal(p_part_proess => 'P' || p_epg_id);
+    pInsertJournal(p_epg_id =>  p_epg_id);
     SELECT COUNT(1)
       INTO v_count_jrnl
       FROM slr_jrnl_lines_unposted_tmp
      WHERE jlu_process_part = 'P' || p_epg_id;
     pg_scheduler_jobs_utl.run_sql_in_parallel_mode(p_proc_name => p_epg_id || '_' ||
-                                                                  process_id, p_sql => v_sql, p_num_rows => v_count_jrnl, p_num_group => v_group_jrnl, p_alert_patern => 'P' ||
-                                                                      p_epg_id, p_num_parallel_threds => v_group_jrnl, p_process_id => process_id);
+                                                                  gp_process_id, p_sql => v_sql, p_num_rows => v_count_jrnl, p_num_group => v_group_jrnl, p_alert_patern => 'P' ||
+                                                                      p_epg_id, p_num_parallel_threads => v_group_jrnl, p_process_id => gp_process_id);
 
-    slr_admin_pkg.droppart(p_table_name => 'SLR_JRNL_LINES_UNPOSTED_TMP', p_part_name => v_part_name_value);
-    slr_admin_pkg.perfinfo('Create reversing journals query execution time pCreate_rev_journal_batch_parallel : ' ||
+    pg_process_state.log_proc_completed(p_conf_group  => 'SLR',
+                                        p_stage       => 'slr_post_journals.pCreateRevJournalBatchParallel',
+                                        p_process_id  => gp_process_id);
+
+	--slr_admin_pkg.droppart(p_table_name => 'SLR_JRNL_LINES_UNPOSTED_TMP', p_part_name => v_part_name_value);
+    slr_admin_pkg.perfinfo('Create reversal journal lines query execution time pCreate_rev_journal_batch_parallel : ' ||
                            (dbms_utility.get_time() - v_start_time) /
-                           100.0 || ' s.');
+                           100.0 || ' s. '||v_count_jrnl ||  ' Rows inserted');
+    SLR_ADMIN_PKG.Debug('All :' ||v_count_jrnl || ' reversal journal lines created.' , null);
   END IF;
+  EXCEPTION WHEN OTHERS THEN
+    pg_process_state.Set_Process_Failed(p_process_id  => gp_process_id,p_info=> SQLERRM );
+  RAISE;
+
 END;
 
 PROCEDURE pcreate_reversing_journal(jrnl_id_list      VARCHAR2,
@@ -4270,10 +4137,12 @@ BEGIN
 
 EXCEPTION
   WHEN OTHERS THEN
+    Rollback;
     slr_admin_pkg.perfinfo('Fatal error during call of pCreate_reversing_journal : ' ||
                            SQLERRM);
-    prollbackrevjournalbatchparallel(p_epg_id => entity_proc_group, p_process_id => process_id);
-    raise_application_error(-20001, 'Fatal error during call of pCreate_reversing_journal: ' ||
+
+    pg_process_state.Set_Process_Failed(p_process_id  => process_id,p_info=> SQLERRM);
+	raise_application_error(-20001, 'Fatal error during call of pCreate_reversing_journal: ' ||
                              SQLERRM);
 
 END pcreate_reversing_journal;
@@ -4281,81 +4150,81 @@ END pcreate_reversing_journal;
 PROCEDURE pCreate_rev_journal_batch(orignal_jrnl_id VARCHAR2, entity_proc_group VARCHAR2, status CHAR, process_id number)
   IS
     type v_rev_jrnl_row is record (
-      JLU_JRNL_HDR_ID                VARCHAR2(32),
-      JLU_JRNL_LINE_NUMBER           NUMBER(12,0),
-      JLU_FAK_ID                     CHAR(32),
-      JLU_EBA_ID                     CHAR(32),
-      JLU_JRNL_STATUS                CHAR(1 BYTE),
-      JLU_JRNL_STATUS_TEXT           VARCHAR2(20 BYTE),
-      JLU_JRNL_PROCESS_ID            NUMBER(30,0),
-      JLU_DESCRIPTION                VARCHAR2(100 BYTE),
-      JLU_SOURCE_JRNL_ID             VARCHAR2(40 BYTE),
-      JLU_EFFECTIVE_DATE             DATE,
-      JLU_VALUE_DATE                 DATE,
-      JLU_ENTITY                     VARCHAR2(20 BYTE),
-      JLU_EPG_ID                     VARCHAR2(18 BYTE),
-      JLU_ACCOUNT                    VARCHAR2(20 BYTE),
-      JLU_SEGMENT_1                  VARCHAR2(100 BYTE),
-      JLU_SEGMENT_2                  VARCHAR2(100 BYTE),
-      JLU_SEGMENT_3                  VARCHAR2(100 BYTE),
-      JLU_SEGMENT_4                  VARCHAR2(100 BYTE),
-      JLU_SEGMENT_5                  VARCHAR2(100 BYTE),
-      JLU_SEGMENT_6                  VARCHAR2(100 BYTE),
-      JLU_SEGMENT_7                  VARCHAR2(100 BYTE),
-      JLU_SEGMENT_8                  VARCHAR2(100 BYTE),
-      JLU_SEGMENT_9                  VARCHAR2(100 BYTE),
-      JLU_SEGMENT_10                 VARCHAR2(100 BYTE),
-      JLU_ATTRIBUTE_1                VARCHAR2(100 BYTE),
-      JLU_ATTRIBUTE_2                VARCHAR2(100 BYTE),
-      JLU_ATTRIBUTE_3                VARCHAR2(100 BYTE),
-      JLU_ATTRIBUTE_4                VARCHAR2(100 BYTE),
-      JLU_ATTRIBUTE_5                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_1                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_2                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_3                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_4                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_5                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_6                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_7                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_8                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_9                VARCHAR2(100 BYTE),
-      JLU_REFERENCE_10               VARCHAR2(100 BYTE),
-      JLU_TRAN_CCY                   CHAR(3 BYTE),
-      JLU_TRAN_AMOUNT                NUMBER(38,3),
-      JLU_BASE_RATE                  NUMBER(18,9),
-      JLU_BASE_CCY                   CHAR(3 BYTE),
-      JLU_BASE_AMOUNT                NUMBER(38,3),
-      JLU_LOCAL_RATE                 NUMBER(18,9),
-      JLU_LOCAL_CCY                  CHAR(3 BYTE),
-      JLU_LOCAL_AMOUNT               NUMBER(38,3),
-      JLU_CREATED_BY                 VARCHAR2(100 BYTE),
-      JLU_CREATED_ON                 DATE,
-      JLU_AMENDED_BY                 VARCHAR2(100 BYTE),
-      JLU_AMENDED_ON                 DATE,
-      JLU_JRNL_TYPE                  VARCHAR2(240 BYTE),
-      JLU_JRNL_DATE                  DATE,
-      JLU_JRNL_DESCRIPTION           VARCHAR2(100 BYTE),
-      JLU_JRNL_SOURCE                VARCHAR2(40 BYTE),
-      JLU_JRNL_SOURCE_JRNL_ID        VARCHAR2(40 BYTE),
-      JLU_JRNL_AUTHORISED_BY         VARCHAR2(100 BYTE),
-      JLU_JRNL_AUTHORISED_ON         DATE,
-      JLU_JRNL_VALIDATED_BY          VARCHAR2(100 BYTE),
-      JLU_JRNL_VALIDATED_ON          DATE,
-      JLU_JRNL_POSTED_BY             VARCHAR2(100 BYTE),
-      JLU_JRNL_POSTED_ON             DATE,
-      JLU_JRNL_TOTAL_HASH_DEBIT      NUMBER(38,3),
-      JLU_JRNL_TOTAL_HASH_CREDIT     NUMBER(38,3),
-      JLU_JRNL_PREF_STATIC_SRC       VARCHAR2(30 BYTE),
-      JLU_JRNL_REF_ID                VARCHAR2(32),
-      JLU_JRNL_REV_DATE              DATE,
-      JLU_TRANSLATION_DATE           DATE,
-      JLU_PERIOD_MONTH               NUMBER(2,0),
-      JLU_PERIOD_YEAR                NUMBER(4,0),
-      JLU_PERIOD_LTD                 NUMBER(4,0),
-      JLU_JRNL_INTERNAL_PERIOD_FLAG  CHAR(1 BYTE),
-      JLU_JRNL_ENT_RATE_SET          VARCHAR2(20 BYTE),
-      JLU_TYPE                       VARCHAR2(40 BYTE),
-      row_id urowid);
+        JLU_JRNL_HDR_ID                 SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_HDR_ID%TYPE,
+        JLU_JRNL_LINE_NUMBER            SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_LINE_NUMBER%TYPE,
+        JLU_FAK_ID                      SLR_JRNL_LINES_UNPOSTED.JLU_FAK_ID%TYPE,
+        JLU_EBA_ID                      SLR_JRNL_LINES_UNPOSTED.JLU_EBA_ID%TYPE,
+        JLU_JRNL_STATUS                 SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_STATUS%TYPE,
+        JLU_JRNL_STATUS_TEXT            SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_STATUS_TEXT%TYPE,
+        JLU_JRNL_PROCESS_ID             SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_PROCESS_ID%TYPE,
+        JLU_DESCRIPTION                 SLR_JRNL_LINES_UNPOSTED.JLU_DESCRIPTION%TYPE,
+        JLU_SOURCE_JRNL_ID              SLR_JRNL_LINES_UNPOSTED.JLU_SOURCE_JRNL_ID%TYPE,
+        JLU_EFFECTIVE_DATE              SLR_JRNL_LINES_UNPOSTED.JLU_EFFECTIVE_DATE%TYPE,
+        JLU_VALUE_DATE                  SLR_JRNL_LINES_UNPOSTED.JLU_VALUE_DATE%TYPE,
+        JLU_ENTITY                      SLR_JRNL_LINES_UNPOSTED.JLU_ENTITY%TYPE,
+        JLU_EPG_ID                      SLR_JRNL_LINES_UNPOSTED.JLU_EPG_ID%TYPE,
+        JLU_ACCOUNT                     SLR_JRNL_LINES_UNPOSTED.JLU_ACCOUNT%TYPE,
+        JLU_SEGMENT_1                   SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_1%TYPE,
+        JLU_SEGMENT_2                   SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_2%TYPE,
+        JLU_SEGMENT_3                   SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_3%TYPE,
+        JLU_SEGMENT_4                   SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_4%TYPE,
+        JLU_SEGMENT_5                   SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_5%TYPE,
+        JLU_SEGMENT_6                   SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_6%TYPE,
+        JLU_SEGMENT_7                   SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_7%TYPE,
+        JLU_SEGMENT_8                   SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_8%TYPE,
+        JLU_SEGMENT_9                   SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_9%TYPE,
+        JLU_SEGMENT_10                  SLR_JRNL_LINES_UNPOSTED.JLU_SEGMENT_10%TYPE,
+        JLU_ATTRIBUTE_1                 SLR_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_1%TYPE,
+        JLU_ATTRIBUTE_2                 SLR_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_2%TYPE,
+        JLU_ATTRIBUTE_3                 SLR_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_3%TYPE,
+        JLU_ATTRIBUTE_4                 SLR_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_4%TYPE,
+        JLU_ATTRIBUTE_5                 SLR_JRNL_LINES_UNPOSTED.JLU_ATTRIBUTE_5%TYPE,
+        JLU_REFERENCE_1                 SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_1%TYPE,
+        JLU_REFERENCE_2                 SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_2%TYPE,
+        JLU_REFERENCE_3                 SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_3%TYPE,
+        JLU_REFERENCE_4                 SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_4%TYPE,
+        JLU_REFERENCE_5                 SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_5%TYPE,
+        JLU_REFERENCE_6                 SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_6%TYPE,
+        JLU_REFERENCE_7                 SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_7%TYPE,
+        JLU_REFERENCE_8                 SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_8%TYPE,
+        JLU_REFERENCE_9                 SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_9%TYPE,
+        JLU_REFERENCE_10                SLR_JRNL_LINES_UNPOSTED.JLU_REFERENCE_10%TYPE,
+        JLU_TRAN_CCY                    SLR_JRNL_LINES_UNPOSTED.JLU_TRAN_CCY%TYPE,
+        JLU_TRAN_AMOUNT                 SLR_JRNL_LINES_UNPOSTED.JLU_TRAN_AMOUNT%TYPE,
+        JLU_BASE_RATE                   SLR_JRNL_LINES_UNPOSTED.JLU_BASE_RATE%TYPE,
+        JLU_BASE_CCY                    SLR_JRNL_LINES_UNPOSTED.JLU_BASE_CCY%TYPE,
+        JLU_BASE_AMOUNT                 SLR_JRNL_LINES_UNPOSTED.JLU_BASE_AMOUNT%TYPE,
+        JLU_LOCAL_RATE                  SLR_JRNL_LINES_UNPOSTED.JLU_LOCAL_RATE%TYPE,
+        JLU_LOCAL_CCY                   SLR_JRNL_LINES_UNPOSTED.JLU_LOCAL_CCY%TYPE,
+        JLU_LOCAL_AMOUNT                SLR_JRNL_LINES_UNPOSTED.JLU_LOCAL_AMOUNT%TYPE,
+        JLU_CREATED_BY                  SLR_JRNL_LINES_UNPOSTED.JLU_CREATED_BY%TYPE,
+        JLU_CREATED_ON                  SLR_JRNL_LINES_UNPOSTED.JLU_CREATED_ON%TYPE,
+        JLU_AMENDED_BY                  SLR_JRNL_LINES_UNPOSTED.JLU_AMENDED_BY%TYPE,
+        JLU_AMENDED_ON                  SLR_JRNL_LINES_UNPOSTED.JLU_AMENDED_ON%TYPE,
+        JLU_JRNL_TYPE                   SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_TYPE%TYPE,
+        JLU_JRNL_DATE                   SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_DATE%TYPE,
+        JLU_JRNL_DESCRIPTION            SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_DESCRIPTION%TYPE,
+        JLU_JRNL_SOURCE                 SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_SOURCE%TYPE,
+        JLU_JRNL_SOURCE_JRNL_ID         SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_SOURCE_JRNL_ID%TYPE,
+        JLU_JRNL_AUTHORISED_BY          SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_AUTHORISED_BY%TYPE,
+        JLU_JRNL_AUTHORISED_ON          SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_AUTHORISED_ON%TYPE,
+        JLU_JRNL_VALIDATED_BY           SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_VALIDATED_BY%TYPE,
+        JLU_JRNL_VALIDATED_ON           SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_VALIDATED_ON%TYPE,
+        JLU_JRNL_POSTED_BY              SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_POSTED_BY%TYPE,
+        JLU_JRNL_POSTED_ON              SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_POSTED_ON%TYPE,
+        JLU_JRNL_TOTAL_HASH_DEBIT       SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_TOTAL_HASH_DEBIT%TYPE,
+        JLU_JRNL_TOTAL_HASH_CREDIT      SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_TOTAL_HASH_CREDIT%TYPE,
+        JLU_JRNL_PREF_STATIC_SRC        SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_PREF_STATIC_SRC%TYPE,
+        JLU_JRNL_REF_ID                 SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_REF_ID%TYPE,
+        JLU_JRNL_REV_DATE               SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_REV_DATE%TYPE,
+        JLU_TRANSLATION_DATE            SLR_JRNL_LINES_UNPOSTED.JLU_TRANSLATION_DATE%TYPE,
+        JLU_PERIOD_MONTH                SLR_JRNL_LINES_UNPOSTED.JLU_PERIOD_MONTH%TYPE,
+        JLU_PERIOD_YEAR                 SLR_JRNL_LINES_UNPOSTED.JLU_PERIOD_YEAR%TYPE,
+        JLU_PERIOD_LTD                  SLR_JRNL_LINES_UNPOSTED.JLU_PERIOD_LTD%TYPE,
+        JLU_JRNL_INTERNAL_PERIOD_FLAG   SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_INTERNAL_PERIOD_FLAG%TYPE,
+        JLU_JRNL_ENT_RATE_SET           SLR_JRNL_LINES_UNPOSTED.JLU_JRNL_ENT_RATE_SET%TYPE,
+        JLU_TYPE                        SLR_JRNL_LINES_UNPOSTED.JLU_TYPE%TYPE,
+    row_id urowid);
 
     TYPE v_revJournals is table of v_rev_jrnl_row;
     vRevJrnlTab v_revJournals := v_revJournals();
@@ -4379,61 +4248,61 @@ BEGIN
 gROWCNT_LIMIT_NUMBER := 100000;
 
 IF process_id IS NOT NULL THEN
-         vProcess := ' AND jlu.JLU_JRNL_PROCESS_ID =''' || process_id ||'''  AND ';
-    ELSE
-         vProcess := ' AND ';
-    END IF;
+     vProcess := ' AND jlu.JLU_JRNL_PROCESS_ID =''' || process_id ||'''  AND ';
+  ELSE
+     vProcess := ' AND ';
+  END IF;
 
-    IF orignal_jrnl_id IS NOT NULL THEN
-         vCompare := 'AND jlu.jlu_jrnl_hdr_id =' || orignal_jrnl_id || ' ';
-    ELSE
+  IF orignal_jrnl_id IS NOT NULL THEN
+     vCompare := 'AND jlu.jlu_jrnl_hdr_id =' || orignal_jrnl_id || ' ';
+  ELSE
 
 
-         vCompare := '';
-    END IF;
+     vCompare := '';
+  END IF;
 
 
       IF entity_proc_group IS NOT NULL THEN
-         vEPG :=  ' AND jlu.jlu_epg_id   = ''' || entity_proc_group || ''' AND ';
-         vEPG2 := ' AND jlu_rev.jlu_epg_id   = ''' || entity_proc_group || '''';
-    ELSE
-        vEPG2 := '';
-         vEPG := ' AND ';
-    END IF;
+     vEPG :=  ' AND jlu.jlu_epg_id   = ''' || entity_proc_group || ''' AND ';
+     vEPG2 := ' AND jlu_rev.jlu_epg_id   = ''' || entity_proc_group || '''';
+  ELSE
+    vEPG2 := '';
+     vEPG := ' AND ';
+  END IF;
 
 
 
 vSQL := 'SELECT' || SLR_UTILITIES_PKG.fHint(entity_proc_group, 'SELECT_REVERS_JLU') || ' COUNT(*) FROM
     slr.SLR_JRNL_LINES_UNPOSTED jlu
-    , slr.SLR_EXT_JRNL_TYPES ext
-    , slr.SLR_JRNL_TYPES typ
-    , slr.SLR_ENTITIES ent
-    , slr.SLR_ENTITY_PERIODS per
-    WHERE
-          --JOINS
-          jlu.jlu_jrnl_type = ext.ejt_type
-          AND ext.ejt_jt_type = typ.JT_TYPE
-          AND per.ep_entity = jlu.jlu_entity
-          AND jlu.JLU_ENTITY = ent.ENT_ENTITY
-          AND ent.ENT_ENTITY = per.EP_ENTITY
-         AND per.EP_STATUS  = ''O''
-         AND jlu.JLU_EFFECTIVE_DATE BETWEEN per.EP_BUS_PERIOD_START AND per.EP_BUS_PERIOD_END' || vEPG ||
-        ' (typ.jt_reverse_flag = ''Y''
-           OR typ.jt_reverse_flag = ''C''
-           AND jlu.JLU_JRNL_REV_DATE is not null)
-         AND jlu.JLU_JRNL_REF_ID IS NULL ' || vProcess ||
-        ' jlu.JLU_JRNL_STATUS = ''' || status ||
-        ''' AND ent.ENT_STATUS = ''A''
+  , slr.SLR_EXT_JRNL_TYPES ext
+  , slr.SLR_JRNL_TYPES typ
+  , slr.SLR_ENTITIES ent
+  , slr.SLR_ENTITY_PERIODS per
+  WHERE
+      --JOINS
+      jlu.jlu_jrnl_type = ext.ejt_type
+      AND ext.ejt_jt_type = typ.JT_TYPE
+      AND per.ep_entity = jlu.jlu_entity
+      AND jlu.JLU_ENTITY = ent.ENT_ENTITY
+      AND ent.ENT_ENTITY = per.EP_ENTITY
+     AND per.EP_STATUS  = ''O''
+     AND jlu.JLU_EFFECTIVE_DATE BETWEEN per.EP_BUS_PERIOD_START AND per.EP_BUS_PERIOD_END' || vEPG ||
+    ' (typ.jt_reverse_flag = ''Y''
+       OR typ.jt_reverse_flag = ''C''
+       AND jlu.JLU_JRNL_REV_DATE is not null)
+     AND jlu.JLU_JRNL_REF_ID IS NULL ' || vProcess ||
+    ' jlu.JLU_JRNL_STATUS = ''' || status ||
+    ''' AND ent.ENT_STATUS = ''A''
          AND not exists (SELECT 1 FROM slr.SLR_JRNL_LINES_WAITING jlw
                             WHERE jlu.JLU_JRNL_HDR_ID = jlw.JLW_JRNL_REF_ID
                               AND jlu.JLU_EPG_ID = jlw.JLW_EPG_ID
-                              AND jlu.JLU_ENTITY = jlw.JLW_ENTITY)														  
+                              AND jlu.JLU_ENTITY = jlw.JLW_ENTITY)
          AND not exists (SELECT 1 FROM slr.SLR_JRNL_LINES_UNPOSTED JLU_REV WHERE
                         jlu.JLU_JRNL_HDR_ID  = JLU_REV.JLU_JRNL_REF_ID '|| vEPG2 || ' ) '|| vCompare;
 
 
-    EXECUTE IMMEDIATE vSQL INTO v_num_of_reverse;
-    SLR_ADMIN_PKG.Debug('Count of reversals should be: ' ||v_num_of_reverse|| '. Count all reversing jrnls.', vSQL);
+  EXECUTE IMMEDIATE vSQL INTO v_num_of_reverse;
+  SLR_ADMIN_PKG.Debug('Count of reversals should be: ' ||v_num_of_reverse|| '. Count all reversing jrnls.', vSQL);
 
 
 
@@ -4443,176 +4312,175 @@ lv_START_TIME := DBMS_UTILITY.GET_TIME();
 
 ------------create reverse_journal and calculate reverse_date
   OPEN l_cursor FOR 'with jlu as (SELECT ' || SLR_UTILITIES_PKG.fHint(entity_proc_group, 'SELECT_WITH_REVERS2') || ' JLU_JRNL_HDR_ID,
-           jlu.JLU_JRNL_LINE_NUMBER,
-           jlu.JLU_FAK_ID,
-           jlu.JLU_EBA_ID,
-           jlu.JLU_JRNL_STATUS_TEXT,
-           jlu.JLU_DESCRIPTION,
-           trim(TRAILING ''.'' FROM trim(jlu.JLU_JRNL_HDR_ID)) as JLU_SOURCE_JRNL_ID_Q,
-         CASE WHEN jlu.JLU_JRNL_REV_DATE IS NOT NULL THEN JLU_JRNL_REV_DATE
-        ELSE
-        CASE WHEN rul.ejtr_period_date IS NOT NULL THEN
-                    CASE WHEN ejtr_prior_next_current = ''P'' THEN
-                            CASE WHEN ejtr_period_date  = ''S'' THEN
-                                    CASE WHEN per.EP_BUS_PERIOD > 1 THEN
-                                        (SELECT PriorStart.EP_BUS_PERIOD_START FROM slr.SLR_ENTITY_PERIODS PriorStart WHERE PriorStart.EP_ENTITY = per.EP_ENTITY AND PriorStart.EP_BUS_YEAR = per.EP_BUS_YEAR AND PriorStart.EP_BUS_PERIOD = per.EP_BUS_PERIOD - 1 AND PriorStart.EP_STATUS  = ''O'' and jlu_jrnl_hdr_id is not null) --header_id is not null, for fix internal 12425
-                                    ELSE
-                                        PriorPer.EP_BUS_PERIOD_START
-                                    END
+       jlu.JLU_JRNL_LINE_NUMBER,
+       jlu.JLU_FAK_ID,
+       jlu.JLU_EBA_ID,
+       jlu.JLU_JRNL_STATUS_TEXT,
+       jlu.JLU_DESCRIPTION,
+       trim(TRAILING ''.'' FROM trim(jlu.JLU_JRNL_HDR_ID)) as JLU_SOURCE_JRNL_ID_Q,
+     CASE WHEN jlu.JLU_JRNL_REV_DATE IS NOT NULL THEN JLU_JRNL_REV_DATE
+    ELSE
+    CASE WHEN rul.ejtr_period_date IS NOT NULL THEN
+          CASE WHEN ejtr_prior_next_current = ''P'' THEN
+              CASE WHEN ejtr_period_date  = ''S'' THEN
+                  CASE WHEN per.EP_BUS_PERIOD > 1 THEN
+                    (SELECT PriorStart.EP_BUS_PERIOD_START FROM slr.SLR_ENTITY_PERIODS PriorStart WHERE PriorStart.EP_ENTITY = per.EP_ENTITY AND PriorStart.EP_BUS_YEAR = per.EP_BUS_YEAR AND PriorStart.EP_BUS_PERIOD = per.EP_BUS_PERIOD - 1 AND PriorStart.EP_STATUS  = ''O'' and jlu_jrnl_hdr_id is not null) --header_id is not null, for fix internal 12425
+                  ELSE
+                    PriorPer.EP_BUS_PERIOD_START
+                  END
 
-                                 WHEN ejtr_period_date  = ''E'' THEN
-                                    CASE WHEN per.EP_BUS_PERIOD > 1 THEN
-                                        (SELECT PriorEnd.EP_BUS_PERIOD_END FROM slr.SLR_ENTITY_PERIODS PriorEnd WHERE PriorEnd.EP_ENTITY = per.EP_ENTITY AND PriorEnd.EP_BUS_YEAR = per.EP_BUS_YEAR AND PriorEnd.EP_BUS_PERIOD = per.EP_BUS_PERIOD - 1 and PriorEnd.EP_STATUS  = ''O'' and jlu_jrnl_hdr_id is not null)
-                                    ELSE
-                                        PriorPer.EP_BUS_PERIOD_END
-                                    END
-                            END
-
-                    WHEN ejtr_prior_next_current = ''N'' THEN
-                        CASE WHEN ejtr_period_date  = ''S'' THEN
-                                    CASE WHEN per.EP_BUS_PERIOD < 12 THEN
-                                         (SELECT NextStart.EP_BUS_PERIOD_START FROM slr.SLR_ENTITY_PERIODS NextStart WHERE NextStart.EP_ENTITY = per.EP_ENTITY AND NextStart.EP_BUS_YEAR = per.EP_BUS_YEAR AND NextStart.EP_BUS_PERIOD = per.EP_BUS_PERIOD + 1 and NextStart.EP_STATUS  = ''O'' and jlu_jrnl_hdr_id is not null)
-                                    ELSE
-                                        NextPer.EP_BUS_PERIOD_START
-                                    END
-                             WHEN ejtr_period_date  = ''E'' THEN
-                                    CASE WHEN per.EP_BUS_PERIOD < 12 THEN
-                                        (SELECT NextEnd.EP_BUS_PERIOD_END FROM slr.SLR_ENTITY_PERIODS NextEnd WHERE NextEnd.EP_ENTITY = per.EP_ENTITY AND NextEnd.EP_BUS_YEAR = per.EP_BUS_YEAR AND NextEnd.EP_BUS_PERIOD = per.EP_BUS_PERIOD + 1 and NextEnd.EP_STATUS  = ''O'' and jlu_jrnl_hdr_id is not null)
-                                    ELSE
-                                        NextPer.EP_BUS_PERIOD_END
-                                    END
-                             END
-                    ELSE
-                        CASE WHEN ejtr_period_date  = ''S'' THEN
-                                per.EP_BUS_PERIOD_START
-                             WHEN ejtr_period_date  = ''E'' THEN
-                                per.EP_BUS_PERIOD_END
-                        END
-                    END
-            WHEN rul.ejtr_prior_next_current IS NOT NULL THEN
-                CASE WHEN rul.ejtr_prior_next_current  = ''N'' THEN
-                    (SELECT MIN(ent1.ED_DATE)
-                        FROM slr.SLR_ENTITY_DAYS ent1
-                            WHERE ent1.ED_ENTITY_SET = ent.ENT_PERIODS_AND_DAYS_SET
-                                AND ent1.ED_DATE > jlu.JLU_EFFECTIVE_DATE
-                                AND ed_status = ''O''
-                            )
-
-                         WHEN rul.ejtr_prior_next_current  = ''P'' THEN
-                        (SELECT  MAX(ent1.ED_DATE)
-                            FROM    slr.SLR_ENTITY_DAYS ent1
-                            WHERE   ent1.ED_ENTITY_SET       =      ent.ENT_PERIODS_AND_DAYS_SET
-                            AND     ent1.ED_DATE             <       jlu.JLU_EFFECTIVE_DATE
-                            AND ed_status = ''O''
-                            )
-                    END
-
-                ELSE
-                (SELECT MIN(ent1.ED_DATE)
-                FROM slr.SLR_ENTITY_DAYS ent1
-                WHERE ent1.ED_ENTITY_SET = ent.ENT_PERIODS_AND_DAYS_SET
+                 WHEN ejtr_period_date  = ''E'' THEN
+                  CASE WHEN per.EP_BUS_PERIOD > 1 THEN
+                    (SELECT PriorEnd.EP_BUS_PERIOD_END FROM slr.SLR_ENTITY_PERIODS PriorEnd WHERE PriorEnd.EP_ENTITY = per.EP_ENTITY AND PriorEnd.EP_BUS_YEAR = per.EP_BUS_YEAR AND PriorEnd.EP_BUS_PERIOD = per.EP_BUS_PERIOD - 1 and PriorEnd.EP_STATUS  = ''O'' and jlu_jrnl_hdr_id is not null)
+                  ELSE
+                    PriorPer.EP_BUS_PERIOD_END
+                  END
+              END
+          WHEN ejtr_prior_next_current = ''N'' THEN
+            CASE WHEN ejtr_period_date  = ''S'' THEN
+                  CASE WHEN per.EP_BUS_PERIOD < 12 THEN
+                     (SELECT NextStart.EP_BUS_PERIOD_START FROM slr.SLR_ENTITY_PERIODS NextStart WHERE NextStart.EP_ENTITY = per.EP_ENTITY AND NextStart.EP_BUS_YEAR = per.EP_BUS_YEAR AND NextStart.EP_BUS_PERIOD = per.EP_BUS_PERIOD + 1 and NextStart.EP_STATUS  = ''O'' and jlu_jrnl_hdr_id is not null)
+                  ELSE
+                    NextPer.EP_BUS_PERIOD_START
+                  END
+               WHEN ejtr_period_date  = ''E'' THEN
+                  CASE WHEN per.EP_BUS_PERIOD < 12 THEN
+                    (SELECT NextEnd.EP_BUS_PERIOD_END FROM slr.SLR_ENTITY_PERIODS NextEnd WHERE NextEnd.EP_ENTITY = per.EP_ENTITY AND NextEnd.EP_BUS_YEAR = per.EP_BUS_YEAR AND NextEnd.EP_BUS_PERIOD = per.EP_BUS_PERIOD + 1 and NextEnd.EP_STATUS  = ''O'' and jlu_jrnl_hdr_id is not null)
+                  ELSE
+                    NextPer.EP_BUS_PERIOD_END
+                  END
+               END
+          ELSE
+            CASE WHEN ejtr_period_date  = ''S'' THEN
+                per.EP_BUS_PERIOD_START
+               WHEN ejtr_period_date  = ''E'' THEN
+                per.EP_BUS_PERIOD_END
+            END
+          END
+      WHEN rul.ejtr_prior_next_current IS NOT NULL THEN
+        CASE WHEN rul.ejtr_prior_next_current  = ''N'' THEN
+          (SELECT MIN(ent1.ED_DATE)
+            FROM slr.SLR_ENTITY_DAYS ent1
+              WHERE ent1.ED_ENTITY_SET = ent.ENT_PERIODS_AND_DAYS_SET
                 AND ent1.ED_DATE > jlu.JLU_EFFECTIVE_DATE
-                AND ed_status = ''O'')
-           END
-          END AS ED_DAT,
-           jlu.JLU_JRNL_PROCESS_ID,
-           jlu.JLU_ENTITY,
-           jlu.JLU_ACCOUNT,
-           jlu.JLU_SEGMENT_1,
-           jlu.JLU_SEGMENT_2,
-           jlu.JLU_SEGMENT_3,
-           jlu.JLU_SEGMENT_4,
-           jlu.JLU_SEGMENT_5,
-           jlu.JLU_SEGMENT_6,
-           jlu.JLU_SEGMENT_7,
-           jlu.JLU_SEGMENT_8,
-           jlu.JLU_SEGMENT_9,
-           jlu.JLU_SEGMENT_10,
-           jlu.JLU_ATTRIBUTE_1,
-           jlu.JLU_ATTRIBUTE_2,
-           jlu.JLU_ATTRIBUTE_3,
-           jlu.JLU_ATTRIBUTE_4,
-           jlu.JLU_ATTRIBUTE_5,
-           jlu.JLU_REFERENCE_1,
-           jlu.JLU_REFERENCE_2,
-           jlu.JLU_REFERENCE_3,
-           jlu.JLU_REFERENCE_4,
-           jlu.JLU_REFERENCE_5,
-           jlu.JLU_REFERENCE_6,
-           jlu.JLU_REFERENCE_7,
-           jlu.JLU_REFERENCE_8,
-           jlu.JLU_REFERENCE_9,
-           jlu.JLU_REFERENCE_10,
-           jlu.JLU_TRAN_CCY,
-           (-1)*jlu.JLU_TRAN_AMOUNT AS JLU_TRAN_AMOUNT,
-           jlu.JLU_BASE_RATE,
-           jlu.JLU_BASE_CCY,
-           (-1)*jlu.JLU_BASE_AMOUNT AS JLU_BASE_AMOUNT,
-           jlu.JLU_LOCAL_RATE,
-           jlu.JLU_LOCAL_CCY,
-           (-1)*jlu.JLU_LOCAL_AMOUNT AS JLU_LOCAL_AMOUNT,
-           jlu.JLU_CREATED_BY,
-           current_timestamp AS JLU_CREATED_ON,
-           jlu.JLU_AMENDED_BY,
-           current_timestamp AS JLU_AMENDED_ON,
-           jlu.JLU_JRNL_TYPE,
-           jlu.JLU_VALUE_DATE,
-           jlu.JLU_JRNL_DESCRIPTION,
-           trim(jlu.JLU_JRNL_SOURCE) AS JLU_JRNL_SOURCE,
-           trim(trailing ''.'' from trim(jlu.JLU_JRNL_HDR_ID)) AS JLU_JRNL_SOURCE_JRNL_ID,
-           COALESCE(jlu.JLU_JRNL_AUTHORISED_BY, ''AUTO'') AS JLU_JRNL_AUTHORISED_BY,
-           JLU_JRNL_AUTHORISED_ON,
-           jlu.JLU_JRNL_VALIDATED_BY,
-           jlu.JLU_JRNL_VALIDATED_ON,
-           jlu.JLU_JRNL_POSTED_BY,
-           jlu.JLU_JRNL_POSTED_ON,
-           jlu.JLU_JRNL_TOTAL_HASH_DEBIT,
-           jlu.JLU_JRNL_TOTAL_HASH_CREDIT,
-           jlu.JLU_JRNL_PREF_STATIC_SRC,
-           jlu.JLU_JRNL_HDR_ID AS JLU_JRNL_REF_ID,   -------------- parent id for reversal journals
-           jlu.JLU_JRNL_INTERNAL_PERIOD_FLAG,
-           jlu.JLU_JRNL_ENT_RATE_SET,
-           CASE
-                WHEN jlu.JLU_TRANSLATION_DATE IS NULL THEN
-                jlu.JLU_EFFECTIVE_DATE
-                ELSE
-                jlu.JLU_TRANSLATION_DATE
-           END AS TRANSLATION_DATE,
-           jlu.JLU_TYPE,
-           jlu.jlu_epg_id,
-           ent.ENT_BUSINESS_DATE AS BUSINESS_DATE,
-           jlu.rowid as row_id
-    FROM slr.SLR_JRNL_LINES_UNPOSTED jlu
-    , slr.SLR_EXT_JRNL_TYPES ext
-    , slr.SLR_JRNL_TYPES typ
-    , slr.SLR_EXT_JRNL_TYPE_RULE rul
-    , slr.SLR_ENTITIES ent
-    , slr.SLR_ENTITY_PERIODS per
-    , slr.SLR_ENTITY_PERIODS PriorPer
-    , slr.SLR_ENTITY_PERIODS NextPer
-    WHERE
-          --JOINS
-            jlu.jlu_jrnl_type = ext.ejt_type
-          AND rul.ejtr_code = ext.ejt_rev_ejtr_code
-          AND ext.ejt_jt_type = typ.JT_TYPE
-          AND per.ep_entity = jlu.jlu_entity
-          AND jlu.JLU_ENTITY = ent.ENT_ENTITY
-          AND ent.ENT_ENTITY = per.EP_ENTITY
-          --ONE_TO_MANY REDUCTION
-         AND per.EP_STATUS  = ''O''
-         AND jlu.JLU_EFFECTIVE_DATE BETWEEN per.EP_BUS_PERIOD_START AND per.EP_BUS_PERIOD_END
-         AND NextPer.EP_ENTITY = per.EP_ENTITY AND NextPer.EP_BUS_YEAR = per.EP_BUS_YEAR+1 AND NextPer.EP_BUS_PERIOD = 1 '         || vEPG ||
-         ' (typ.jt_reverse_flag = ''Y''
-            OR typ.jt_reverse_flag = ''C''
-            AND jlu.JLU_JRNL_REV_DATE is not null)
-         AND PriorPer.EP_ENTITY = per.EP_ENTITY AND PriorPer.EP_BUS_YEAR = per.EP_BUS_YEAR-1 AND PriorPer.EP_BUS_PERIOD = 12
-         AND jlu.JLU_JRNL_REF_ID IS NULL ' || vProcess ||
-        ' jlu.JLU_JRNL_STATUS = ''' || status ||
-        ''' AND ent.ENT_STATUS = ''A''
+                AND ed_status = ''O''
+              )
+
+             WHEN rul.ejtr_prior_next_current  = ''P'' THEN
+            (SELECT  MAX(ent1.ED_DATE)
+              FROM    slr.SLR_ENTITY_DAYS ent1
+              WHERE   ent1.ED_ENTITY_SET       =      ent.ENT_PERIODS_AND_DAYS_SET
+              AND     ent1.ED_DATE             <       jlu.JLU_EFFECTIVE_DATE
+              AND ed_status = ''O''
+              )
+          END
+
+        ELSE
+        (SELECT MIN(ent1.ED_DATE)
+        FROM slr.SLR_ENTITY_DAYS ent1
+        WHERE ent1.ED_ENTITY_SET = ent.ENT_PERIODS_AND_DAYS_SET
+        AND ent1.ED_DATE > jlu.JLU_EFFECTIVE_DATE
+        AND ed_status = ''O'')
+       END
+      END AS ED_DAT,
+       jlu.JLU_JRNL_PROCESS_ID,
+       jlu.JLU_ENTITY,
+       jlu.JLU_ACCOUNT,
+       jlu.JLU_SEGMENT_1,
+       jlu.JLU_SEGMENT_2,
+       jlu.JLU_SEGMENT_3,
+       jlu.JLU_SEGMENT_4,
+       jlu.JLU_SEGMENT_5,
+       jlu.JLU_SEGMENT_6,
+       jlu.JLU_SEGMENT_7,
+       jlu.JLU_SEGMENT_8,
+       jlu.JLU_SEGMENT_9,
+       jlu.JLU_SEGMENT_10,
+       jlu.JLU_ATTRIBUTE_1,
+       jlu.JLU_ATTRIBUTE_2,
+       jlu.JLU_ATTRIBUTE_3,
+       jlu.JLU_ATTRIBUTE_4,
+       jlu.JLU_ATTRIBUTE_5,
+       jlu.JLU_REFERENCE_1,
+       jlu.JLU_REFERENCE_2,
+       jlu.JLU_REFERENCE_3,
+       jlu.JLU_REFERENCE_4,
+       jlu.JLU_REFERENCE_5,
+       jlu.JLU_REFERENCE_6,
+       jlu.JLU_REFERENCE_7,
+       jlu.JLU_REFERENCE_8,
+       jlu.JLU_REFERENCE_9,
+       jlu.JLU_REFERENCE_10,
+       jlu.JLU_TRAN_CCY,
+       (-1)*jlu.JLU_TRAN_AMOUNT AS JLU_TRAN_AMOUNT,
+       jlu.JLU_BASE_RATE,
+       jlu.JLU_BASE_CCY,
+       (-1)*jlu.JLU_BASE_AMOUNT AS JLU_BASE_AMOUNT,
+       jlu.JLU_LOCAL_RATE,
+       jlu.JLU_LOCAL_CCY,
+       (-1)*jlu.JLU_LOCAL_AMOUNT AS JLU_LOCAL_AMOUNT,
+       jlu.JLU_CREATED_BY,
+       current_timestamp AS JLU_CREATED_ON,
+       jlu.JLU_AMENDED_BY,
+       current_timestamp AS JLU_AMENDED_ON,
+       jlu.JLU_JRNL_TYPE,
+       jlu.JLU_VALUE_DATE,
+       jlu.JLU_JRNL_DESCRIPTION,
+       trim(jlu.JLU_JRNL_SOURCE) AS JLU_JRNL_SOURCE,
+       trim(trailing ''.'' from trim(jlu.JLU_JRNL_HDR_ID)) AS JLU_JRNL_SOURCE_JRNL_ID,
+       COALESCE(jlu.JLU_JRNL_AUTHORISED_BY, ''AUTO'') AS JLU_JRNL_AUTHORISED_BY,
+       JLU_JRNL_AUTHORISED_ON,
+       jlu.JLU_JRNL_VALIDATED_BY,
+       jlu.JLU_JRNL_VALIDATED_ON,
+       jlu.JLU_JRNL_POSTED_BY,
+       jlu.JLU_JRNL_POSTED_ON,
+       jlu.JLU_JRNL_TOTAL_HASH_DEBIT,
+       jlu.JLU_JRNL_TOTAL_HASH_CREDIT,
+       jlu.JLU_JRNL_PREF_STATIC_SRC,
+       jlu.JLU_JRNL_HDR_ID AS JLU_JRNL_REF_ID,   -------------- parent id for reversal journals
+       jlu.JLU_JRNL_INTERNAL_PERIOD_FLAG,
+       jlu.JLU_JRNL_ENT_RATE_SET,
+       CASE
+        WHEN jlu.JLU_TRANSLATION_DATE IS NULL THEN
+        jlu.JLU_EFFECTIVE_DATE
+        ELSE
+        jlu.JLU_TRANSLATION_DATE
+       END AS TRANSLATION_DATE,
+       jlu.JLU_TYPE,
+       jlu.jlu_epg_id,
+       ent.ENT_BUSINESS_DATE AS BUSINESS_DATE,
+       jlu.rowid as row_id
+  FROM slr.SLR_JRNL_LINES_UNPOSTED jlu
+  , slr.SLR_EXT_JRNL_TYPES ext
+  , slr.SLR_JRNL_TYPES typ
+  , slr.SLR_EXT_JRNL_TYPE_RULE rul
+  , slr.SLR_ENTITIES ent
+  , slr.SLR_ENTITY_PERIODS per
+  , slr.SLR_ENTITY_PERIODS PriorPer
+  , slr.SLR_ENTITY_PERIODS NextPer
+  WHERE
+      --JOINS
+      jlu.jlu_jrnl_type = ext.ejt_type
+      AND rul.ejtr_code = ext.ejt_rev_ejtr_code
+      AND ext.ejt_jt_type = typ.JT_TYPE
+      AND per.ep_entity = jlu.jlu_entity
+      AND jlu.JLU_ENTITY = ent.ENT_ENTITY
+      AND ent.ENT_ENTITY = per.EP_ENTITY
+      --ONE_TO_MANY REDUCTION
+     AND per.EP_STATUS  = ''O''
+     AND jlu.JLU_EFFECTIVE_DATE BETWEEN per.EP_BUS_PERIOD_START AND per.EP_BUS_PERIOD_END
+     AND NextPer.EP_ENTITY = per.EP_ENTITY AND NextPer.EP_BUS_YEAR = per.EP_BUS_YEAR+1 AND NextPer.EP_BUS_PERIOD = 1 '     || vEPG ||
+     ' (typ.jt_reverse_flag = ''Y''
+        OR typ.jt_reverse_flag = ''C''
+        AND jlu.JLU_JRNL_REV_DATE is not null)
+     AND PriorPer.EP_ENTITY = per.EP_ENTITY AND PriorPer.EP_BUS_YEAR = per.EP_BUS_YEAR-1 AND PriorPer.EP_BUS_PERIOD = 12
+     AND jlu.JLU_JRNL_REF_ID IS NULL ' || vProcess ||
+    ' jlu.JLU_JRNL_STATUS = ''' || status ||
+    ''' AND ent.ENT_STATUS = ''A''
          AND not exists (SELECT 1 FROM slr.SLR_JRNL_LINES_WAITING jlw
                              WHERE  jlu.JLU_JRNL_HDR_ID = jlw.JLW_JRNL_REF_ID
                                 AND jlu.JLU_EPG_ID = jlw.JLW_EPG_ID
-                                AND jlu.JLU_ENTITY = jlw.JLW_ENTITY)															
+                                AND jlu.JLU_ENTITY = jlw.JLW_ENTITY)
          AND not exists (SELECT 1 FROM slr.SLR_JRNL_LINES_UNPOSTED JLU_REV WHERE
                         jlu.JLU_JRNL_HDR_ID  = JLU_REV.JLU_JRNL_REF_ID '|| vEPG2 || ' and  JLU_REV.JLU_JRNL_REF_ID is not null and JLU_REV.JLU_EPG_ID = jlu.JLU_EPG_ID and JLU_REV.JLU_ENTITY = jlu.JLU_ENTITY) '|| vCompare || '
     )
@@ -4706,10 +4574,10 @@ lv_START_TIME := DBMS_UTILITY.GET_TIME();
     insert into SLR_JRNL_LINES_UNPOSTED (JLU_JRNL_HDR_ID,JLU_JRNL_LINE_NUMBER,JLU_FAK_ID,JLU_EBA_ID,JLU_JRNL_STATUS,JLU_JRNL_STATUS_TEXT,JLU_JRNL_PROCESS_ID,JLU_DESCRIPTION,JLU_SOURCE_JRNL_ID,JLU_EFFECTIVE_DATE,JLU_VALUE_DATE,JLU_ENTITY,JLU_EPG_ID,JLU_ACCOUNT,JLU_SEGMENT_1,JLU_SEGMENT_2,JLU_SEGMENT_3,JLU_SEGMENT_4,JLU_SEGMENT_5,JLU_SEGMENT_6,JLU_SEGMENT_7,JLU_SEGMENT_8,JLU_SEGMENT_9,JLU_SEGMENT_10,JLU_ATTRIBUTE_1,JLU_ATTRIBUTE_2,JLU_ATTRIBUTE_3,JLU_ATTRIBUTE_4,JLU_ATTRIBUTE_5,JLU_REFERENCE_1,JLU_REFERENCE_2,JLU_REFERENCE_3,JLU_REFERENCE_4,JLU_REFERENCE_5,JLU_REFERENCE_6,JLU_REFERENCE_7,JLU_REFERENCE_8,JLU_REFERENCE_9,JLU_REFERENCE_10,JLU_TRAN_CCY,JLU_TRAN_AMOUNT,JLU_BASE_RATE,JLU_BASE_CCY,JLU_BASE_AMOUNT,JLU_LOCAL_RATE,JLU_LOCAL_CCY,JLU_LOCAL_AMOUNT,JLU_CREATED_BY,JLU_CREATED_ON,JLU_AMENDED_BY,JLU_AMENDED_ON,JLU_JRNL_TYPE,JLU_JRNL_DATE,JLU_JRNL_DESCRIPTION,JLU_JRNL_SOURCE,JLU_JRNL_SOURCE_JRNL_ID,JLU_JRNL_AUTHORISED_BY,JLU_JRNL_AUTHORISED_ON,JLU_JRNL_VALIDATED_BY,JLU_JRNL_VALIDATED_ON,JLU_JRNL_POSTED_BY,JLU_JRNL_POSTED_ON,JLU_JRNL_TOTAL_HASH_DEBIT,JLU_JRNL_TOTAL_HASH_CREDIT,JLU_JRNL_PREF_STATIC_SRC,JLU_JRNL_REF_ID,JLU_JRNL_REV_DATE,JLU_TRANSLATION_DATE,JLU_PERIOD_MONTH,JLU_PERIOD_YEAR,JLU_PERIOD_LTD,JLU_JRNL_INTERNAL_PERIOD_FLAG, JLU_TYPE)
     values (vRevJrnlTab(i).JLU_JRNL_HDR_ID,vRevJrnlTab(i).JLU_JRNL_LINE_NUMBER,vRevJrnlTab(i).JLU_FAK_ID,vRevJrnlTab(i).JLU_EBA_ID,vRevJrnlTab(i).JLU_JRNL_STATUS,vRevJrnlTab(i).JLU_JRNL_STATUS_TEXT,vRevJrnlTab(i).JLU_JRNL_PROCESS_ID,vRevJrnlTab(i).JLU_DESCRIPTION,vRevJrnlTab(i).JLU_SOURCE_JRNL_ID,vRevJrnlTab(i).JLU_EFFECTIVE_DATE,vRevJrnlTab(i).JLU_VALUE_DATE,vRevJrnlTab(i).JLU_ENTITY,vRevJrnlTab(i).JLU_EPG_ID,vRevJrnlTab(i).JLU_ACCOUNT,vRevJrnlTab(i).JLU_SEGMENT_1,vRevJrnlTab(i).JLU_SEGMENT_2,vRevJrnlTab(i).JLU_SEGMENT_3,vRevJrnlTab(i).JLU_SEGMENT_4,vRevJrnlTab(i).JLU_SEGMENT_5,vRevJrnlTab(i).JLU_SEGMENT_6,vRevJrnlTab(i).JLU_SEGMENT_7,vRevJrnlTab(i).JLU_SEGMENT_8,vRevJrnlTab(i).JLU_SEGMENT_9,vRevJrnlTab(i).JLU_SEGMENT_10,vRevJrnlTab(i).JLU_ATTRIBUTE_1,vRevJrnlTab(i).JLU_ATTRIBUTE_2,vRevJrnlTab(i).JLU_ATTRIBUTE_3,vRevJrnlTab(i).JLU_ATTRIBUTE_4,vRevJrnlTab(i).JLU_ATTRIBUTE_5,vRevJrnlTab(i).JLU_REFERENCE_1,vRevJrnlTab(i).JLU_REFERENCE_2,vRevJrnlTab(i).JLU_REFERENCE_3,vRevJrnlTab(i).JLU_REFERENCE_4,vRevJrnlTab(i).JLU_REFERENCE_5,vRevJrnlTab(i).JLU_REFERENCE_6,vRevJrnlTab(i).JLU_REFERENCE_7,vRevJrnlTab(i).JLU_REFERENCE_8,vRevJrnlTab(i).JLU_REFERENCE_9,vRevJrnlTab(i).JLU_REFERENCE_10,vRevJrnlTab(i).JLU_TRAN_CCY,vRevJrnlTab(i).JLU_TRAN_AMOUNT,vRevJrnlTab(i).JLU_BASE_RATE,vRevJrnlTab(i).JLU_BASE_CCY,vRevJrnlTab(i).JLU_BASE_AMOUNT,vRevJrnlTab(i).JLU_LOCAL_RATE,vRevJrnlTab(i).JLU_LOCAL_CCY,vRevJrnlTab(i).JLU_LOCAL_AMOUNT,vRevJrnlTab(i).JLU_CREATED_BY,vRevJrnlTab(i).JLU_CREATED_ON,vRevJrnlTab(i).JLU_AMENDED_BY,vRevJrnlTab(i).JLU_AMENDED_ON,vRevJrnlTab(i).JLU_JRNL_TYPE,vRevJrnlTab(i).JLU_JRNL_DATE,vRevJrnlTab(i).JLU_JRNL_DESCRIPTION,vRevJrnlTab(i).JLU_JRNL_SOURCE,vRevJrnlTab(i).JLU_JRNL_SOURCE_JRNL_ID,vRevJrnlTab(i).JLU_JRNL_AUTHORISED_BY,vRevJrnlTab(i).JLU_JRNL_AUTHORISED_ON,vRevJrnlTab(i).JLU_JRNL_VALIDATED_BY,vRevJrnlTab(i).JLU_JRNL_VALIDATED_ON,vRevJrnlTab(i).JLU_JRNL_POSTED_BY,vRevJrnlTab(i).JLU_JRNL_POSTED_ON,vRevJrnlTab(i).JLU_JRNL_TOTAL_HASH_DEBIT,vRevJrnlTab(i).JLU_JRNL_TOTAL_HASH_CREDIT,vRevJrnlTab(i).JLU_JRNL_PREF_STATIC_SRC,vRevJrnlTab(i).JLU_JRNL_REF_ID,vRevJrnlTab(i).JLU_JRNL_REV_DATE,vRevJrnlTab(i).JLU_TRANSLATION_DATE,vRevJrnlTab(i).JLU_PERIOD_MONTH,vRevJrnlTab(i).JLU_PERIOD_YEAR,vRevJrnlTab(i).JLU_PERIOD_LTD,vRevJrnlTab(i).JLU_JRNL_INTERNAL_PERIOD_FLAG, vRevJrnlTab(i).JLU_TYPE)
     ;
-    v_reverse := v_reverse + SQL%ROWCOUNT;
+  v_reverse := v_reverse + SQL%ROWCOUNT;
 
 
-    forall i in vRevJrnlTab.first..vRevJrnlTab.last
+  forall i in vRevJrnlTab.first..vRevJrnlTab.last
     UPDATE SLR_JRNL_LINES_UNPOSTED PARENTT
     SET PARENTT.JLU_JRNL_REV_DATE =  vRevJrnlTab(i).JLU_EFFECTIVE_DATE
     WHERE parentt.rowid = vRevJrnlTab(i).row_id;
@@ -4720,14 +4588,14 @@ lv_START_TIME := DBMS_UTILITY.GET_TIME();
 
   COMMIT;
 
-    SLR_ADMIN_PKG.PerfInfo( 'Create reversing journals query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s. ' || v_reverse ||  ' Rows inserted');
-    SLR_ADMIN_PKG.Debug('All :' ||v_reverse || ' reversal journals created.' , null);
+  SLR_ADMIN_PKG.PerfInfo( 'Create reversing journals query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s. ' || v_reverse ||  ' Rows inserted');
+  SLR_ADMIN_PKG.Debug('All :' ||v_reverse || ' reversal journals created.' , null);
 
 
 
-    END IF;
+  END IF;
 
-    EXCEPTION
+  EXCEPTION
         WHEN OTHERS THEN
         pr_error(1, SQLERRM, 0, 'pCreate_rev_journal_batch', 'slr_jrnl_headers_unposted/slr_jrnl_lines_unposted', NULL, NULL, gs_stage, 'PL/SQL');
         RAISE e_internal_processing_error;
@@ -4735,180 +4603,220 @@ lv_START_TIME := DBMS_UTILITY.GET_TIME();
 END pCreate_rev_journal_batch;
 
 
+
 procedure pCreate_reversing_journal_madj(jrnl_id_list varchar2, entity_proc_group VARCHAR2, status CHAR, process_id number)
  is
-    vEpgCurrentBussDate date;
+  vEpgCurrentBussDate date;
 begin
 
   vEpgCurrentBussDate := SLR_UTILITIES_PKG.fEntityGroupCurrBusDate(entity_proc_group);
+  IF gp_business_date IS NULL THEN 
+   gp_business_date := vEpgCurrentBussDate;
+  END IF;
+
+  pg_process_state.log_proc(p_conf_group   => 'SLR',
+                            p_stage        => 'slr_post_journals.pCreate_reversing_journal_madj_slr_jrnl_headers_unposted',
+                            p_process_id   => process_id,
+                            p_epg_id        => entity_proc_group,
+							p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+							p_business_date => gp_business_date,
+                            p_object_name  => 'SLR_JRNL_HEADERS_UNPOSTED',
+                            p_start_dt     =>  sysdate,
+                            p_status       => 'P');
+  pg_process_state.log_proc(p_conf_group   => 'SLR',
+                            p_stage        => 'slr_post_journals.pCreate_reversing_journal_madj_slr_jrnl_lines_unposted',
+                            p_process_id   => process_id,
+                            p_epg_id        => entity_proc_group,
+							p_rate_set      => slr_post_journals_pkg.gp_rate_set,
+							p_business_date => gp_business_date,
+                            p_object_name  => 'SLR_JRNL_LINES_UNPOSTED',
+                            p_start_dt     =>  sysdate,
+                            p_status       => 'P');
+
 
   execute immediate
-    'INSERT INTO slr_jrnl_headers_unposted (
+  'INSERT INTO slr_jrnl_headers_unposted (
             jhu_jrnl_id, jhu_jrnl_type, jhu_jrnl_date, jhu_jrnl_entity, jhu_jrnl_status,
             jhu_jrnl_status_text, jhu_jrnl_process_id, jhu_jrnl_description, jhu_jrnl_source,
             jhu_jrnl_source_jrnl_id, jhu_jrnl_authorised_by, jhu_jrnl_authorised_on,
             jhu_jrnl_validated_by, jhu_jrnl_validated_on, jhu_jrnl_posted_by, jhu_jrnl_posted_on,
             jhu_jrnl_total_hash_debit, jhu_jrnl_total_hash_credit, jhu_jrnl_total_lines,
             jhu_created_by, jhu_created_on, jhu_amended_by, jhu_amended_on, jhu_jrnl_pref_static_src,
-            jhu_manual_flag, jhu_epg_id, jhu_jrnl_ref_id
+            jhu_manual_flag, jhu_epg_id, jhu_jrnl_ref_id, jhu_department_id
         )
-    SELECT standard_hash(sjhu.jhu_jrnl_id, ''MD5''),
-           sjhu.jhu_jrnl_type,
-           sjhu.jhu_jrnl_rev_date,
-           sjhu.jhu_jrnl_entity,
-           case when sjhu.jhu_jrnl_rev_date <= :curr_bus_date then jhu_jrnl_status else ''W'' end,
-           ''Unposted'',
-           case when sjhu.jhu_jrnl_rev_date <= :curr_bus_date then jhu_jrnl_process_id else 0 end,
-           sjhu.jhu_jrnl_description,
-           sjhu.jhu_jrnl_source,
-           sjhu.jhu_jrnl_source_jrnl_id,
-           sjhu.jhu_jrnl_authorised_by,
-           sjhu.jhu_jrnl_authorised_on,
-           sjhu.jhu_jrnl_validated_by,
-           sjhu.jhu_jrnl_validated_on,
-           sjhu.jhu_jrnl_posted_by,
-           sjhu.jhu_jrnl_posted_on,
-           sjhu.jhu_jrnl_total_hash_credit,
-           sjhu.jhu_jrnl_total_hash_debit,
-           sjhu.jhu_jrnl_total_lines,
-           sjhu.jhu_amended_by,
-           SYSDATE,
-           sjhu.jhu_amended_by,
-           SYSDATE,
-           sjhu.jhu_jrnl_pref_static_src,
-           ''Y'',
-           sjhu.jhu_epg_id,
-           sjhu.jhu_jrnl_id
-    FROM slr_jrnl_headers_unposted sjhu,
-         slr_ext_jrnl_types ejt,
-         slr_jrnl_types jt
-    WHERE sjhu.jhu_jrnl_id in ('||jrnl_id_list||')
-    and sjhu.jhu_jrnl_status = :status
-    and sjhu.jhu_jrnl_type = ejt.ejt_type
-    AND jt.jt_type = ejt.ejt_jt_type
-    and (jt.jt_reverse_flag = ''Y''
-         OR jt.jt_reverse_flag = ''C''
-         AND sjhu.jhu_jrnl_rev_date is not null)'
-  using vEpgCurrentBussDate, vEpgCurrentBussDate, status;
+  SELECT standard_hash(sjhu.jhu_jrnl_id, ''MD5''),
+       sjhu.jhu_jrnl_type,
+       sjhu.jhu_jrnl_rev_date,
+       sjhu.jhu_jrnl_entity,
+       case when sjhu.jhu_jrnl_rev_date <= :curr_bus_date then jhu_jrnl_status else ''W'' end,
+       ''Unposted'',
+       case when sjhu.jhu_jrnl_rev_date <= :curr_bus_date then :p_process_id else 0 end,
+       sjhu.jhu_jrnl_description,
+       sjhu.jhu_jrnl_source,
+       sjhu.jhu_jrnl_source_jrnl_id,
+       sjhu.jhu_jrnl_authorised_by,
+       sjhu.jhu_jrnl_authorised_on,
+       sjhu.jhu_jrnl_validated_by,
+       sjhu.jhu_jrnl_validated_on,
+       sjhu.jhu_jrnl_posted_by,
+       sjhu.jhu_jrnl_posted_on,
+       sjhu.jhu_jrnl_total_hash_credit,
+       sjhu.jhu_jrnl_total_hash_debit,
+       sjhu.jhu_jrnl_total_lines,
+       sjhu.jhu_amended_by,
+       SYSDATE,
+       sjhu.jhu_amended_by,
+       SYSDATE,
+       sjhu.jhu_jrnl_pref_static_src,
+       ''Y'',
+       sjhu.jhu_epg_id,
+       sjhu.jhu_jrnl_id,
+       sjhu.jhu_department_id
+  FROM slr_jrnl_headers_unposted sjhu,
+     slr_ext_jrnl_types ejt,
+     slr_jrnl_types jt
+  WHERE sjhu.jhu_jrnl_id in ('||jrnl_id_list||')
+  and sjhu.jhu_jrnl_status = :status
+  and sjhu.jhu_jrnl_type = ejt.ejt_type
+  AND jt.jt_type = ejt.ejt_jt_type
+  and (jt.jt_reverse_flag = ''Y''
+       OR jt.jt_reverse_flag = ''C''
+     AND sjhu.jhu_jrnl_rev_date is not null)'
+  using vEpgCurrentBussDate, vEpgCurrentBussDate,process_id, status;
 
   execute immediate
   'INSERT INTO slr_jrnl_lines_unposted (
-    jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_fak_id, jlu_eba_id, jlu_jrnl_status,
-    jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id,
-    jlu_effective_date, jlu_value_date, jlu_entity, jlu_account, jlu_segment_1,
-    jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6,
-    jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10, jlu_attribute_1,
-    jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1,
-    jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6,
-    jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy,
-    jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate,
-    jlu_local_ccy, jlu_local_amount, jlu_created_by, jlu_created_on, jlu_amended_by,
-    jlu_amended_on, jlu_epg_id, jlu_period_month, jlu_period_year, jlu_period_ltd,
-    jlu_jrnl_ref_id,jlu_jrnl_rev_date,jlu_jrnl_internal_period_flag,jlu_translation_date,
-    jlu_jrnl_type,jlu_jrnl_date,jlu_jrnl_description,jlu_jrnl_source,jlu_jrnl_source_jrnl_id,
-    jlu_jrnl_authorised_by,jlu_jrnl_authorised_on,jlu_jrnl_validated_by,jlu_jrnl_validated_on,
-    jlu_jrnl_posted_by,jlu_jrnl_posted_on,jlu_jrnl_total_hash_debit,jlu_jrnl_total_hash_credit,
+  jlu_jrnl_hdr_id, jlu_jrnl_line_number, jlu_fak_id, jlu_eba_id, jlu_jrnl_status,
+  jlu_jrnl_status_text, jlu_jrnl_process_id, jlu_description, jlu_source_jrnl_id,
+  jlu_effective_date, jlu_value_date, jlu_entity, jlu_account, jlu_segment_1,
+  jlu_segment_2, jlu_segment_3, jlu_segment_4, jlu_segment_5, jlu_segment_6,
+  jlu_segment_7, jlu_segment_8, jlu_segment_9, jlu_segment_10, jlu_attribute_1,
+  jlu_attribute_2, jlu_attribute_3, jlu_attribute_4, jlu_attribute_5, jlu_reference_1,
+  jlu_reference_2, jlu_reference_3, jlu_reference_4, jlu_reference_5, jlu_reference_6,
+  jlu_reference_7, jlu_reference_8, jlu_reference_9, jlu_reference_10, jlu_tran_ccy,
+  jlu_tran_amount, jlu_base_rate, jlu_base_ccy, jlu_base_amount, jlu_local_rate,
+  jlu_local_ccy, jlu_local_amount, jlu_created_by, jlu_created_on, jlu_amended_by,
+  jlu_amended_on, jlu_epg_id, jlu_period_month, jlu_period_year, jlu_period_ltd,
+  jlu_jrnl_ref_id,jlu_jrnl_rev_date,jlu_jrnl_internal_period_flag,jlu_translation_date,
+  jlu_jrnl_type,jlu_jrnl_date,jlu_jrnl_description,jlu_jrnl_source,jlu_jrnl_source_jrnl_id,
+  jlu_jrnl_authorised_by,jlu_jrnl_authorised_on,jlu_jrnl_validated_by,jlu_jrnl_validated_on,
+  jlu_jrnl_posted_by,jlu_jrnl_posted_on,jlu_jrnl_total_hash_debit,jlu_jrnl_total_hash_credit,
     jlu_jrnl_pref_static_src,jlu_jrnl_ent_rate_set
    )
-    SELECT jhu_jrnl_id,
-           jlu_jrnl_line_number,
-           jlu_fak_id,
-           jlu_eba_id,
-           jhu_jrnl_status,
-           ''Unposted'',
-           jhu_jrnl_process_id,
-           jlu_description,
-           jhu_jrnl_ref_id,
-           jhu_jrnl_date,
-           jhu_jrnl_date,
-           jlu_entity,
-           jlu_account,
-           jlu_segment_1,
-           jlu_segment_2,
-           jlu_segment_3,
-          jlu_segment_4,
-          jlu_segment_5,
-          jlu_segment_6,
-          jlu_segment_7,
-          jlu_segment_8,
-          jlu_segment_9,
-          jlu_segment_10,
-          jlu_attribute_1,
-          jlu_attribute_2,
-          jlu_attribute_3,
-          jlu_attribute_4,
-          jlu_attribute_5,
-          jlu_reference_1,
-          jlu_reference_2,
-          jlu_reference_3,
-          jlu_reference_4,
-          jlu_reference_5,
-          jlu_reference_6,
-          jlu_reference_7,
-          jlu_reference_8,
-          jlu_reference_9,
-          jlu_reference_10,
-          jlu_tran_ccy,
-          -jlu_tran_amount,
-          jlu_base_rate,
-          jlu_base_ccy,
-          -jlu_base_amount,
-          jlu_local_rate,
-          jlu_local_ccy,
-          -jlu_local_amount,
-          jlu_amended_by,
-          SYSDATE,
-          jlu_amended_by,
-          SYSDATE,
-          jlu_epg_id,
-          nvl(EP_BUS_PERIOD,0),
-          NVL(EP_BUS_YEAR,0),
-          CASE WHEN EA_ACCOUNT_TYPE_FLAG = ''P'' THEN NVL(EP_BUS_YEAR,0) ELSE 1 END,
-          jhu_jrnl_ref_id,
-          null,
-          jlu_jrnl_internal_period_flag,
-          nvl(jlu_translation_date,jlu_effective_date),
-          jlu_jrnl_type,
-          jhu_jrnl_date,
-          jlu_jrnl_description,
-          jlu_jrnl_source,
-          jhu_jrnl_ref_id,
-          jlu_jrnl_authorised_by,
-          jlu_jrnl_authorised_on,
-          jlu_jrnl_validated_by,
-          jlu_jrnl_validated_on,
-          jlu_jrnl_posted_by,
-          jlu_jrnl_posted_on,
-          jlu_jrnl_total_hash_debit,
-          jlu_jrnl_total_hash_credit,
+  SELECT jhu_jrnl_id,
+       jlu_jrnl_line_number,
+       jlu_fak_id,
+       jlu_eba_id,
+       jhu_jrnl_status,
+       ''Unposted'',
+       '||process_id||',
+       jlu_description,
+       jhu_jrnl_ref_id,
+       jhu_jrnl_date,
+       jhu_jrnl_date,
+       jlu_entity,
+       jlu_account,
+       jlu_segment_1,
+       jlu_segment_2,
+       jlu_segment_3,
+      jlu_segment_4,
+      jlu_segment_5,
+      jlu_segment_6,
+      jlu_segment_7,
+      jlu_segment_8,
+      jlu_segment_9,
+      jlu_segment_10,
+      jlu_attribute_1,
+      jlu_attribute_2,
+      jlu_attribute_3,
+      jlu_attribute_4,
+      jlu_attribute_5,
+      jlu_reference_1,
+      jlu_reference_2,
+      jlu_reference_3,
+      jlu_reference_4,
+      jlu_reference_5,
+      jlu_reference_6,
+      jlu_reference_7,
+      jlu_reference_8,
+      jlu_reference_9,
+      jlu_reference_10,
+      jlu_tran_ccy,
+      -jlu_tran_amount,
+      jlu_base_rate,
+      jlu_base_ccy,
+      -jlu_base_amount,
+      jlu_local_rate,
+      jlu_local_ccy,
+      -jlu_local_amount,
+      jlu_amended_by,
+      SYSDATE,
+      jlu_amended_by,
+      SYSDATE,
+      jlu_epg_id,
+      nvl(EP_BUS_PERIOD,0),
+      NVL(EP_BUS_YEAR,0),
+      CASE WHEN EA_ACCOUNT_TYPE_FLAG = ''P'' THEN NVL(EP_BUS_YEAR,0) ELSE 1 END,
+      jhu_jrnl_ref_id,
+      null,
+      jlu_jrnl_internal_period_flag,
+            CASE
+        WHEN ext.ejt_translation_date_derived_from=''Reversing'' THEN
+           jhu_jrnl_date
+        ELSE
+           NVL(JLU_TRANSLATION_DATE, JLU_EFFECTIVE_DATE)
+       END AS TRANSLATION_DATE,
+      jlu_jrnl_type,
+      jhu_jrnl_date,
+      jlu_jrnl_description,
+      jlu_jrnl_source,
+      jhu_jrnl_ref_id,
+      jlu_jrnl_authorised_by,
+      jlu_jrnl_authorised_on,
+      jlu_jrnl_validated_by,
+      jlu_jrnl_validated_on,
+        jlu_jrnl_posted_by,
+      jlu_jrnl_posted_on,
+      jlu_jrnl_total_hash_debit,
+      jlu_jrnl_total_hash_credit,
           jlu_jrnl_pref_static_src,
-          jlu_jrnl_ent_rate_set
-    FROM slr_jrnl_lines_unposted inner join slr_jrnl_headers_unposted on (jlu_jrnl_hdr_id = jhu_jrnl_ref_id    and jlu_jrnl_hdr_id <> jhu_jrnl_id)
-    LEFT JOIN SLR_ENTITY_PERIODS
-        ON (JHU_JRNL_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
-        AND JHU_JRNL_ENTITY = EP_ENTITY
-        AND EP_PERIOD_TYPE != 0)
-    LEFT JOIN SLR_ENTITIES
-        ON (ENT_ENTITY = JHU_JRNL_ENTITY)
-    LEFT JOIN SLR_ENTITY_ACCOUNTS
-        ON (EA_ENTITY_SET = ENT_ACCOUNTS_SET and JLU_ACCOUNT=EA_ACCOUNT)
-    WHERE jlu_jrnl_hdr_id IN ('||jrnl_id_list||')
-    AND jlu_jrnl_status = :status
-    AND jlu_epg_id = '''||entity_proc_group||''''
+      jlu_jrnl_ent_rate_set
+  FROM slr_jrnl_lines_unposted inner join slr_jrnl_headers_unposted on (jlu_jrnl_hdr_id = jhu_jrnl_ref_id and jlu_jrnl_hdr_id <> jhu_jrnl_id)
+   INNER JOIN slr.slr_ext_jrnl_types ext  ON jlu_jrnl_type = ext.ejt_type
+  LEFT JOIN SLR_ENTITY_PERIODS
+    ON (JHU_JRNL_DATE BETWEEN EP_CAL_PERIOD_START AND EP_CAL_PERIOD_END
+    AND JHU_JRNL_ENTITY = EP_ENTITY
+    AND EP_PERIOD_TYPE != 0)
+  LEFT JOIN SLR_ENTITIES
+    ON (ENT_ENTITY = JHU_JRNL_ENTITY)
+  LEFT JOIN SLR_ENTITY_ACCOUNTS
+    ON (EA_ENTITY_SET = ENT_ACCOUNTS_SET and JLU_ACCOUNT=EA_ACCOUNT)
+  WHERE jlu_jrnl_hdr_id IN ('||jrnl_id_list||')
+  AND jlu_jrnl_status = :status
+  AND jlu_epg_id = '''||entity_proc_group||''''
    using status;
 
    execute immediate
    'insert into slr_jrnl_file_attachment (jfa_jh_jrnl_id, jfa_jf_file_id)
    select jhu_jrnl_id, jfa_jf_file_id
    from slr_jrnl_file_attachment,
-        slr_jrnl_headers_unposted
+    slr_jrnl_headers_unposted
    where jfa_jh_jrnl_id = jhu_jrnl_ref_id
-   and     jfa_jh_jrnl_id <> jhu_jrnl_id
+   and  jfa_jh_jrnl_id <> jhu_jrnl_id
    and jfa_jh_jrnl_id in ('||jrnl_id_list||')';
 
+   pg_process_state.log_proc_completed(p_conf_group   => 'SLR',
+                                       p_stage        => 'slr_post_journals.pCreate_reversing_journal_madj_slr_jrnl_headers_unposted',
+                                       p_process_id   => process_id);
+
+   pg_process_state.log_proc_completed(p_conf_group   => 'SLR',
+                                       p_stage        => 'slr_post_journals.pCreate_reversing_journal_madj_slr_jrnl_lines_unposted',
+                                       p_process_id   => process_id);
 exception
-    when others then
-        pr_error(1, SQLERRM, 0, 'pCreate_reversing_journal_madj', 'slr_jrnl_headers_unposted/slr_jrnl_lines_unposted', NULL, NULL, gs_stage, 'PL/SQL');
+  when others then
+   Rollback;
+	pg_process_state.Set_Process_Failed(p_process_id  => process_id,p_info=> SQLERRM);
+    pr_error(1, SQLERRM, 0, 'pCreate_reversing_journal_madj', 'slr_jrnl_headers_unposted/slr_jrnl_lines_unposted', NULL, NULL, gs_stage, 'PL/SQL');
         RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pCreate_reversing_journal_madj: ' || SQLERRM);
 
 end pCreate_reversing_journal_madj;
@@ -4925,9 +4833,11 @@ AS
    lv_table_name VARCHAR2(32);
    lv_last_correct_lb DATE;
    lv_START_TIME  PLS_INTEGER := 0;
-    lv_BusDate    DATE;
-    lv_sql VARCHAR2(32000);
+   lv_BusDate    DATE;
+   lv_sql VARCHAR2(32000);
    lv_inserted BOOLEAN := FALSE;
+   lv_cursor    NUMBER;
+   lv_countrows NUMBER;
 BEGIN
 
    SELECT MAX(LFI_GENERATED_FOR)
@@ -4994,7 +4904,7 @@ BEGIN
                 FDB_PERIOD_QTR,
                 FDB_PERIOD_YEAR,
                 FDB_PERIOD_LTD,
-                :day___1
+                :p_day
             FROM
             (
                 SELECT
@@ -5024,15 +4934,22 @@ BEGIN
                     FDB_PERIOD_LTD,
                     ROW_NUMBER () OVER (PARTITION BY FDB_FAK_ID, FDB_BALANCE_TYPE ORDER BY FDB_BALANCE_DATE DESC) rn
                 FROM SLR_FAK_DAILY_BALANCES
-                WHERE FDB_BALANCE_DATE <= :day___2
-                    AND FDB_EPG_ID = ''' || p_epg_id || '''
+                WHERE FDB_BALANCE_DATE <= :p_day
+                    AND FDB_EPG_ID = :p_epg_id
             )
             WHERE rn = 1
         ';
-        EXECUTE IMMEDIATE lv_sql USING p_day, p_day;
-        IF SQL%ROWCOUNT > 0 THEN
-            lv_inserted := TRUE;
-        END IF;
+    lv_cursor  := dbms_sql.open_cursor;
+    dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+    dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+    dbms_sql.bind_variable( lv_cursor, ':p_day',p_day);
+    lv_CountRows := dbms_sql.execute( lv_cursor );
+    dbms_sql.close_cursor( lv_cursor );
+
+      --  EXECUTE IMMEDIATE lv_sql USING p_day, p_day;
+    IF lv_CountRows> 0 THEN
+      lv_inserted := TRUE;
+    END IF;
     ELSE
         IF lv_last_correct_lb < p_day THEN
             lv_sql:='
@@ -5089,7 +5006,7 @@ BEGIN
                     FDB_PERIOD_QTR,
                     FDB_PERIOD_YEAR,
                     FDB_PERIOD_LTD,
-                    :day___1
+                    :p_day
                 FROM
                 (
                     SELECT
@@ -5146,8 +5063,8 @@ BEGIN
                             FLB_PERIOD_YEAR AS FDB_PERIOD_YEAR,
                             FLB_PERIOD_LTD AS FDB_PERIOD_LTD
                         FROM SLR_FAK_LAST_BALANCES
-                        WHERE FLB_GENERATED_FOR = :last_correct_lb___2
-                            AND FLB_EPG_ID = ''' || p_epg_id || '''
+                        WHERE FLB_GENERATED_FOR = :lv_last_correct_lb
+                            AND FLB_EPG_ID = :p_epg_id
                         UNION ALL
                         SELECT
                             FDB_BALANCE_DATE,
@@ -5175,44 +5092,53 @@ BEGIN
                             FDB_PERIOD_YEAR,
                             FDB_PERIOD_LTD
                         FROM SLR_FAK_DAILY_BALANCES
-                        WHERE FDB_BALANCE_DATE > :last_correct_lb___3
-                            AND FDB_BALANCE_DATE <= :day___4
-                            AND FDB_EPG_ID = ''' || p_epg_id || '''
+                        WHERE FDB_BALANCE_DATE > :lv_last_correct_lb
+                            AND FDB_BALANCE_DATE <= :p_day
+                            AND FDB_EPG_ID = :p_epg_id
                     )
                 )
                 WHERE rn = 1
             ';
-            EXECUTE IMMEDIATE lv_sql USING p_day, lv_last_correct_lb, lv_last_correct_lb, p_day;
-            IF SQL%ROWCOUNT > 0 THEN
-                lv_inserted := TRUE;
-            END IF;
+    lv_cursor  := dbms_sql.open_cursor;
+    dbms_sql.parse( lv_cursor, lv_sql, dbms_sql.native );
+    dbms_sql.bind_variable( lv_cursor, ':p_epg_id',p_epg_id);
+    dbms_sql.bind_variable( lv_cursor, ':p_day',p_day);
+    dbms_sql.bind_variable( lv_cursor, ':lv_last_correct_lb',lv_last_correct_lb);
+    lv_CountRows := dbms_sql.execute( lv_cursor );
+    dbms_sql.close_cursor( lv_cursor );
+
+
+       -- EXECUTE IMMEDIATE lv_sql USING p_day, lv_last_correct_lb, lv_last_correct_lb, p_day;
+      IF lv_CountRows> 0 THEN
+        lv_inserted := TRUE;
+      END IF;
         END IF;
    END IF;
 
    /* need to insert here, even if lv_inserted := FALSE, as SLR_FAK_LAST_BALANCE_HELPER is used by reporting views as a pointer to SLR_FAK_DAILY_BALANCES */
-        MERGE INTO SLR_FAK_LAST_BALANCE_HELPER FLBH1
-        USING (
-          SELECT p_epg_id as FLBH_EPG_ID FROM dual
-        ) FLBH2
-        ON
-        (
-           FLBH1.FLBH_EPG_ID = FLBH2.FLBH_EPG_ID
-        )
-        WHEN MATCHED THEN UPDATE SET FLBH_GENERATED_FOR = p_day, FLBH_BUSSINESS_DATE=lv_BusDate
-        WHEN NOT MATCHED THEN INSERT (FLBH1.FLBH_EPG_ID,FLBH1.FLBH_GENERATED_FOR,FLBH1.FLBH_BUSSINESS_DATE) VALUES (p_epg_id,p_day,lv_BusDate);
+    MERGE INTO SLR_FAK_LAST_BALANCE_HELPER FLBH1
+    USING (
+      SELECT p_epg_id as FLBH_EPG_ID FROM dual
+    ) FLBH2
+    ON
+    (
+       FLBH1.FLBH_EPG_ID = FLBH2.FLBH_EPG_ID
+    )
+    WHEN MATCHED THEN UPDATE SET FLBH_GENERATED_FOR = p_day, FLBH_BUSSINESS_DATE=lv_BusDate
+    WHEN NOT MATCHED THEN INSERT (FLBH1.FLBH_EPG_ID,FLBH1.FLBH_GENERATED_FOR,FLBH1.FLBH_BUSSINESS_DATE) VALUES (p_epg_id,p_day,lv_BusDate);
 
-    IF lv_inserted = TRUE THEN
-        MERGE INTO SLR_FAK_LAST_BALANCES_INDEX LFI1
-        USING (
-          SELECT p_epg_id as LFI_EPG_ID, p_day as LFI_GENERATED_FOR FROM dual
-        ) LFI2
-        ON
-        (
-          LFI1.LFI_EPG_ID = LFI2.LFI_EPG_ID AND LFI1.LFI_GENERATED_FOR = LFI2.LFI_GENERATED_FOR
-        )
-        WHEN NOT MATCHED THEN INSERT (LFI1.LFI_EPG_ID,LFI1.LFI_GENERATED_FOR) VALUES (p_epg_id,p_day);
-    END IF;
-    COMMIT;
+  IF lv_inserted = TRUE THEN
+    MERGE INTO SLR_FAK_LAST_BALANCES_INDEX LFI1
+    USING (
+      SELECT p_epg_id as LFI_EPG_ID, p_day as LFI_GENERATED_FOR FROM dual
+    ) LFI2
+    ON
+    (
+      LFI1.LFI_EPG_ID = LFI2.LFI_EPG_ID AND LFI1.LFI_GENERATED_FOR = LFI2.LFI_GENERATED_FOR
+    )
+    WHEN NOT MATCHED THEN INSERT (LFI1.LFI_EPG_ID,LFI1.LFI_GENERATED_FOR) VALUES (p_epg_id,p_day);
+  END IF;
+  COMMIT;
     SLR_ADMIN_PKG.Debug('FAK Last balances generated.', lv_sql);
    SLR_ADMIN_PKG.PerfInfo( 'LB. FAK Last Balances query execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
 
@@ -5291,3 +5217,4 @@ END pValidateEntityProcGroup;
 
 END SLR_POST_JOURNALS_PKG;
 /
+alter package SLR_POST_JOURNALS_PKG compile;

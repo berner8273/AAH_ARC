@@ -1,4 +1,11 @@
-CREATE OR REPLACE PROCEDURE FDR."PR_STAN_RAW_GENERAL_CODES_LD" (
+--------------------------------------------------------
+--  File created - Monday-January-30-2017   
+--------------------------------------------------------
+--------------------------------------------------------
+--  DDL for Procedure PR_STAN_RAW_GENERAL_CODES_LD
+--------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE "FDR"."PR_STAN_RAW_GENERAL_CODES_LD" (
     a_lpg_id      IN   fr_global_parameter.lpg_id%TYPE := 1,
     a_code_type   IN   fr_stan_raw_general_codes.srgc_gct_code_type_id%TYPE := null,
     a_processed_count OUT NUMBER,
