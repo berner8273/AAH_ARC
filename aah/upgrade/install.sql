@@ -36,7 +36,7 @@ LOOP
 
 slr.pg_process_state.rollback_data(r_slr.process_id);
 
-fdr.pg_common.plog('pr_reset_object_state deleted: '||to_char(r_slr.process_id));
+fdr.pg_common.plog('pr_reset_object_state reset: '||to_char(r_slr.process_id));
 
 END LOOP;
 
