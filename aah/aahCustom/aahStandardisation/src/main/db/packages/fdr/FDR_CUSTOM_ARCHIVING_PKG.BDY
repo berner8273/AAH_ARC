@@ -2015,7 +2015,6 @@ new_bal_qtr:=to_number(to_char(new_bal_date,'Q'));
 FOR r_jt IN cJrnTypes
 LOOP
 
-/* Formatted on 08/14/2024 1:29:22 PM (QP5 v5.252.13127.32847) */
 INSERT INTO SLR.SLR_FAK_DAILY_BALANCES_TMP (FDB_FAK_ID,
                                             FDB_BALANCE_DATE,
                                             FDB_BALANCE_TYPE,
