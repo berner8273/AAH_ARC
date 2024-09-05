@@ -1,0 +1,11 @@
+begin
+stn.temp_pkg_merger.pInsertJournalLine(1);
+stn.temp_pkg_merger.pInsertJournalLine(2);
+stn.temp_pkg_merger.pInsertJournalLine(3);
+stn.temp_pkg_merger.pInsertJournalLine(4);
+stn.temp_pkg_merger.pInsertJournalLine(5);
+stn.temp_pkg_merger.pInsertJournalLine(6);
+stn.temp_pkg_merger.pInsertJournalLine(7);
+commit;
+end;
+/
