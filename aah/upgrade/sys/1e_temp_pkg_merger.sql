@@ -365,12 +365,13 @@ PROCEDURE pCreateFeed (anScenerio number) IS
 lhFeedUUID raw(16);
 lhCorrelationId varchar2(40);
 nCnt number;
+dEffDateFeed date := to_date('02-aug-24');
 
 begin
 
 pInitialize;
 
-
+dbms_output.put_line('top of create_line');
 
 --FOR i in 1..6 LOOP
     
@@ -403,11 +404,14 @@ pInitialize;
             raise_application_error(-20113,'unexpected in loop = '||anScenerio||' '||sqlerrm);                            
     END CASE;    
 
-
+dbms_output.put_line('after case');
     select count(*) 
     into nCnt 
     from STN.TEMP_STN_JOURNAL_LINE 
     where feed_uuid = lhFeedUUID; 
+
+ 
+dbms_output.put_line('after ncnt '||deffdate);
 
 
     INSERT INTO stn.feed(
@@ -422,7 +426,7 @@ pInitialize;
         (--feed_sid,is identity column
         lhFeedUUID, --feed_uuid,
         'JOURNAL_LINE', --feed_typ,
-        dEffDate, --effective_date,
+        dEffDateFeed, --effective_date,
         sFeedSystemCD, --system_cd,
         'NONE', --stated_checksum,
         sysdate); --loaded_ts)        
@@ -442,6 +446,7 @@ dbms_output.put_line('after insert to feed');
         'JOURNAL_LINE', --table_nm
         nCnt, -- stated_reord_cnt
         null); --actual_record_cnt
+dbms_output.put_line('after insert to feed record count');
 
 -- allow calling program to commit to keep transaction consistent
 exception
