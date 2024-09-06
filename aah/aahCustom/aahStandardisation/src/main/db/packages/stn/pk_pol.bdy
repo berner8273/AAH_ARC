@@ -368,7 +368,7 @@ and exists (
     AS
     BEGIN
     pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Before Update of Hopper Insurance Policy for cancels',NULL, NULL,NULL, NULL);
-    
+
     MERGE /*+ parallel */
          INTO  hopper_insurance_policy a
         USING (SELECT cs.stream_id
@@ -383,8 +383,8 @@ and exists (
     WHEN MATCHED
     THEN
     UPDATE SET a.event_status = 'X', PROCESS_ID = TO_CHAR (p_step_run_sid)
-               WHERE A.EVENT_STATUS not in ('X','P') and a.LPG_ID = p_lpg_id;    
-          
+               WHERE A.EVENT_STATUS not in ('X','P') and a.LPG_ID = p_lpg_id;
+
         p_no_updated_hpol_records := SQL%ROWCOUNT;
     pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'After Update of Hopper Insurance Policy for cancels', 'sql%rowcount', NULL, sql%rowcount, NULL);
         UPDATE fdr.FR_STAN_RAW_FX_RATE fsrfr
@@ -455,7 +455,7 @@ and exists (
            );
         p_no_updated_hpoltj_records := SQL%ROWCOUNT;
     pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'After Update of hopper insurance policy tax jurisd for cancels', 'sql%rowcount', NULL, sql%rowcount, NULL);
-        
+
     END;
 
     PROCEDURE pr_policy_rval

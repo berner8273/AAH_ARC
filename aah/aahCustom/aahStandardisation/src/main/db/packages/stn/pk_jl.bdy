@@ -987,7 +987,7 @@ and not exists (
                          fie.iie_cover_signing_party = jl.POLICY_ID
                )
 and jl.STREAM_ID is not null and jl.POLICY_ID is not null;
-        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-policy-stream', 'sql%rowcount', NULL, sql%rowcount, NULL);              
+        pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-policy-stream', 'sql%rowcount', NULL, sql%rowcount, NULL);
 
 
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Start validation : journal-line-validate-usd-trans-vs-reportingt-amt', NULL, NULL, NULL, NULL);
@@ -1017,12 +1017,12 @@ and jl.STREAM_ID is not null and jl.POLICY_ID is not null;
                 INNER JOIN VALIDATION_DETAIL vdl ON 1 = 1
                 INNER JOIN ROW_VAL_ERROR_LOG_DEFAULT rveld ON 1 = 1
             WHERE
-                    ( vdl.VALIDATION_CD = 'jl-trans_vs_reporting_amt' AND NVL(jl.chartfield_1,' ') <> 'DNP') 
+                    ( vdl.VALIDATION_CD = 'jl-trans_vs_reporting_amt' AND NVL(jl.chartfield_1,' ') <> 'DNP')
             AND (
-                    JL.LEDGER_CD in ('EURGAAPADJ','UKGAAP_ADJ') 
+                    JL.LEDGER_CD in ('EURGAAPADJ','UKGAAP_ADJ')
                     AND (
                      (JL.TRANSACTION_CCY = JL.FUNCTIONAL_CCY AND JL.TRANSACTION_AMT <> JL.FUNCTIONAL_AMT)
-                        OR              
+                        OR
                         ( JL.REPORTING_AMT <> 0 OR JL.FUNCTIONAL_CCY <> CASE JL.LEDGER_CD
                                 WHEN 'EURGAAPADJ'
                                     THEN 'EUR'
@@ -1030,21 +1030,21 @@ and jl.STREAM_ID is not null and jl.POLICY_ID is not null;
                                 END
                             )
                             )
-                )                            
+                )
 
-            OR (                       
+            OR (
             ( vdl.VALIDATION_CD = 'jl-trans_vs_reporting_amt' AND NVL(jl.chartfield_1,' ') <> 'DNP') AND
-            JL.LEDGER_CD not in ('EURGAAPADJ','UKGAAP_ADJ')                       
+            JL.LEDGER_CD not in ('EURGAAPADJ','UKGAAP_ADJ')
                 AND (
-                        ( 
+                        (
                             JL.REPORTING_AMT <> 0 and JL.TRANSACTION_AMT <> 0
                             AND JL.TRANSACTION_CCY = JL.REPORTING_CCY
                             AND JL.REPORTING_CCY = 'USD'
-                            AND (JL.REPORTING_AMT <> JL.TRANSACTION_AMT) 
-                        )           
+                            AND (JL.REPORTING_AMT <> JL.TRANSACTION_AMT)
+                        )
                         OR (JL.FUNCTIONAL_AMT <> 0 OR REPORTING_CCY <> 'USD')
                     )
-);            
+);
 
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'End validation : journal-line-validate-usd-trans-vs-reportingt-amt', 'sql%rowcount', NULL, sql%rowcount, NULL);
 
@@ -1734,8 +1734,12 @@ AND NOT EXISTS (SELECT cce.ce_input_id FROM fdr.fr_combination_check_error je2 W
         v_no_validated_records NUMBER(38, 9) DEFAULT 0;
         v_no_processed_records NUMBER(38, 9) DEFAULT 0;
         v_total_no_published NUMBER(38, 9) DEFAULT 0;
-        v_no_updated_hopper_records NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
+        s_proc_name VARCHAR2(80) := 'STN.pk_jl.pr_journal_line_prc';
+        gv_ecode     NUMBER := -20001;
+        gv_emsg VARCHAR(10000);
+        s_exception_name VARCHAR2(80);
+
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify journal line records' );
         pr_journal_line_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
@@ -1765,13 +1769,11 @@ AND NOT EXISTS (SELECT cce.ce_input_id FROM fdr.fr_combination_check_error je2 W
             pr_journal_line_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
             IF v_no_processed_records <> v_no_validated_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_no_validated_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
+                s_exception_name:='v_no_processed_records <> v_no_validated_records';
                 raise pub_val_mismatch;
             END IF;
             IF v_total_no_published <> v_no_validated_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_published <> v_no_validated_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+                s_exception_name:='v_total_no_published <> v_no_validated_records';
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
@@ -1780,6 +1782,18 @@ AND NOT EXISTS (SELECT cce.ce_input_id FROM fdr.fr_combination_check_error je2 W
             p_no_processed_records := 0;
             p_no_failed_records    := 0;
         END IF;
+
+           EXCEPTION
+                WHEN pub_val_mismatch THEN
+                    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records ('||to_char(v_no_processed_records)||') <> v_total_no_published('||to_char(v_total_no_published)||')', NULL, NULL, NULL, NULL);
+                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => s_exception_name);
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg||' '||s_exception_name);
+                WHEN OTHERS THEN
+                    ROLLBACK;
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+
     END;
 END PK_JL;
 /

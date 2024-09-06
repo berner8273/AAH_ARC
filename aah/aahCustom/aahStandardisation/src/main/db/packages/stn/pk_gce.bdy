@@ -540,7 +540,7 @@ and not exists (
             select null from stn.HOPPER_GL_COMBO_EDIT_GL hgl
                 where hgl.combo_rule_or_set = gcea.LEDGER_CD || '_' || gcea.LE_CD and
                      hgl.combo_rule_typ = GCE_DEFAULT.LKT_CODE1 and
-                     hgl.combo_attr_or_rule = gcep.PRC_CD 
+                     hgl.combo_attr_or_rule = gcep.PRC_CD
                      )
 ;
         p_no_fsrgc_le_pub := SQL%ROWCOUNT;
@@ -612,6 +612,12 @@ and not exists (
         v_no_fsrgc_product_pub NUMBER(38, 9) DEFAULT 0;
         v_no_fgct_inserted NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
+        s_proc_name VARCHAR2(80) := 'STN.pk_gce.pr_gl_combo_edit_prc';
+        gv_ecode     NUMBER := -20001;
+        gv_emsg VARCHAR(10000);
+        s_exception_name VARCHAR2(80);
+
+
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify GL combo edit process records' );
         pr_gl_combo_edit_idf(p_step_run_sid, p_lpg_id, v_no_gcep_identified_records, v_no_gcea_identified_records, v_no_gcer_identified_records);
@@ -637,21 +643,20 @@ and not exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set gl combo edit assignment status = "P"' );
             pr_gl_combo_edit_sps(p_step_run_sid, v_no_gcea_processed_records, v_no_gcep_processed_records, v_no_gcer_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting processed status for gl combo edit records', 'Total processed records', NULL, v_no_gcea_processed_records + v_no_gcep_processed_records + v_no_gcer_processed_records, NULL);
+
             IF v_no_gcep_validated_records <> v_no_gcep_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcep_validated_records <> v_no_gcep_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
+                s_exception_name := 'Raise pub_val_mismatch - 1';
                 raise pub_val_mismatch;
             END IF;
             IF v_no_gcea_validated_records <> v_no_gcea_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcea_validated_records <> v_no_gcea_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+                s_exception_name := 'Raise pub_val_mismatch - 2';
                 raise pub_val_mismatch;
             END IF;
             IF v_no_gcer_validated_records <> v_no_gcer_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_gcer_identified_records <> v_no_gcer_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
+                s_exception_name := 'Raise pub_val_mismatch - 3';
                 raise pub_val_mismatch;
             END IF;
+
             p_no_processed_records := v_no_gcep_processed_records
                                     + v_no_gcer_processed_records
                                     + v_no_gcea_processed_records;
@@ -665,6 +670,20 @@ and not exists (
             p_no_processed_records := 0;
             p_no_failed_records    := 0;
         END IF;
+
+        EXCEPTION
+                WHEN pub_val_mismatch THEN
+                    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
+                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => s_exception_name );
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg||' '||s_exception_name);
+                WHEN OTHERS THEN
+                    ROLLBACK;
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+
     END;
+
+
 END PK_GCE;
 /

@@ -1,1 +1,11 @@
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_dept.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_eh.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_gce.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_gl_acct.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_glcf.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_jl.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_le.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_ledg.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_lel.bdy
+@@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_tj.bdy
 @@../aahCustom/aahStandardisation/src/main/db/packages/stn/pk_pol.bdy

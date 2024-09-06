@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_LE AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_LE AS
     PROCEDURE pr_legal_entity_idf
         (
             p_step_run_sid IN NUMBER,
@@ -48,7 +48,7 @@ and not exists (
        );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated legal_entity.step_run_sid', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_legal_entity_chr
         (
             p_step_run_sid IN NUMBER,
@@ -109,7 +109,7 @@ and exists (
            );
         p_total_no_fsrb_updated := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_legal_entity_rval
     AS
     BEGIN
@@ -188,7 +188,7 @@ and exists (
                   and fpl.pl_party_legal_clicode     != le.LE_CD
            );
     END;
-    
+
     PROCEDURE pr_legal_entity_svs
         (
             p_no_validated_records OUT NUMBER
@@ -229,7 +229,7 @@ and     exists (
                );
         p_no_validated_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_legal_entity_pub
         (
             p_step_run_sid IN NUMBER,
@@ -392,7 +392,7 @@ and     exists (
             WHERE
                 le.EVENT_STATUS = 'V' AND (le.RPT_CD IS NOT NULL OR le.RPT_DESCR IS NOT NULL);
     END;
-    
+
     PROCEDURE pr_legal_entity_sps
         (
             p_no_processed_records OUT NUMBER
@@ -414,7 +414,7 @@ and     exists (
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_legal_entity_prc
         (
             p_step_run_sid IN NUMBER,
@@ -437,6 +437,12 @@ and     exists (
         v_total_no_fsrohn_updated NUMBER(38, 9) DEFAULT 0;
         v_total_no_fsrb_updated NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
+        s_exception_name VARCHAR2(80);
+        s_proc_name VARCHAR2(80) := 'stn.pk_le.pr_legal_entity_prc';
+        gv_ecode     NUMBER := -20001;
+        gv_emsg VARCHAR(10000);
+
+
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify legal entity records' );
         pr_legal_entity_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
@@ -462,28 +468,24 @@ and     exists (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing internal entity hopper records', 'v_total_no_fsrie_published', NULL, v_total_no_fsrie_published, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing org node hier records', 'v_total_no_fsrohn_published', NULL, v_total_no_fsrohn_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish legal entity log records' );
-            pr_publish_log('STANDARDISATION_LOG');
+            pr_publish_log;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set legal entity status = "P"' );
             pr_legal_entity_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
             IF v_total_no_fsrpl_published <> v_total_no_fsrpb_published THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsrpl_published <> v_total_no_fsrpb_published', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
+                s_exception_name := 'Raise pub_val_mismatch - 1';
                 raise pub_val_mismatch;
             END IF;
-            IF v_total_no_fsrpl_published <> v_total_no_fsrie_published THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsrpl_published <> v_total_no_fsrie_published', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+            IF v_total_no_fsrpl_published  <> v_total_no_fsrie_published THEN
+                s_exception_name := 'Raise pub_val_mismatch - 2';
                 raise pub_val_mismatch;
             END IF;
             IF v_total_no_fsrpl_published <> v_total_no_fsrohn_published THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_total_no_fsrpl_published <> v_total_no_fsrohn_published', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 3' );
+                s_exception_name := 'Raise pub_val_mismatch - 3';
                 raise pub_val_mismatch;
             END IF;
             IF v_no_processed_records <> v_no_validated_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_no_validated_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 4' );
+                s_exception_name := 'Raise pub_val_mismatch - 4';
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
@@ -492,6 +494,19 @@ and     exists (
             p_no_processed_records := 0;
             p_no_failed_records    := 0;
         END IF;
+
+        EXCEPTION
+                WHEN pub_val_mismatch THEN
+                    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
+                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => s_exception_name );
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg||' '||s_exception_name);
+                WHEN OTHERS THEN
+                    ROLLBACK;
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+
+
     END;
 END PK_LE;
 /

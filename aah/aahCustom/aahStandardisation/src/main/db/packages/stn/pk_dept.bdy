@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_DEPT AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_DEPT AS
     PROCEDURE pr_department_idf
         (
             p_step_run_sid IN NUMBER,
@@ -91,7 +91,7 @@ and not exists (
               );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated event_status to X on discarded records', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_department_pub
         (
             p_step_run_sid IN NUMBER,
@@ -138,7 +138,7 @@ and not exists (
                     (stn_department.DEPT_CD, stn_department.DEPT_DESCR);
         p_total_no_gui_published := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_department_sps
         (
             p_no_processed_records OUT NUMBER
@@ -164,7 +164,7 @@ and not exists (
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_department_chr
         (
             p_step_run_sid IN NUMBER,
@@ -193,7 +193,7 @@ and exists (
            );
         p_no_updated_hopper_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_department_prc
         (
             p_step_run_sid IN NUMBER,
@@ -208,6 +208,11 @@ and exists (
         v_total_no_gui_published NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hopper_records NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
+        s_proc_name VARCHAR2(80) := 'STN.PK_DEPT.pr_department_prc';
+        gv_ecode     NUMBER := -20001;
+        gv_emsg VARCHAR(10000);
+        s_exception_name VARCHAR2(80);
+
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify department records' );
         pr_department_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
@@ -223,22 +228,35 @@ and exists (
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set department status = "P"' );
             pr_department_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
+
             IF v_no_processed_records <> v_no_identified_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_no_identified_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
+                s_exception_name:= 'v_no_processed_records <> v_no_identified_records';
                 raise pub_val_mismatch;
             END IF;
+
             IF v_no_processed_records <> v_total_no_published THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_total_no_published', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
+                s_exception_name:= 'v_no_processed_records <> v_total_no_published';
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
             p_no_failed_records    := v_no_identified_records - v_no_processed_records;
+
         ELSE
             p_no_processed_records := 0;
             p_no_failed_records    := 0;
         END IF;
+
+           EXCEPTION
+                WHEN pub_val_mismatch THEN
+                    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records ('||to_char(v_no_processed_records)||') <> v_total_no_published('||to_char(v_total_no_published)||')', NULL, NULL, NULL, NULL);
+                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => s_exception_name);
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg||' '||s_exception_name);
+                WHEN OTHERS THEN
+                    ROLLBACK;
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+
     END;
 END PK_DEPT;
 /

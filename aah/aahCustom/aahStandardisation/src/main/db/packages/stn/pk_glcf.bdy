@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_GLCF AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_GLCF AS
     PROCEDURE pr_gl_chartfield_chr
         (
             p_step_run_sid IN NUMBER,
@@ -28,7 +28,7 @@ and exists (
            );
         p_no_updated_hopper_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_gl_chartfield_idf
         (
             p_step_run_sid IN NUMBER,
@@ -123,7 +123,7 @@ and not exists (
               );
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated event_status to X on discarded records', 'sql%rowcount', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_gl_chartfield_pub
         (
             p_step_run_sid IN NUMBER,
@@ -150,7 +150,7 @@ and not exists (
                 INNER JOIN FEED fd ON gcf.FEED_UUID = fd.FEED_UUID;
         p_total_no_published := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_gl_chartfield_sps
         (
             p_no_processed_records OUT NUMBER
@@ -172,7 +172,7 @@ and not exists (
        );
         p_no_processed_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_gl_chartfield_prc
         (
             p_step_run_sid IN NUMBER,
@@ -185,7 +185,14 @@ and not exists (
         v_no_processed_records NUMBER(38, 9) DEFAULT 0;
         v_total_no_published NUMBER(38, 9) DEFAULT 0;
         v_no_updated_hopper_records NUMBER(38, 9) DEFAULT 0;
+        s_exception_name VARCHAR2(80);
         pub_val_mismatch EXCEPTION;
+        s_proc_name VARCHAR2(80) := 'STN.pk_glcf.pr_gl_chartfield_prc';
+        gv_ecode     NUMBER := -20001;
+        gv_emsg VARCHAR(10000);
+
+
+
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify GL chartfield records' );
         pr_gl_chartfield_idf(p_step_run_sid, p_lpg_id, v_no_identified_records);
@@ -201,13 +208,11 @@ and not exists (
             pr_gl_chartfield_sps(v_no_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status', 'v_no_processed_records', NULL, v_no_processed_records, NULL);
             IF v_no_processed_records <> v_no_identified_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_no_identified_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
+                s_exception_name:='Processed <> Identified';
                 raise pub_val_mismatch;
             END IF;
             IF v_no_processed_records <> v_total_no_published THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_processed_records <> v_total_no_published', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch' );
+                s_exception_name:='Processed <> Published';
                 raise pub_val_mismatch;
             END IF;
             p_no_processed_records := v_no_processed_records;
@@ -216,6 +221,18 @@ and not exists (
             p_no_processed_records := 0;
             p_no_failed_records    := 0;
         END IF;
+
+        EXCEPTION
+                WHEN pub_val_mismatch THEN
+                    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
+                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => s_exception_name );
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg||' '||s_exception_name);
+                WHEN OTHERS THEN
+                    ROLLBACK;
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+
     END;
 END PK_GLCF;
 /

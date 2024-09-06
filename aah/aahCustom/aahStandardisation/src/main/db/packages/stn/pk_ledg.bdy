@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY stn.PK_LEDG AS
+CREATE OR REPLACE PACKAGE BODY STN.PK_LEDG AS
     PROCEDURE pr_ledger_chr
         (
             p_step_run_sid IN NUMBER,
@@ -23,7 +23,7 @@ CREATE OR REPLACE PACKAGE BODY stn.PK_LEDG AS
                 hlel.EVENT_STATUS <> 'P' AND hlel.LPG_ID = p_lpg_id;
         p_no_updated_hlel_records := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_ledger_idf
         (
             p_step_run_sid IN NUMBER,
@@ -107,7 +107,7 @@ and not exists (
         p_no_lel_identified_recs := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Updated legal_entity_ledger step_run_sid', 'p_no_lel_identified_recs', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_ledger_pub
         (
             p_step_run_sid IN NUMBER,
@@ -220,7 +220,7 @@ and not exists ( select
                );
         p_no_hlel_pub := SQL%ROWCOUNT;
     END;
-    
+
     PROCEDURE pr_ledger_rval
     AS
     BEGIN
@@ -331,7 +331,7 @@ and not exists (
                           pl.pl_party_legal_clicode = lel.LE_CD
                );
     END;
-    
+
     PROCEDURE pr_ledger_sps
         (
             p_step_run_sid IN NUMBER,
@@ -446,7 +446,7 @@ and (
         p_no_lel_processed_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of legal_entity_ledger records set to processed', 'p_no_lel_processed_records', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_ledger_svs
         (
             p_step_run_sid IN NUMBER,
@@ -564,7 +564,7 @@ and (
                               stn.accounting_basis_ledger    abl
                          join stn.standardisation_log        sl  on abl.row_sid = sl.row_in_error_key_id
                    where
-                         sl.table_in_error_name = 'accounting_basis_ledger' 
+                         sl.table_in_error_name = 'accounting_basis_ledger'
                      and abl.ledger_cd          = lel.ledger_cd
                      and abl.feed_uuid          = lel.feed_uuid
               );
@@ -592,7 +592,7 @@ and (
         p_no_validated_lel_records := SQL%ROWCOUNT;
         pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Number of legal_entity_ledger records set to valid', 'p_no_validated_lel_records', NULL, sql%rowcount, NULL);
     END;
-    
+
     PROCEDURE pr_ledger_prc
         (
             p_step_run_sid IN NUMBER,
@@ -620,6 +620,11 @@ and (
         v_no_gen_lk_lel_updated NUMBER(38, 9) DEFAULT 0;
         v_no_lel_published NUMBER(38, 9) DEFAULT 0;
         pub_val_mismatch EXCEPTION;
+        s_exception_name VARCHAR2(80);
+        s_proc_name VARCHAR2(80) := 'stn.pk_ledg.pr_ledger_prc';
+        gv_ecode     NUMBER := -20001;
+        gv_emsg VARCHAR(10000);
+
     BEGIN
         dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Identify ledger records' );
         pr_ledger_idf(p_step_run_sid, p_lpg_id, v_no_l_identified_records, v_no_abl_identified_records, v_no_lel_identified_records);
@@ -642,25 +647,23 @@ and (
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed updating general lookup legal_entity_ledger records', 'v_no_gen_lk_lel_updated', NULL, v_no_gen_lk_lel_updated, NULL);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed publishing hopper_legal_entity_ledger records', 'v_no_lel_published', NULL, v_no_lel_published, NULL);
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Publish ledger standardise log records' );
-            pr_publish_log('STANDARDISATION_LOG');
+            pr_publish_log;
             dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Set ledger status = "P"' );
             pr_ledger_sps(p_step_run_sid, v_no_l_processed_records, v_no_abl_processed_records, v_no_lel_processed_records);
             pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Completed setting published status for ledger records', 'v_no_processed_records', NULL, v_no_l_processed_records + v_no_abl_processed_records + v_no_lel_processed_records, NULL);
             IF v_no_l_validated_records <> v_no_l_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_ud_validated_records <> v_no_ud_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 1' );
+                s_exception_name:='v_no_ud_validated_records <> v_no_ud_processed_records';
                 raise pub_val_mismatch;
             END IF;
             IF v_no_abl_validated_records <> v_no_abl_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_ug_validated_records <> v_no_ug_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+                s_exception_name:='v_no_ug_validated_records <> v_no_ug_processed_records';
                 raise pub_val_mismatch;
             END IF;
             IF v_no_lel_validated_records <> v_no_lel_processed_records THEN
-                pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : v_no_ug_validated_records <> v_no_ug_processed_records', NULL, NULL, NULL, NULL);
-                dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => 'Raise pub_val_mismatch - 2' );
+                s_exception_name:='v_no_lel_validated_records <> v_no_lel_processed_records';
                 raise pub_val_mismatch;
             END IF;
+
             p_no_processed_records := v_no_l_processed_records
                                     + v_no_abl_processed_records
                                     + v_no_lel_processed_records;
@@ -674,6 +677,18 @@ and (
             p_no_processed_records := 0;
             p_no_failed_records    := 0;
         END IF;
+
+        EXCEPTION
+                WHEN pub_val_mismatch THEN
+                    pr_step_run_log(p_step_run_sid, $$plsql_unit, $$plsql_line, 'Exception : '||s_exception_name, NULL, NULL, NULL, NULL);
+                    dbms_application_info.set_module ( module_name => $$plsql_unit , action_name => s_exception_name );
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg||' '||s_exception_name);
+                WHEN OTHERS THEN
+                    ROLLBACK;
+                    gv_emsg := 'Failure in ' || s_proc_name  || ': '|| sqlerrm;
+                    RAISE_APPLICATION_ERROR(gv_ecode, gv_emsg);
+
     END;
 END PK_LEDG;
 /
