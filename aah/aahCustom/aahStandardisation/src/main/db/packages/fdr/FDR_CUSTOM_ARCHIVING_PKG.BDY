@@ -2058,8 +2058,8 @@ INSERT INTO SLR.SLR_FAK_DAILY_BALANCES_TMP (FDB_FAK_ID,
              ELSE 0
           END,
           FDB_BASE_LTD_BALANCE,
-          FDB_LOCAL_DAILY_MOVEMENT,
-          FDB_LOCAL_MTD_BALANCE,
+          0,
+          0,
           CASE
              WHEN FDB_PERIOD_YEAR = new_bal_year THEN FDB_LOCAL_YTD_BALANCE
              ELSE 0
