@@ -13,3 +13,4 @@ stn.temp_pkg_merger.pInsertJournalLine(10);
 stn.temp_pkg_merger.pInsertJournalLine(11);
 commit;
 end;
+/
