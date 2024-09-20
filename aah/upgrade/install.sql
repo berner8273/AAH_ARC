@@ -24,8 +24,8 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
- @@stn/us78363.sql
+conn ~slr_logon
+ @@stn/bug_slr_stats.sql
  
 /* End AAH custom upgrades */
 
