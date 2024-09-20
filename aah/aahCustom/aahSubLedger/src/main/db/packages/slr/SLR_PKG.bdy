@@ -277,8 +277,8 @@ AS
     lv_START_TIME   PLS_INTEGER := 0;
 
 BEGIN
-   gp_rate_set:=p_rate_set;  
-   slr_post_journals_pkg.gp_rate_set:=p_rate_set;  
+   gp_rate_set:=p_rate_set;
+   slr_post_journals_pkg.gp_rate_set:=p_rate_set;
     IF pg_process_state.Is_process_correct(p_entity_proc_group)=FALSE THEN
      RAISE_APPLICATION_ERROR(-20001, 'Fatal error during call of pPROCESS_SLR. The data in the system may be inconsistent. Please rollback data ');
   END IF;
@@ -333,8 +333,8 @@ BEGIN
 
     BEGIN
     lv_START_TIME:=DBMS_UTILITY.GET_TIME();
-    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'SLR',tabname=>'SLR_JRNL_LINES_UNPOSTED',partname => 'P'||p_entity_proc_group , estimate_percent=>dbms_stats.auto_sample_size,degree=>8, granularity => 'SUBPARTITION');
-
+--    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'SLR',tabname=>'SLR_JRNL_LINES_UNPOSTED',partname => 'P'||p_entity_proc_group , estimate_percent=>dbms_stats.auto_sample_size,degree=>8, granularity => 'SUBPARTITION');
+    dbms_stats.gather_table_stats ( ownname => 'SLR' , tabname => 'SLR_JRNL_LINES_UNPOSTED' , estimate_percent => 30 , cascade => true );
     SLR_ADMIN_PKG.PerfInfo( 'Gather table statistics. Execution time: ' || (DBMS_UTILITY.GET_TIME() - lv_START_TIME)/100.0 || ' s.');
     END;
 
@@ -1132,10 +1132,10 @@ BEGIN
     SELECT  COUNT(*)
       INTO  v_records_processed
       FROM  slr_fak_segment_3;
-      
+
     p_no_processed_records := v_records_processed;
     p_no_failed_records := 0;
-      
+
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         pr_error(slr_global_pkg.C_MAJERR, 'Failure to insert segment 3, invalid entity supplied: '
@@ -1196,7 +1196,7 @@ BEGIN
 
     p_no_processed_records := v_records_processed;
     p_no_failed_records := 0;
-    
+
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         pr_error(slr_global_pkg.C_MAJERR, 'Failure to insert segment 4, invalid entity  supplied: '
@@ -1253,7 +1253,7 @@ BEGIN
 
     p_no_processed_records := v_records_processed;
     p_no_failed_records := 0;
-    
+
 EXCEPTION
   WHEN NO_DATA_FOUND THEN
         pr_error(slr_global_pkg.C_MAJERR, 'Failure to insert segment 5, invalid entity supplied: '
@@ -1308,7 +1308,7 @@ BEGIN
 
     p_no_processed_records := v_records_processed;
     p_no_failed_records := 0;
-    
+
 EXCEPTION
   WHEN NO_DATA_FOUND THEN
         pr_error(slr_global_pkg.C_MAJERR, 'Failure to insert segment 6, invalid entity supplied: '
@@ -1449,7 +1449,7 @@ BEGIN
 
     o_records_processed := v_records_processed;
     o_records_failed := 0;
-    
+
 EXCEPTION
   WHEN NO_DATA_FOUND THEN
         pr_error(slr_global_pkg.C_MAJERR, 'Failure to insert currencies, unable to obtain entity set: '
