@@ -25,7 +25,7 @@ define unittest_login=~8
 /* Begin AAH custom upgrades */
 
 conn ~sys_logon as sysdba
- @@sys/3_populate_stn.sql
+ @@sys/3_populate_stn_cr.sql
  
 /* End AAH custom upgrades */
 
