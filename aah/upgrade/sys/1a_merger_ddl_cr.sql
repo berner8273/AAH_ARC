@@ -4,7 +4,26 @@ nCnt number;
 sSQL varchar(5000);
 begin
 
+sSQL := 'grant select on fdr.fr_instrument to stn';
+execute immediate sSQL;
 
+sSQL := 'grant select on fdr.fr_instr_insure_extend to stn';
+execute immediate sSQL;
+
+sSQL := 'grant select on fdr.fr_trade to stn';
+execute immediate sSQL;
+
+sSQL := 'grant select on slr.SLR_EBA_DAILY_BALANCES to stn';
+execute immediate sSQL;
+
+sSQL := 'grant select on slr.SLR_LAST_BALANCE_HELPER to stn';
+execute immediate sSQL;
+
+sSQL := 'grant select on slr.slr_last_balances to stn';
+execute immediate sSQL;
+
+sSQL := 'grant select on rdr.rrv_ag_insurance_policy to stn';
+execute immediate sSQL;
 
 select count(*) into nCnt from all_tables where lower(table_name) = 'temp_stn_journal_line';
 IF nCnt = 1 THEN 
