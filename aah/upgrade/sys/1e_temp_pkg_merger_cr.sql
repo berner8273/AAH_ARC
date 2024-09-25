@@ -1039,7 +1039,7 @@ ELSE
 END IF;    
          
 
-INSERT INTO stn.temp_stn_journal_line (
+INSERT INTO temp_stn_journal_line (
     row_sid,
     source_typ_cd,
     correlation_id,
