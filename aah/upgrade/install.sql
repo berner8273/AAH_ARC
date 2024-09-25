@@ -24,11 +24,10 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 conn ~sys_logon as sysdba
-@@sys/1a_merger_ddl.sql
-@@sys/1b_merger_temp_reference_data.sql
-@@sys/1c_insert_into_merger_create_balance_table.sql
-@@sys/1d_temp_pkg_merger.sql
-@@sys/1e_temp_pkg_merger.sql
+@@sys/1a_merger_ddl_cr.sql
+@@sys/1c_insert_into_merger_create_balance_table_cr.sql
+@@sys/1d_temp_pkg_merger_cr.sql
+@@sys/1e_temp_pkg_merger_cr.sql
 
  
 /* End AAH custom upgrades */
