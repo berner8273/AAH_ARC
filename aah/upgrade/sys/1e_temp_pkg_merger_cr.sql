@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY STN.temp_pkg_merger AS
+CREATE OR REPLACE PACKAGE BODY STN.temp_pkg_merger_cr AS
 
 hFeedUUID1 raw(16);
 hFeedUUID2 raw(16);
@@ -25,14 +25,14 @@ hCorrelationId10 varchar2(40);
 hCorrelationId11 varchar2(40);
 
 
-dEffDate varchar(30) :='to_date(''02-aug-2024'')';
+dEffDate varchar(30) :='to_date(''02-sep-2024'')';
 dCurrentDate date;
 dOpenPeriod date;
 nExists number; 
 sSourceTypeCd varchar2(2) := 'CA';
 sChartfield varchar(3) := 'DNP';
-sFeedSystemCD varchar(20) := 'AGM AGC Merger';
-sJournalLineDesc varchar2(20) := 'AGM AGC Merger';
+sFeedSystemCD varchar(20) := 'AGM AGC Merger CR';
+sJournalLineDesc varchar2(20) := 'AGM AGC Merger CR';
 sJrnlSource varchar(20) := 'DEFAULT';
 sJournalType varchar(20) := 'PERC';
 sClearingAcct varchar(11) := '18860170-01'; -- Acquisition clg insurance 
@@ -62,60 +62,35 @@ sMonth varchar(2);
 BEGIN
 
 
-select standard_hash('AGMAGC Merger1', 'MD5') into hFeedUUID1 from dual;
-select standard_hash('AGMAGC Merger2', 'MD5') into hFeedUUID2 from dual;
-select standard_hash('AGMAGC Merger3', 'MD5') into hFeedUUID3 from dual;
-select standard_hash('AGMAGC Merger4', 'MD5') into hFeedUUID4 from dual;
-select standard_hash('AGMAGC Merger5', 'MD5') into hFeedUUID5 from dual;
-select standard_hash('AGMAGC Merger6', 'MD5') into hFeedUUID6 from dual;
-select standard_hash('AGMAGC Merger7', 'MD5') into hFeedUUID7 from dual;
-select standard_hash('AGMAGC Merger8', 'MD5') into hFeedUUID8 from dual;
-select standard_hash('AGMAGC Merger9', 'MD5') into hFeedUUID9 from dual;
-select standard_hash('AGMAGC Merger10', 'MD5') into hFeedUUID10 from dual;
-select standard_hash('AGMAGC Merger11', 'MD5') into hFeedUUID11 from dual;
+select standard_hash('AGMAGC Merger1CR', 'MD5') into hFeedUUID1 from dual;
+select standard_hash('AGMAGC Merger2CR', 'MD5') into hFeedUUID2 from dual;
+select standard_hash('AGMAGC Merger3CR', 'MD5') into hFeedUUID3 from dual;
+select standard_hash('AGMAGC Merger4CR', 'MD5') into hFeedUUID4 from dual;
+select standard_hash('AGMAGC Merger5CR', 'MD5') into hFeedUUID5 from dual;
+select standard_hash('AGMAGC Merger6CR', 'MD5') into hFeedUUID6 from dual;
+select standard_hash('AGMAGC Merger7CR', 'MD5') into hFeedUUID7 from dual;
+select standard_hash('AGMAGC Merger8CR', 'MD5') into hFeedUUID8 from dual;
+select standard_hash('AGMAGC Merger9CR', 'MD5') into hFeedUUID9 from dual;
+select standard_hash('AGMAGC Merger10CR', 'MD5') into hFeedUUID10 from dual;
+select standard_hash('AGMAGC Merger11CR', 'MD5') into hFeedUUID11 from dual;
 
-select standard_hash('AGMAGC Merger1C' ,'MD5') into hCorrelationId1 from dual;
-select standard_hash('AGMAGC Merger2C' ,'MD5') into hCorrelationId2 from dual;
-select standard_hash('AGMAGC Merger3C' ,'MD5') into hCorrelationId3 from dual;
-select standard_hash('AGMAGC Merger4C' ,'MD5') into hCorrelationId4 from dual;
-select standard_hash('AGMAGC Merger5C' ,'MD5') into hCorrelationId5 from dual;
-select standard_hash('AGMAGC Merger6C' ,'MD5') into hCorrelationId6 from dual;
-select standard_hash('AGMAGC Merger7C' ,'MD5') into hCorrelationId7 from dual;
-select standard_hash('AGMAGC Merger8C' ,'MD5') into hCorrelationId8 from dual;
-select standard_hash('AGMAGC Merger9C' ,'MD5') into hCorrelationId9 from dual;
-select standard_hash('AGMAGC Merger10C' ,'MD5') into hCorrelationId10 from dual;
-select standard_hash('AGMAGC Merger11C' ,'MD5') into hCorrelationId11 from dual;
+select standard_hash('AGMAGC Merger1CCR' ,'MD5') into hCorrelationId1 from dual;
+select standard_hash('AGMAGC Merger2CCR' ,'MD5') into hCorrelationId2 from dual;
+select standard_hash('AGMAGC Merger3CCR' ,'MD5') into hCorrelationId3 from dual;
+select standard_hash('AGMAGC Merger4CCR' ,'MD5') into hCorrelationId4 from dual;
+select standard_hash('AGMAGC Merger5CCR' ,'MD5') into hCorrelationId5 from dual;
+select standard_hash('AGMAGC Merger6CR' ,'MD5') into hCorrelationId6 from dual;
+select standard_hash('AGMAGC Merger7CCR' ,'MD5') into hCorrelationId7 from dual;
+select standard_hash('AGMAGC Merger8CCR' ,'MD5') into hCorrelationId8 from dual;
+select standard_hash('AGMAGC Merger9CCR' ,'MD5') into hCorrelationId9 from dual;
+select standard_hash('AGMAGC Merger10CCR' ,'MD5') into hCorrelationId10 from dual;
+select standard_hash('AGMAGC Merger11CCR' ,'MD5') into hCorrelationId11 from dual;
 
 
 update fdr.fr_general_codes
 set gc_active = 'I'
 where gc_client_code = '14400330';
 
-
--- 
-/*
-select count(*) into nExists from stn.feed where feed_uuid = hFeedUUID;  
-
-IF nExists = 1 THEN
-
-    -- records exist.  This is being rerun
-    select count(*) 
-    into nExists 
-    from stn.journal_line 
-    where
-        feed_uuid = hFeedUUID and
-        event_status  = 'P';
-
-    IF nExists > 0 THEN
-        raise_application_error(-20999,'Entries already exist and have been processed.  This deployment can not be rerun.');
-    END IF;
-
-    delete from stn.journal_line where feed_uuid = hFeedUUID;
-    delete from stn.feed_record_count where feed_uuid  = hFeedUUID;
-    delete from stn.feed where feed_uuid = hFeedUUID;
- 
-END IF;                
-*/
 
 -- use the open cash period.  Expected to be march but this allows testing inenvironments that may have different open dates
 select period_end 
@@ -369,9 +344,6 @@ CLOSE cur;
 
 pCreateFeed(anScenerio);
 
-
---update stn.temp_stn_journal_line set processed = 'Y' where scenerio = anScenerio;
-
 commit;
 
 exception
@@ -404,7 +376,7 @@ PROCEDURE pCreateFeed (anScenerio number) IS
 lhFeedUUID raw(16);
 lhCorrelationId varchar2(40);
 nCnt number;
-dEffDateFeed date := to_date('02-aug-24');
+dEffDateFeed date := to_date('02-sep-24');
 
 begin
 
@@ -412,8 +384,7 @@ pInitialize;
 
 dbms_output.put_line('top of create_line');
 
---FOR i in 1..6 LOOP
-    
+   
     -- timestamp is in the unique key
     dbms_lock.sleep(1);
      
@@ -680,8 +651,7 @@ sTop :=
 'where ' || 
     '(abs(b.eab_tran_ltd_balance) + abs( b.eab_base_ltd_balance) + abs(b.eab_local_ltd_balance)) <> 0 and  '            || 
     'ip.policy_version = (select max(p2.policy_version) from rdr.rrv_ag_insurance_policy p2 where ip.stream_id = p2.stream_id) and '||
-     'ec.ec_attribute_4 NOT in (select event_typ from stn.event_hierarchy_reference ehr where event_grp = ''CONT_RSRV'') and '||
-    'fc.fc_account <> ''22400000-01'' and ' ||
+    'fc.fc_account in ( ''22400000-01'' , ''31460150-01'' ) and ' ||
     'fc.fc_account <> ''13600100-01'' and ' ||
     'eab_balance_type = 50   '            ;
 sOrder := 
@@ -876,13 +846,6 @@ sTop :=
     'sScenerio /*scenerio*/, '                                          ||
     'ec.ec_eba_id '                                                     ||
 'from '                                                                 ||
---    'stn.insurance_policy_reference ip '                                ||
---    'full outer join le_map map  on ip.le_cd = map.reinsco '                       || 
-    
---    'full outer join stn.insurance_policy_reference ip_parent ON ip.parent_stream_id = ip_parent.stream_id ' ||  
---    'full outer join le_map map_parent  on ip_parent.le_cd = map_parent.reinsco '                                 ||
-    
---    'join slr.slr_eba_combinations ec on ip.stream_id = ec.ec_attribute_1 '                               ||
     'slr.slr_eba_combinations ec ' ||
     'join slr.slr_fak_combinations fc ON ec.ec_fak_id = fc.fc_fak_id '                                     ||  
     'join stn.merger_balances b on b.eab_eba_id = ec.ec_eba_id '                                           || 
@@ -893,8 +856,7 @@ sTop :=
 'where ' || 
     '(abs(b.eab_tran_ltd_balance) + abs( b.eab_base_ltd_balance) + abs(b.eab_local_ltd_balance)) <> 0 and  '            || 
     --'ip.policy_version = (select max(p2.policy_version) from rdr.rrv_ag_insurance_policy p2 where ip.stream_id = p2.stream_id) and '||
-     'ec.ec_attribute_4 NOT in (select event_typ from stn.event_hierarchy_reference ehr where event_grp = ''CONT_RSRV'') and '||
-    'fc.fc_account <> ''22400000-01'' and ' ||
+    'fc.fc_account in (''22400000-01'', ''31460150-01'') and ' ||
     'fc.fc_account <> ''13600100-01'' and ' ||
     'eab_balance_type = 50 and  ' ||
     'fc_segment_4 not in (''FSAIC'',''FSABM'',''MACRP'') and  ' ||
@@ -1354,10 +1316,9 @@ commit;
 
 -- Close companies into CA002
 nScenerio := 6;
-sWhere := ' AND fc.fc_entity in (''CA005'' , ''EF030'',''EM020'',''CARA1'')';
+sWhere :=           ' AND fc.fc_entity in (''CA005'' , ''EF030'',''EM020'',''CARA1'')';
 sWhere := sWhere || ' AND NOT (fc_entity = ''CARA1'' and map_parent.le_cd = ''FSANY'' and  map.le_cd = ''AGCRP'')';
-sWhere := sWhere || ' AND NOT (map.le_cd = ''AGCRP'' and map_parent.le_cd = ''FSAUK'' and  fc_account like ''%-02'' and fc_segment_7 = ''CA'' and fc.fc_entity  in (''AGFRA'', ''FSANY'', ''CARA1''))';   
-sWhere := sWhere || ' AND NOT (fc_entity = ''EM020'' and  fc.fc_segment_4 in (''MACRP'',''FSABM'',''FSAIC''))';
+sWhere := sWhere || ' AND NOT (fc_entity = ''EM020'' and  fc.fc_segment_4 in (''FSABM'',''FSAIC''))';
 --sWhere := ' AND fc.fc_entity in (''CARA1'')';
 dbms_output.put_line(swhere);
 sSQL := fBuildSql(sWhere,nScenerio);
@@ -1400,7 +1361,7 @@ update stn.temp_stn_journal_line set balance_type = '26', entry_type = '26A' whe
 commit;
 
 nScenerio := 8;
-sWhere := ' AND  fc_entity = ''FSANY'' and  substr(fc_account,1,8) = 13300210'; 
+sWhere := ' AND  fc_entity = ''FSANY'' and  substr(fc_account,1,8) in (22400000, 31460150)'; 
    
 dbms_output.put_line(swhere);
 sSQL := fBuildSqlNoStream(sWhere,nScenerio);
