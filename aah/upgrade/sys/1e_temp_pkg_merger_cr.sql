@@ -535,7 +535,7 @@ END CASE;
 --sWhere := sWhere || ' and fc.fc_segment_8 = ''51571'' ';
 
 sTop := 
-'INSERT INTO temp_stn_journal_line ( '      ||
+'INSERT INTO stn.temp_stn_journal_line ( '      ||
     'row_sid,  '                ||-- for now hardcode to zero.  It will get populated on insert into the real table
     'source_typ_cd, '           ||
     'correlation_id, '          ||
@@ -746,7 +746,7 @@ END CASE;
 --sWhere := sWhere || ' and fc.fc_segment_8 = ''51571'' ';
 
 sTop := 
-'INSERT INTO temp_stn_journal_line ( '      ||
+'INSERT INTO stn.temp_stn_journal_line ( '      ||
     'row_sid,  '                ||-- for now hardcode to zero.  It will get populated on insert into the real table
     'source_typ_cd, '           ||
     'correlation_id, '          ||
@@ -1039,7 +1039,7 @@ ELSE
 END IF;    
          
 
-INSERT INTO temp_stn_journal_line (
+INSERT INTO stn.temp_stn_journal_line (
     row_sid,
     source_typ_cd,
     correlation_id,
