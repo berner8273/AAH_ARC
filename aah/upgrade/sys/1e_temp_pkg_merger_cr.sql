@@ -96,7 +96,7 @@ where gc_client_code = '14400330';
 select period_end 
 into dOpenPeriod
 from stn.period_status ps 
-where event_class = 'CASH_TXN';
+where event_class = 'CONT_RSRV';
 
 select extract(month from dOpenPeriod) into sMonth from dual;
 IF length(sMonth) = 1 THEN
