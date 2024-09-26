@@ -24,8 +24,17 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
- @@stn/us78363.sql
+conn ~fdr_logon
+ begin
+
+delete from fdr.fr_general_lookup
+where 
+    lk_lkt_lookup_type_code   = 'EVENT_CLASS_PERIOD' and 
+    lk_match_key1 = 'BALANCE_OTHERS' and
+    lk_match_key2 >= 2024;
+commit;
+end;    
+/
  
 /* End AAH custom upgrades */
 
