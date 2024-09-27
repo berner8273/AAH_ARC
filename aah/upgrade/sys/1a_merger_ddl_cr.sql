@@ -4,6 +4,9 @@ nCnt number;
 sSQL varchar(5000);
 begin
 
+sSQL := 'grant delete on fdr.fr_general_lookup to stn';
+execute immediate sSQL;
+
 sSQL := 'grant select on fdr.fr_instrument to stn';
 execute immediate sSQL;
 
