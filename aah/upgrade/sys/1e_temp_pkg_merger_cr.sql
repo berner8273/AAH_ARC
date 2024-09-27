@@ -86,13 +86,12 @@ select standard_hash('AGMAGC Merger9CCR' ,'MD5') into hCorrelationId9 from dual;
 select standard_hash('AGMAGC Merger10CCR' ,'MD5') into hCorrelationId10 from dual;
 select standard_hash('AGMAGC Merger11CCR' ,'MD5') into hCorrelationId11 from dual;
 
-
 update fdr.fr_general_codes
 set gc_active = 'I'
 where gc_client_code = '14400330';
 
 
--- use the open cash period.  Expected to be march but this allows testing inenvironments that may have different open dates
+-- use the CRh period
 select period_end 
 into dOpenPeriod
 from stn.period_status ps 
@@ -116,6 +115,13 @@ IF dEffDate is null THEN
     rollback;
     raise_application_error(-20999,'Bad effDate');
 END IF;
+
+
+delete from   fdr.fr_general_lookup
+where 
+    lk_lkt_lookup_type_code   = 'EVENT_CLASS_PERIOD' and 
+    lk_match_key1 = 'BALANCE_OTHERS' and
+    lk_match_key2 >= 2024;
 
 
 -- temp open obsolete event class
