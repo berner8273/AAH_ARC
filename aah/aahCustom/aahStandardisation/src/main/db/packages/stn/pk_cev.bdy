@@ -1399,6 +1399,7 @@ and not exists (
                            left join stn.posting_method_derivation_rein psmre  on (
                                                                                         cevnid.business_unit           = psmre.le_1_cd
                                                                                     and cevnid.affiliate               = psmre.le_2_cd
+                                                                                    and pdmic.legal_entity_link_typ = 'GAAP_CONSOLIDATION'
                                                                                   )
                           where
                                 cevnid.generate_interco_accounting = 'Y'

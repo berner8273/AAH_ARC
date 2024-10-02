@@ -10287,7 +10287,8 @@ return;
                               ELE.LEGAL_ENTITY_LINK_TYP)
                 LEFT JOIN stn.posting_method_derivation_rein psmre
                    ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
-                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD
+                       AND pmd.legal_entity_link_typ='GAAP_CONSOLIDATION')
                 LEFT JOIN STN.POSTING_LEDGER pl2 on (
                     pl2.ledger_id = pmd.OUTPUT_LEDGER_ID )
           WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
@@ -10363,7 +10364,8 @@ return;
                                       ELE.LEGAL_ENTITY_LINK_TYP)
                         LEFT JOIN stn.posting_method_derivation_rein psmre
                            ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
-                               AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+                               AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD
+                               AND pmd.legal_entity_link_typ='GAAP_CONSOLIDATION')
                   WHERE JLU.JLU_SEGMENT_7 IN ('AA', 'CA')) ce
           WHERE     gu.jhu_jrnl_id = ce.jlu_jrnl_hdr_id
                 AND gu.jhu_jrnl_id = trim('''' FROM journal_id)
@@ -10538,7 +10540,8 @@ return;
                               ELE.LEGAL_ENTITY_LINK_TYP)
                 LEFT JOIN stn.posting_method_derivation_rein psmre
                    ON (    JLU.JLU_ENTITY = PSMRE.LE_1_CD
-                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD)
+                       AND JLU.JLU_SEGMENT_4 = PSMRE.LE_2_CD
+                       AND pmd.legal_entity_link_typ='GAAP_CONSOLIDATION')
                 LEFT JOIN STN.POSTING_LEDGER pl2 on (
                     pl2.ledger_id = pmd.OUTPUT_LEDGER_ID )
           WHERE     JLU.JLU_SEGMENT_7 IN ('AA', 'CA')
