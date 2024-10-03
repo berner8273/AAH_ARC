@@ -1,0 +1,78 @@
+DROP TABLE STN.CEV_VIE_DATA CASCADE CONSTRAINTS;
+
+CREATE TABLE STN.CEV_VIE_DATA
+(
+  POSTING_TYPE                  VARCHAR2(20 CHAR),
+  BUSINESS_TYPE_ASSOCIATION_ID  NUMBER,
+  INTERCOMPANY_ASSOCIATION_ID   NUMBER,
+  CORRELATION_UUID              RAW(16),
+  EVENT_SEQ_ID                  NUMBER,
+  ROW_SID                       NUMBER,
+  SUB_EVENT                     VARCHAR2(100 CHAR),
+  ACCOUNTING_DT                 DATE,
+  POLICY_ID                     VARCHAR2(40 CHAR),
+  POLICY_ABBR_NM                VARCHAR2(80 CHAR),
+  STREAM_ID                     NUMBER(38),
+  PARENT_STREAM_ID              NUMBER(38),
+  BASIS_TYP                     VARCHAR2(20 CHAR),
+  BASIS_CD                      VARCHAR2(20 CHAR),
+  BUSINESS_TYP                  VARCHAR2(2 CHAR),
+  GENERATE_INTERCO_ACCOUNTING   VARCHAR2(1 CHAR),
+  PREMIUM_TYP                   VARCHAR2(1 CHAR),
+  POLICY_PREMIUM_TYP            VARCHAR2(80 CHAR),
+  POLICY_ACCIDENT_YR            VARCHAR2(80 CHAR),
+  POLICY_UNDERWRITING_YR        NUMBER(28,8),
+  ULTIMATE_PARENT_STREAM_ID     VARCHAR2(80 CHAR),
+  ULTIMATE_PARENT_LE_CD         VARCHAR2(80 CHAR),
+  EXECUTION_TYP                 VARCHAR2(80 CHAR),
+  POLICY_TYP                    VARCHAR2(80 CHAR),
+  EVENT_TYP                     VARCHAR2(30 CHAR),
+  BUSINESS_EVENT_TYP            VARCHAR2(50 CHAR),
+  BUSINESS_UNIT                 VARCHAR2(20 CHAR),
+  BU_LOOKUP                     VARCHAR2(20 CHAR),
+  AFFILIATE                     VARCHAR2(20 CHAR),
+  OWNER_LE_CD                   VARCHAR2(20 CHAR),
+  COUNTERPARTY_LE_CD            VARCHAR2(20 CHAR),
+  LEDGER_CD                     VARCHAR2(20 CHAR),
+  VIE_CD                        NUMBER(1),
+  VIE_STATUS                    VARCHAR2(80 CHAR),
+  VIE_EFFECTIVE_DT              DATE,
+  VIE_ACCT_DT                   DATE,
+  IS_MARK_TO_MARKET             VARCHAR2(20 CHAR),
+  TAX_JURISDICTION_CD           VARCHAR2(80 CHAR),
+  CHARTFIELD_CD                 VARCHAR2(20 CHAR),
+  TRANSACTION_CCY               VARCHAR2(3 CHAR),
+  TRANSACTION_AMT               NUMBER,
+  FUNCTIONAL_CCY                VARCHAR2(3 CHAR),
+  FUNCTIONAL_AMT                NUMBER,
+  REPORTING_CCY                 VARCHAR2(3 CHAR),
+  REPORTING_AMT                 NUMBER,
+  LPG_ID                        NUMBER(38),
+  ACCOUNT_CD                    VARCHAR2(20 BYTE),
+  JL_DESCRIPTION                VARCHAR2(100 BYTE)
+)
+TABLESPACE STN_DATA
+RESULT_CACHE (MODE DEFAULT)
+PCTUSED    0
+PCTFREE    10
+INITRANS   1
+MAXTRANS   255
+STORAGE    (
+            INITIAL          64K
+            NEXT             1M
+            MAXSIZE          UNLIMITED
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      DEFAULT
+            FLASH_CACHE      DEFAULT
+            CELL_FLASH_CACHE DEFAULT
+           )
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING;
+
+
+GRANT SELECT ON STN.CEV_VIE_DATA TO AAH_READ_ONLY;
