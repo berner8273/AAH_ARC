@@ -8,8 +8,6 @@
 --create table stn.merger_balances as
 begin
 
-delete from stn.merger_balances;
-
 insert into stn.merger_balances
 select    eab_fak_id,
           eab_eba_id,
@@ -88,9 +86,9 @@ select    eab_fak_id,
                         fc.fc_account = gla.ga_account_code and     
                         edb_balance_date <='31-aug-24' and 
                         edb_balance_type = 50 and
-                        --ga_account_Type = 'B' and
-                        substr(gla.ga_account_code,1,8) in ('22400000','31460150')  -- contingency reserves and change in contingency reserves
-                        --substr(ga_account_code,1,1) in ('1','2') 
+                        ga_account_Type = 'B' and
+                        fc_entity = 'EA010' and -- contingency reserves
+                        substr(ga_account_code,1,1) in ('1','2') 
               ))
 where rn = 1;
 
