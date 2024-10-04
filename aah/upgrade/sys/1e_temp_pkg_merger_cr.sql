@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY STN.temp_pkg_merger_cr AS
+CREATE OR REPLACE PACKAGE BODY STN.temp_pkg_merger_ea010 AS
 
 hFeedUUID1 raw(16);
 hFeedUUID2 raw(16);
@@ -31,8 +31,8 @@ dOpenPeriod date;
 nExists number; 
 sSourceTypeCd varchar2(2) := 'CA';
 sChartfield varchar(3) := 'DNP';
-sFeedSystemCD varchar(20) := 'AGM AGC Merger CR';
-sJournalLineDesc varchar2(20) := 'AGM AGC Merger CR';
+sFeedSystemCD varchar(20) := 'AGM AGC Merger EA010';
+sJournalLineDesc varchar2(20) := 'AGM AGC Merger EA010';
 sJrnlSource varchar(20) := 'DEFAULT';
 sJournalType varchar(20) := 'PERC';
 sClearingAcct varchar(11) := '18860170-01'; -- Acquisition clg insurance 
@@ -62,29 +62,29 @@ sMonth varchar(2);
 BEGIN
 
 
-select standard_hash('AGMAGC Merger1CR', 'MD5') into hFeedUUID1 from dual;
-select standard_hash('AGMAGC Merger2CR', 'MD5') into hFeedUUID2 from dual;
-select standard_hash('AGMAGC Merger3CR', 'MD5') into hFeedUUID3 from dual;
-select standard_hash('AGMAGC Merger4CR', 'MD5') into hFeedUUID4 from dual;
-select standard_hash('AGMAGC Merger5CR', 'MD5') into hFeedUUID5 from dual;
-select standard_hash('AGMAGC Merger6CR', 'MD5') into hFeedUUID6 from dual;
-select standard_hash('AGMAGC Merger7CR', 'MD5') into hFeedUUID7 from dual;
-select standard_hash('AGMAGC Merger8CR', 'MD5') into hFeedUUID8 from dual;
-select standard_hash('AGMAGC Merger9CR', 'MD5') into hFeedUUID9 from dual;
-select standard_hash('AGMAGC Merger10CR', 'MD5') into hFeedUUID10 from dual;
-select standard_hash('AGMAGC Merger11CR', 'MD5') into hFeedUUID11 from dual;
+select standard_hash('AGMAGC Merger1EA010', 'MD5') into hFeedUUID1 from dual;
+select standard_hash('AGMAGC Merger2EA010', 'MD5') into hFeedUUID2 from dual;
+select standard_hash('AGMAGC Merger3EA010', 'MD5') into hFeedUUID3 from dual;
+select standard_hash('AGMAGC Merger4EA010', 'MD5') into hFeedUUID4 from dual;
+select standard_hash('AGMAGC Merger5EA010', 'MD5') into hFeedUUID5 from dual;
+select standard_hash('AGMAGC Merger6EA010', 'MD5') into hFeedUUID6 from dual;
+select standard_hash('AGMAGC Merger7EA010', 'MD5') into hFeedUUID7 from dual;
+select standard_hash('AGMAGC Merger8EA010', 'MD5') into hFeedUUID8 from dual;
+select standard_hash('AGMAGC Merger9EA010', 'MD5') into hFeedUUID9 from dual;
+select standard_hash('AGMAGC Merger10EA010', 'MD5') into hFeedUUID10 from dual;
+select standard_hash('AGMAGC Merger11EA010', 'MD5') into hFeedUUID11 from dual;
 
-select standard_hash('AGMAGC Merger1CCR' ,'MD5') into hCorrelationId1 from dual;
-select standard_hash('AGMAGC Merger2CCR' ,'MD5') into hCorrelationId2 from dual;
-select standard_hash('AGMAGC Merger3CCR' ,'MD5') into hCorrelationId3 from dual;
-select standard_hash('AGMAGC Merger4CCR' ,'MD5') into hCorrelationId4 from dual;
-select standard_hash('AGMAGC Merger5CCR' ,'MD5') into hCorrelationId5 from dual;
-select standard_hash('AGMAGC Merger6CR' ,'MD5') into hCorrelationId6 from dual;
-select standard_hash('AGMAGC Merger7CCR' ,'MD5') into hCorrelationId7 from dual;
-select standard_hash('AGMAGC Merger8CCR' ,'MD5') into hCorrelationId8 from dual;
-select standard_hash('AGMAGC Merger9CCR' ,'MD5') into hCorrelationId9 from dual;
-select standard_hash('AGMAGC Merger10CCR' ,'MD5') into hCorrelationId10 from dual;
-select standard_hash('AGMAGC Merger11CCR' ,'MD5') into hCorrelationId11 from dual;
+select standard_hash('AGMAGC Merger1CEA010' ,'MD5') into hCorrelationId1 from dual;
+select standard_hash('AGMAGC Merger2CEA010' ,'MD5') into hCorrelationId2 from dual;
+select standard_hash('AGMAGC Merger3CEA010' ,'MD5') into hCorrelationId3 from dual;
+select standard_hash('AGMAGC Merger4CEA010' ,'MD5') into hCorrelationId4 from dual;
+select standard_hash('AGMAGC Merger5CEA010' ,'MD5') into hCorrelationId5 from dual;
+select standard_hash('AGMAGC Merger6EA010' ,'MD5') into hCorrelationId6 from dual;
+select standard_hash('AGMAGC Merger7CEA010' ,'MD5') into hCorrelationId7 from dual;
+select standard_hash('AGMAGC Merger8CEA010' ,'MD5') into hCorrelationId8 from dual;
+select standard_hash('AGMAGC Merger9CEA010' ,'MD5') into hCorrelationId9 from dual;
+select standard_hash('AGMAGC Merger10CEA010' ,'MD5') into hCorrelationId10 from dual;
+select standard_hash('AGMAGC Merger11CEA010' ,'MD5') into hCorrelationId11 from dual;
 
 update fdr.fr_general_codes
 set gc_active = 'I'
@@ -657,8 +657,7 @@ sTop :=
 'where ' || 
     '(abs(b.eab_tran_ltd_balance) + abs( b.eab_base_ltd_balance) + abs(b.eab_local_ltd_balance)) <> 0 and  '            || 
     'ip.policy_version = (select max(p2.policy_version) from rdr.rrv_ag_insurance_policy p2 where ip.stream_id = p2.stream_id) and '||
-    'fc.fc_account in ( ''22400000-01'' , ''31460150-01'' ) and ' ||
-    'fc.fc_account <> ''13600100-01'' and ' ||
+    'fc.fc_entity = ''EA010'' and ' ||
     'eab_balance_type = 50   '            ;
 sOrder := 
     'order by '         ||
@@ -862,11 +861,12 @@ sTop :=
 'where ' || 
     '(abs(b.eab_tran_ltd_balance) + abs( b.eab_base_ltd_balance) + abs(b.eab_local_ltd_balance)) <> 0 and  '            || 
     --'ip.policy_version = (select max(p2.policy_version) from rdr.rrv_ag_insurance_policy p2 where ip.stream_id = p2.stream_id) and '||
-    'fc.fc_account in (''22400000-01'', ''31460150-01'') and ' ||
-    'fc.fc_account <> ''13600100-01'' and ' ||
+    --'fc.fc_account in (''22400000-01'', ''31460150-01'') and ' ||
+    --'fc.fc_account <> ''13600100-01'' and ' ||
     'eab_balance_type = 50 and  ' ||
-    'fc_segment_4 not in (''FSAIC'',''FSABM'',''MACRP'') and  ' ||
-    'fc_entity not in (''FSAIC'',''FSABM'',''MACRP'') and  ' ||
+    ' fc.fc_entity = ''EA010'' and ' ||    
+    --'fc_segment_4 not in (''FSAIC'',''FSABM'',''MACRP'') and  ' ||
+    --'fc_entity not in (''FSAIC'',''FSABM'',''MACRP'') and  ' ||
     'b.eab_eba_id NOT in (select eba_id from stn.temp_stn_journal_line) ';
 sOrder := 
     'order by '         ||
@@ -1029,6 +1029,8 @@ ELSIF asEntity = 'RTS' THEN
     sEntity := null;
 ELSIF asEntity = 'CA002' THEN
     sEntity := 193;
+ELSIF asEntity = 'CA003' THEN
+    sEntity := 194;
 ELSE
     raise_application_error(-20106,'Unexpected asEntity = '||asEntity);
 END IF;        
@@ -1192,8 +1194,8 @@ pCreateJL(5,'18A','18D','RTS','CHANGE','CHANGE','RTS');
 -- close elim companies
 
 pCreateJL(6,'19A','19B','CHANGE','CHANGE','RTS','RTS');
-pCreateJL(6,'19A','19C','CHANGE','RTS','CA002','RTS');
-pCreateJL(6,'19A','19D','RTS','CHANGE','CA002','RTS');
+pCreateJL(6,'19A','19C','CHANGE','RTS','CA003','RTS');
+pCreateJL(6,'19A','19D','RTS','CHANGE','CA003','RTS');
 
 -- putting balance into a consol company.  they don't book to affiliates.
 update stn.temp_stn_journal_line
@@ -1206,8 +1208,8 @@ pCreateJL(7,'20A','20B','CHANGE','CHANGE','RTS','RTS');
 
 --Assumed prem rec affil manual without stream
 pCreateJL(8,'21A','21B','CHANGE','CHANGE','RTS','RTS');
-pCreateJL(8,'21A','21C','CHANGE','RTS','CHANGE','RTS');
-pCreateJL(8,'21A','21D','RTS','CHANGE','CHANGE','RTS');
+pCreateJL(8,'21A','21C','CHANGE','RTS','CA003','RTS');
+pCreateJL(8,'21A','21D','RTS','CHANGE','CA003','RTS');
 
 -- don't think I have to change the affilate
 --pCreateJL(8,'22A','22B','CHANGE','CHANGE','RTS','RTS');
@@ -1320,12 +1322,12 @@ update stn.temp_stn_journal_line set balance_type = '18', entry_type = '18A' whe
 commit;
 
 
--- Close companies into CA002
+-- Close companies into CA003
 nScenerio := 6;
-sWhere :=           ' AND fc.fc_entity in (''CA005'' , ''EF030'',''EM020'',''CARA1'')';
-sWhere := sWhere || ' AND NOT (fc_entity = ''CARA1'' and map_parent.le_cd = ''FSANY'' and  map.le_cd = ''AGCRP'')';
-sWhere := sWhere || ' AND NOT (fc_entity = ''EM020'' and  fc.fc_segment_4 in (''FSABM'',''FSAIC''))';
---sWhere := ' AND fc.fc_entity in (''CARA1'')';
+--sWhere :=           ' AND fc.fc_entity in (''CA005'' , ''EF030'',''EM020'',''CARA1'')';
+--sWhere := sWhere || ' AND NOT (fc_entity = ''CARA1'' and map_parent.le_cd = ''FSANY'' and  map.le_cd = ''AGCRP'')';
+--sWhere := sWhere || ' AND NOT (fc_entity = ''EM020'' and  fc.fc_segment_4 in (''FSABM'',''FSAIC''))';
+sWhere := ' AND fc.fc_entity in (''EA010'')';
 dbms_output.put_line(swhere);
 sSQL := fBuildSql(sWhere,nScenerio);
 execute immediate sSQL;
@@ -1366,8 +1368,11 @@ update stn.temp_stn_journal_line set balance_type = '25', entry_type = '25A' whe
 update stn.temp_stn_journal_line set balance_type = '26', entry_type = '26A' where scenerio = 11 and business_typ = 'AA';
 commit;
 
+
+-- non stream balances
 nScenerio := 8;
-sWhere := ' AND  fc_entity = ''FSANY'' and  substr(fc_account,1,8) in (22400000, 31460150)'; 
+--sWhere := ' AND  fc_entity = ''FSANY'' and  substr(fc_account,1,8) in (22400000, 31460150)';
+sWhere := ' AND fc.fc_entity = ''EA010'' ';  
    
 dbms_output.put_line(swhere);
 sSQL := fBuildSqlNoStream(sWhere,nScenerio);
