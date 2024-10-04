@@ -25,7 +25,8 @@ define unittest_login=~8
 /* Begin AAH custom upgrades */
 
 conn ~fdr_logon
- begin
+-- close balance_others.  It had to be opeded to allow entries for old balances
+begin
 
 delete from fdr.fr_general_lookup
 where 
