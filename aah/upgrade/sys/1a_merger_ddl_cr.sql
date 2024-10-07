@@ -129,6 +129,58 @@ execute immediate sSQL;
 sSQL := 'create index stn.merger_balances_idx on stn.merger_balances (eab_eba_id)';
 execute immediate sSQL;
 
+delete from  fdr.fr_instr_insure_extend where iie_cover_signing_party = '20019LEH';
+ 
+insert into fdr.fr_instr_insure_extend i
+    (iie_instrument_id,
+    iie_movement_type,
+    iie_cost_centre,
+    iie_co_insured_country_id,
+    iie_co_debtor_country_id,
+    iie_tax_code1,
+    iie_tax_code2,
+    iie_tax_code3,
+    iie_pbu_party1,
+    iie_pbu_party2,
+    iie_pbu_party3,
+    iie_premium,
+    iie_jurisdiction,
+    iie_sign_date,
+    iie_indemnity,
+    iie_benefit_limit,
+    iie_cover_note_create_date,
+    iie_cover_note_description,
+    iie_cover_start_date,
+    iie_cover_end_date,
+    iie_cover_signature_date,
+    iie_cover_signing_party,
+    iie_cover_signed)
+select 
+    '_'||iie_cover_signing_party,
+    iie_movement_type,
+    iie_cost_centre,
+    iie_co_insured_country_id,
+    iie_co_debtor_country_id,
+    iie_tax_code1,
+    iie_tax_code2,
+    iie_tax_code3,
+    iie_pbu_party1,
+    iie_pbu_party2,
+    iie_pbu_party3,
+    iie_premium,
+    iie_jurisdiction,
+    iie_sign_date,
+    iie_indemnity,
+    iie_benefit_limit,
+    iie_cover_note_create_date,
+    iie_cover_note_description,
+    iie_cover_start_date,
+    iie_cover_end_date,
+    iie_cover_signature_date,
+    '20019LEH', --iie_cover_signing_party,
+    iie_cover_signed
+from fdr.fr_instr_insure_extend i
+where i.iie_cover_signing_party =  '20019-LEH' and i.iie_instrument_id = (select max (p.iie_instrument_id) from fdr.fr_instr_insure_extend p where i.iie_cover_signing_party = p.iie_cover_signing_party);
 
 end;
 /
