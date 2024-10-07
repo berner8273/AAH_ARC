@@ -62,29 +62,29 @@ sMonth varchar(2);
 BEGIN
 
 
-select standard_hash('AGMAGC Merger1EA010', 'MD5') into hFeedUUID1 from dual;
-select standard_hash('AGMAGC Merger2EA010', 'MD5') into hFeedUUID2 from dual;
-select standard_hash('AGMAGC Merger3EA010', 'MD5') into hFeedUUID3 from dual;
-select standard_hash('AGMAGC Merger4EA010', 'MD5') into hFeedUUID4 from dual;
-select standard_hash('AGMAGC Merger5EA010', 'MD5') into hFeedUUID5 from dual;
-select standard_hash('AGMAGC Merger6EA010', 'MD5') into hFeedUUID6 from dual;
-select standard_hash('AGMAGC Merger7EA010', 'MD5') into hFeedUUID7 from dual;
-select standard_hash('AGMAGC Merger8EA010', 'MD5') into hFeedUUID8 from dual;
-select standard_hash('AGMAGC Merger9EA010', 'MD5') into hFeedUUID9 from dual;
-select standard_hash('AGMAGC Merger10EA010', 'MD5') into hFeedUUID10 from dual;
-select standard_hash('AGMAGC Merger11EA010', 'MD5') into hFeedUUID11 from dual;
+select standard_hash('AGMAGC Merger1EA010A', 'MD5') into hFeedUUID1 from dual;
+select standard_hash('AGMAGC Merger2EA010A', 'MD5') into hFeedUUID2 from dual;
+select standard_hash('AGMAGC Merger3EA010A', 'MD5') into hFeedUUID3 from dual;
+select standard_hash('AGMAGC Merger4EA010A', 'MD5') into hFeedUUID4 from dual;
+select standard_hash('AGMAGC Merger5EA010A', 'MD5') into hFeedUUID5 from dual;
+select standard_hash('AGMAGC Merger6EA010A', 'MD5') into hFeedUUID6 from dual;
+select standard_hash('AGMAGC Merger7EA010A', 'MD5') into hFeedUUID7 from dual;
+select standard_hash('AGMAGC Merger8EA010A', 'MD5') into hFeedUUID8 from dual;
+select standard_hash('AGMAGC Merger9EA010A', 'MD5') into hFeedUUID9 from dual;
+select standard_hash('AGMAGC Merger10EA010A', 'MD5') into hFeedUUID10 from dual;
+select standard_hash('AGMAGC Merger11EA010A', 'MD5') into hFeedUUID11 from dual;
 
-select standard_hash('AGMAGC Merger1CEA010' ,'MD5') into hCorrelationId1 from dual;
-select standard_hash('AGMAGC Merger2CEA010' ,'MD5') into hCorrelationId2 from dual;
-select standard_hash('AGMAGC Merger3CEA010' ,'MD5') into hCorrelationId3 from dual;
-select standard_hash('AGMAGC Merger4CEA010' ,'MD5') into hCorrelationId4 from dual;
-select standard_hash('AGMAGC Merger5CEA010' ,'MD5') into hCorrelationId5 from dual;
-select standard_hash('AGMAGC Merger6EA010' ,'MD5') into hCorrelationId6 from dual;
-select standard_hash('AGMAGC Merger7CEA010' ,'MD5') into hCorrelationId7 from dual;
-select standard_hash('AGMAGC Merger8CEA010' ,'MD5') into hCorrelationId8 from dual;
-select standard_hash('AGMAGC Merger9CEA010' ,'MD5') into hCorrelationId9 from dual;
-select standard_hash('AGMAGC Merger10CEA010' ,'MD5') into hCorrelationId10 from dual;
-select standard_hash('AGMAGC Merger11CEA010' ,'MD5') into hCorrelationId11 from dual;
+select standard_hash('AGMAGC Merger1CEA010A' ,'MD5') into hCorrelationId1 from dual;
+select standard_hash('AGMAGC Merger2CEA010A' ,'MD5') into hCorrelationId2 from dual;
+select standard_hash('AGMAGC Merger3CEA010A' ,'MD5') into hCorrelationId3 from dual;
+select standard_hash('AGMAGC Merger4CEA010A' ,'MD5') into hCorrelationId4 from dual;
+select standard_hash('AGMAGC Merger5CEA010A' ,'MD5') into hCorrelationId5 from dual;
+select standard_hash('AGMAGC Merger6EA010A' ,'MD5') into hCorrelationId6 from dual;
+select standard_hash('AGMAGC Merger7CEA010A' ,'MD5') into hCorrelationId7 from dual;
+select standard_hash('AGMAGC Merger8CEA010A' ,'MD5') into hCorrelationId8 from dual;
+select standard_hash('AGMAGC Merger9CEA010A' ,'MD5') into hCorrelationId9 from dual;
+select standard_hash('AGMAGC Merger10CEA010A' ,'MD5') into hCorrelationId10 from dual;
+select standard_hash('AGMAGC Merger11CEA010A' ,'MD5') into hCorrelationId11 from dual;
 
 update fdr.fr_general_codes
 set gc_active = 'I'
@@ -1210,6 +1210,12 @@ pCreateJL(7,'20A','20B','CHANGE','CHANGE','RTS','RTS');
 pCreateJL(8,'21A','21B','CHANGE','CHANGE','RTS','RTS');
 pCreateJL(8,'21A','21C','CHANGE','RTS','CA003','RTS');
 pCreateJL(8,'21A','21D','RTS','CHANGE','CA003','RTS');
+
+
+update stn.temp_stn_journal_line
+set affiliate_le_id = null
+where scenerio = 8 and entry_type in ('21C','21D');
+
 
 -- don't think I have to change the affilate
 --pCreateJL(8,'22A','22B','CHANGE','CHANGE','RTS','RTS');
