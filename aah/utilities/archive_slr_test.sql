@@ -21,8 +21,8 @@ DECLARE
        
 BEGIN
 
-dbms_output.put_line(q'['1','2','A','B','C','D','E','F']');
-dbms_output.put_line(q'['ID','Group','Table','Schema','Rows Need Archive','Total Rows','Archived','Archive Log']');
+dbms_output.put_line(q'[1,2,A,B,C,D,E,F]');
+dbms_output.put_line(q'[ID,Group,Table,Schema,Rows Need Archive,Total Rows,Archived,Archive Log]');
 
   select to_char(gp_todays_bus_date,'mm/dd/yyyy') into bus_date from slr.fr_global_parameter where lpg_id=1;
   select to_char(sysdate,'mm/dd/yyyy') into bus_dateS from dual;
