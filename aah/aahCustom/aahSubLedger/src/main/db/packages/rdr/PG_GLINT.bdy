@@ -940,6 +940,13 @@ Begin
                                      || '  When Matched Then Update'
                                      || '    Set a.event_status = ' || sys.dbms_assert.enquote_literal(FDR.PG_COMMON.gcStatusFlag_Resubmitted));
 
+
+   /* CUSTOM CODE cleanp PS load flags for DNP lines US578579*/
+   update rdr.rr_glint_journal_line
+   set ps_filter = 'N', gl_distrib_status = 'I'
+   where chartfield1 = 'DNP' and rgjl_rgj_id in (
+    select rgj_id from rdr.rr_glint_temp_journal_line) ;
+
     /* Ensure the temporary tables are flushed before trying the next mapping structure. */
     Commit;
 

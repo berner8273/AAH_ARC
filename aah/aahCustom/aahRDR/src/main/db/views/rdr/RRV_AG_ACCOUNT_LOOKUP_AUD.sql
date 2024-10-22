@@ -1,0 +1,86 @@
+DROP VIEW RDR.RRV_AG_ACCOUNT_LOOKUP_AUD;
+
+/* Formatted on 10/03/2024 10:07:44 AM (QP5 v5.252.13127.32847) */
+CREATE OR REPLACE FORCE VIEW RDR.RRV_AG_ACCOUNT_LOOKUP_AUD
+(
+   AL_ACCOUNT_LOOKUP_IDA,
+   AL_POSTING_CODE,
+   "business_typ",
+   "mtm_yn",
+   "business_unit",
+   AL_LOOKUP_4,
+   AL_LOOKUP_5,
+   AL_LOOKUP_6,
+   AL_LOOKUP_7,
+   AL_LOOKUP_8,
+   AL_LOOKUP_9,
+   AL_LOOKUP_10,
+   AL_LOOKUP_11,
+   AL_LOOKUP_12,
+   AL_LOOKUP_13,
+   AL_LOOKUP_14,
+   AL_LOOKUP_15,
+   AL_LOOKUP_16,
+   AL_LOOKUP_17,
+   AL_LOOKUP_18,
+   AL_LOOKUP_19,
+   AL_LOOKUP_20,
+   AL_CCY,
+   AL_ACCOUNT,
+   AL_VALID_FROM,
+   AL_VALID_TO,
+   AL_ACTIVE,
+   AL_ACTION,
+   AL_INPUT_BY,
+   AL_INPUT_TIME,
+   AL_DELETE_TIME,
+   AL_AUTH_BY,
+   AL_AUTH_STATUS,
+   AL_REP_STATUS_UPD,
+   AL_ID,
+   AL_UPDATE_TIME
+)
+   BEQUEATH DEFINER
+AS
+   SELECT al_account_lookup_ida,
+          al_posting_code,
+          al_lookup_1 AS "business_typ",
+          al_lookup_2 AS "mtm_yn",
+          al_lookup_3 AS "business_unit",
+          al_lookup_4,
+          al_lookup_5,
+          al_lookup_6,
+          al_lookup_7,
+          al_lookup_8,
+          al_lookup_9,
+          al_lookup_10,
+          al_lookup_11,
+          al_lookup_12,
+          al_lookup_13,
+          al_lookup_14,
+          al_lookup_15,
+          al_lookup_16,
+          al_lookup_17,
+          al_lookup_18,
+          al_lookup_19,
+          al_lookup_20,
+          al_ccy,
+          al_account,
+          al_valid_from,
+          al_valid_to,
+          al_active,
+          al_action,
+          al_input_by,
+          al_input_time,
+          al_delete_time,
+          al_auth_by,
+          al_auth_status,
+          al_rep_status_upd,
+          al_id,
+          al_update_time
+     FROM FDR.FR_ACCOUNT_LOOKUP_AUD;
+
+
+GRANT SELECT ON RDR.RRV_AG_ACCOUNT_LOOKUP_AUD TO AAH_RDR;
+
+GRANT SELECT ON RDR.RRV_AG_ACCOUNT_LOOKUP_AUD TO AAH_READ_ONLY;
