@@ -24,8 +24,20 @@ define unittest_login=~8
 
 /* Begin AAH custom upgrades */
 
-conn ~stn_logon
- @@stn/us78363.sql
+conn ~slr_logon                
+@@slr/arc_tmp_drop.sql         
+@@slr/arc_fak_tmp.sql          
+@@slr/arc_eba_tmp.sql          
+@@slr/arc_tmp_grants.sql       
+                               
+conn ~fdr_logon                
+-- update control file         
+@@fdr/FR_ARCHIVE_CTL_SLR.sql   
+@@fdr/fdr_archiving_pkg.sql    
+                               
+conn ~stn_logon                
+@@stn/archive_slr_setup.sql   
+
  
 /* End AAH custom upgrades */
 
