@@ -1,3 +1,32 @@
+/* rollup row checks */
+WITH maxbal
+     AS (  SELECT fdb.EDB_FAK_ID,
+                  fdb.EDB_EBA_ID,
+                  fdb.EDB_BALANCE_TYPE,
+                  MAX (edb_balance_date) mdate
+             FROM slr.slr_eba_daily_balances fdb, fdr.fr_global_parameter g
+            WHERE     g.lpg_id = 2
+                  AND edb_balance_date <= (g.gp_todays_bus_date - 390) + 1
+         GROUP BY EDB_FAK_ID, EDB_EBA_ID, EDB_BALANCE_TYPE)
+  SELECT db.EDB_BALANCE_TYPE, COUNT (*) COUNT
+    FROM maxbal,
+         slr.slr_eba_daily_balances db,
+         fdr.fr_global_parameter gp,
+         fdr.fr_archive_ctl arc
+   WHERE     db.EDB_BALANCE_TYPE = maxbal.EDB_BALANCE_TYPE
+         AND db.EDB_FAK_ID = maxbal.EDB_FAK_ID
+         AND db.EDB_EBA_ID = maxbal.EDB_EBA_ID
+         AND db.edb_balance_date = maxbal.mdate
+         AND gp.lpg_id = 2
+         AND arc.arct_id = 254
+         AND maxbal.mdate <= (gp.gp_todays_bus_date - arc.arct_archive_days)
+         AND db.edb_balance_type = maxbal.edb_balance_type
+         AND db.edb_balance_date <>
+                (gp.gp_todays_bus_date - arc.arct_archive_days) + 1
+         AND db.edb_balance_type IN (20, 50)
+GROUP BY db.edb_balance_type
+
+/* zero balance by entity  check */
 select EDB_BALANCE_TYPE,edb_entity,sum(edb_tran_ltd_balance),sum(edb_base_ltd_balance),sum(edb_local_ltd_balance) from slr.slr_eba_daily_balances 
 where EDB_BALANCE_TYPE||EDB_FAK_ID||EDB_EBA_ID||edb_balance_date in (   
 with maxbal
