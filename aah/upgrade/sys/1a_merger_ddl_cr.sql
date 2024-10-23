@@ -129,6 +129,5 @@ execute immediate sSQL;
 sSQL := 'create index stn.merger_balances_idx on stn.merger_balances (eab_eba_id)';
 execute immediate sSQL;
 
-
-
 end;
+/
