@@ -1,4 +1,4 @@
-CREATE OR REPLACE package STN.temp_pkg_merger_ea010 as
+CREATE OR REPLACE package STN.temp_pkg_merger_stream as
 
 function  fBuildSql (asWhere varchar, anScenerio number) return varchar ;
 
