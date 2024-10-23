@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY STN.temp_pkg_merger_ea010 AS
+CREATE OR REPLACE PACKAGE BODY STN.temp_pkg_merger_stream AS
 
 hFeedUUID1 raw(16);
 hFeedUUID2 raw(16);
@@ -11,6 +11,8 @@ hFeedUUID8 raw(16);
 hFeedUUID9 raw(16);
 hFeedUUID10 raw(16);
 hFeedUUID11 raw(16);
+hFeedUUID12 raw(16);
+hFeedUUID13 raw(16);
 
 hCorrelationId1 varchar2(40);
 hCorrelationId2 varchar2(40);
@@ -23,6 +25,8 @@ hCorrelationId8 varchar2(40);
 hCorrelationId9 varchar2(40);
 hCorrelationId10 varchar2(40);
 hCorrelationId11 varchar2(40);
+hCorrelationId12 varchar2(40);
+hCorrelationId13 varchar2(40);
 
 
 dEffDate varchar(30) :='to_date(''02-sep-2024'')';
@@ -31,8 +35,8 @@ dOpenPeriod date;
 nExists number; 
 sSourceTypeCd varchar2(2) := 'CA';
 sChartfield varchar(3) := 'DNP';
-sFeedSystemCD varchar(20) := 'AGM AGC Merger EA010';
-sJournalLineDesc varchar2(20) := 'AGM AGC Merger EA010';
+sFeedSystemCD varchar(20) := 'AGM AGC Merg Stream';
+sJournalLineDesc varchar2(20) := 'AGM AGC Merg Stream';
 sJrnlSource varchar(20) := 'DEFAULT';
 sJournalType varchar(20) := 'PERC';
 sClearingAcct varchar(11) := '18860170-01'; -- Acquisition clg insurance 
@@ -62,29 +66,34 @@ sMonth varchar(2);
 BEGIN
 
 
-select standard_hash('AGMAGC Merger1EA010A', 'MD5') into hFeedUUID1 from dual;
-select standard_hash('AGMAGC Merger2EA010A', 'MD5') into hFeedUUID2 from dual;
-select standard_hash('AGMAGC Merger3EA010A', 'MD5') into hFeedUUID3 from dual;
-select standard_hash('AGMAGC Merger4EA010A', 'MD5') into hFeedUUID4 from dual;
-select standard_hash('AGMAGC Merger5EA010A', 'MD5') into hFeedUUID5 from dual;
-select standard_hash('AGMAGC Merger6EA010A', 'MD5') into hFeedUUID6 from dual;
-select standard_hash('AGMAGC Merger7EA010A', 'MD5') into hFeedUUID7 from dual;
-select standard_hash('AGMAGC Merger8EA010A', 'MD5') into hFeedUUID8 from dual;
-select standard_hash('AGMAGC Merger9EA010A', 'MD5') into hFeedUUID9 from dual;
-select standard_hash('AGMAGC Merger10EA010A', 'MD5') into hFeedUUID10 from dual;
-select standard_hash('AGMAGC Merger11EA010A', 'MD5') into hFeedUUID11 from dual;
+select standard_hash('AGMAGC Merger1Stream', 'MD5') into hFeedUUID1 from dual;
+select standard_hash('AGMAGC Merger2Stream', 'MD5') into hFeedUUID2 from dual;
+select standard_hash('AGMAGC Merger3Stream', 'MD5') into hFeedUUID3 from dual;
+select standard_hash('AGMAGC Merger4Stream', 'MD5') into hFeedUUID4 from dual;
+select standard_hash('AGMAGC Merger5Stream', 'MD5') into hFeedUUID5 from dual;
+select standard_hash('AGMAGC Merger6Stream', 'MD5') into hFeedUUID6 from dual;
+select standard_hash('AGMAGC Merger7Stream', 'MD5') into hFeedUUID7 from dual;
+select standard_hash('AGMAGC Merger8Stream', 'MD5') into hFeedUUID8 from dual;
+select standard_hash('AGMAGC Merger9Stream', 'MD5') into hFeedUUID9 from dual;
+select standard_hash('AGMAGC Merger10Stream', 'MD5') into hFeedUUID10 from dual;
+select standard_hash('AGMAGC Merger11Stream', 'MD5') into hFeedUUID11 from dual;
+select standard_hash('AGMAGC Merger12Stream', 'MD5') into hFeedUUID12 from dual;
+select standard_hash('AGMAGC Merger13Stream', 'MD5') into hFeedUUID13 from dual;
 
-select standard_hash('AGMAGC Merger1CEA010A' ,'MD5') into hCorrelationId1 from dual;
-select standard_hash('AGMAGC Merger2CEA010A' ,'MD5') into hCorrelationId2 from dual;
-select standard_hash('AGMAGC Merger3CEA010A' ,'MD5') into hCorrelationId3 from dual;
-select standard_hash('AGMAGC Merger4CEA010A' ,'MD5') into hCorrelationId4 from dual;
-select standard_hash('AGMAGC Merger5CEA010A' ,'MD5') into hCorrelationId5 from dual;
-select standard_hash('AGMAGC Merger6EA010A' ,'MD5') into hCorrelationId6 from dual;
-select standard_hash('AGMAGC Merger7CEA010A' ,'MD5') into hCorrelationId7 from dual;
-select standard_hash('AGMAGC Merger8CEA010A' ,'MD5') into hCorrelationId8 from dual;
-select standard_hash('AGMAGC Merger9CEA010A' ,'MD5') into hCorrelationId9 from dual;
-select standard_hash('AGMAGC Merger10CEA010A' ,'MD5') into hCorrelationId10 from dual;
-select standard_hash('AGMAGC Merger11CEA010A' ,'MD5') into hCorrelationId11 from dual;
+select standard_hash('AGMAGC Merger1CStream' ,'MD5') into hCorrelationId1 from dual;
+select standard_hash('AGMAGC Merger2CStream' ,'MD5') into hCorrelationId2 from dual;
+select standard_hash('AGMAGC Merger3CStream' ,'MD5') into hCorrelationId3 from dual;
+select standard_hash('AGMAGC Merger4CStream' ,'MD5') into hCorrelationId4 from dual;
+select standard_hash('AGMAGC Merger5CStream' ,'MD5') into hCorrelationId5 from dual;
+select standard_hash('AGMAGC Merger6CStream' ,'MD5') into hCorrelationId6 from dual;
+select standard_hash('AGMAGC Merger7CStream' ,'MD5') into hCorrelationId7 from dual;
+select standard_hash('AGMAGC Merger8CStream' ,'MD5') into hCorrelationId8 from dual;
+select standard_hash('AGMAGC Merger9CStream' ,'MD5') into hCorrelationId9 from dual;
+select standard_hash('AGMAGC Merger10CStream' ,'MD5') into hCorrelationId10 from dual;
+select standard_hash('AGMAGC Merger11CStream' ,'MD5') into hCorrelationId11 from dual;
+select standard_hash('AGMAGC Merger12CStream' ,'MD5') into hCorrelationId12 from dual;
+select standard_hash('AGMAGC Merger13CStream' ,'MD5') into hCorrelationId13 from dual;
+
 
 update fdr.fr_general_codes
 set gc_active = 'I'
@@ -116,13 +125,11 @@ IF dEffDate is null THEN
     raise_application_error(-20999,'Bad effDate');
 END IF;
 
-
 delete from   fdr.fr_general_lookup
 where 
     lk_lkt_lookup_type_code   = 'EVENT_CLASS_PERIOD' and 
     lk_match_key1 = 'BALANCE_OTHERS' and
-    lk_match_key2 >= 2024;
-
+    lk_match_key2 >= '2024';
 
 -- temp open obsolete event class
 select count(*) into nCnt
@@ -173,7 +180,7 @@ commit;
 
 exception
     when others then
-           raise_application_error(-20110, 'initialize '||sqlerrm);
+           raise_application_error(-20110, ' initialize '||sqlerrm);
 
 
 END; --pInitialize
@@ -252,7 +259,7 @@ BEGIN
 
 pInitialize;
 
-dbms_output.put_line('starting bulk insert');
+
 OPEN cur;
 LOOP
     EXIT when cur%notfound;
@@ -388,9 +395,7 @@ begin
 
 pInitialize;
 
-dbms_output.put_line('top of create_line');
-
-   
+  
     -- timestamp is in the unique key
     dbms_lock.sleep(1);
      
@@ -428,18 +433,22 @@ dbms_output.put_line('top of create_line');
         WHEN  11 THEN  
             lhFeedUUID := hFeedUUID11;
             lhCorrelationId := hCorrelationId11;                        
+        WHEN  12 THEN  
+            lhFeedUUID := hFeedUUID12;
+            lhCorrelationId := hCorrelationId12;                        
+        WHEN  13 THEN  
+            lhFeedUUID := hFeedUUID13;
+            lhCorrelationId := hCorrelationId13;                        
+
+
         ELSE
-            raise_application_error(-20113,'unexpected in loop = '||anScenerio||' '||sqlerrm);                            
+            raise_application_error(-20113,'unexpected scenerio in loop = '||anScenerio||' '||sqlerrm);                            
     END CASE;    
 
-dbms_output.put_line('after case');
     select count(*) 
     into nCnt 
     from STN.TEMP_STN_JOURNAL_LINE 
     where feed_uuid = lhFeedUUID; 
-
- 
-dbms_output.put_line('after ncnt '||deffdate);
 
 
     INSERT INTO stn.feed(
@@ -459,9 +468,6 @@ dbms_output.put_line('after ncnt '||deffdate);
         'NONE', --stated_checksum,
         sysdate); --loaded_ts)        
 
-dbms_output.put_line('after insert to feed');
-
-
     INSERT INTO stn.feed_record_count(
         feed_uuid,
         db_nm,
@@ -474,7 +480,6 @@ dbms_output.put_line('after insert to feed');
         'JOURNAL_LINE', --table_nm
         nCnt, -- stated_reord_cnt
         null); --actual_record_cnt
-dbms_output.put_line('after insert to feed record count');
 
 -- allow calling program to commit to keep transaction consistent
 exception
@@ -534,6 +539,12 @@ CASE anScenerio
     WHEN  11 THEN  
         lhFeedUUID := hFeedUUID11;
         lhCorrelationId := hCorrelationId11;                        
+   WHEN  12 THEN  
+        lhFeedUUID := hFeedUUID12;
+        lhCorrelationId := hCorrelationId12;
+   WHEN  13 THEN  
+        lhFeedUUID := hFeedUUID13;
+        lhCorrelationId := hCorrelationId13;                
     ELSE
         raise_application_error(-20113,'unexpected anScenerio = '||anScenerio);                            
 END CASE;    
@@ -683,10 +694,7 @@ sSql := replace(sSql,'hCorrelationId',''''||lhCorrelationId||'''');
 sSql := replace(sSql,'sSourceTypeCd',''''||sSourceTypeCd||'''');
 sSql := replace(sSql,'sScenerio',''''||anScenerio||'''');
 
-
-dbms_output.put_line('fBuildSql '||sSQL);
 return sSql;
-
 
 exception
     when others then
@@ -743,7 +751,15 @@ CASE anScenerio
         lhCorrelationId := hCorrelationId10;
     WHEN  11 THEN  
         lhFeedUUID := hFeedUUID11;
-        lhCorrelationId := hCorrelationId11;                        
+        lhCorrelationId := hCorrelationId11;
+    WHEN  12 THEN  
+        lhFeedUUID := hFeedUUID12;
+        lhCorrelationId := hCorrelationId12;
+    WHEN  13 THEN  
+        lhFeedUUID := hFeedUUID13;
+        lhCorrelationId := hCorrelationId13;                        
+                                
+                                
     ELSE
         raise_application_error(-20113,'unexpected anScenerio = '||anScenerio);                            
 END CASE;    
@@ -859,15 +875,20 @@ sTop :=
     'join fdr.fr_party_legal pl on fc.fc_entity = pl.pl_party_legal_id  '                                  ||
     'right outer join fdr.fr_party_legal pl_aff on fc.fc_segment_4 = pl_aff.pl_party_legal_id '            ||
 'where ' || 
-    '(abs(b.eab_tran_ltd_balance) + abs( b.eab_base_ltd_balance) + abs(b.eab_local_ltd_balance)) <> 0 and  '            || 
-    --'ip.policy_version = (select max(p2.policy_version) from rdr.rrv_ag_insurance_policy p2 where ip.stream_id = p2.stream_id) and '||
-    --'fc.fc_account in (''22400000-01'', ''31460150-01'') and ' ||
-    --'fc.fc_account <> ''13600100-01'' and ' ||
+    'ec.ec_attribute_1 = ''NVS'' and ' ||
+    'fc.fc_account <> ''22400000-01'' and ' ||
+    'fc.fc_account <> ''13600100-01'' and ' ||
+    'fc_account not in (''18860170-01'',''10262020-01'', ''18250255-01'', ''18250220-01'',''11500145-01'',''11500105-01'',''10282260-01'',''11500240-01'',''10282248-01'',''11500230-01'',''11500235-01'',''11500250-01'',''18400320-01'', ''26000250-01'') and ' ||
+    'fc_segment_4 not in (''EA030'',''FSAIC'',''FSABM'',''MACRP'') and  ' ||
+    'fc_entity not in (''FSAIC'',''FSABM'',''MACRP'') and  ' ||
     'eab_balance_type = 50 and  ' ||
-    ' fc.fc_entity = ''EA010'' and ' ||    
-    --'fc_segment_4 not in (''FSAIC'',''FSABM'',''MACRP'') and  ' ||
-    --'fc_entity not in (''FSAIC'',''FSABM'',''MACRP'') and  ' ||
-    'b.eab_eba_id NOT in (select eba_id from stn.temp_stn_journal_line) ';
+    'b.eab_eba_id NOT in (select eba_id from stn.temp_stn_journal_line) and ' ||
+    '(abs(b.eab_tran_ltd_balance) + abs( b.eab_base_ltd_balance) + abs(b.eab_local_ltd_balance)) > 1 and  '            ||
+     'ec.ec_attribute_4 NOT in (select event_typ from stn.event_hierarchy_reference ehr where event_grp = ''CONT_RSRV'') and '||
+--    'fc_effective_date <= ''02-sep-24'' and ' ||  
+    'substr(fc_account,1,1) in (''1'',''2'') ' ;
+
+
 sOrder := 
     'order by '         ||
 --    'ip.stream_id,'     ||
@@ -893,7 +914,7 @@ sSql := replace(sSql,'sSourceTypeCd',''''||sSourceTypeCd||'''');
 sSql := replace(sSql,'sScenerio',''''||anScenerio||'''');
 
 
-dbms_output.put_line('fBuildSqlNoStream '||sSQL);
+
 return sSql;
 
 
@@ -1152,7 +1173,7 @@ END; --pCreateJLs
 PROCEDURE pCreateEntries IS
 
 BEGIN
-
+/*
 -- direct
 pCreateJL(1,'1A','1B','CHANGE','CHANGE','RTS','RTS');
 pCreateJL(1,'1A','1C','CHANGE','RTS','CHANGE','RTS');
@@ -1248,6 +1269,29 @@ pCreateJL(11,'26A','26B','CHANGE','CHANGE','RTS','RTS');
 pCreateJL(11,'26A','26C','CHANGE','RTS','RTS','CHANGE');
 pCreateJL(11,'26A','26D','RTS','CHANGE','RTS','CHANGE');
 
+*/
+
+-- fsany as entity.  Reverse out of NY and into AGCRP   same affiliate
+pCreateJL(12,'27A','27B','CHANGE','CHANGE','RTS','RTS');
+pCreateJL(12,'27A','27C','CHANGE','RTS','CHANGE','RTS');
+pCreateJL(12,'27A','27D','RTS','CHANGE','CHANGE','RTS');
+
+
+-- fsa as affiliate AGCRP Reverse and don't rebook
+pCreateJL(13,'28A','28B','CHANGE','CHANGE','RTS','RTS');
+
+
+ --fsa as affiliate with foreign entities affiliate to AGCRP
+pCreateJL(13,'29A','29B','CHANGE','CHANGE','RTS','RTS'); -- clearing account side of reverse
+pCreateJL(13,'29A','29C','CHANGE','RTS','RTS','CHANGE'); -- put back up with different affilaite
+pCreateJL(13,'29A','29D','RTS','CHANGE','RTS','CHANGE'); -- clearing account side of repost
+
+-- elim companies reverse balance and report in CA002
+pCreateJL(13,'30A','30B','CHANGE','CHANGE','RTS','RTS'); -- clearing account side of reversal
+pCreateJL(13,'30A','30C','CHANGE','RTS','CA002','RTS'); -- put back up into ca002
+pCreateJL(13,'30A','30D','RTS','CHANGE','CA002','RTS'); -- clearing account side of repst
+
+
 
 
 commit;
@@ -1270,7 +1314,7 @@ nScenerio number;
 
 BEGIN
 
-
+/*
 -- direct 
 nScenerio := 1;
     sWhere := ' and  map.le_cd = ''FSANY'' and map_parent.le_cd is null and fc.fc_entity = ''FSANY'' ';-- do not move MACRP, manual to FSAUK and manual to EF030.  filter on fc entity will do this
@@ -1395,8 +1439,40 @@ sSQL := fBuildSqlNoStream(sWhere,nScenerio);
 execute immediate sSQL;
 update stn.temp_stn_journal_line set balance_type = '23', entry_type = '23A' where scenerio = 9;
 commit;
+*/
+
+-- fsany as entity.  reverse and rebook into AGCRP.  Same as done with foreign subs
+
+nScenerio := 12;
+sWhere := ' AND fc_entity = ''FSANY''';  
+sWhere := sWhere ||    ' and ec_eba_id in (''96DF185865D3B7A0F2ECA3775ABC826F'',''5AD40274213DFB63621E36C765D675D8'',''28C09DDC02D7031EC92614CAA100C3A9'',''F553D39D1FF463ED9DF499F826307F92'',''9BA6ABA730514BA8C9EF0753B7114867'' ) ' ;
+sSQL := fBuildSqlNoStream(sWhere,nScenerio);
+dbms_output.put_line(sSQL);
+execute immediate sSQL;
+dbms_output.put_line(sql%rowcount);
+update stn.temp_stn_journal_line set balance_type = '27', entry_type = '27A' where scenerio = 12;
 
 
+
+-- fsany as affiliate
+nScenerio := 13;
+sWhere := ' AND fc_segment_4 = ''FSANY'' ';
+sWhere := sWhere || ' and fc_entity not in (''EM020'', ''EF030'', ''EA010'',''EA030'') '; 
+sSQL := fBuildSqlNoStream(sWhere,nScenerio);
+dbms_output.put_line(sSQL);
+execute immediate sSQL;
+dbms_output.put_line(sql%rowcount);
+-- agcrp this should be closed
+update stn.temp_stn_journal_line set balance_type = '28', entry_type = '28A' where scenerio = 13 and le_id = 171;
+
+-- agrel, fsauk, agfra,change affiliate to AGCRP
+update stn.temp_stn_journal_line set balance_type = '29', entry_type = '29A' where scenerio = 13 and le_id in (289,258,182, 217, 219 );
+
+
+-- em020 and ef030.  Reverse and rebook in CA002
+--update stn.temp_stn_journal_line set balance_type = '30', entry_type = '30A' where scenerio = 13 and le_id in(242,235);
+
+commit;
 
 DBMS_STATS.GATHER_TABLE_STATS ('STN','TEMP_STN_JOURNAL_LINE');
 
@@ -1473,7 +1549,7 @@ commit;
 exception
     when others then
         rollback;
-        raise_application_error(-20101,'pRunProcess '||sqlerrm);
+        raise_application_error(-20101,' pRunProcess '||sqlerrm);
 
 END; -- pRunProcess
 
