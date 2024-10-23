@@ -5,17 +5,19 @@ Ssql varchar(200);
 
 begin
 
-stn.temp_pkg_merger_EA010.pInsertJournalLine(1);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(2);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(3);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(4);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(5);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(6);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(7);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(8);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(9);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(10);
-stn.temp_pkg_merger_EA010.pInsertJournalLine(11);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(1);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(2);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(3);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(4);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(5);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(6);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(7);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(8);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(9);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(10);
+--stn.temp_pkg_merger_EA010.pInsertJournalLine(11);
+stn.temp_pkg_merger_stream.pInsertJournalLine(12);
+stn.temp_pkg_merger_stream.pInsertJournalLine(13);
 commit;
 
 
