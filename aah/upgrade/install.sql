@@ -26,6 +26,7 @@ define unittest_login=~8
 
 conn ~fdr_logon
 -- close balance_others.  It had to be opeded to allow entries for old balances
+-- close balance_others.  It had to be opeded to allow entries for old balances
 begin
 
 delete from fdr.fr_general_lookup
