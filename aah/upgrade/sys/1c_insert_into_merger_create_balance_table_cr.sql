@@ -87,7 +87,8 @@ select    eab_fak_id,
                         edb_balance_date <='31-aug-24' and 
                         edb_balance_type = 50 and
                         ga_account_Type = 'B' and
-                        fc_entity = 'EA010' and -- contingency reserves
+                        (fc_entity = 'FSANY' or fc_segment_4 = 'FSANY') and
+                        --fc_attribute_1 = 'NVS'
                         substr(ga_account_code,1,1) in ('1','2') 
               ))
 where rn = 1;
