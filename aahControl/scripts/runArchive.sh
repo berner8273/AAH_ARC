@@ -5,6 +5,7 @@ function runArchive()
     runStep parchiveFDR1
     runStep parchiveSTN2
     runStep parchiveFDR2
+    runStep parchiveSLR1
 }
 ERR_EXIT () {
 	printf "Error: ********************************************\n$@\n"
